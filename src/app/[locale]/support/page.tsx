@@ -1,4 +1,5 @@
 import { Headphones, LifeBuoy, ShieldCheck } from "lucide-react";
+import NextLink from "next/link";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { Link } from "@/i18n/navigation";
@@ -28,13 +29,12 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
               {t("supportDashboardAction")}
             </Link>
             {session?.user?.role === "ADMIN" ? (
-              <Link
+              <NextLink
                 href="/admin/orders"
-                locale={locale}
                 className="inline-flex h-12 items-center justify-center rounded-full border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-900 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-cyan-400/20 dark:hover:bg-white/10"
               >
                 {t("supportAdminAction")}
-              </Link>
+              </NextLink>
             ) : null}
           </div>
         </div>

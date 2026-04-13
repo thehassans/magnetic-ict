@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -190,13 +191,12 @@ export function AdminOrdersClient({ orders, locale }: { orders: AdminOrder[]; lo
           </div>
 
           <div className="mt-4 flex flex-wrap gap-3">
-            <Link
+            <NextLink
               href={`/admin/orders/${order.id}`}
-              locale={locale}
               className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 text-sm font-semibold text-white transition hover:bg-white/10"
             >
               {t("adminOrderDetailOpen")}
-            </Link>
+            </NextLink>
             <Link
               href={`/dashboard/orders/${order.id}/invoice`}
               locale={locale}

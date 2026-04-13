@@ -20,6 +20,7 @@ import {
   Activity
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import NextLink from "next/link";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { CartTrigger } from "@/components/commerce/cart-trigger";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -174,14 +175,13 @@ export function SiteHeader({ locale, activeLanguages, sessionUser }: SiteHeaderP
 
             {sessionUser?.role === "ADMIN" ? (
               <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
-                <Link
+                <NextLink
                   href="/admin/orders"
-                  locale={locale}
                   className="inline-flex h-11 items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-4 text-sm font-medium text-cyan-700 transition hover:bg-cyan-100 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-100"
                 >
                   <ShieldCheck className="h-4 w-4" />
                   {t("adminOps")}
-                </Link>
+                </NextLink>
               </motion.div>
             ) : null}
 
@@ -282,15 +282,14 @@ export function SiteHeader({ locale, activeLanguages, sessionUser }: SiteHeaderP
                     {t("dashboard")}
                   </Link>
                   {sessionUser.role === "ADMIN" ? (
-                    <Link
+                    <NextLink
                       href="/admin/orders"
-                      locale={locale}
                       onClick={() => setMobileMenuOpen(false)}
                       className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-5 text-sm font-medium text-cyan-700 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-100"
                     >
                       <ShieldCheck className="h-4 w-4" />
                       {t("adminOps")}
-                    </Link>
+                    </NextLink>
                   ) : null}
                 </>
               ) : (
