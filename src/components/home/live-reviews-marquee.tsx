@@ -23,14 +23,15 @@ export function LiveReviewsMarquee() {
 
       <div className="space-y-4 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
         <InfiniteMarquee
-          duration={34}
+          duration={26}
           itemClassName="shrink-0"
           items={firstRow.map((review) => (
             <ReviewCard key={review.name} review={review} />
           ))}
         />
         <InfiniteMarquee
-          duration={40}
+          duration={30}
+          reverse
           itemClassName="shrink-0"
           items={secondRow.map((review) => (
             <ReviewCard key={review.name} review={review} />
@@ -47,29 +48,34 @@ function ReviewCard({
   review: (typeof reviews)[number];
 }) {
   const t = useTranslations("Landing");
+  const numericRating = `${review.rating}.0`;
 
   return (
-    <div className="w-[23rem] rounded-[26px] border border-slate-200 bg-white/92 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60">
+    <div className="w-[23rem] rounded-[26px] border border-slate-200/90 bg-white/95 p-6 shadow-[0_22px_70px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Image
-            src={review.avatar}
-            alt={review.name}
-            width={64}
-            height={64}
-            className="h-16 w-16 rounded-full border border-white object-cover shadow-[0_10px_28px_rgba(15,23,42,0.12)]"
-          />
+          <div className="rounded-full bg-gradient-to-br from-violet-100 to-cyan-100 p-1 shadow-[0_10px_28px_rgba(15,23,42,0.12)] dark:from-violet-400/20 dark:to-cyan-400/20">
+            <Image
+              src={review.avatar}
+              alt={review.name}
+              width={72}
+              height={72}
+              className="h-[4.5rem] w-[4.5rem] rounded-full border border-white/80 object-cover"
+            />
+          </div>
           <div>
             <div className="font-semibold text-slate-950 dark:text-white">{review.name}</div>
             <div className="text-sm text-slate-500 dark:text-slate-400">{t(`reviewRoles.${review.id}`)}</div>
           </div>
         </div>
-        <div className="text-xs uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">5.0</div>
+        <div className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold tracking-[0.18em] text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">
+          {numericRating}
+        </div>
       </div>
 
       <div className="mt-4 flex items-center gap-1 text-amber-500">
-        {Array.from({ length: review.rating }).map((_, index) => (
-          <Star key={index} className="h-4 w-4 fill-current" />
+        {Array.from({ length: 5 }).map((_, index) => (
+          <Star key={index} className={`h-4 w-4 ${index < review.rating ? "fill-current text-amber-500" : "text-slate-200 dark:text-slate-700"}`} />
         ))}
       </div>
 

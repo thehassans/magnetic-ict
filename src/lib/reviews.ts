@@ -9,7 +9,7 @@ export const reviews = [
   {
     id: "noahBennett",
     name: "Noah Bennett",
-    rating: 5,
+    rating: 4,
     initials: "NB",
     avatar: "/reviews/noah-bennett.svg"
   },
@@ -23,7 +23,7 @@ export const reviews = [
   {
     id: "liamFoster",
     name: "Liam Foster",
-    rating: 5,
+    rating: 4,
     initials: "LF",
     avatar: "/reviews/liam-foster.svg"
   },
@@ -37,7 +37,7 @@ export const reviews = [
   {
     id: "ethanWalker",
     name: "Ethan Walker",
-    rating: 5,
+    rating: 4,
     initials: "EW",
     avatar: "/reviews/ethan-walker.svg"
   },
@@ -51,7 +51,7 @@ export const reviews = [
   {
     id: "jamesPatel",
     name: "James Patel",
-    rating: 5,
+    rating: 4,
     initials: "JP",
     avatar: "/reviews/james-patel.svg"
   }

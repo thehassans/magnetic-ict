@@ -1,7 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import type { CSSProperties, ReactNode } from "react";
+import { useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export function InfiniteMarquee({
@@ -19,6 +19,10 @@ export function InfiniteMarquee({
 }) {
   const reduceMotion = useReducedMotion();
   const duplicated = [...items, ...items];
+  const marqueeStyle = {
+    "--marquee-duration": `${duration}s`,
+    "--marquee-direction": reverse ? "reverse" : "normal"
+  } as CSSProperties;
 
   if (reduceMotion) {
     return (
@@ -36,24 +40,13 @@ export function InfiniteMarquee({
 
   return (
     <div className={cn("overflow-hidden", className)}>
-      <motion.div
-        className="flex w-max gap-4 will-change-transform"
-        animate={{
-          x: reverse ? ["-50%", "0%"] : ["0%", "-50%"]
-        }}
-        transition={{
-          duration,
-          ease: "linear",
-          repeat: Number.POSITIVE_INFINITY,
-          repeatType: "loop"
-        }}
-      >
+      <div className="marquee-track flex w-max gap-4 will-change-transform" style={marqueeStyle}>
         {duplicated.map((item, index) => (
           <div key={`${index}-${reverse ? "r" : "l"}`} className={itemClassName}>
             {item}
           </div>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -27,16 +27,16 @@ async function main() {
     update: {
       value: {
         company: "MagneticICT",
-        email: "support@magneticict.com",
-        phone: "+1 (000) 000-0000"
+        email: "support@magnetic-ict.com",
+        phone: "+447988525331"
       }
     },
     create: {
       key: "footer_details",
       value: {
         company: "MagneticICT",
-        email: "support@magneticict.com",
-        phone: "+1 (000) 000-0000"
+        email: "support@magnetic-ict.com",
+        phone: "+447988525331"
       }
     }
   });

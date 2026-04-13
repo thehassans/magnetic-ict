@@ -49,11 +49,11 @@ export function SiteFooter({ locale }: SiteFooterProps) {
               <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4 text-cyan-600 dark:text-cyan-300" />
-                  <span>support@magneticict.com</span>
+                  <a href="mailto:support@magnetic-ict.com" className="transition hover:text-violet-700 dark:hover:text-cyan-300">support@magnetic-ict.com</a>
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="h-4 w-4 text-cyan-600 dark:text-cyan-300" />
-                  <span>+1 (000) 000-0000</span>
+                  <a href="tel:+447988525331" className="transition hover:text-violet-700 dark:hover:text-cyan-300">+447988525331</a>
                 </div>
                 <div className="flex items-center gap-3">
                   <MapPin className="h-4 w-4 text-cyan-600 dark:text-cyan-300" />
