@@ -5,6 +5,7 @@ import type { Provider } from "next-auth/providers";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { z } from "zod";
+import { getConfiguredAdminEmail, getConfiguredAdminPasswordCandidates } from "@/lib/admin-credentials";
 import { hashOtpCode } from "@/lib/otp";
 import { prisma } from "@/lib/prisma";
 import type { AppUserRole } from "@/types/auth";
@@ -51,15 +52,15 @@ providers.push(
         return null;
       }
 
-      const configuredEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-      const configuredPassword = process.env.ADMIN_PASSWORD ?? "";
+      const configuredEmail = getConfiguredAdminEmail();
+      const configuredPasswords = getConfiguredAdminPasswordCandidates();
       const email = credentials.data.email.trim().toLowerCase();
 
-      if (!configuredEmail || !configuredPassword || email !== configuredEmail) {
+      if (!configuredEmail || configuredPasswords.length === 0 || email !== configuredEmail) {
         return null;
       }
 
-      if (!compareSecret(credentials.data.password, configuredPassword)) {
+      if (!configuredPasswords.some((configuredPassword) => compareSecret(credentials.data.password, configuredPassword))) {
         return null;
       }
 

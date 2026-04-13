@@ -2,6 +2,7 @@
 
 import { AuthError } from "next-auth";
 import { signIn } from "@/auth";
+import { hasConfiguredAdminCredentials } from "@/lib/admin-credentials";
 
 export type AdminLoginState = {
   error: "invalid_credentials" | "missing_configuration" | null;
@@ -25,7 +26,7 @@ export async function authenticateAdmin(
   const email = typeof formData.get("email") === "string" ? (formData.get("email") as string).trim().toLowerCase() : "";
   const password = typeof formData.get("password") === "string" ? (formData.get("password") as string) : "";
 
-  if (!process.env.ADMIN_EMAIL?.trim() || !process.env.ADMIN_PASSWORD) {
+  if (!hasConfiguredAdminCredentials()) {
     return { error: "missing_configuration" };
   }
 

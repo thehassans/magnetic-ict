@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AdminLoginScreen } from "@/components/admin/admin-login-screen";
+import { hasConfiguredAdminCredentials } from "@/lib/admin-credentials";
 
 function normalizeCallbackPath(rawPath?: string) {
   if (!rawPath || !rawPath.startsWith("/") || rawPath === "/admin") {
@@ -28,7 +29,7 @@ export default async function AdminEntryPage({
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl items-center justify-center">
         <AdminLoginScreen
           callbackPath={callbackPath}
-          hasConfiguredCredentials={Boolean(process.env.ADMIN_EMAIL?.trim() && process.env.ADMIN_PASSWORD)}
+          hasConfiguredCredentials={hasConfiguredAdminCredentials()}
           showAccessDenied={showAccessDenied}
         />
       </div>
