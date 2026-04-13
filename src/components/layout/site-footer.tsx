@@ -1,16 +1,18 @@
-"use client";
-
 import { ArrowRight, Headset, Mail, MapPin, Phone } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { Link } from "@/i18n/navigation";
+import { getFooterDetailsSettings } from "@/lib/platform-settings";
 
 type SiteFooterProps = {
   locale: string;
 };
 
-export function SiteFooter({ locale }: SiteFooterProps) {
-  const t = useTranslations("Footer");
+export async function SiteFooter({ locale }: SiteFooterProps) {
+  const [t, footerDetails] = await Promise.all([
+    getTranslations("Footer"),
+    getFooterDetailsSettings()
+  ]);
 
   return (
     <footer className="relative z-10 mt-12 border-t border-white/70 dark:border-white/10">
@@ -33,7 +35,7 @@ export function SiteFooter({ locale }: SiteFooterProps) {
                 </div>
               </div>
               <Link
-                href="/support"
+                href={footerDetails.ctaHref}
                 locale={locale}
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-slate-950 px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-violet-700"
               >
@@ -49,15 +51,15 @@ export function SiteFooter({ locale }: SiteFooterProps) {
               <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4 text-cyan-600 dark:text-cyan-300" />
-                  <a href="mailto:support@magnetic-ict.com" className="transition hover:text-violet-700 dark:hover:text-cyan-300">support@magnetic-ict.com</a>
+                  <a href={`mailto:${footerDetails.supportEmail}`} className="transition hover:text-violet-700 dark:hover:text-cyan-300">{footerDetails.supportEmail}</a>
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="h-4 w-4 text-cyan-600 dark:text-cyan-300" />
-                  <a href="tel:+447988525331" className="transition hover:text-violet-700 dark:hover:text-cyan-300">+447988525331</a>
+                  <a href={`tel:${footerDetails.supportPhone.replace(/\s+/g, "")}`} className="transition hover:text-violet-700 dark:hover:text-cyan-300">{footerDetails.supportPhone}</a>
                 </div>
                 <div className="flex items-center gap-3">
                   <MapPin className="h-4 w-4 text-cyan-600 dark:text-cyan-300" />
-                  <span>Global delivery, always-on support</span>
+                  <span>{footerDetails.locationLabel}</span>
                 </div>
               </div>
             </div>

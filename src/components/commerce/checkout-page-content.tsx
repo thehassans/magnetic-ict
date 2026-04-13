@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { Apple, BadgeCheck, CreditCard, Lock, ShieldCheck } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
@@ -15,17 +15,34 @@ const paymentMethods = [
   { id: "GOOGLE_PAY", titleKey: "paymentGooglePay", Icon: BadgeCheck }
 ] as const;
 
-export function CheckoutPageContent() {
+type AvailablePaymentMethods = {
+  STRIPE: boolean;
+  PAYPAL: boolean;
+  APPLE_PAY: boolean;
+  GOOGLE_PAY: boolean;
+};
+
+export function CheckoutPageContent({ availablePaymentMethods }: { availablePaymentMethods: AvailablePaymentMethods }) {
   const { status } = useSession();
   const { items, subtotal, clearCart } = useCommerce();
   const locale = useLocale();
   const router = useRouter();
   const t = useTranslations("Commerce");
   const navigation = useTranslations("Navigation");
-  const [paymentMethod, setPaymentMethod] = useState<(typeof paymentMethods)[number]["id"]>("STRIPE");
+  const enabledPaymentMethods = useMemo(
+    () => paymentMethods.filter((method) => availablePaymentMethods[method.id]),
+    [availablePaymentMethods]
+  );
+  const [paymentMethod, setPaymentMethod] = useState<(typeof paymentMethods)[number]["id"]>(enabledPaymentMethods[0]?.id ?? "STRIPE");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (!enabledPaymentMethods.some((method) => method.id === paymentMethod)) {
+      setPaymentMethod(enabledPaymentMethods[0]?.id ?? "STRIPE");
+    }
+  }, [enabledPaymentMethods, paymentMethod]);
 
   const taxes = useMemo(() => Number((subtotal * 0.08).toFixed(2)), [subtotal]);
   const total = useMemo(() => Number((subtotal + taxes).toFixed(2)), [subtotal, taxes]);
@@ -97,7 +114,7 @@ export function CheckoutPageContent() {
               <span>{status === "authenticated" ? t("checkoutAuthenticated") : t("checkoutAuthRequired")}</span>
             </div>
             <div className="mt-6 grid gap-4">
-              {paymentMethods.map(({ id, titleKey, Icon }) => {
+              {enabledPaymentMethods.map(({ id, titleKey, Icon }) => {
                 const active = paymentMethod === id;
                 return (
                   <button
@@ -123,6 +140,10 @@ export function CheckoutPageContent() {
                 );
               })}
             </div>
+
+            {enabledPaymentMethods.length === 0 ? (
+              <p className="mt-6 text-sm text-amber-700 dark:text-amber-300">Payment methods are currently unavailable. Please contact support or try again later.</p>
+            ) : null}
 
             {status !== "authenticated" ? (
               <button
@@ -176,7 +197,7 @@ export function CheckoutPageContent() {
             <button
               type="button"
               onClick={handlePlaceOrder}
-              disabled={status !== "authenticated" || isPending}
+              disabled={status !== "authenticated" || isPending || enabledPaymentMethods.length === 0}
               className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isPending ? t("placingOrder") : t("placeOrder")}

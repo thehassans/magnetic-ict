@@ -1,0 +1,99 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { auth } from "@/auth";
+import { routing } from "@/i18n/routing";
+import { prisma } from "@/lib/prisma";
+
+const hasDatabase = Boolean(process.env.DATABASE_URL);
+
+const localeSchema = z.string().refine(
+  (value) => routing.locales.includes(value as (typeof routing.locales)[number]),
+  "Unsupported locale"
+);
+
+const requestSchema = z.discriminatedUnion("section", [
+  z.object({
+    section: z.literal("languages"),
+    value: z
+      .array(
+        z.object({
+          code: localeSchema,
+          label: z.string().min(1),
+          direction: z.enum(["ltr", "rtl"]).optional().default("ltr")
+        })
+      )
+      .min(1)
+  }),
+  z.object({
+    section: z.literal("footer"),
+    value: z.object({
+      supportEmail: z.string().email(),
+      supportPhone: z.string().min(3),
+      locationLabel: z.string().min(3),
+      ctaHref: z.string().startsWith("/")
+    })
+  }),
+  z.object({
+    section: z.literal("payments"),
+    value: z.object({
+      stripe: z.object({ enabled: z.boolean() }),
+      paypal: z.object({ enabled: z.boolean() }),
+      applePay: z.object({ enabled: z.boolean() }),
+      googlePay: z.object({ enabled: z.boolean() })
+    })
+  }),
+  z.object({
+    section: z.literal("oauth"),
+    value: z.object({
+      googleClientId: z.string(),
+      googleClientSecret: z.string()
+    })
+  }),
+  z.object({
+    section: z.literal("gemini"),
+    value: z.object({
+      apiKey: z.string()
+    })
+  })
+]);
+
+const settingKeyBySection = {
+  languages: "active_languages",
+  footer: "footer_details",
+  payments: "payment_integrations",
+  oauth: "oauth_config",
+  gemini: "gemini_api_key"
+} as const;
+
+export async function PATCH(request: Request) {
+  const session = await auth();
+
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Admin access required." }, { status: 403 });
+  }
+
+  if (!hasDatabase) {
+    return NextResponse.json({ error: "DATABASE_URL must be configured before admin settings can be saved." }, { status: 503 });
+  }
+
+  try {
+    const body = await request.json();
+    const parsed = requestSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Please provide valid settings data." }, { status: 400 });
+    }
+
+    const key = settingKeyBySection[parsed.data.section];
+    const saved = await prisma.setting.upsert({
+      where: { key },
+      update: { value: parsed.data.value },
+      create: { key, value: parsed.data.value }
+    });
+
+    return NextResponse.json({ ok: true, key: saved.key, value: saved.value });
+  } catch (error) {
+    console.error("Admin settings update failed", error);
+    return NextResponse.json({ error: "Unable to save settings right now." }, { status: 500 });
+  }
+}

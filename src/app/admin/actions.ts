@@ -9,7 +9,7 @@ export type AdminLoginState = {
 
 function normalizeCallbackPath(rawPath: string) {
   if (!rawPath || !rawPath.startsWith("/") || rawPath === "/admin") {
-    return "/admin/orders";
+    return "/admin/dashboard";
   }
 
   return rawPath;
@@ -20,7 +20,7 @@ export async function authenticateAdmin(
   formData: FormData
 ): Promise<AdminLoginState> {
   const callbackPath = normalizeCallbackPath(
-    typeof formData.get("callback") === "string" ? (formData.get("callback") as string) : "/admin/orders"
+    typeof formData.get("callback") === "string" ? (formData.get("callback") as string) : "/admin/dashboard"
   );
   const email = typeof formData.get("email") === "string" ? (formData.get("email") as string).trim().toLowerCase() : "";
   const password = typeof formData.get("password") === "string" ? (formData.get("password") as string) : "";

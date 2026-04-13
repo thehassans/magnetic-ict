@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 function normalizeCallbackPath(rawPath?: string) {
   if (!rawPath || !rawPath.startsWith("/") || rawPath === "/admin") {
-    return "/admin/orders";
+    return "/admin/dashboard";
   }
 
   return rawPath;

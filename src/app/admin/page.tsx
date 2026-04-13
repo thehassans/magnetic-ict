@@ -4,7 +4,7 @@ import { AdminLoginScreen } from "@/components/admin/admin-login-screen";
 
 function normalizeCallbackPath(rawPath?: string) {
   if (!rawPath || !rawPath.startsWith("/") || rawPath === "/admin") {
-    return "/admin/orders";
+    return "/admin/dashboard";
   }
 
   return rawPath;

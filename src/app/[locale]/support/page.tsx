@@ -30,7 +30,7 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
             </Link>
             {session?.user?.role === "ADMIN" ? (
               <NextLink
-                href="/admin/orders"
+                href="/admin/dashboard"
                 className="inline-flex h-12 items-center justify-center rounded-full border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-900 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-cyan-400/20 dark:hover:bg-white/10"
               >
                 {t("supportAdminAction")}

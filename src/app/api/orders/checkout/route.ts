@@ -13,6 +13,7 @@ import {
   getStripeClient,
   isPayPalConfigured
 } from "@/lib/payments";
+import { getEnabledPaymentMethodIds, getPaymentIntegrationsSettings } from "@/lib/platform-settings";
 
 const paymentMethodSchema = z.enum(["STRIPE", "PAYPAL", "APPLE_PAY", "GOOGLE_PAY"]);
 
@@ -54,6 +55,14 @@ export async function POST(request: Request) {
     }
 
     const payload: CheckoutPayload = parsed.data;
+    const allowedMethods = getEnabledPaymentMethodIds(await getPaymentIntegrationsSettings());
+
+    if (!allowedMethods[payload.paymentMethod]) {
+      return NextResponse.json(
+        { error: "That payment method is currently disabled by platform settings." },
+        { status: 400 }
+      );
+    }
 
     const orders = (await createPendingOrders({
       userId: session.user.id,
