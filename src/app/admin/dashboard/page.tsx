@@ -103,7 +103,7 @@ export default async function AdminDashboardPage() {
   return (
     <AdminShell
       title="Admin dashboard"
-      description="A premium command center for revenue, order velocity, customer growth, and service demand."
+      description="Revenue, orders, users, and service demand."
       activePath="/admin/dashboard"
       actions={
         <Link

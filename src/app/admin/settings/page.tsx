@@ -13,7 +13,7 @@ export default async function AdminSettingsPage() {
   return (
     <AdminShell
       title="Platform settings"
-      description="Control languages, public footer details, payment availability, OAuth visibility, and Gemini integration from one premium settings center."
+      description="Languages, payments, footer, OAuth, and Gemini."
       activePath="/admin/settings"
     >
       <AdminSettingsClient

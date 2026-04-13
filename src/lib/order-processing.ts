@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { syncServiceCatalog } from "@/lib/catalog-sync";
 import { sendOrderStatusEmail } from "@/lib/email";
+import { getVisibleServiceCatalogWithOverrides } from "@/lib/service-overrides";
 
 export type CheckoutPaymentMethod = "STRIPE" | "PAYPAL" | "APPLE_PAY" | "GOOGLE_PAY";
 export type CheckoutCartItem = {
@@ -128,6 +129,16 @@ export async function createPendingOrders({
   items: CheckoutCartItem[];
 }) {
   await syncServiceCatalog();
+
+  const visibleServices = await getVisibleServiceCatalogWithOverrides();
+  const visibleServiceIds = new Set<string>(visibleServices.map((service) => service.id));
+  const tierToServiceId = new Map<string, string>(visibleServices.flatMap((service) => service.tiers.map((tier) => [tier.id, service.id] as const)));
+
+  for (const item of items) {
+    if (!visibleServiceIds.has(item.serviceId) || tierToServiceId.get(item.tierId) !== item.serviceId) {
+      throw new Error("One or more selected services are unavailable.");
+    }
+  }
 
   const uniqueTierKeys = [...new Set(items.map((item) => item.tierId))];
   const tiers = (await prisma.serviceTier.findMany({

@@ -1,5 +1,6 @@
 import { serviceCatalog, type CatalogService } from "@/lib/service-catalog";
 import { prisma } from "@/lib/prisma";
+import { getServiceVisibilityMap } from "@/lib/service-visibility";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
@@ -21,6 +22,10 @@ type PersistedService = {
 };
 
 export type ServiceOverride = CatalogService & {
+  visibility: {
+    enabled: boolean;
+    deleted: boolean;
+  };
   overrides: {
     title: boolean;
     description: boolean;
@@ -32,9 +37,12 @@ export type ServiceOverride = CatalogService & {
 };
 
 export async function getServiceCatalogWithOverrides(): Promise<ServiceOverride[]> {
+  const visibilityMap = await getServiceVisibilityMap();
+
   if (!hasDatabase) {
     return serviceCatalog.map((service) => ({
       ...service,
+      visibility: visibilityMap[service.id] ?? { enabled: true, deleted: false },
       overrides: {
         title: false,
         description: false,
@@ -69,6 +77,7 @@ export async function getServiceCatalogWithOverrides(): Promise<ServiceOverride[
 
     return {
       ...service,
+      visibility: visibilityMap[service.id] ?? { enabled: true, deleted: false },
       name: persisted?.name ?? service.name,
       description: persisted?.description ?? service.description,
       category: persisted?.category ?? service.category,
@@ -108,9 +117,14 @@ export async function getServiceCatalogWithOverrides(): Promise<ServiceOverride[
   });
 }
 
+export async function getVisibleServiceCatalogWithOverrides() {
+  const services = await getServiceCatalogWithOverrides();
+  return services.filter((service) => service.visibility.enabled && !service.visibility.deleted);
+}
+
 export async function getServiceByIdWithOverrides(serviceId: string) {
   const services = await getServiceCatalogWithOverrides();
-  return services.find((service) => service.id === serviceId) ?? null;
+  return services.find((service) => service.id === serviceId && service.visibility.enabled && !service.visibility.deleted) ?? null;
 }
 
 export function hasServiceCopyOverrides(service: ServiceOverride) {

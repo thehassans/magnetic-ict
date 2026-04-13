@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { AdminServiceEditor } from "@/components/admin/admin-service-editor";
+import { AdminServiceVisibilityControls } from "@/components/admin/admin-service-visibility-controls";
 import { AdminSyncServicesButton } from "@/components/admin/admin-sync-services-button";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { requireAdmin } from "@/lib/admin";
@@ -31,7 +32,7 @@ export default async function AdminServicesPage() {
     return (
       <AdminShell
         title="Manage services"
-        description="Inspect your synchronized service catalog, price architecture, and what customers are purchasing most."
+        description="Sync, edit, hide, or restore services."
         activePath="/admin/services"
       >
         <div className="rounded-[32px] border border-slate-200 bg-white p-8 text-slate-600 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
@@ -58,7 +59,7 @@ export default async function AdminServicesPage() {
   return (
     <AdminShell
       title="Manage services"
-      description="Your service catalog currently syncs from the static product definition into Prisma. This workspace gives operators visibility into pricing blocks, categories, and purchase demand."
+      description="Edit pricing and control storefront visibility."
       activePath="/admin/services"
       actions={
         <div className="flex flex-wrap gap-3">
@@ -75,7 +76,7 @@ export default async function AdminServicesPage() {
     >
       <section className="grid gap-5 md:grid-cols-3">
         <StatCard label="Catalog services" value={String(services.length)} />
-        <StatCard label="Services with copy overrides" value={String(services.filter((service: ServiceOverride) => service.overrides.title || service.overrides.description).length)} />
+        <StatCard label="Hidden or deleted" value={String(services.filter((service: ServiceOverride) => !service.visibility.enabled || service.visibility.deleted).length)} />
         <StatCard label="Total tiers" value={String(services.reduce((sum: number, service: ServiceOverride) => sum + service.tiers.length, 0))} />
       </section>
 
@@ -93,6 +94,8 @@ export default async function AdminServicesPage() {
                   <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">{service.name}</h2>
                   <p className="mt-3 text-sm leading-7 text-slate-600">{service.description}</p>
                   <div className="mt-4 flex flex-wrap gap-2">
+                    {!service.visibility.enabled && !service.visibility.deleted ? <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-amber-800">Disabled</span> : null}
+                    {service.visibility.deleted ? <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-rose-800">Deleted</span> : null}
                     {service.overrides.title ? <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">Title override</span> : null}
                     {service.overrides.description ? <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">Description override</span> : null}
                     {Object.values(service.overrides.tierPrices).some(Boolean) ? <span className="rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-800">Pricing override</span> : null}
@@ -118,6 +121,10 @@ export default async function AdminServicesPage() {
                     </div>
                   );
                 })}
+              </div>
+
+              <div className="mt-6">
+                <AdminServiceVisibilityControls service={service} disabled={!hasDatabase} />
               </div>
 
               <AdminServiceEditor service={service} disabled={!hasDatabase} />

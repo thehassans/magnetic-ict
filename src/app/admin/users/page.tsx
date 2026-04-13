@@ -74,7 +74,7 @@ export default async function AdminUsersPage() {
   return (
     <AdminShell
       title="Manage users"
-      description="Inspect accounts, identify active buyers, and understand who is driving revenue across the platform."
+      description="Accounts, buyers, and admin roles."
       activePath="/admin/users"
     >
       <section className="grid gap-5 md:grid-cols-3">

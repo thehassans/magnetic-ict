@@ -3,7 +3,10 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getServiceDescription, getServiceTitle } from "@/lib/service-i18n";
 import { serviceMenuItems, type ServiceMenuKey } from "@/lib/service-menu";
-import { getServiceCatalogWithOverrides, type ServiceOverride } from "@/lib/service-overrides";
+import { getVisibleServiceCatalogWithOverrides, type ServiceOverride } from "@/lib/service-overrides";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const iconMap = {
   ssl: ShieldCheck,
@@ -23,7 +26,7 @@ export default async function ServicesPage() {
     getTranslations("Pages"),
     getTranslations("Navigation"),
     getTranslations("ServicesDetail"),
-    getServiceCatalogWithOverrides()
+    getVisibleServiceCatalogWithOverrides()
   ]);
 
   const servicesById = new Map<string, ServiceOverride>(services.map((service: ServiceOverride) => [service.id, service]));

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { AdminOrdersClient } from "@/components/admin/admin-orders-client";
+import { AdminShell } from "@/components/admin/admin-shell";
 import { prisma } from "@/lib/prisma";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
@@ -42,13 +43,11 @@ export default async function AdminOrdersPage() {
 
   if (!hasDatabase) {
     return (
-      <main className="mx-auto max-w-7xl px-6 py-10 sm:px-10 lg:px-16">
-        <section className="rounded-[36px] border border-slate-200 bg-white p-8 shadow-[0_24px_80px_rgba(15,23,42,0.06)] sm:p-10">
-          <p className="text-sm uppercase tracking-[0.28em] text-slate-500">{t("adminOrdersEyebrow")}</p>
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">{t("adminOrdersTitle")}</h1>
-          <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">{t("adminDatabaseRequired")}</p>
-        </section>
-      </main>
+      <AdminShell title={t("adminOrdersTitle")} description="Track order flow and fulfillment." activePath="/admin/orders">
+        <div className="rounded-[32px] border border-slate-200 bg-white p-8 text-slate-600 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
+          {t("adminDatabaseRequired")}
+        </div>
+      </AdminShell>
     );
   }
 
@@ -88,13 +87,7 @@ export default async function AdminOrdersPage() {
   const fulfilledCount = orders.filter((order) => order.status === "FULFILLED").length;
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-10 sm:px-10 lg:px-16">
-      <section className="rounded-[36px] border border-slate-200 bg-white p-8 shadow-[0_24px_80px_rgba(15,23,42,0.06)] sm:p-10">
-        <p className="text-sm uppercase tracking-[0.28em] text-slate-500">{t("adminOrdersEyebrow")}</p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">{t("adminOrdersTitle")}</h1>
-        <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">{t("adminOrdersDescription")}</p>
-      </section>
-
+    <AdminShell title={t("adminOrdersTitle")} description="Track order flow and fulfillment." activePath="/admin/orders">
       <section className="mt-8 grid gap-5 md:grid-cols-3">
         <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
           <div className="text-sm text-slate-500">{t("dashboardPendingOrders")}</div>
@@ -139,6 +132,6 @@ export default async function AdminOrdersPage() {
           />
         )}
       </section>
-    </main>
+    </AdminShell>
   );
 }

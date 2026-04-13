@@ -1,7 +1,7 @@
 "use server";
 
 import { AuthError } from "next-auth";
-import { signIn } from "@/auth";
+import { signIn, signOut } from "@/auth";
 import { hasConfiguredAdminCredentials } from "@/lib/admin-credentials";
 
 export type AdminLoginState = {
@@ -49,4 +49,8 @@ export async function authenticateAdmin(
   }
 
   return { error: null };
+}
+
+export async function logoutAdmin() {
+  await signOut({ redirectTo: "/admin" });
 }

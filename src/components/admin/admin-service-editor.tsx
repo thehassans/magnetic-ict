@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import type { ServiceOverride } from "@/lib/service-overrides";
 
 export function AdminServiceEditor({ service, disabled }: { service: ServiceOverride; disabled: boolean }) {
+  const router = useRouter();
   const [name, setName] = useState(service.name);
   const [description, setDescription] = useState(service.description);
   const [category, setCategory] = useState(service.category);
@@ -41,7 +43,8 @@ export function AdminServiceEditor({ service, disabled }: { service: ServiceOver
       }
 
       setIsError(false);
-      setMessage("Service settings saved. Refresh to view the latest persisted values.");
+      setMessage("Service settings saved.");
+      router.refresh();
     });
   }
 

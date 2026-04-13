@@ -4,12 +4,10 @@ import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
 import { ServiceTierSelector } from "@/components/services/service-tier-selector";
 import { getServiceDescription, getServiceTitle } from "@/lib/service-i18n";
-import { serviceCatalog } from "@/lib/service-catalog";
 import { getServiceByIdWithOverrides } from "@/lib/service-overrides";
 
-export function generateStaticParams() {
-  return serviceCatalog.map((service) => ({ id: service.id }));
-}
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function ServiceDetailPage({
   params
