@@ -1,26 +1,13 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { AdminServiceEditor } from "@/components/admin/admin-service-editor";
 import { AdminSyncServicesButton } from "@/components/admin/admin-sync-services-button";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
-import { serviceCatalog } from "@/lib/service-catalog";
+import { getServiceCatalogWithOverrides, type ServiceOverride } from "@/lib/service-overrides";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
-
-type AdminService = {
-  id: string;
-  catalogKey: string;
-  name: string;
-  category: string;
-  description: string;
-  tiers: Array<{
-    id: string;
-    catalogKey: string;
-    name: string;
-    price: number;
-  }>;
-};
 
 type ServiceOrder = {
   id: string;
@@ -55,20 +42,7 @@ export default async function AdminServicesPage() {
   }
 
   const [services, orders] = await Promise.all([
-    prisma.service.findMany({
-      orderBy: { name: "asc" },
-      include: {
-        tiers: {
-          orderBy: { price: "asc" },
-          select: {
-            id: true,
-            catalogKey: true,
-            name: true,
-            price: true
-          }
-        }
-      }
-    }),
+    getServiceCatalogWithOverrides(),
     prisma.order.findMany({
       select: {
         id: true,
@@ -79,7 +53,6 @@ export default async function AdminServicesPage() {
     })
   ]);
 
-  const typedServices = services as AdminService[];
   const typedOrders = orders as ServiceOrder[];
 
   return (
@@ -101,14 +74,14 @@ export default async function AdminServicesPage() {
       }
     >
       <section className="grid gap-5 md:grid-cols-3">
-        <StatCard label="Static catalog services" value={String(serviceCatalog.length)} />
-        <StatCard label="Persisted services" value={String(typedServices.length)} />
-        <StatCard label="Total tiers" value={String(typedServices.reduce((sum, service) => sum + service.tiers.length, 0))} />
+        <StatCard label="Catalog services" value={String(services.length)} />
+        <StatCard label="Services with copy overrides" value={String(services.filter((service: ServiceOverride) => service.overrides.title || service.overrides.description).length)} />
+        <StatCard label="Total tiers" value={String(services.reduce((sum: number, service: ServiceOverride) => sum + service.tiers.length, 0))} />
       </section>
 
       <section className="space-y-4">
-        {typedServices.map((service) => {
-          const tierIds = new Set(service.tiers.map((tier) => tier.id));
+        {services.map((service: ServiceOverride) => {
+          const tierIds = new Set(service.tiers.map((tier: ServiceOverride["tiers"][number]) => tier.id));
           const serviceOrders = typedOrders.filter((order) => tierIds.has(order.serviceTierId) && (order.status === "PAID" || order.status === "FULFILLED"));
           const grossRevenue = serviceOrders.reduce((sum, order) => sum + order.amount, 0);
 
@@ -119,6 +92,11 @@ export default async function AdminServicesPage() {
                   <div className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">{service.category}</div>
                   <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">{service.name}</h2>
                   <p className="mt-3 text-sm leading-7 text-slate-600">{service.description}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {service.overrides.title ? <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">Title override</span> : null}
+                    {service.overrides.description ? <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">Description override</span> : null}
+                    {Object.values(service.overrides.tierPrices).some(Boolean) ? <span className="rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-800">Pricing override</span> : null}
+                  </div>
                 </div>
                 <div className="rounded-[24px] border border-slate-200 bg-slate-50 px-5 py-4 text-right">
                   <div className="text-sm text-slate-500">Completed revenue</div>
@@ -128,12 +106,12 @@ export default async function AdminServicesPage() {
               </div>
 
               <div className="mt-6 grid gap-4 lg:grid-cols-3">
-                {service.tiers.map((tier) => {
+                {service.tiers.map((tier: ServiceOverride["tiers"][number]) => {
                   const tierOrders = typedOrders.filter((order) => order.serviceTierId === tier.id && (order.status === "PAID" || order.status === "FULFILLED"));
 
                   return (
                     <div key={tier.id} className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-                      <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{tier.catalogKey}</div>
+                      <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{tier.id}</div>
                       <div className="mt-3 text-xl font-semibold text-slate-950">{tier.name}</div>
                       <div className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{formatCurrency(tier.price)}</div>
                       <div className="mt-3 text-sm text-slate-500">{tierOrders.length} completed purchases</div>
@@ -141,6 +119,8 @@ export default async function AdminServicesPage() {
                   );
                 })}
               </div>
+
+              <AdminServiceEditor service={service} disabled={!hasDatabase} />
             </div>
           );
         })}

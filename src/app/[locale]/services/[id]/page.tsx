@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
 import { ServiceTierSelector } from "@/components/services/service-tier-selector";
 import { getServiceDescription, getServiceTitle } from "@/lib/service-i18n";
-import { getServiceById, serviceCatalog } from "@/lib/service-catalog";
+import { serviceCatalog } from "@/lib/service-catalog";
+import { getServiceByIdWithOverrides } from "@/lib/service-overrides";
 
 export function generateStaticParams() {
   return serviceCatalog.map((service) => ({ id: service.id }));
@@ -18,11 +19,14 @@ export default async function ServiceDetailPage({
   const { id } = await params;
   const t = await getTranslations("ServicesDetail");
   const navigation = await getTranslations("Navigation");
-  const service = getServiceById(id);
+  const service = await getServiceByIdWithOverrides(id);
 
   if (!service) {
     notFound();
   }
+
+  const title = service.overrides.title ? service.name : getServiceTitle(navigation, service.id);
+  const description = service.overrides.description ? service.description : getServiceDescription(navigation, service.id);
 
   return (
     <main className="mx-auto max-w-7xl space-y-10 px-4 py-10 sm:px-6 lg:px-8">
@@ -35,10 +39,10 @@ export default async function ServiceDetailPage({
             </div>
             <div>
               <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl">
-                {getServiceTitle(navigation, service.id)}
+                {title}
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
-                {getServiceDescription(navigation, service.id)}
+                {description}
               </p>
             </div>
           </div>
@@ -51,9 +55,9 @@ export default async function ServiceDetailPage({
               <div className="text-xs uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">{t("visualLabel")}</div>
               <div className="mt-6 rounded-[30px] border border-slate-200 bg-white p-10 text-center dark:border-white/10 dark:bg-white/5">
                 <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-violet-500 to-cyan-400 text-2xl font-semibold text-white shadow-glow">
-                  {getServiceTitle(navigation, service.id).slice(0, 1)}
+                  {title.slice(0, 1)}
                 </div>
-                <div className="mt-6 text-2xl font-semibold text-slate-950 dark:text-white">{getServiceTitle(navigation, service.id)}</div>
+                <div className="mt-6 text-2xl font-semibold text-slate-950 dark:text-white">{title}</div>
                 <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">{t("visualDescription")}</p>
               </div>
             </div>
