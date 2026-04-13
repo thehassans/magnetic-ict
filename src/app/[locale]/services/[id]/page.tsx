@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Sparkles } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -51,12 +52,25 @@ export default async function ServiceDetailPage({
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.12),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(6,182,212,0.12),transparent_24%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.22),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(6,182,212,0.18),transparent_24%)]" />
             <div className="relative z-10">
               <div className="text-xs uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">{t("visualLabel")}</div>
-              <div className="mt-6 rounded-[30px] border border-slate-200 bg-white p-10 text-center dark:border-white/10 dark:bg-white/5">
-                <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-violet-500 to-cyan-400 text-2xl font-semibold text-white shadow-glow">
-                  {title.slice(0, 1)}
-                </div>
-                <div className="mt-6 text-2xl font-semibold text-slate-950 dark:text-white">{title}</div>
-                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">{t("visualDescription")}</p>
+              <div className="mt-6 overflow-hidden rounded-[30px] border border-slate-200 bg-white dark:border-white/10 dark:bg-white/5">
+                {service.imageUrl ? (
+                  <div className="relative aspect-[4/3] w-full">
+                    <Image src={service.imageUrl} alt={title} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" unoptimized />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/55 via-slate-950/10 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 p-8 text-white">
+                      <div className="text-xs uppercase tracking-[0.28em] text-cyan-100">{service.category}</div>
+                      <div className="mt-3 text-3xl font-semibold">{title}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-10 text-center">
+                    <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-violet-500 to-cyan-400 text-2xl font-semibold text-white shadow-glow">
+                      {title.slice(0, 1)}
+                    </div>
+                    <div className="mt-6 text-2xl font-semibold text-slate-950 dark:text-white">{title}</div>
+                    <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">{t("visualDescription")}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

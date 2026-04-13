@@ -1,5 +1,6 @@
 import { serviceCatalog, type CatalogService } from "@/lib/service-catalog";
 import { prisma } from "@/lib/prisma";
+import { getServiceImageMap } from "@/lib/service-media";
 import { getServiceVisibilityMap } from "@/lib/service-visibility";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
@@ -22,6 +23,7 @@ type PersistedService = {
 };
 
 export type ServiceOverride = CatalogService & {
+  imageUrl: string | null;
   visibility: {
     enabled: boolean;
     deleted: boolean;
@@ -37,11 +39,13 @@ export type ServiceOverride = CatalogService & {
 };
 
 export async function getServiceCatalogWithOverrides(): Promise<ServiceOverride[]> {
+  const imageMap = await getServiceImageMap();
   const visibilityMap = await getServiceVisibilityMap();
 
   if (!hasDatabase) {
     return serviceCatalog.map((service) => ({
       ...service,
+      imageUrl: imageMap[service.id] ?? null,
       visibility: visibilityMap[service.id] ?? { enabled: true, deleted: false },
       overrides: {
         title: false,
@@ -77,6 +81,7 @@ export async function getServiceCatalogWithOverrides(): Promise<ServiceOverride[
 
     return {
       ...service,
+      imageUrl: imageMap[service.id] ?? null,
       visibility: visibilityMap[service.id] ?? { enabled: true, deleted: false },
       name: persisted?.name ?? service.name,
       description: persisted?.description ?? service.description,

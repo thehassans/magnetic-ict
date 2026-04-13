@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Activity, Briefcase, Database, Globe, LayoutGrid, Lock, Mail, Search, Shield, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
@@ -61,12 +62,26 @@ export default async function ServicesPage() {
               id={item.id}
               key={item.key}
               href={`/services/${item.key}`}
-              className="group block rounded-[30px] border border-slate-200 bg-white/90 p-6 transition hover:-translate-y-1 hover:border-cyan-200 hover:bg-cyan-50/50 dark:border-white/10 dark:bg-slate-950/60 dark:hover:border-cyan-400/20 dark:hover:bg-white/5"
+              className="group block overflow-hidden rounded-[30px] border border-slate-200 bg-white/90 transition hover:-translate-y-1 hover:border-cyan-200 hover:bg-cyan-50/50 dark:border-white/10 dark:bg-slate-950/60 dark:hover:border-cyan-400/20 dark:hover:bg-white/5"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 transition group-hover:bg-violet-100 dark:bg-white/5 dark:text-cyan-300 dark:group-hover:bg-cyan-400/10">
-                <Icon className="h-5 w-5" />
+              <div className="relative aspect-[16/10] overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.16),transparent_32%),radial-gradient(circle_at_top_right,rgba(6,182,212,0.18),transparent_30%),#eff6ff] dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.22),transparent_32%),radial-gradient(circle_at_top_right,rgba(6,182,212,0.18),transparent_30%),rgba(15,23,42,0.8)]">
+                {service.imageUrl ? (
+                  <Image
+                    src={service.imageUrl}
+                    alt={title}
+                    fill
+                    className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                    unoptimized
+                  />
+                ) : null}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-slate-950/10 to-transparent" />
+                <div className="absolute left-5 top-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/85 text-violet-600 shadow-lg backdrop-blur transition group-hover:bg-white dark:bg-slate-950/70 dark:text-cyan-300 dark:group-hover:bg-slate-950/80">
+                  <Icon className="h-5 w-5" />
+                </div>
               </div>
-              <div className="mt-5 flex items-center justify-between gap-4">
+              <div className="p-6">
+              <div className="flex items-center justify-between gap-4">
                 <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
                   {service.category}
                 </div>
@@ -86,6 +101,7 @@ export default async function ServicesPage() {
                 ))}
               </div>
               <p className="mt-4 text-sm font-medium text-cyan-700 dark:text-cyan-300">{servicesDetail("pricingTitle")}</p>
+              </div>
             </Link>
           );
         })}
