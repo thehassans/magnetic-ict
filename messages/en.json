@@ -207,7 +207,8 @@
     "adminAuthTitle": "Sign in as administrator",
     "adminAuthDescription": "Use your configured admin email and password to access operations, fulfillment, and order management.",
     "adminAuthButton": "Sign in as admin",
-    "adminAuthError": "We couldn’t sign you in with those admin credentials."
+    "adminAuthError": "We couldn’t sign you in with those admin credentials.",
+    "adminAuthConfigError": "Admin credentials are not configured on this deployment."
   },
   "ServicesDetail": {
     "metricOneTitle": "Primary advantage",

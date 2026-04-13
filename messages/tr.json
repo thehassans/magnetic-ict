@@ -152,7 +152,8 @@
     "adminAuthTitle": "Yonetici olarak giris yap",
     "adminAuthDescription": "Operasyonlar, fulfillment ve siparis yonetimine erismek icin yapilandirilmis yonetici e-postasi ve sifresini kullanin.",
     "adminAuthButton": "Yonetici olarak giris yap",
-    "adminAuthError": "Bu yonetici bilgileriyle giris yapilamadi."
+    "adminAuthError": "Bu yonetici bilgileriyle giris yapilamadi.",
+    "adminAuthConfigError": "Yonetici bilgileri bu dagitimda yapilandirilmamis."
   },
   "ServicesDetail": {
     "visualLabel": "Hizmet onizlemesi",

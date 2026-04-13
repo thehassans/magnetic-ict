@@ -36,8 +36,8 @@ export default async function AdminOrdersPage({ params }: { params: Promise<{ lo
   const t = await getTranslations("Pages");
   const session = await auth();
 
-  if (!session?.user) {
-    redirect(`/${locale}/customer/sign-in?callback=${encodeURIComponent("/admin/orders")}&mode=admin`);
+  if (!session?.user || session.user.role !== "ADMIN") {
+    redirect(`/${locale}/admin?callback=${encodeURIComponent("/admin/orders")}`);
   }
 
   if (!hasDatabase) {
@@ -47,18 +47,6 @@ export default async function AdminOrdersPage({ params }: { params: Promise<{ lo
           <p className="text-sm uppercase tracking-[0.28em] text-cyan-300">{t("adminOrdersEyebrow")}</p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight text-white sm:text-5xl">{t("adminOrdersTitle")}</h1>
           <p className="mt-4 max-w-3xl text-base leading-8 text-slate-300 sm:text-lg">{t("adminDatabaseRequired")}</p>
-        </section>
-      </main>
-    );
-  }
-
-  if (session?.user?.role !== "ADMIN") {
-    return (
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <section className="rounded-[36px] border border-white/10 bg-white/5 p-8 shadow-glow backdrop-blur-2xl sm:p-10">
-          <p className="text-sm uppercase tracking-[0.28em] text-cyan-300">{t("adminOrdersEyebrow")}</p>
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight text-white sm:text-5xl">{t("adminOrdersTitle")}</h1>
-          <p className="mt-4 max-w-3xl text-base leading-8 text-slate-300 sm:text-lg">{t("adminAccessDenied")}</p>
         </section>
       </main>
     );

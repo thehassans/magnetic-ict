@@ -48,8 +48,8 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
   const navigation = await getTranslations("Navigation");
   const session = await auth();
 
-  if (!session?.user) {
-    redirect(`/${locale}/customer/sign-in?callback=${encodeURIComponent(`/admin/orders/${id}`)}&mode=admin`);
+  if (!session?.user || session.user.role !== "ADMIN") {
+    redirect(`/${locale}/admin?callback=${encodeURIComponent(`/admin/orders/${id}`)}`);
   }
 
   if (!hasDatabase) {
@@ -62,10 +62,6 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         </section>
       </main>
     );
-  }
-
-  if (session?.user?.role !== "ADMIN") {
-    notFound();
   }
 
   const order = (await prisma.order.findUnique({

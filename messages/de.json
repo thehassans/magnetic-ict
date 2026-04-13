@@ -152,7 +152,8 @@
     "adminAuthTitle": "Als Administrator anmelden",
     "adminAuthDescription": "Verwenden Sie die konfigurierte Admin-E-Mail und das Passwort, um auf Operations, Fulfillment und Bestellverwaltung zuzugreifen.",
     "adminAuthButton": "Als Admin anmelden",
-    "adminAuthError": "Mit diesen Admin-Zugangsdaten konnten wir Sie nicht anmelden."
+    "adminAuthError": "Mit diesen Admin-Zugangsdaten konnten wir Sie nicht anmelden.",
+    "adminAuthConfigError": "Admin-Zugangsdaten sind auf dieser Bereitstellung nicht konfiguriert."
   },
   "ServicesDetail": {
     "visualLabel": "Servicevorschau",

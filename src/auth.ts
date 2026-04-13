@@ -36,69 +36,67 @@ function compareSecret(candidate: string, expected: string) {
 
 const providers: Provider[] = [];
 
-if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
-  providers.push(
-    Credentials({
-      id: "admin-credentials",
-      name: "Admin Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
-      },
-      async authorize(rawCredentials) {
-        const credentials = adminCredentialsSchema.safeParse(rawCredentials);
+providers.push(
+  Credentials({
+    id: "admin-credentials",
+    name: "Admin Credentials",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      password: { label: "Password", type: "password" }
+    },
+    async authorize(rawCredentials) {
+      const credentials = adminCredentialsSchema.safeParse(rawCredentials);
 
-        if (!credentials.success) {
-          return null;
-        }
+      if (!credentials.success) {
+        return null;
+      }
 
-        const configuredEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-        const configuredPassword = process.env.ADMIN_PASSWORD ?? "";
-        const email = credentials.data.email.trim().toLowerCase();
+      const configuredEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+      const configuredPassword = process.env.ADMIN_PASSWORD ?? "";
+      const email = credentials.data.email.trim().toLowerCase();
 
-        if (!configuredEmail || !configuredPassword || email !== configuredEmail) {
-          return null;
-        }
+      if (!configuredEmail || !configuredPassword || email !== configuredEmail) {
+        return null;
+      }
 
-        if (!compareSecret(credentials.data.password, configuredPassword)) {
-          return null;
-        }
+      if (!compareSecret(credentials.data.password, configuredPassword)) {
+        return null;
+      }
 
-        if (!hasDatabase) {
-          return {
-            id: "env-admin",
-            email: configuredEmail,
-            name: "Administrator",
-            role: "ADMIN" as const
-          };
-        }
-
-        const now = new Date();
-        const user = await prisma.user.upsert({
-          where: { email: configuredEmail },
-          update: {
-            role: "ADMIN",
-            emailVerified: now
-          },
-          create: {
-            email: configuredEmail,
-            role: "ADMIN",
-            emailVerified: now,
-            name: "Administrator"
-          }
-        });
-
+      if (!hasDatabase) {
         return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          role: user.role
+          id: "env-admin",
+          email: configuredEmail,
+          name: "Administrator",
+          role: "ADMIN" as const
         };
       }
-    })
-  );
-}
+
+      const now = new Date();
+      const user = await prisma.user.upsert({
+        where: { email: configuredEmail },
+        update: {
+          role: "ADMIN",
+          emailVerified: now
+        },
+        create: {
+          email: configuredEmail,
+          role: "ADMIN",
+          emailVerified: now,
+          name: "Administrator"
+        }
+      });
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+        role: user.role
+      };
+    }
+  })
+);
 
 if (hasDatabase) {
   providers.push(

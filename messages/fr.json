@@ -152,7 +152,8 @@
     "adminAuthTitle": "Se connecter en tant qu’administrateur",
     "adminAuthDescription": "Utilisez l’e-mail administrateur et le mot de passe configurés pour accéder aux opérations, à l’exécution et à la gestion des commandes.",
     "adminAuthButton": "Se connecter comme admin",
-    "adminAuthError": "Impossible de vous connecter avec ces identifiants administrateur."
+    "adminAuthError": "Impossible de vous connecter avec ces identifiants administrateur.",
+    "adminAuthConfigError": "Les identifiants administrateur ne sont pas configurés sur ce déploiement."
   },
   "ServicesDetail": {
     "visualLabel": "Aperçu du service",

@@ -152,7 +152,8 @@
     "adminAuthTitle": "Iniciar sesion como administrador",
     "adminAuthDescription": "Usa el correo y la contrasena de administrador configurados para acceder a operaciones, fulfillment y gestion de pedidos.",
     "adminAuthButton": "Entrar como admin",
-    "adminAuthError": "No pudimos iniciar sesion con esas credenciales de administrador."
+    "adminAuthError": "No pudimos iniciar sesion con esas credenciales de administrador.",
+    "adminAuthConfigError": "Las credenciales de administrador no estan configuradas en este despliegue."
   },
   "ServicesDetail": {
     "visualLabel": "Vista previa del servicio",
