@@ -1,0 +1,238 @@
+import { Activity, BarChart3, Layers3 } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import { auth } from "@/auth";
+import { Link } from "@/i18n/navigation";
+import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
+import { prisma } from "@/lib/prisma";
+
+type DashboardOrder = {
+  id: string;
+  status: "CART" | "PENDING" | "PAID" | "FAILED" | "CANCELLED" | "FULFILLED";
+  paymentMethod: "UNKNOWN" | "STRIPE" | "PAYPAL" | "APPLE_PAY" | "GOOGLE_PAY" | "MANUAL";
+  amount: number;
+  serviceNameSnapshot: string;
+  tierNameSnapshot: string;
+  serviceTier: {
+    catalogKey: string;
+    service: {
+      catalogKey: string;
+    };
+  } | null;
+  invoiceNumber: string | null;
+  createdAt: Date;
+  events: Array<{
+    id: string;
+    type: "CREATED" | "PAID" | "FAILED" | "CANCELLED" | "FULFILLED";
+    createdAt: Date;
+  }>;
+};
+
+export default async function DashboardPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations("Pages");
+  const commerce = await getTranslations("Commerce");
+  const navigation = await getTranslations("Navigation");
+  const session = await auth();
+
+  const orders: DashboardOrder[] = session?.user?.id
+    ? await prisma.order.findMany({
+        where: { userId: session.user.id },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+        include: {
+          serviceTier: {
+            select: {
+              catalogKey: true,
+              service: {
+                select: {
+                  catalogKey: true
+                }
+              }
+            }
+          },
+          events: {
+            orderBy: { createdAt: "desc" },
+            take: 3,
+            select: {
+              id: true,
+              type: true,
+              createdAt: true
+            }
+          }
+        }
+      })
+    : [];
+
+  const activeServices = orders.filter((order: DashboardOrder) => order.status === "PAID" || order.status === "FULFILLED").length;
+  const pendingOrders = orders.filter((order: DashboardOrder) => order.status === "PENDING").length;
+  const failedOrders = orders.filter(
+    (order: DashboardOrder) => order.status === "FAILED" || order.status === "CANCELLED"
+  ).length;
+  const totalSpend = orders.reduce((sum: number, order: DashboardOrder) => sum + order.amount, 0);
+
+  const getStatusLabel = (status: DashboardOrder["status"]) => {
+    switch (status) {
+      case "PENDING":
+        return commerce("statusPending");
+      case "PAID":
+        return commerce("statusPaid");
+      case "FAILED":
+        return commerce("statusFailed");
+      case "CANCELLED":
+        return commerce("statusCancelled");
+      case "FULFILLED":
+        return commerce("statusFulfilled");
+      default:
+        return status;
+    }
+  };
+
+  const getEventLabel = (eventType: DashboardOrder["events"][number]["type"]) => {
+    switch (eventType) {
+      case "CREATED":
+        return commerce("eventCreated");
+      case "PAID":
+        return commerce("statusPaid");
+      case "FAILED":
+        return commerce("statusFailed");
+      case "CANCELLED":
+        return commerce("statusCancelled");
+      case "FULFILLED":
+        return commerce("statusFulfilled");
+      default:
+        return eventType;
+    }
+  };
+
+  const getPaymentLabel = (paymentMethod: DashboardOrder["paymentMethod"]) => {
+    switch (paymentMethod) {
+      case "STRIPE":
+        return commerce("paymentStripe");
+      case "PAYPAL":
+        return commerce("paymentPaypal");
+      case "APPLE_PAY":
+        return commerce("paymentApplePay");
+      case "GOOGLE_PAY":
+        return commerce("paymentGooglePay");
+      case "MANUAL":
+        return commerce("paymentManual");
+      default:
+        return commerce("paymentUnknown");
+    }
+  };
+
+  return (
+    <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <section className="rounded-[36px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60 sm:p-10">
+        <p className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">{t("dashboardEyebrow")}</p>
+        <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl">
+          {t("dashboardTitle")}
+        </h1>
+        <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
+          {t("dashboardDescription")}
+        </p>
+      </section>
+
+      <section className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-[30px] border border-slate-200 bg-white/90 p-6 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/40">
+          <Activity className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
+          <h2 className="mt-4 text-lg font-semibold text-slate-950 dark:text-white">{t("dashboardActiveServices")}</h2>
+          <p className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">{activeServices}</p>
+        </div>
+        <div className="rounded-[30px] border border-slate-200 bg-white/90 p-6 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/40">
+          <BarChart3 className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
+          <h2 className="mt-4 text-lg font-semibold text-slate-950 dark:text-white">{t("dashboardPendingOrders")}</h2>
+          <p className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">{pendingOrders}</p>
+        </div>
+        <div className="rounded-[30px] border border-slate-200 bg-white/90 p-6 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/40">
+          <BarChart3 className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
+          <h2 className="mt-4 text-lg font-semibold text-slate-950 dark:text-white">{t("dashboardFailedOrders")}</h2>
+          <p className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">{failedOrders}</p>
+        </div>
+        <div className="rounded-[30px] border border-slate-200 bg-white/90 p-6 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/40">
+          <Layers3 className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
+          <h2 className="mt-4 text-lg font-semibold text-slate-950 dark:text-white">{t("dashboardTotalSpend")}</h2>
+          <p className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">${totalSpend.toFixed(2)}</p>
+        </div>
+      </section>
+
+      <section className="mt-8 rounded-[36px] border border-slate-200 bg-white/90 p-8 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/40 sm:p-10">
+        <p className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">{t("dashboardRecentOrdersTitle")}</p>
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-400">{t("dashboardRecentOrdersDescription")}</p>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-500">{commerce("webhookPendingNote")}</p>
+
+        {orders.length === 0 ? (
+          <div className="mt-6 rounded-[28px] border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-600 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400">
+            {t("dashboardEmptyOrders")}
+          </div>
+        ) : (
+          <div className="mt-6 space-y-4">
+            {orders.map((order: DashboardOrder) => (
+              <div
+                key={order.id}
+                className="rounded-[28px] border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/[0.04]"
+              >
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <div className="text-lg font-semibold text-slate-950 dark:text-white">
+                      {order.serviceTier?.service.catalogKey
+                        ? getServiceTitle(navigation as unknown as (key: string) => string, order.serviceTier.service.catalogKey)
+                        : order.serviceNameSnapshot}
+                    </div>
+                    <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      {order.serviceTier?.catalogKey
+                        ? getLocalizedTierName(commerce as unknown as (key: string) => string, order.serviceTier.catalogKey, order.tierNameSnapshot)
+                        : order.tierNameSnapshot}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xl font-semibold text-slate-950 dark:text-white">${order.amount.toFixed(2)}</div>
+                    <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      {t("dashboardPlacedLabel")}: {new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(order.createdAt)}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-700 dark:text-slate-300">
+                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-white/10 dark:bg-white/5">
+                    {t("dashboardStatusLabel")}: {getStatusLabel(order.status)}
+                  </span>
+                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-white/10 dark:bg-white/5">
+                    {t("dashboardPaymentLabel")}: {getPaymentLabel(order.paymentMethod)}
+                  </span>
+                  {order.invoiceNumber ? (
+                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-white/10 dark:bg-white/5">
+                      {t("dashboardInvoiceLabel")}: {order.invoiceNumber}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="mt-4">
+                  <Link
+                    href={`/dashboard/orders/${order.id}/invoice`}
+                    className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-900 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                  >
+                    {t("dashboardViewInvoice")}
+                  </Link>
+                </div>
+                {order.events.length > 0 ? (
+                  <div className="mt-4 border-t border-slate-200 pt-4 dark:border-white/10">
+                    <div className="text-xs uppercase tracking-[0.24em] text-slate-500">{t("dashboardTimelineLabel")}</div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {order.events.map((event) => (
+                        <span
+                          key={event.id}
+                          className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700 dark:border-white/10 dark:bg-slate-950/50 dark:text-slate-300"
+                        >
+                          {getEventLabel(event.type)} · {new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(event.createdAt)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}

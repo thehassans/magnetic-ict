@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --app-bg-start: #fcfaff;
+  --app-bg-mid: #f6fbff;
+  --app-bg-end: #eef6ff;
+  --app-text: #0f172a;
+  --app-border: rgba(148, 163, 184, 0.2);
+  --app-selection-bg: rgba(124, 58, 237, 0.2);
+  --app-selection-text: #0f172a;
+  color-scheme: light;
+}
+
+.dark {
+  --app-bg-start: #050816;
+  --app-bg-mid: #07111f;
+  --app-bg-end: #050816;
+  --app-text: #f8fafc;
+  --app-border: rgba(148, 163, 184, 0.14);
+  --app-selection-bg: rgba(124, 58, 237, 0.35);
+  --app-selection-text: #ffffff;
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(124, 58, 237, 0.12), transparent 34%),
+    radial-gradient(circle at 80% 10%, rgba(6, 182, 212, 0.12), transparent 24%),
+    linear-gradient(180deg, var(--app-bg-start) 0%, var(--app-bg-mid) 48%, var(--app-bg-end) 100%);
+  color: var(--app-text);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+* {
+  border-color: var(--app-border);
+}
+
+::selection {
+  background: var(--app-selection-bg);
+  color: var(--app-selection-text);
+}
