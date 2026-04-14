@@ -79,7 +79,7 @@ export function SiteHeader({ locale, activeLanguages, sessionUser }: SiteHeaderP
         <div className="flex min-h-[5.5rem] items-center justify-between gap-4">
           <div className="flex items-center gap-8">
             <Link href="/" locale={locale} className="group inline-flex items-center">
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="rounded-2xl border border-white/80 bg-white/90 px-3 py-2 shadow-[0_10px_35px_rgba(124,58,237,0.08)] dark:border-white/10 dark:bg-white/5">
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="rounded-2xl px-1 py-1">
                 <BrandLogo className="w-[150px] sm:w-[182px]" priority />
               </motion.div>
             </Link>

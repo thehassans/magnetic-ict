@@ -21,7 +21,7 @@ export type CatalogService = {
   tiers: CatalogTier[];
 };
 
-export const serviceCatalog: CatalogService[] = [
+const allServiceCatalog: CatalogService[] = [
   {
     id: "ssl",
     name: "SSL Certificates",
@@ -542,6 +542,12 @@ export const serviceCatalog: CatalogService[] = [
     ]
   }
 ];
+
+export const liveServiceCatalogKeys = ["imageConversion", "magneticSocialBot", "magneticFaceSearch"] as const satisfies ReadonlyArray<ServiceMenuKey>;
+
+const liveServiceCatalogKeySet = new Set<ServiceMenuKey>(liveServiceCatalogKeys);
+
+export const serviceCatalog: CatalogService[] = allServiceCatalog.filter((service) => liveServiceCatalogKeySet.has(service.id));
 
 export function getServiceById(id: string) {
   return serviceCatalog.find((service) => service.id === id);

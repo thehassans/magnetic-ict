@@ -27,7 +27,7 @@ export function AdminShell({ title, description, eyebrow = "Operations cockpit",
       <div className="grid min-h-screen xl:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="border-r border-slate-200 bg-white/96 px-4 py-6 shadow-[0_24px_80px_rgba(15,23,42,0.06)] backdrop-blur xl:sticky xl:top-0 xl:h-screen xl:px-5 xl:py-8">
           <div className="flex h-full flex-col">
-            <Link href="/admin/dashboard" className="rounded-[28px] border border-slate-200 bg-slate-50 p-4 transition hover:bg-slate-100">
+            <Link href="/admin/dashboard" className="rounded-[28px] p-2 transition hover:opacity-90">
               <BrandLogo className="w-[138px]" priority />
             </Link>
 

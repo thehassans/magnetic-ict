@@ -71,7 +71,7 @@ export function LandingHero({ locale, isSignedIn }: LandingHeroProps) {
 
           <ScrollReveal delay={0.15}>
             <div className="flex items-center gap-6">
-              <HeroStat value={`${serviceCatalog.length}+`} label="Service lines" />
+              <HeroStat value={String(serviceCatalog.length)} label="Live services" />
               <div className="h-8 w-px bg-slate-200 dark:bg-white/10" />
               <HeroStat value="24/7" label="Priority support" />
               <div className="h-8 w-px bg-slate-200 dark:bg-white/10" />
