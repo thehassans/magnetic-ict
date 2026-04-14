@@ -2,6 +2,7 @@
 
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { Bot, Instagram, Loader2, MessageCircle, Send, Sparkles, Upload, Wand2, Webhook, CheckCircle2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner-1";
 import { cn } from "@/lib/utils";
 import type { SocialBotIntegration, SocialBotMessage, SocialBotThread, SocialBotWorkspace, SocialChannel } from "@/lib/social-bot-types";
 
@@ -34,6 +35,8 @@ export function MagneticSocialBotWorkspace() {
 
   const integrations = workspace?.integrations ?? [];
   const threads = workspace?.threads ?? [];
+  const knowledgeBaseDocuments = workspace?.documents ?? [];
+  const hasKnowledgeBaseTraining = isUploadingDocs || knowledgeBaseDocuments.some((document) => document.status === "PROCESSING");
 
   const loadWorkspace = useCallback(async () => {
     setIsLoading(true);
@@ -278,7 +281,7 @@ export function MagneticSocialBotWorkspace() {
   if (isLoading) {
     return (
       <div className="rounded-[32px] border border-slate-200 bg-white/90 p-10 text-center shadow-glow dark:border-white/10 dark:bg-slate-950/50">
-        <Loader2 className="mx-auto h-6 w-6 animate-spin text-cyan-500" />
+        <Spinner size={28} className="mx-auto" aria-label="Loading workspace" />
       </div>
     );
   }
@@ -333,12 +336,32 @@ export function MagneticSocialBotWorkspace() {
               </button>
             </div>
             <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
-              <label className="flex min-h-40 cursor-pointer flex-col items-center justify-center gap-3 rounded-[24px] border border-dashed border-slate-300 px-4 text-center text-sm text-slate-600 transition hover:border-cyan-300 hover:bg-cyan-50/60 dark:border-white/15 dark:text-slate-300 dark:hover:bg-cyan-400/10">
-                <Upload className="h-5 w-5" />
-                <span>{isUploadingDocs ? "Uploading..." : "PDF / DOCX / TXT"}</span>
-                <input type="file" multiple accept=".pdf,.docx,.txt,.md,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="hidden" onChange={(event) => void uploadDocuments(event.target.files)} />
+              <label className={cn(
+                "flex min-h-40 flex-col items-center justify-center gap-3 rounded-[24px] border border-dashed border-slate-300 px-4 text-center text-sm text-slate-600 transition dark:border-white/15 dark:text-slate-300",
+                isUploadingDocs
+                  ? "cursor-wait border-cyan-300 bg-cyan-50/70 dark:bg-cyan-400/10"
+                  : "cursor-pointer hover:border-cyan-300 hover:bg-cyan-50/60 dark:hover:bg-cyan-400/10"
+              )}>
+                {isUploadingDocs ? (
+                  <>
+                    <Spinner size={50} aria-label="Uploading and training documents" />
+                    <div className="space-y-1">
+                      <div className="font-semibold text-slate-950 dark:text-white">Uploading and training</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">Extracting document text and preparing model knowledge.</div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-5 w-5" />
+                    <span>PDF / DOCX / TXT</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Upload files to train your business knowledge base.</span>
+                  </>
+                )}
+                <input type="file" multiple accept=".pdf,.docx,.txt,.md,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="hidden" disabled={isUploadingDocs} onChange={(event) => void uploadDocuments(event.target.files)} />
               </label>
-              <div className="mt-4 text-sm text-slate-500 dark:text-slate-400">Use your business docs as RAG context.</div>
+              <div className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+                {isUploadingDocs ? "Please wait while your files are uploaded and trained into the AI context." : "Use your business docs as RAG context."}
+              </div>
             </div>
           </div>
         ) : null}
@@ -467,12 +490,23 @@ export function MagneticSocialBotWorkspace() {
       </section>
 
       <section className="rounded-[32px] border border-slate-200 bg-white/90 p-5 shadow-glow dark:border-white/10 dark:bg-slate-950/50">
-        <div className="text-sm font-semibold text-slate-950 dark:text-white">Knowledge Base</div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="text-sm font-semibold text-slate-950 dark:text-white">Knowledge Base</div>
+          {hasKnowledgeBaseTraining ? (
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-900 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-100">
+              <Spinner size={18} aria-label="Knowledge base training in progress" />
+              Training in progress
+            </div>
+          ) : null}
+        </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {(workspace?.documents ?? []).map((document) => (
+          {knowledgeBaseDocuments.map((document) => (
             <div key={document._id} className="rounded-[22px] border border-slate-200 bg-slate-50 p-4 text-sm dark:border-white/10 dark:bg-white/5">
               <div className="font-semibold text-slate-950 dark:text-white">{document.fileName}</div>
-              <div className="mt-1 text-slate-500 dark:text-slate-400">{document.status} · {document.chunkCount} chunks</div>
+              <div className="mt-1 flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                {document.status === "PROCESSING" ? <Spinner size={16} aria-label={`${document.fileName} is processing`} /> : null}
+                <span>{document.status} · {document.chunkCount} chunks</span>
+              </div>
               <div className="mt-3 text-slate-600 dark:text-slate-300">{document.textPreview || "No preview available."}</div>
             </div>
           ))}
