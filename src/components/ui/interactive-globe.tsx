@@ -65,9 +65,9 @@ function project(x: number, y: number, z: number, cx: number, cy: number, fov: n
 export function Component({
   className,
   size = 600,
-  dotColor = "rgba(100, 180, 255, ALPHA)",
-  arcColor = "rgba(100, 180, 255, 0.5)",
-  markerColor = "rgba(100, 220, 255, 1)",
+  dotColor = "rgba(59, 130, 246, ALPHA)",
+  arcColor = "rgba(37, 99, 235, 0.55)",
+  markerColor = "rgba(14, 165, 233, 1)",
   autoRotateSpeed = 0.002,
   connections = DEFAULT_CONNECTIONS,
   markers = DEFAULT_MARKERS
@@ -108,12 +108,17 @@ export function Component({
       return;
     }
 
+    const isDark = document.documentElement.classList.contains("dark");
+    const resolvedDotColor = isDark ? "rgba(96, 165, 250, ALPHA)" : dotColor;
+    const resolvedArcColor = isDark ? "rgba(56, 189, 248, 0.6)" : arcColor;
+    const resolvedMarkerColor = isDark ? "rgba(125, 211, 252, 1)" : markerColor;
+
     const dpr = window.devicePixelRatio || 1;
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
     canvas.width = w * dpr;
     canvas.height = h * dpr;
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const cx = w / 2;
     const cy = h / 2;
@@ -130,14 +135,14 @@ export function Component({
     ctx.clearRect(0, 0, w, h);
 
     const glowGrad = ctx.createRadialGradient(cx, cy, radius * 0.8, cx, cy, radius * 1.5);
-    glowGrad.addColorStop(0, "rgba(60, 140, 255, 0.03)");
+    glowGrad.addColorStop(0, isDark ? "rgba(56, 189, 248, 0.07)" : "rgba(59, 130, 246, 0.08)");
     glowGrad.addColorStop(1, "rgba(60, 140, 255, 0)");
     ctx.fillStyle = glowGrad;
     ctx.fillRect(0, 0, w, h);
 
     ctx.beginPath();
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(100, 180, 255, 0.06)";
+    ctx.strokeStyle = isDark ? "rgba(125, 211, 252, 0.18)" : "rgba(37, 99, 235, 0.18)";
     ctx.lineWidth = 1;
     ctx.stroke();
 
@@ -163,7 +168,7 @@ export function Component({
 
       ctx.beginPath();
       ctx.arc(sx, sy, dotSize, 0, Math.PI * 2);
-      ctx.fillStyle = dotColor.replace("ALPHA", depthAlpha.toFixed(2));
+      ctx.fillStyle = resolvedDotColor.replace("ALPHA", Math.max(isDark ? 0.22 : 0.34, depthAlpha).toFixed(2));
       ctx.fill();
     }
 
@@ -199,8 +204,8 @@ export function Component({
       ctx.beginPath();
       ctx.moveTo(sx1, sy1);
       ctx.quadraticCurveTo(scx, scy, sx2, sy2);
-      ctx.strokeStyle = arcColor;
-      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = resolvedArcColor;
+      ctx.lineWidth = isDark ? 1.15 : 1.35;
       ctx.stroke();
 
       const t = (Math.sin(time * 1.2 + lat1 * 0.1) + 1) / 2;
@@ -209,7 +214,7 @@ export function Component({
 
       ctx.beginPath();
       ctx.arc(tx, ty, 2, 0, Math.PI * 2);
-      ctx.fillStyle = markerColor;
+      ctx.fillStyle = resolvedMarkerColor;
       ctx.fill();
     }
 
@@ -226,18 +231,18 @@ export function Component({
       const pulse = Math.sin(time * 2 + marker.lat) * 0.5 + 0.5;
       ctx.beginPath();
       ctx.arc(sx, sy, 4 + pulse * 4, 0, Math.PI * 2);
-      ctx.strokeStyle = markerColor.replace("1)", `${0.2 + pulse * 0.15})`);
+      ctx.strokeStyle = resolvedMarkerColor.replace("1)", `${(isDark ? 0.24 : 0.28) + pulse * 0.16})`);
       ctx.lineWidth = 1;
       ctx.stroke();
 
       ctx.beginPath();
       ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = markerColor;
+      ctx.fillStyle = resolvedMarkerColor;
       ctx.fill();
 
       if (marker.label) {
         ctx.font = "10px system-ui, sans-serif";
-        ctx.fillStyle = markerColor.replace("1)", "0.6)");
+        ctx.fillStyle = resolvedMarkerColor.replace("1)", isDark ? "0.72)" : "0.88)");
         ctx.fillText(marker.label, sx + 8, sy + 3);
       }
     }

@@ -8,6 +8,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { BrandLogo } from "@/components/branding/brand-logo";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { AuthPage } from "@/components/ui/auth-page";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -165,6 +166,9 @@ export function CustomerSignInClient({ providerAvailability }: { providerAvailab
           }
         `}</style>
         <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+          <div className="mb-4 flex justify-end">
+            <ThemeToggle />
+          </div>
           <section className="overflow-hidden rounded-[36px] border border-violet-200/70 bg-white/90 p-8 shadow-[0_24px_80px_rgba(124,58,237,0.12)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60 sm:p-10">
             <div className="flex items-center justify-center">
               <BrandLogo className="w-[180px]" priority />
