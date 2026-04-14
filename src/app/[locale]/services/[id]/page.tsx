@@ -27,6 +27,8 @@ export default async function ServiceDetailPage({
 
   const title = service.overrides.title ? service.name : getServiceTitle(navigation, service.id);
   const description = service.overrides.description ? service.description : getServiceDescription(navigation, service.id);
+  const isFaceSearchService = service.id === "magneticFaceSearch";
+  const isImageConversionService = service.id === "imageConversion";
 
   return (
     <main className="mx-auto max-w-7xl space-y-10 px-4 py-10 sm:px-6 lg:px-8">
@@ -113,7 +115,7 @@ export default async function ServiceDetailPage({
         </ScrollReveal>
       </section>
 
-      {service.id === "magneticFaceSearch" ? (
+      {isFaceSearchService ? (
         <section>
           <ScrollReveal>
             <div className="flex flex-col gap-5 rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60 lg:flex-row lg:items-end lg:justify-between">
@@ -139,21 +141,63 @@ export default async function ServiceDetailPage({
         </section>
       ) : null}
 
-      <section className="space-y-5">
-        <ScrollReveal>
-          <div className="space-y-3">
-            <p className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">{t("pricingEyebrow")}</p>
-            <h2 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-              {t("pricingTitle")}
-            </h2>
-            <p className="max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-400 sm:text-base">
-              {t("pricingDescription")}
-            </p>
-          </div>
-        </ScrollReveal>
+      {isImageConversionService ? (
+        <section>
+          <ScrollReveal>
+            <div className="flex flex-col gap-5 rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-3xl">
+                <p className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">Free tool</p>
+                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+                  Convert JPG, PNG, and WebP files online and resize images before download.
+                </h2>
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
+                  Open the live tool to upload an image, choose the output format, set custom dimensions, and download the processed file instantly at no cost.
+                </p>
+              </div>
 
-        <ServiceTierSelector service={service} />
-      </section>
+              <Link
+                href="/services/imageConversion/live"
+                locale={locale}
+                className="inline-flex h-12 items-center justify-center rounded-full bg-slate-950 px-6 text-sm font-semibold text-white transition hover:bg-violet-700"
+              >
+                Open free tool
+              </Link>
+            </div>
+          </ScrollReveal>
+        </section>
+      ) : null}
+
+      {isImageConversionService ? (
+        <section className="space-y-5">
+          <ScrollReveal>
+            <div className="rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60">
+              <p className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">Free access</p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+                The full converter and image resizer is available with no checkout required.
+              </h2>
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
+                Use the live workflow to convert JPG to PNG, PNG to JPG, JPG to WebP, WebP to PNG, and custom resize outputs for your exact dimensions.
+              </p>
+            </div>
+          </ScrollReveal>
+        </section>
+      ) : (
+        <section className="space-y-5">
+          <ScrollReveal>
+            <div className="space-y-3">
+              <p className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">{t("pricingEyebrow")}</p>
+              <h2 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+                {t("pricingTitle")}
+              </h2>
+              <p className="max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-400 sm:text-base">
+                {t("pricingDescription")}
+              </p>
+            </div>
+          </ScrollReveal>
+  
+          <ServiceTierSelector service={service} />
+        </section>
+      )}
     </main>
   );
 }

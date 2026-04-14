@@ -4,6 +4,7 @@ export type ServiceMenuKey =
   | "emailServices"
   | "professionalEmail"
   | "seoTools"
+  | "imageConversion"
   | "magneticFaceSearch"
   | "siteLockVpn"
   | "siteMonitoring"
@@ -12,5 +13,6 @@ export type ServiceMenuKey =
   | "nordVpn";
 
 export const serviceMenuItems = [
+  { key: "imageConversion", id: "image-conversion", href: "/services#image-conversion" },
   { key: "magneticFaceSearch", id: "magnetic-face-search", href: "/services#magnetic-face-search" }
 ] as const satisfies ReadonlyArray<{ key: ServiceMenuKey; id: string; href: string }>;

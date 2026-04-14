@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Activity, Briefcase, Database, Globe, LayoutGrid, Lock, Mail, ScanFace, Search, Shield, ShieldCheck } from "lucide-react";
+import { Activity, Briefcase, Database, Globe, ImageIcon, LayoutGrid, Lock, Mail, ScanFace, Search, Shield, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getServiceDescription, getServiceTitle } from "@/lib/service-i18n";
@@ -15,6 +15,7 @@ const iconMap = {
   emailServices: Mail,
   professionalEmail: Briefcase,
   seoTools: Search,
+  imageConversion: ImageIcon,
   magneticFaceSearch: ScanFace,
   siteLockVpn: Lock,
   siteMonitoring: Activity,
@@ -24,10 +25,9 @@ const iconMap = {
 } satisfies Record<ServiceMenuKey, typeof ShieldCheck>;
 
 export default async function ServicesPage() {
-  const [t, navigation, servicesDetail, services] = await Promise.all([
+  const [t, navigation, services] = await Promise.all([
     getTranslations("Pages"),
     getTranslations("Navigation"),
-    getTranslations("ServicesDetail"),
     getVisibleServiceCatalogWithOverrides()
   ]);
 
@@ -57,6 +57,7 @@ export default async function ServicesPage() {
           const title = service.overrides.title ? service.name : getServiceTitle(navigation, service.id);
           const description = service.overrides.description ? service.description : getServiceDescription(navigation, service.id);
           const fromPrice = Math.min(...service.tiers.map((tier) => tier.price));
+          const priceLabel = fromPrice === 0 ? "Free" : `From $${fromPrice}`;
 
           return (
             <Link
@@ -82,26 +83,25 @@ export default async function ServicesPage() {
                 </div>
               </div>
               <div className="p-6">
-              <div className="flex items-center justify-between gap-4">
-                <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
-                  {service.category}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+                    {service.category}
+                  </div>
+                  <div className="text-sm font-semibold text-cyan-700 dark:text-cyan-300">{priceLabel}</div>
                 </div>
-                <div className="text-sm font-semibold text-cyan-700 dark:text-cyan-300">From ${fromPrice}</div>
-              </div>
-              <h2 className="mt-5 text-xl font-semibold text-slate-950 dark:text-white">
-                {title}
-              </h2>
-              <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
-                {description}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {service.tiers.map((tier) => (
-                  <span key={tier.id} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                    {tier.name}
-                  </span>
-                ))}
-              </div>
-              <p className="mt-4 text-sm font-medium text-cyan-700 dark:text-cyan-300">{servicesDetail("pricingTitle")}</p>
+                <h2 className="mt-5 text-xl font-semibold text-slate-950 dark:text-white">
+                  {title}
+                </h2>
+                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                  {description}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {service.tiers.map((tier) => (
+                    <span key={tier.id} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                      {tier.name}
+                    </span>
+                  ))}
+                </div>
               </div>
             </Link>
           );

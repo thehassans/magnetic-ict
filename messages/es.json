@@ -57,6 +57,7 @@
       "emailServices": {"title": "Servicios de correo", "description": "Herramientas fiables para correos transaccionales y empresariales con entrega segura."},
       "professionalEmail": {"title": "Correo profesional y apps", "description": "Suites de comunicacion con marca para equipos que se mueven rapido."},
       "seoTools": {"title": "Herramientas SEO", "description": "Visibilidad, analitica e inteligencia de posicionamiento para marcas en crecimiento."},
+      "imageConversion": {"title": "Image Conversion", "description": "Un convertidor y redimensionador de imagenes gratuito para descargas JPG, PNG y WebP."},
       "magneticFaceSearch": {"title": "Magnetic Face Search", "description": "Una hoja de ruta de busqueda biometrica centrada en la privacidad, con ingesta con licencia, busqueda vectorial y una experiencia premium de carga para buscar."},
       "siteLockVpn": {"title": "SiteLock VPN", "description": "Protege sesiones de navegacion y trabajo remoto con privacidad gestionada."},
       "siteMonitoring": {"title": "Monitoreo de sitio y servidor", "description": "Seguimiento proactivo de disponibilidad y alertas instantaneas para sistemas criticos."},

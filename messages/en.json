@@ -97,6 +97,10 @@
         "title": "SEO Tools",
         "description": "Visibility, analytics, and ranking intelligence for high-growth brands."
       },
+      "imageConversion": {
+        "title": "Image Conversion",
+        "description": "A free image converter and resizer for JPG, PNG, and WebP downloads."
+      },
       "magneticFaceSearch": {
         "title": "Magnetic Face Search",
         "description": "A privacy-conscious biometric search roadmap with licensed ingestion, vector search, and premium upload-to-search UX."

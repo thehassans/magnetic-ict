@@ -218,6 +218,45 @@ export const serviceCatalog: CatalogService[] = [
     ]
   },
   {
+    id: "imageConversion",
+    name: "Image Conversion",
+    category: "Creative Utilities",
+    eyebrow: "Free file utility",
+    tagline: "Convert JPG, PNG, and WebP files instantly while resizing images for web, social, and product workflows.",
+    description:
+      "Launch a polished free image utility that lets users upload a file, convert it across popular formats, resize dimensions, and download the processed asset in seconds.",
+    imageLabel: "Instant Conversion Studio",
+    highlights: ["JPG, PNG, and WebP output", "Custom resize controls", "Fast browser-to-download workflow"],
+    benefits: [
+      "Give visitors a useful free tool they can access without checkout friction.",
+      "Support quick format conversion for websites, marketplaces, and social media publishing.",
+      "Resize assets before download so files are ready for performance and design requirements."
+    ],
+    tiers: [
+      {
+        id: "imageConversion-starter",
+        name: "Starter",
+        price: 0,
+        summary: "Free instant conversion for JPG, PNG, and WebP files.",
+        features: ["Upload a single image", "Convert between popular web formats", "Download the processed file"]
+      },
+      {
+        id: "imageConversion-professional",
+        name: "Professional",
+        price: 0,
+        summary: "Free resizing controls for custom dimensions and output quality.",
+        features: ["Set width and height", "Maintain aspect ratio or force dimensions", "Tune export quality"]
+      },
+      {
+        id: "imageConversion-enterprise",
+        name: "Enterprise",
+        price: 0,
+        summary: "Free polished workflow for previews, conversion, and download delivery.",
+        features: ["Before-and-after preview", "Instant download handoff", "No payment required"]
+      }
+    ]
+  },
+  {
     id: "magneticFaceSearch",
     name: "Magnetic Face Search",
     category: "AI Vision & Search",
