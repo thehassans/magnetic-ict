@@ -26,6 +26,15 @@ const adminCredentialsSchema = z.object({
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 const authSecret = process.env.AUTH_SECRET || (process.env.NODE_ENV !== "production" ? "magneticict-dev-secret" : undefined);
 const defaultUserRole: AppUserRole = "USER";
+const canonicalAuthUrl = process.env.AUTH_URL?.replace(/\/$/, "")
+  || process.env.NEXTAUTH_URL?.replace(/\/$/, "")
+  || process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "")
+  || null;
+
+if (canonicalAuthUrl) {
+  process.env.AUTH_URL ??= canonicalAuthUrl;
+  process.env.NEXTAUTH_URL ??= canonicalAuthUrl;
+}
 
 function compareSecret(candidate: string, expected: string) {
   const candidateBuffer = Buffer.from(candidate);
@@ -186,7 +195,14 @@ async function buildProviders() {
     oauthProviders.push(
       Google({
         clientId: oauthSettings.google.clientId,
-        clientSecret: oauthSettings.google.clientSecret
+        clientSecret: oauthSettings.google.clientSecret,
+        authorization: {
+          params: {
+            scope: "openid email profile",
+            response_type: "code",
+            response_mode: "form_post"
+          }
+        }
       })
     );
   }
@@ -215,6 +231,7 @@ async function buildProviders() {
 export const { handlers, auth, signIn, signOut } = NextAuth(async () => ({
   adapter: hasDatabase ? PrismaAdapter(prisma) : undefined,
   secret: authSecret,
+  trustHost: true,
   session: {
     strategy: "jwt"
   },
