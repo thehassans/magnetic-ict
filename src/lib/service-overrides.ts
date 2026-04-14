@@ -1,9 +1,11 @@
 import { serviceCatalog, type CatalogService } from "@/lib/service-catalog";
+import { serviceMenuItems, type ServiceMenuKey } from "@/lib/service-menu";
 import { prisma } from "@/lib/prisma";
 import { getServiceImageMap } from "@/lib/service-media";
 import { getServiceVisibilityMap } from "@/lib/service-visibility";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
+const storefrontServiceIds = new Set<ServiceMenuKey>(serviceMenuItems.map((item) => item.key));
 
 type PersistedServiceTier = {
   catalogKey: string;
@@ -124,12 +126,12 @@ export async function getServiceCatalogWithOverrides(): Promise<ServiceOverride[
 
 export async function getVisibleServiceCatalogWithOverrides() {
   const services = await getServiceCatalogWithOverrides();
-  return services.filter((service) => service.visibility.enabled && !service.visibility.deleted);
+  return services.filter((service) => storefrontServiceIds.has(service.id) && service.visibility.enabled && !service.visibility.deleted);
 }
 
 export async function getServiceByIdWithOverrides(serviceId: string) {
   const services = await getServiceCatalogWithOverrides();
-  return services.find((service) => service.id === serviceId && service.visibility.enabled && !service.visibility.deleted) ?? null;
+  return services.find((service) => storefrontServiceIds.has(service.id) && service.id === serviceId && service.visibility.enabled && !service.visibility.deleted) ?? null;
 }
 
 export function hasServiceCopyOverrides(service: ServiceOverride) {
