@@ -67,6 +67,15 @@ const requestSchema = z.discriminatedUnion("section", [
     value: z.object({
       apiKey: z.string()
     })
+  }),
+  z.object({
+    section: z.literal("socialBot"),
+    value: z.object({
+      globalBotInstructions: z.string(),
+      metaAppId: z.string(),
+      metaConfigId: z.string(),
+      webhookVerifyToken: z.string()
+    })
   })
 ]);
 
@@ -75,7 +84,8 @@ const settingKeyBySection = {
   footer: "footer_details",
   payments: "payment_integrations",
   oauth: "oauth_config",
-  gemini: "gemini_api_key"
+  gemini: "gemini_api_key",
+  socialBot: "social_bot_config"
 } as const;
 
 export async function PATCH(request: Request) {

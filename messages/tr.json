@@ -58,6 +58,7 @@
       "professionalEmail": {"title": "Profesyonel E-posta ve Uygulamalar", "description": "Hizli hareket eden ekipler icin markali iletisim paketleri."},
       "seoTools": {"title": "SEO Araclari", "description": "Hizla buyuyen markalar icin gorunurluk, analiz ve siralama zekasi."},
       "imageConversion": {"title": "Image Conversion", "description": "JPG, PNG ve WebP indirmeleri icin ucretsiz bir gorsel donusturme ve boyutlandirma araci."},
+      "magneticSocialBot": {"title": "Magnetic Social Bot", "description": "WhatsApp, Instagram ve Messenger icin Gemini ve isletme RAG verisiyle cok kanalli bir AI gelen kutusu."},
       "magneticFaceSearch": {"title": "Magnetic Face Search", "description": "Lisansli veri alimi, vektor arama ve premium yukle-ara deneyimi iceren gizlilik odakli bir biyometrik arama yol haritasi."},
       "siteLockVpn": {"title": "SiteLock VPN", "description": "Yonetilen gizlilik ile gezinme oturumlarini ve uzaktan calismayi koruyun."},
       "siteMonitoring": {"title": "Site ve Sunucu Izleme", "description": "Kritik sistemler icin proaktif erisilebilirlik takibi ve anlik olay farkindaligi."},

@@ -7,7 +7,8 @@ import type {
   FooterSettings,
   GeminiSettings,
   OAuthSettings,
-  PaymentIntegrationsSettings
+  PaymentIntegrationsSettings,
+  SocialBotSettings
 } from "@/lib/platform-settings";
 
 type AdminSettingsClientProps = {
@@ -17,6 +18,7 @@ type AdminSettingsClientProps = {
   paymentIntegrations: PaymentIntegrationsSettings;
   oauthConfig: OAuthSettings;
   geminiConfig: GeminiSettings;
+  socialBotConfig: SocialBotSettings;
   canPersist: boolean;
 };
 
@@ -32,6 +34,7 @@ export function AdminSettingsClient({
   paymentIntegrations,
   oauthConfig,
   geminiConfig,
+  socialBotConfig,
   canPersist
 }: AdminSettingsClientProps) {
   const [selectedLanguageCodes, setSelectedLanguageCodes] = useState(activeLanguages.map((language) => language.code));
@@ -39,6 +42,7 @@ export function AdminSettingsClient({
   const [paymentState, setPaymentState] = useState(paymentIntegrations);
   const [oauthState, setOAuthState] = useState(oauthConfig);
   const [geminiState, setGeminiState] = useState(geminiConfig);
+  const [socialBotState, setSocialBotState] = useState(socialBotConfig);
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState>(null);
 
@@ -47,7 +51,7 @@ export function AdminSettingsClient({
     [availableLanguages, selectedLanguageCodes]
   );
 
-  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini", value: unknown) {
+  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot", value: unknown) {
     setLoadingSection(section);
     setToast(null);
 
@@ -230,6 +234,29 @@ export function AdminSettingsClient({
         }
       >
         <Input label="Gemini API key" value={geminiState.apiKey} onChange={(value) => setGeminiState({ apiKey: value })} type="password" icon={<Sparkles className="h-4 w-4" />} />
+      </SettingsCard>
+
+      <SettingsCard
+        title="Magnetic Social Bot"
+        description="Set the global instructions used by the bot, plus Meta embedded-signup values for WhatsApp, Instagram, and Messenger onboarding."
+        action={<Button label="Save Social Bot config" loading={loadingSection === "socialBot"} onClick={() => saveSection("socialBot", socialBotState)} />}
+      >
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Input label="Meta App ID" value={socialBotState.metaAppId} onChange={(value) => setSocialBotState((current) => ({ ...current, metaAppId: value }))} />
+          <Input label="Meta Config ID" value={socialBotState.metaConfigId} onChange={(value) => setSocialBotState((current) => ({ ...current, metaConfigId: value }))} />
+          <Input label="Webhook verify token" value={socialBotState.webhookVerifyToken} onChange={(value) => setSocialBotState((current) => ({ ...current, webhookVerifyToken: value }))} type="password" />
+        </div>
+        <div className="mt-6">
+          <label className="space-y-2 text-sm">
+            <span className="font-semibold text-slate-700">Global bot instructions</span>
+            <textarea
+              value={socialBotState.globalBotInstructions}
+              onChange={(event) => setSocialBotState((current) => ({ ...current, globalBotInstructions: event.target.value }))}
+              rows={8}
+              className="min-h-40 w-full rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white"
+            />
+          </label>
+        </div>
       </SettingsCard>
     </div>
   );

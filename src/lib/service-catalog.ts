@@ -257,6 +257,45 @@ export const serviceCatalog: CatalogService[] = [
     ]
   },
   {
+    id: "magneticSocialBot",
+    name: "Magnetic Social Bot",
+    category: "AI Messaging Automation",
+    eyebrow: "Social command center",
+    tagline: "Run WhatsApp, Instagram, and Messenger conversations from one AI-assisted inbox with business-specific RAG context.",
+    description:
+      "Deploy a multi-channel social chatbot system with Gemini responses, business knowledge retrieval, onboarding workflows, and a unified operator inbox for WhatsApp, Instagram, and Messenger.",
+    imageLabel: "Unified Messaging Command Center",
+    highlights: ["WhatsApp, Instagram, and Messenger", "Gemini plus RAG responses", "AI or manual control per thread"],
+    benefits: [
+      "Reply across major Meta messaging channels from one workspace instead of juggling separate apps.",
+      "Ground answers in uploaded business documents so the bot responds with brand-specific context.",
+      "Let operators take over any thread instantly while preserving AI memory for the last 5 to 10 messages."
+    ],
+    tiers: [
+      {
+        id: "magneticSocialBot-starter",
+        name: "Starter",
+        price: 149,
+        summary: "1 Social Media Chatbot (Basic)",
+        features: ["1 active social chatbot", "Unified inbox access", "Gemini replies with business knowledge base"]
+      },
+      {
+        id: "magneticSocialBot-professional",
+        name: "Professional",
+        price: 299,
+        summary: "2 Social Media Chatbots (Pro)",
+        features: ["2 active social chatbots", "Per-thread AI or manual mode", "Meta channel onboarding workspace"]
+      },
+      {
+        id: "magneticSocialBot-enterprise",
+        name: "Enterprise",
+        price: 599,
+        summary: "All-in-One (Unlimited)",
+        features: ["Unlimited chatbot scale", "Priority automation control", "Advanced team-ready command center"]
+      }
+    ]
+  },
+  {
     id: "magneticFaceSearch",
     name: "Magnetic Face Search",
     category: "AI Vision & Search",

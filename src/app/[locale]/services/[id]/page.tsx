@@ -1,8 +1,9 @@
 import Image from "next/image";
-import { Sparkles } from "lucide-react";
+import { Bot, Instagram, MessageCircle, Sparkles } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
+import { ImageConversionTool } from "@/components/services/image-conversion-tool";
 import { ServiceTierSelector } from "@/components/services/service-tier-selector";
 import { Link } from "@/i18n/navigation";
 import { getServiceDescription, getServiceTitle } from "@/lib/service-i18n";
@@ -29,6 +30,7 @@ export default async function ServiceDetailPage({
   const description = service.overrides.description ? service.description : getServiceDescription(navigation, service.id);
   const isFaceSearchService = service.id === "magneticFaceSearch";
   const isImageConversionService = service.id === "imageConversion";
+  const isMagneticSocialBotService = service.id === "magneticSocialBot";
 
   return (
     <main className="mx-auto max-w-7xl space-y-10 px-4 py-10 sm:px-6 lg:px-8">
@@ -46,9 +48,11 @@ export default async function ServiceDetailPage({
               <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
                 {description}
               </p>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500 dark:text-slate-400 sm:text-base">
-                {service.tagline}
-              </p>
+              {!isImageConversionService ? (
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500 dark:text-slate-400 sm:text-base">
+                  {service.tagline}
+                </p>
+              ) : null}
             </div>
           </div>
         </ScrollReveal>
@@ -83,37 +87,45 @@ export default async function ServiceDetailPage({
         </ScrollReveal>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-        <ScrollReveal>
-          <div className="rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60">
-            <div className="text-xs uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">{service.category}</div>
-            <h2 className="mt-4 text-2xl font-semibold text-slate-950 dark:text-white">{service.imageLabel}</h2>
-            <div className="mt-6 flex flex-wrap gap-3">
-              {service.highlights.map((highlight) => (
-                <div
-                  key={highlight}
-                  className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
-                >
-                  {highlight}
-                </div>
-              ))}
+      {isImageConversionService ? (
+        <section>
+          <ScrollReveal>
+            <ImageConversionTool compact />
+          </ScrollReveal>
+        </section>
+      ) : (
+        <section className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+          <ScrollReveal>
+            <div className="rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60">
+              <div className="text-xs uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">{service.category}</div>
+              <h2 className="mt-4 text-2xl font-semibold text-slate-950 dark:text-white">{service.imageLabel}</h2>
+              <div className="mt-6 flex flex-wrap gap-3">
+                {service.highlights.map((highlight) => (
+                  <div
+                    key={highlight}
+                    className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+                  >
+                    {highlight}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </ScrollReveal>
+          </ScrollReveal>
 
-        <ScrollReveal delay={0.06}>
-          <div className="rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60">
-            <div className="space-y-4">
-              {service.benefits.map((benefit) => (
-                <div key={benefit} className="flex items-start gap-3">
-                  <div className="mt-1 h-2.5 w-2.5 rounded-full bg-gradient-to-br from-violet-500 to-cyan-400" />
-                  <p className="text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">{benefit}</p>
-                </div>
-              ))}
+          <ScrollReveal delay={0.06}>
+            <div className="rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60">
+              <div className="space-y-4">
+                {service.benefits.map((benefit) => (
+                  <div key={benefit} className="flex items-start gap-3">
+                    <div className="mt-1 h-2.5 w-2.5 rounded-full bg-gradient-to-br from-violet-500 to-cyan-400" />
+                    <p className="text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">{benefit}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </ScrollReveal>
-      </section>
+          </ScrollReveal>
+        </section>
+      )}
 
       {isFaceSearchService ? (
         <section>
@@ -141,46 +153,37 @@ export default async function ServiceDetailPage({
         </section>
       ) : null}
 
-      {isImageConversionService ? (
+      {isMagneticSocialBotService ? (
         <section>
           <ScrollReveal>
-            <div className="flex flex-col gap-5 rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-3xl">
-                <p className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">Free tool</p>
-                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-                  Convert JPG, PNG, and WebP files online and resize images before download.
-                </h2>
-                <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
-                  Open the live tool to upload an image, choose the output format, set custom dimensions, and download the processed file instantly at no cost.
-                </p>
+            <div className="rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs uppercase tracking-[0.24em] text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+                  <MessageCircle className="h-4 w-4" />
+                  WhatsApp
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs uppercase tracking-[0.24em] text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+                  <Instagram className="h-4 w-4" />
+                  Instagram
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs uppercase tracking-[0.24em] text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+                  <Bot className="h-4 w-4" />
+                  Messenger
+                </div>
               </div>
-
-              <Link
-                href="/services/imageConversion/live"
-                locale={locale}
-                className="inline-flex h-12 items-center justify-center rounded-full bg-slate-950 px-6 text-sm font-semibold text-white transition hover:bg-violet-700"
-              >
-                Open free tool
-              </Link>
+              <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+                1 inbox. AI or manual control. Business-aware replies.
+              </h2>
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
+                After purchase, your dashboard unlocks the onboarding wizard, document-to-RAG upload, channel setup, and the unified messaging command center.
+              </p>
             </div>
           </ScrollReveal>
         </section>
       ) : null}
 
       {isImageConversionService ? (
-        <section className="space-y-5">
-          <ScrollReveal>
-            <div className="rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60">
-              <p className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">Free access</p>
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-                The full converter and image resizer is available with no checkout required.
-              </h2>
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
-                Use the live workflow to convert JPG to PNG, PNG to JPG, JPG to WebP, WebP to PNG, and custom resize outputs for your exact dimensions.
-              </p>
-            </div>
-          </ScrollReveal>
-        </section>
+        null
       ) : (
         <section className="space-y-5">
           <ScrollReveal>

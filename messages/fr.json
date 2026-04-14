@@ -64,6 +64,10 @@
         "title": "Image Conversion",
         "description": "Un convertisseur et redimensionneur d'images gratuit pour les téléchargements JPG, PNG et WebP."
       },
+      "magneticSocialBot": {
+        "title": "Magnetic Social Bot",
+        "description": "Une boîte de réception IA multi-canal pour WhatsApp, Instagram et Messenger avec Gemini et une base RAG métier."
+      },
       "magneticFaceSearch": {
         "title": "Magnetic Face Search",
         "description": "Une feuille de route de recherche biométrique axée sur la confidentialité, avec ingestion sous licence, recherche vectorielle et expérience premium d'envoi pour recherche."

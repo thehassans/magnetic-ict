@@ -35,12 +35,20 @@ export type GeminiSettings = {
   apiKey: string;
 };
 
+export type SocialBotSettings = {
+  globalBotInstructions: string;
+  metaAppId: string;
+  metaConfigId: string;
+  webhookVerifyToken: string;
+};
+
 export type PlatformSettingsBundle = {
   activeLanguages: ActiveLanguage[];
   footerDetails: FooterSettings;
   paymentIntegrations: PaymentIntegrationsSettings;
   oauthConfig: OAuthSettings;
   geminiConfig: GeminiSettings;
+  socialBotConfig: SocialBotSettings;
 };
 
 export const defaultFooterDetails: FooterSettings = {
@@ -77,6 +85,13 @@ export const defaultOAuthConfig: OAuthSettings = {
 
 export const defaultGeminiConfig: GeminiSettings = {
   apiKey: ""
+};
+
+export const defaultSocialBotConfig: SocialBotSettings = {
+  globalBotInstructions: "",
+  metaAppId: "",
+  metaConfigId: "",
+  webhookVerifyToken: ""
 };
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -181,6 +196,19 @@ export function normalizeGeminiConfig(value: unknown): GeminiSettings {
   };
 }
 
+export function normalizeSocialBotConfig(value: unknown): SocialBotSettings {
+  if (!isObject(value)) {
+    return defaultSocialBotConfig;
+  }
+
+  return {
+    globalBotInstructions: coerceString(value.globalBotInstructions, defaultSocialBotConfig.globalBotInstructions),
+    metaAppId: coerceString(value.metaAppId, defaultSocialBotConfig.metaAppId),
+    metaConfigId: coerceString(value.metaConfigId, defaultSocialBotConfig.metaConfigId),
+    webhookVerifyToken: coerceString(value.webhookVerifyToken, defaultSocialBotConfig.webhookVerifyToken)
+  };
+}
+
 async function getSettingValue(key: string) {
   if (!hasDatabase) {
     return null;
@@ -195,12 +223,13 @@ async function getSettingValue(key: string) {
 }
 
 export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
-  const [activeLanguages, footerDetails, paymentIntegrations, oauthConfig, geminiConfig] = await Promise.all([
+  const [activeLanguages, footerDetails, paymentIntegrations, oauthConfig, geminiConfig, socialBotConfig] = await Promise.all([
     getSettingValue("active_languages"),
     getSettingValue("footer_details"),
     getSettingValue("payment_integrations"),
     getSettingValue("oauth_config"),
-    getSettingValue("gemini_api_key")
+    getSettingValue("gemini_api_key"),
+    getSettingValue("social_bot_config")
   ]);
 
   return {
@@ -208,7 +237,8 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     footerDetails: normalizeFooterDetails(footerDetails),
     paymentIntegrations: normalizePaymentIntegrations(paymentIntegrations),
     oauthConfig: normalizeOAuthConfig(oauthConfig),
-    geminiConfig: normalizeGeminiConfig(geminiConfig)
+    geminiConfig: normalizeGeminiConfig(geminiConfig),
+    socialBotConfig: normalizeSocialBotConfig(socialBotConfig)
   };
 }
 

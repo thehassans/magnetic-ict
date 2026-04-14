@@ -58,6 +58,7 @@
       "professionalEmail": {"title": "البريد الاحترافي والتطبيقات", "description": "حزم تواصل تحمل علامتك للفرق سريعة الحركة."},
       "seoTools": {"title": "ادوات SEO", "description": "ظهور وتحليلات وذكاء ترتيب للعلامات سريعة النمو."},
       "imageConversion": {"title": "Image Conversion", "description": "اداة مجانية لتحويل الصور وتغيير حجمها لملفات JPG وPNG وWebP."},
+      "magneticSocialBot": {"title": "Magnetic Social Bot", "description": "صندوق وارد ذكي متعدد القنوات لواتساب وانستغرام وماسنجر مع Gemini وبيانات RAG الخاصة بالنشاط."},
       "magneticFaceSearch": {"title": "Magnetic Face Search", "description": "خارطة طريق بحث بيومتري تراعي الخصوصية مع ادخال بيانات مرخصة وبحث متجهي وتجربة رفع مميزة للبحث."},
       "siteLockVpn": {"title": "SiteLock VPN", "description": "احم جلسات التصفح والعمل عن بعد بخصوصية مُدارة."},
       "siteMonitoring": {"title": "مراقبة الموقع والخادم", "description": "متابعة استباقية للتوفر وتنبيه فوري للحوادث في الانظمة الحرجة."},

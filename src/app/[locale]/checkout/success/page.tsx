@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { ClearCartOnMount } from "@/components/commerce/clear-cart-on-mount";
 import { markOrdersPaid } from "@/lib/order-processing";
 import { capturePayPalCheckoutOrder, getStripeClient } from "@/lib/payments";
+import { prisma } from "@/lib/prisma";
 
 export default async function CheckoutSuccessPage({
   params,
@@ -18,10 +19,11 @@ export default async function CheckoutSuccessPage({
 
   const stripe = getStripeClient();
   let verified = false;
+  let orderIds: string[] = [];
 
   if (stripe && session_id) {
     const session = await stripe.checkout.sessions.retrieve(session_id);
-    const orderIds = session.metadata?.orderIds?.split(",").filter(Boolean) ?? [];
+    orderIds = session.metadata?.orderIds?.split(",").filter(Boolean) ?? [];
 
     if (session.payment_status === "paid") {
       await markOrdersPaid(orderIds, session.id);
@@ -31,13 +33,38 @@ export default async function CheckoutSuccessPage({
 
   if (!verified && provider === "paypal" && token && order_refs) {
     const capture = await capturePayPalCheckoutOrder(token);
-    const orderIds = order_refs.split(",").filter(Boolean);
+    orderIds = order_refs.split(",").filter(Boolean);
 
     if (capture && (capture.status === "COMPLETED" || capture.status === "APPROVED")) {
       await markOrdersPaid(orderIds, capture.id);
       verified = true;
     }
   }
+
+  const unlockedOrders = verified && orderIds.length > 0
+    ? await prisma.order.findMany({
+        where: {
+          id: {
+            in: orderIds
+          }
+        },
+        include: {
+          serviceTier: {
+            include: {
+              service: {
+                select: {
+                  catalogKey: true
+                }
+              }
+            }
+          }
+        }
+      })
+    : [];
+
+  const unlockedMagneticSocialBot = unlockedOrders.some(
+    (order) => order.serviceTier.service.catalogKey === "magneticSocialBot"
+  );
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
@@ -52,6 +79,15 @@ export default async function CheckoutSuccessPage({
           {verified ? t("checkoutSuccessDescription") : t("checkoutSuccessPendingDescription")}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
+          {unlockedMagneticSocialBot ? (
+            <Link
+              href="/dashboard/magnetic-social-bot"
+              locale={locale}
+              className="inline-flex h-12 items-center justify-center rounded-full bg-cyan-600 px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-cyan-500"
+            >
+              Open Magnetic Social Bot
+            </Link>
+          ) : null}
           <Link
             href="/dashboard"
             locale={locale}

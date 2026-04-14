@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { Link } from "@/i18n/navigation";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
 import { prisma } from "@/lib/prisma";
+import { userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
 
 type DashboardOrder = {
   id: string;
@@ -62,6 +63,10 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
         }
       })
     : [];
+
+  const hasMagneticSocialBotAccess = session?.user?.id
+    ? await userHasMagneticSocialBotAccess(session.user.id)
+    : false;
 
   const activeServices = orders.filter((order: DashboardOrder) => order.status === "PAID" || order.status === "FULFILLED").length;
   const pendingOrders = orders.filter((order: DashboardOrder) => order.status === "PENDING").length;
@@ -233,6 +238,25 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           </div>
         )}
       </section>
+
+      {hasMagneticSocialBotAccess ? (
+        <section className="mt-8 rounded-[36px] border border-violet-100 bg-white/90 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/40 sm:p-10">
+          <p className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">Unlocked</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">Magnetic Social Bot</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
+            Open your onboarding wizard, connect channels, upload business documents, and manage the unified inbox.
+          </p>
+          <div className="mt-6">
+            <Link
+              href="/dashboard/magnetic-social-bot"
+              locale={locale}
+              className="inline-flex h-12 items-center justify-center rounded-full bg-slate-950 px-6 text-sm font-semibold text-white transition hover:bg-violet-700"
+            >
+              Open Command Center
+            </Link>
+          </div>
+        </section>
+      ) : null}
     </main>
   );
 }

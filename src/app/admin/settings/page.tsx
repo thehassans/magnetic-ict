@@ -23,6 +23,7 @@ export default async function AdminSettingsPage() {
         paymentIntegrations={settings.paymentIntegrations}
         oauthConfig={settings.oauthConfig}
         geminiConfig={settings.geminiConfig}
+        socialBotConfig={settings.socialBotConfig}
         canPersist={hasDatabase}
       />
     </AdminShell>
