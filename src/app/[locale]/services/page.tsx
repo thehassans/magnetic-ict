@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Activity, Briefcase, Database, Globe, LayoutGrid, Lock, Mail, Search, Shield, ShieldCheck } from "lucide-react";
+import { Activity, Briefcase, Database, Globe, LayoutGrid, Lock, Mail, ScanFace, Search, Shield, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getServiceDescription, getServiceTitle } from "@/lib/service-i18n";
@@ -15,6 +15,7 @@ const iconMap = {
   emailServices: Mail,
   professionalEmail: Briefcase,
   seoTools: Search,
+  magneticFaceSearch: ScanFace,
   siteLockVpn: Lock,
   siteMonitoring: Activity,
   websiteSecurity: Shield,

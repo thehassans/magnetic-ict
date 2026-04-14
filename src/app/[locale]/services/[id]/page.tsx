@@ -34,7 +34,7 @@ export default async function ServiceDetailPage({
           <div className="space-y-5 rounded-[38px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60 sm:p-10">
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-xs uppercase tracking-[0.28em] text-cyan-700 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-200">
               <Sparkles className="h-4 w-4" />
-              {t("visualLabel")}
+              {service.eyebrow}
             </div>
             <div>
               <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl">
@@ -42,6 +42,9 @@ export default async function ServiceDetailPage({
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
                 {description}
+              </p>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500 dark:text-slate-400 sm:text-base">
+                {service.tagline}
               </p>
             </div>
           </div>
@@ -72,6 +75,38 @@ export default async function ServiceDetailPage({
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </ScrollReveal>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+        <ScrollReveal>
+          <div className="rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60">
+            <div className="text-xs uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">{service.category}</div>
+            <h2 className="mt-4 text-2xl font-semibold text-slate-950 dark:text-white">{service.imageLabel}</h2>
+            <div className="mt-6 flex flex-wrap gap-3">
+              {service.highlights.map((highlight) => (
+                <div
+                  key={highlight}
+                  className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+                >
+                  {highlight}
+                </div>
+              ))}
+            </div>
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.06}>
+          <div className="rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60">
+            <div className="space-y-4">
+              {service.benefits.map((benefit) => (
+                <div key={benefit} className="flex items-start gap-3">
+                  <div className="mt-1 h-2.5 w-2.5 rounded-full bg-gradient-to-br from-violet-500 to-cyan-400" />
+                  <p className="text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">{benefit}</p>
+                </div>
+              ))}
             </div>
           </div>
         </ScrollReveal>

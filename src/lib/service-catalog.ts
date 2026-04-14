@@ -218,6 +218,57 @@ export const serviceCatalog: CatalogService[] = [
     ]
   },
   {
+    id: "magneticFaceSearch",
+    name: "Magnetic Face Search",
+    category: "AI Vision & Search",
+    eyebrow: "Biometric search roadmap",
+    tagline: "Design a premium facial search platform with compliant data pipelines, vector search, and high-trust UX.",
+    description:
+      "Plan and scope a privacy-conscious face search platform with licensed image ingestion, face preprocessing, vector indexing, premium upload-to-search UX, and backend orchestration designed for consent, retention controls, and policy alignment.",
+    imageLabel: "Biometric Search Command Layer",
+    highlights: ["Licensed-source ingestion", "Vector similarity search", "Premium scanning UX"],
+    benefits: [
+      "Turn a complex biometric product concept into a phased technical roadmap with clear architecture decisions.",
+      "Align product strategy around licensed sources, consent workflows, deletion policies, and operational governance from day one.",
+      "Package premium web UX, AI service boundaries, and search performance targets into one delivery plan."
+    ],
+    tiers: [
+      {
+        id: "magneticFaceSearch-starter",
+        name: "Starter",
+        price: 299,
+        summary: "Discovery and architecture planning for a compliant face search MVP.",
+        features: [
+          "Product and data-flow roadmap",
+          "Licensed-source ingestion strategy",
+          "Embedding and vector search recommendations"
+        ]
+      },
+      {
+        id: "magneticFaceSearch-professional",
+        name: "Professional",
+        price: 899,
+        summary: "Detailed UX, backend, and AI system design for launch-ready execution.",
+        features: [
+          "Upload-to-search UX specification",
+          "FastAPI, queue, and worker architecture",
+          "Privacy, deletion, and compliance controls"
+        ]
+      },
+      {
+        id: "magneticFaceSearch-enterprise",
+        name: "Enterprise",
+        price: 2499,
+        summary: "Executive-grade biometric search delivery plan with operational guardrails.",
+        features: [
+          "Scalable indexing and retrieval architecture",
+          "Security and policy review pack",
+          "Implementation advisory for engineering teams"
+        ]
+      }
+    ]
+  },
+  {
     id: "siteLockVpn",
     name: "SiteLock VPN",
     category: "Security & Privacy",

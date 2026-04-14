@@ -4,6 +4,7 @@ export const serviceMenuItems = [
   { key: "emailServices", id: "email-services", href: "/services#email-services" },
   { key: "professionalEmail", id: "professional-email", href: "/services#professional-email" },
   { key: "seoTools", id: "seo-tools", href: "/services#seo-tools" },
+  { key: "magneticFaceSearch", id: "magnetic-face-search", href: "/services#magnetic-face-search" },
   { key: "siteLockVpn", id: "sitelock-vpn", href: "/services#sitelock-vpn" },
   { key: "siteMonitoring", id: "site-monitoring", href: "/services#site-monitoring" },
   { key: "websiteSecurity", id: "website-security", href: "/services#website-security" },

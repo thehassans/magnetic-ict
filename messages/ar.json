@@ -57,6 +57,7 @@
       "emailServices": {"title": "خدمات البريد", "description": "ادوات موثوقة للبريد التجاري والمعاملاتي مع تسليم امن."},
       "professionalEmail": {"title": "البريد الاحترافي والتطبيقات", "description": "حزم تواصل تحمل علامتك للفرق سريعة الحركة."},
       "seoTools": {"title": "ادوات SEO", "description": "ظهور وتحليلات وذكاء ترتيب للعلامات سريعة النمو."},
+      "magneticFaceSearch": {"title": "Magnetic Face Search", "description": "خارطة طريق بحث بيومتري تراعي الخصوصية مع ادخال بيانات مرخصة وبحث متجهي وتجربة رفع مميزة للبحث."},
       "siteLockVpn": {"title": "SiteLock VPN", "description": "احم جلسات التصفح والعمل عن بعد بخصوصية مُدارة."},
       "siteMonitoring": {"title": "مراقبة الموقع والخادم", "description": "متابعة استباقية للتوفر وتنبيه فوري للحوادث في الانظمة الحرجة."},
       "websiteSecurity": {"title": "امان الموقع", "description": "منع التهديدات وطبقات حماية لاستمرارية الاعمال."},
