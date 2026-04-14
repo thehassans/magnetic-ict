@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
 import { ServiceTierSelector } from "@/components/services/service-tier-selector";
+import { Link } from "@/i18n/navigation";
 import { getServiceDescription, getServiceTitle } from "@/lib/service-i18n";
 import { getServiceByIdWithOverrides } from "@/lib/service-overrides";
 
@@ -15,7 +16,7 @@ export default async function ServiceDetailPage({
 }: {
   params: Promise<{ locale: string; id: string }>;
 }) {
-  const { id } = await params;
+  const { id, locale } = await params;
   const t = await getTranslations("ServicesDetail");
   const navigation = await getTranslations("Navigation");
   const service = await getServiceByIdWithOverrides(id);
@@ -111,6 +112,32 @@ export default async function ServiceDetailPage({
           </div>
         </ScrollReveal>
       </section>
+
+      {service.id === "magneticFaceSearch" ? (
+        <section>
+          <ScrollReveal>
+            <div className="flex flex-col gap-5 rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-3xl">
+                <p className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">Live demo</p>
+                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+                  Test the approved registry workflow with upload, scan animation, and ranked source matches.
+                </h2>
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
+                  Launch the private demo to try the upload-to-search experience against an approved sample registry designed for consent-based product validation.
+                </p>
+              </div>
+
+              <Link
+                href="/services/magneticFaceSearch/live"
+                locale={locale}
+                className="inline-flex h-12 items-center justify-center rounded-full bg-slate-950 px-6 text-sm font-semibold text-white transition hover:bg-violet-700"
+              >
+                Launch live demo
+              </Link>
+            </div>
+          </ScrollReveal>
+        </section>
+      ) : null}
 
       <section className="space-y-5">
         <ScrollReveal>
