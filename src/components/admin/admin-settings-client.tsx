@@ -183,12 +183,39 @@ export function AdminSettingsClient({
 
       <SettingsCard
         title="OAuth configuration"
-        description="Store Google OAuth credentials in platform settings for operations visibility. Runtime auth still depends on your secure environment variables on deployment."
+        description="Control which social sign-in providers are live and store their credentials for the customer login experience."
         action={<Button label="Save OAuth config" loading={loadingSection === "oauth"} onClick={() => saveSection("oauth", oauthState)} />}
       >
-        <div className="grid gap-4 md:grid-cols-2">
-          <Input label="Google client ID" value={oauthState.googleClientId} onChange={(value) => setOAuthState((current) => ({ ...current, googleClientId: value }))} />
-          <Input label="Google client secret" value={oauthState.googleClientSecret} onChange={(value) => setOAuthState((current) => ({ ...current, googleClientSecret: value }))} type="password" />
+        <div className="grid gap-3 sm:grid-cols-3">
+          <ToggleCard label="Google" checked={oauthState.google.enabled} onChange={(checked) => setOAuthState((current) => ({ ...current, google: { ...current.google, enabled: checked } }))} />
+          <ToggleCard label="GitHub" checked={oauthState.github.enabled} onChange={(checked) => setOAuthState((current) => ({ ...current, github: { ...current.github, enabled: checked } }))} />
+          <ToggleCard label="Apple" checked={oauthState.apple.enabled} onChange={(checked) => setOAuthState((current) => ({ ...current, apple: { ...current.apple, enabled: checked } }))} />
+        </div>
+        <div className="mt-6 grid gap-6 lg:grid-cols-3">
+          <div className="space-y-4 rounded-[24px] border border-slate-200 bg-slate-50 p-5">
+            <div>
+              <div className="font-semibold text-slate-950">Google</div>
+              <div className="mt-1 text-sm text-slate-500">Used for Continue with Google.</div>
+            </div>
+            <Input label="Client ID" value={oauthState.google.clientId} onChange={(value) => setOAuthState((current) => ({ ...current, google: { ...current.google, clientId: value } }))} />
+            <Input label="Client secret" value={oauthState.google.clientSecret} onChange={(value) => setOAuthState((current) => ({ ...current, google: { ...current.google, clientSecret: value } }))} type="password" />
+          </div>
+          <div className="space-y-4 rounded-[24px] border border-slate-200 bg-slate-50 p-5">
+            <div>
+              <div className="font-semibold text-slate-950">GitHub</div>
+              <div className="mt-1 text-sm text-slate-500">Used for Continue with GitHub.</div>
+            </div>
+            <Input label="Client ID" value={oauthState.github.clientId} onChange={(value) => setOAuthState((current) => ({ ...current, github: { ...current.github, clientId: value } }))} />
+            <Input label="Client secret" value={oauthState.github.clientSecret} onChange={(value) => setOAuthState((current) => ({ ...current, github: { ...current.github, clientSecret: value } }))} type="password" />
+          </div>
+          <div className="space-y-4 rounded-[24px] border border-slate-200 bg-slate-50 p-5">
+            <div>
+              <div className="font-semibold text-slate-950">Apple</div>
+              <div className="mt-1 text-sm text-slate-500">Used for Continue with Apple.</div>
+            </div>
+            <Input label="Client ID" value={oauthState.apple.clientId} onChange={(value) => setOAuthState((current) => ({ ...current, apple: { ...current.apple, clientId: value } }))} />
+            <Input label="Client secret" value={oauthState.apple.clientSecret} onChange={(value) => setOAuthState((current) => ({ ...current, apple: { ...current.apple, clientSecret: value } }))} type="password" />
+          </div>
         </div>
       </SettingsCard>
 

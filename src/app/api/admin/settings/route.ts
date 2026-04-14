@@ -45,8 +45,21 @@ const requestSchema = z.discriminatedUnion("section", [
   z.object({
     section: z.literal("oauth"),
     value: z.object({
-      googleClientId: z.string(),
-      googleClientSecret: z.string()
+      google: z.object({
+        enabled: z.boolean(),
+        clientId: z.string(),
+        clientSecret: z.string()
+      }),
+      github: z.object({
+        enabled: z.boolean(),
+        clientId: z.string(),
+        clientSecret: z.string()
+      }),
+      apple: z.object({
+        enabled: z.boolean(),
+        clientId: z.string(),
+        clientSecret: z.string()
+      })
     })
   }),
   z.object({

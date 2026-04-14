@@ -19,9 +19,16 @@ export type PaymentIntegrationsSettings = {
   googlePay: { enabled: boolean };
 };
 
+export type OAuthProviderSettings = {
+  enabled: boolean;
+  clientId: string;
+  clientSecret: string;
+};
+
 export type OAuthSettings = {
-  googleClientId: string;
-  googleClientSecret: string;
+  google: OAuthProviderSettings;
+  github: OAuthProviderSettings;
+  apple: OAuthProviderSettings;
 };
 
 export type GeminiSettings = {
@@ -51,8 +58,21 @@ export const defaultPaymentIntegrations: PaymentIntegrationsSettings = {
 };
 
 export const defaultOAuthConfig: OAuthSettings = {
-  googleClientId: "",
-  googleClientSecret: ""
+  google: {
+    enabled: true,
+    clientId: "",
+    clientSecret: ""
+  },
+  github: {
+    enabled: true,
+    clientId: "",
+    clientSecret: ""
+  },
+  apple: {
+    enabled: true,
+    clientId: "",
+    clientSecret: ""
+  }
 };
 
 export const defaultGeminiConfig: GeminiSettings = {
@@ -69,6 +89,27 @@ function coerceString(value: unknown, fallback: string) {
 
 function coerceBoolean(value: unknown, fallback: boolean) {
   return typeof value === "boolean" ? value : fallback;
+}
+
+function normalizeOAuthProviderSettings(
+  value: unknown,
+  fallback: OAuthProviderSettings,
+  legacyClientId?: unknown,
+  legacyClientSecret?: unknown
+): OAuthProviderSettings {
+  if (!isObject(value)) {
+    return {
+      enabled: fallback.enabled,
+      clientId: coerceString(legacyClientId, fallback.clientId),
+      clientSecret: coerceString(legacyClientSecret, fallback.clientSecret)
+    };
+  }
+
+  return {
+    enabled: coerceBoolean(value.enabled, fallback.enabled),
+    clientId: coerceString(value.clientId, coerceString(legacyClientId, fallback.clientId)),
+    clientSecret: coerceString(value.clientSecret, coerceString(legacyClientSecret, fallback.clientSecret))
+  };
 }
 
 export const supportedActiveLanguages = fallbackLanguages.filter((language) =>
@@ -124,8 +165,9 @@ export function normalizeOAuthConfig(value: unknown): OAuthSettings {
   }
 
   return {
-    googleClientId: coerceString(value.googleClientId, defaultOAuthConfig.googleClientId),
-    googleClientSecret: coerceString(value.googleClientSecret, defaultOAuthConfig.googleClientSecret)
+    google: normalizeOAuthProviderSettings(value.google, defaultOAuthConfig.google, value.googleClientId, value.googleClientSecret),
+    github: normalizeOAuthProviderSettings(value.github, defaultOAuthConfig.github, value.githubClientId, value.githubClientSecret),
+    apple: normalizeOAuthProviderSettings(value.apple, defaultOAuthConfig.apple, value.appleClientId, value.appleClientSecret)
   };
 }
 
@@ -168,6 +210,41 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     oauthConfig: normalizeOAuthConfig(oauthConfig),
     geminiConfig: normalizeGeminiConfig(geminiConfig)
   };
+}
+
+export async function getOAuthSettings() {
+  const value = await getSettingValue("oauth_config");
+  return normalizeOAuthConfig(value);
+}
+
+export function getResolvedOAuthSettings(settings: OAuthSettings): OAuthSettings {
+  return {
+    google: {
+      enabled: settings.google.enabled,
+      clientId: settings.google.clientId || process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: settings.google.clientSecret || process.env.GOOGLE_CLIENT_SECRET || ""
+    },
+    github: {
+      enabled: settings.github.enabled,
+      clientId: settings.github.clientId || process.env.GITHUB_CLIENT_ID || "",
+      clientSecret: settings.github.clientSecret || process.env.GITHUB_CLIENT_SECRET || ""
+    },
+    apple: {
+      enabled: settings.apple.enabled,
+      clientId: settings.apple.clientId || process.env.APPLE_CLIENT_ID || "",
+      clientSecret: settings.apple.clientSecret || process.env.APPLE_CLIENT_SECRET || ""
+    }
+  };
+}
+
+export function getOAuthProviderAvailability(settings: OAuthSettings) {
+  const resolved = getResolvedOAuthSettings(settings);
+
+  return {
+    google: resolved.google.enabled && Boolean(resolved.google.clientId && resolved.google.clientSecret),
+    github: resolved.github.enabled && Boolean(resolved.github.clientId && resolved.github.clientSecret),
+    apple: resolved.apple.enabled && Boolean(resolved.apple.clientId && resolved.apple.clientSecret)
+  } as const;
 }
 
 export async function getPaymentIntegrationsSettings() {
