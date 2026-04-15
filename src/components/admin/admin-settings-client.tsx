@@ -8,7 +8,8 @@ import type {
   GeminiSettings,
   OAuthSettings,
   PaymentIntegrationsSettings,
-  SocialBotSettings
+  SocialBotSettings,
+  WelcomeEmailSettings
 } from "@/lib/platform-settings";
 
 type AdminSettingsClientProps = {
@@ -19,6 +20,7 @@ type AdminSettingsClientProps = {
   oauthConfig: OAuthSettings;
   geminiConfig: GeminiSettings;
   socialBotConfig: SocialBotSettings;
+  welcomeEmailConfig: WelcomeEmailSettings;
   canPersist: boolean;
 };
 
@@ -35,6 +37,7 @@ export function AdminSettingsClient({
   oauthConfig,
   geminiConfig,
   socialBotConfig,
+  welcomeEmailConfig,
   canPersist
 }: AdminSettingsClientProps) {
   const [selectedLanguageCodes, setSelectedLanguageCodes] = useState(activeLanguages.map((language) => language.code));
@@ -43,6 +46,7 @@ export function AdminSettingsClient({
   const [oauthState, setOAuthState] = useState(oauthConfig);
   const [geminiState, setGeminiState] = useState(geminiConfig);
   const [socialBotState, setSocialBotState] = useState(socialBotConfig);
+  const [welcomeEmailState, setWelcomeEmailState] = useState(welcomeEmailConfig);
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState>(null);
 
@@ -51,7 +55,7 @@ export function AdminSettingsClient({
     [availableLanguages, selectedLanguageCodes]
   );
 
-  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot", value: unknown) {
+  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "welcomeEmail", value: unknown) {
     setLoadingSection(section);
     setToast(null);
 
@@ -254,6 +258,33 @@ export function AdminSettingsClient({
               onChange={(event) => setSocialBotState((current) => ({ ...current, globalBotInstructions: event.target.value }))}
               rows={8}
               className="min-h-40 w-full rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white"
+            />
+          </label>
+        </div>
+      </SettingsCard>
+
+      <SettingsCard
+        title="Welcome email automation"
+        description="Automatically send a branded MagneticICT welcome email the first time a customer account is created."
+        action={<Button label="Save welcome email" loading={loadingSection === "welcomeEmail"} onClick={() => saveSection("welcomeEmail", welcomeEmailState)} />}
+      >
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <ToggleCard label="Welcome email enabled" checked={welcomeEmailState.enabled} onChange={(checked) => setWelcomeEmailState((current) => ({ ...current, enabled: checked }))} />
+        </div>
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <Input label="Email subject" value={welcomeEmailState.subject} onChange={(value) => setWelcomeEmailState((current) => ({ ...current, subject: value }))} />
+          <Input label="Headline" value={welcomeEmailState.headline} onChange={(value) => setWelcomeEmailState((current) => ({ ...current, headline: value }))} />
+          <Input label="CTA label" value={welcomeEmailState.ctaLabel} onChange={(value) => setWelcomeEmailState((current) => ({ ...current, ctaLabel: value }))} />
+          <Input label="CTA href" value={welcomeEmailState.ctaHref} onChange={(value) => setWelcomeEmailState((current) => ({ ...current, ctaHref: value }))} />
+        </div>
+        <div className="mt-6">
+          <label className="space-y-2 text-sm">
+            <span className="font-semibold text-slate-700">Email body</span>
+            <textarea
+              value={welcomeEmailState.body}
+              onChange={(event) => setWelcomeEmailState((current) => ({ ...current, body: event.target.value }))}
+              rows={7}
+              className="min-h-36 w-full rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white"
             />
           </label>
         </div>

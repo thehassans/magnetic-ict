@@ -42,6 +42,15 @@ export type SocialBotSettings = {
   webhookVerifyToken: string;
 };
 
+export type WelcomeEmailSettings = {
+  enabled: boolean;
+  subject: string;
+  headline: string;
+  body: string;
+  ctaLabel: string;
+  ctaHref: string;
+};
+
 export type PlatformSettingsBundle = {
   activeLanguages: ActiveLanguage[];
   footerDetails: FooterSettings;
@@ -49,6 +58,7 @@ export type PlatformSettingsBundle = {
   oauthConfig: OAuthSettings;
   geminiConfig: GeminiSettings;
   socialBotConfig: SocialBotSettings;
+  welcomeEmailConfig: WelcomeEmailSettings;
 };
 
 export const defaultFooterDetails: FooterSettings = {
@@ -92,6 +102,15 @@ export const defaultSocialBotConfig: SocialBotSettings = {
   metaAppId: "",
   metaConfigId: "",
   webhookVerifyToken: ""
+};
+
+export const defaultWelcomeEmailConfig: WelcomeEmailSettings = {
+  enabled: true,
+  subject: "Welcome to MagneticICT",
+  headline: "Welcome to MagneticICT",
+  body: "Your account is now ready. Explore your dashboard, browse our services, and reach out anytime if you need help getting started.",
+  ctaLabel: "Open your dashboard",
+  ctaHref: "/dashboard"
 };
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -209,6 +228,21 @@ export function normalizeSocialBotConfig(value: unknown): SocialBotSettings {
   };
 }
 
+export function normalizeWelcomeEmailConfig(value: unknown): WelcomeEmailSettings {
+  if (!isObject(value)) {
+    return defaultWelcomeEmailConfig;
+  }
+
+  return {
+    enabled: coerceBoolean(value.enabled, defaultWelcomeEmailConfig.enabled),
+    subject: coerceString(value.subject, defaultWelcomeEmailConfig.subject),
+    headline: coerceString(value.headline, defaultWelcomeEmailConfig.headline),
+    body: coerceString(value.body, defaultWelcomeEmailConfig.body),
+    ctaLabel: coerceString(value.ctaLabel, defaultWelcomeEmailConfig.ctaLabel),
+    ctaHref: coerceString(value.ctaHref, defaultWelcomeEmailConfig.ctaHref)
+  };
+}
+
 async function getSettingValue(key: string) {
   if (!hasDatabase) {
     return null;
@@ -223,13 +257,14 @@ async function getSettingValue(key: string) {
 }
 
 export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
-  const [activeLanguages, footerDetails, paymentIntegrations, oauthConfig, geminiConfig, socialBotConfig] = await Promise.all([
+  const [activeLanguages, footerDetails, paymentIntegrations, oauthConfig, geminiConfig, socialBotConfig, welcomeEmailConfig] = await Promise.all([
     getSettingValue("active_languages"),
     getSettingValue("footer_details"),
     getSettingValue("payment_integrations"),
     getSettingValue("oauth_config"),
     getSettingValue("gemini_api_key"),
-    getSettingValue("social_bot_config")
+    getSettingValue("social_bot_config"),
+    getSettingValue("welcome_email_config")
   ]);
 
   return {
@@ -238,7 +273,8 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     paymentIntegrations: normalizePaymentIntegrations(paymentIntegrations),
     oauthConfig: normalizeOAuthConfig(oauthConfig),
     geminiConfig: normalizeGeminiConfig(geminiConfig),
-    socialBotConfig: normalizeSocialBotConfig(socialBotConfig)
+    socialBotConfig: normalizeSocialBotConfig(socialBotConfig),
+    welcomeEmailConfig: normalizeWelcomeEmailConfig(welcomeEmailConfig)
   };
 }
 
@@ -265,6 +301,11 @@ export function getResolvedOAuthSettings(settings: OAuthSettings): OAuthSettings
       clientSecret: settings.apple.clientSecret || process.env.APPLE_CLIENT_SECRET || ""
     }
   };
+}
+
+export async function getWelcomeEmailSettings() {
+  const value = await getSettingValue("welcome_email_config");
+  return normalizeWelcomeEmailConfig(value);
 }
 
 export function getOAuthProviderAvailability(settings: OAuthSettings) {

@@ -8,6 +8,7 @@ import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import { z } from "zod";
 import { getConfiguredAdminEmail, getConfiguredAdminPasswordCandidates } from "@/lib/admin-credentials";
+import { sendWelcomeEmail } from "@/lib/email";
 import { hashOtpCode } from "@/lib/otp";
 import { defaultOAuthConfig, getOAuthSettings, getResolvedOAuthSettings } from "@/lib/platform-settings";
 import { prisma } from "@/lib/prisma";
@@ -132,6 +133,10 @@ function createBaseProviders(): Provider[] {
           const { code } = credentials.data;
           const now = new Date();
           const tokenHash = hashOtpCode(code);
+          const existingUser = await prisma.user.findUnique({
+            where: { email },
+            select: { id: true }
+          });
 
           const otpRecord = await prisma.emailOtp.findFirst({
             where: {
@@ -171,6 +176,10 @@ function createBaseProviders(): Provider[] {
               consumedAt: now
             }
           });
+
+          if (!existingUser) {
+            void sendWelcomeEmail({ email: user.email, customerName: user.name }).catch(() => null);
+          }
 
           return {
             id: user.id,
@@ -236,6 +245,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => ({
     strategy: "jwt"
   },
   providers: await buildProviders(),
+  events: {
+    async createUser({ user }) {
+      if (!user.email || user.role === "ADMIN") {
+        return;
+      }
+
+      void sendWelcomeEmail({ email: user.email, customerName: user.name }).catch(() => null);
+    }
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

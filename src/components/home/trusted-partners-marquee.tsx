@@ -6,14 +6,12 @@ import { InfiniteMarquee } from "@/components/home/infinite-marquee";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
 
 const partners = [
-  { name: "Stripe", Logo: StripeLogo },
-  { name: "Apple", Logo: AppleLogo },
-  { name: "Visa", Logo: VisaLogo },
-  { name: "AWS", Logo: AwsLogo },
-  { name: "Google", Logo: GoogleLogo },
-  { name: "PayPal", Logo: PayPalLogo },
+  { name: "Cloudflare", Logo: CloudflareLogo },
   { name: "Mastercard", Logo: MastercardLogo },
-  { name: "Cloudflare", Logo: CloudflareLogo }
+  { name: "Stripe", Logo: StripeLogo },
+  { name: "AWS", Logo: AwsLogo },
+  { name: "Apple Pay", Logo: AppleLogo },
+  { name: "Visa", Logo: VisaLogo }
 ] as const;
 
 export function TrustedPartnersMarquee() {
@@ -58,40 +56,16 @@ function StripeLogo() {
   );
 }
 
-function PayPalLogo() {
-  return (
-    <svg viewBox="0 0 180 44" className="h-9 w-auto" fill="none" aria-hidden="true">
-      <path d="M20 9h10c7 0 12 5 11 11-1 7-6 12-13 12h-5l-2 8h-8l5-31Z" fill="#003087" />
-      <path d="M28 9h8c7 0 12 5 11 11-1 7-6 12-13 12h-4l-1 6h-7l4-25Z" fill="#009CDE" opacity="0.95" />
-      <text x="53" y="29" fontSize="24" fontWeight="700" fill="#003087" fontFamily="Inter, Arial, sans-serif">
-        PayPal
-      </text>
-    </svg>
-  );
-}
-
 function AppleLogo() {
   return (
-    <svg viewBox="0 0 180 44" className="h-9 w-auto text-slate-900 dark:text-white" fill="none" aria-hidden="true">
+    <svg viewBox="0 0 220 44" className="h-9 w-auto text-slate-900 dark:text-white" fill="none" aria-hidden="true">
       <g fill="currentColor">
         <path d="M25 20c0-4 3-7 6-8-2-3-5-5-8-5-4 0-7 3-9 3s-5-3-8-3c-5 0-10 4-12 10-2 7 2 15 5 19 2 3 5 6 8 6 3 0 4-2 8-2 3 0 4 2 8 2 3 0 6-3 8-6 2-4 3-6 4-10-7-3-10-8-10-6Z" transform="translate(8 2) scale(0.65)" />
         <path d="M25 5c2-2 3-5 3-7-3 0-6 2-8 4-2 2-3 5-3 7 3 1 6-1 8-4Z" transform="translate(8 8) scale(0.65)" />
         <text x="42" y="29" fontSize="24" fontWeight="700" fontFamily="Inter, Arial, sans-serif">
-          Apple
+          Apple Pay
         </text>
       </g>
-    </svg>
-  );
-}
-
-function GoogleLogo() {
-  return (
-    <svg viewBox="0 0 180 44" className="h-9 w-auto text-slate-900 dark:text-white" fill="none" aria-hidden="true">
-      <path d="M27 22h-9v-6h15c0 1 1 2 1 4 0 10-7 17-17 17-10 0-18-8-18-18s8-18 18-18c5 0 9 2 13 5l-5 5c-2-2-5-3-8-3-6 0-11 5-11 11s5 11 11 11c6 0 9-4 10-8Z" fill="#4285F4" />
-      <path d="M18 8c3 0 6 1 8 3l5-5c-4-3-8-5-13-5-7 0-14 4-17 11l6 5c1-5 6-9 11-9Z" fill="#EA4335" />
-      <path d="M1 12c-1 2-2 5-2 7s1 5 2 7l6-5c-1-1-1-3-1-4s0-3 1-4l-6-5Z" fill="#FBBC05" />
-      <path d="M18 37c5 0 9-2 12-5l-6-5c-2 2-4 3-6 3-5 0-10-4-11-9l-6 5c3 7 10 11 17 11Z" fill="#34A853" />
-      <text x="47" y="29" fontSize="22" fontWeight="600" fill="currentColor" fontFamily="Inter, Arial, sans-serif">Google</text>
     </svg>
   );
 }

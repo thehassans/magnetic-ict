@@ -35,14 +35,14 @@ const Switch = ({ checked = false, onChange }: SwitchProps) => {
 
 const StyledWrapper = styled.div`
   .theme-switch {
-    --toggle-size: 15px;
-    --container-width: 5.625em;
-    --container-height: 2.5em;
-    --container-radius: 6.25em;
+    --toggle-size: 12px;
+    --container-width: 4.375em;
+    --container-height: 2em;
+    --container-radius: 4.375em;
     --container-light-bg: #3D7EAE;
     --container-night-bg: #1D1F2C;
-    --circle-container-diameter: 3.375em;
-    --sun-moon-diameter: 2.125em;
+    --circle-container-diameter: 2.625em;
+    --sun-moon-diameter: 1.625em;
     --sun-bg: #ECCA2F;
     --moon-bg: #C4C9D1;
     --spot-color: #959DB1;

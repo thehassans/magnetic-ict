@@ -24,6 +24,7 @@ export default async function AdminSettingsPage() {
         oauthConfig={settings.oauthConfig}
         geminiConfig={settings.geminiConfig}
         socialBotConfig={settings.socialBotConfig}
+        welcomeEmailConfig={settings.welcomeEmailConfig}
         canPersist={hasDatabase}
       />
     </AdminShell>

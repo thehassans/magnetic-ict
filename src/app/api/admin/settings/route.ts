@@ -76,6 +76,17 @@ const requestSchema = z.discriminatedUnion("section", [
       metaConfigId: z.string(),
       webhookVerifyToken: z.string()
     })
+  }),
+  z.object({
+    section: z.literal("welcomeEmail"),
+    value: z.object({
+      enabled: z.boolean(),
+      subject: z.string().min(1),
+      headline: z.string().min(1),
+      body: z.string().min(1),
+      ctaLabel: z.string().min(1),
+      ctaHref: z.string().min(1)
+    })
   })
 ]);
 
@@ -85,7 +96,8 @@ const settingKeyBySection = {
   payments: "payment_integrations",
   oauth: "oauth_config",
   gemini: "gemini_api_key",
-  socialBot: "social_bot_config"
+  socialBot: "social_bot_config",
+  welcomeEmail: "welcome_email_config"
 } as const;
 
 export async function PATCH(request: Request) {
