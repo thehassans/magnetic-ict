@@ -35,7 +35,7 @@ const Switch = ({ checked = false, onChange }: SwitchProps) => {
 
 const StyledWrapper = styled.div`
   .theme-switch {
-    --toggle-size: 30px;
+    --toggle-size: 15px;
     --container-width: 5.625em;
     --container-height: 2.5em;
     --container-radius: 6.25em;
