@@ -85,11 +85,17 @@ async function pathExists(candidatePath: string) {
   }
 }
 
+function isExplicitBinaryPath(value: string) {
+  return value.includes("/") || value.includes("\\");
+}
+
 async function resolveYtdlpBinaryPath() {
   const envPath = process.env.YT_DLP_BINARY?.trim();
 
   if (envPath) {
-    return envPath;
+    if (!isExplicitBinaryPath(envPath) || await pathExists(envPath)) {
+      return envPath;
+    }
   }
 
   const localCandidates = [
@@ -110,7 +116,9 @@ async function resolveFfmpegBinaryPath() {
   const envPath = process.env.FFMPEG_BINARY?.trim();
 
   if (envPath) {
-    return envPath;
+    if (!isExplicitBinaryPath(envPath) || await pathExists(envPath)) {
+      return envPath;
+    }
   }
 
   const localCandidates = [
