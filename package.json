@@ -32,7 +32,6 @@
     "next": "^15.2.4",
     "next-auth": "5.0.0-beta.25",
     "next-intl": "^4.1.0",
-    "node-ytdlp-wrap": "^1.2.0",
     "pdf-parse": "^1.1.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

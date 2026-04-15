@@ -3,7 +3,6 @@ import { promises as fs, createReadStream } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
-import ffmpegPath from "ffmpeg-static";
 
 export type SupportedDownloadPlatform = "youtube" | "instagram" | "facebook";
 export type DownloadOutputType = "mp4" | "mp3";
@@ -77,16 +76,56 @@ function sanitizeFileName(value: string) {
     .slice(0, 80) || "download";
 }
 
-async function resolveYtdlpBinaryPath() {
-  const libraryDirectory = path.join(process.cwd(), "node_modules", "node-ytdlp-wrap", "lib");
-  const files = await fs.readdir(libraryDirectory);
-  const binaryName = files.find((file) => /^yt-dlp-.*(\.exe)?$/i.test(file));
+async function pathExists(candidatePath: string) {
+  try {
+    await fs.access(candidatePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
-  if (!binaryName) {
-    throw new Error("yt-dlp binary is not available in node_modules.");
+async function resolveYtdlpBinaryPath() {
+  const envPath = process.env.YT_DLP_BINARY?.trim();
+
+  if (envPath) {
+    return envPath;
   }
 
-  return path.join(libraryDirectory, binaryName);
+  const localCandidates = [
+    path.join(process.cwd(), "bin", process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp"),
+    path.join(process.cwd(), "bin", process.platform === "win32" ? "youtube-dl.exe" : "youtube-dl")
+  ];
+
+  for (const candidatePath of localCandidates) {
+    if (await pathExists(candidatePath)) {
+      return candidatePath;
+    }
+  }
+
+  return process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp";
+}
+
+async function resolveFfmpegBinaryPath() {
+  const envPath = process.env.FFMPEG_BINARY?.trim();
+
+  if (envPath) {
+    return envPath;
+  }
+
+  const localCandidates = [
+    path.join(process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg.exe"),
+    path.join(process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg"),
+    path.join(process.cwd(), "bin", process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg")
+  ];
+
+  for (const candidatePath of localCandidates) {
+    if (await pathExists(candidatePath)) {
+      return candidatePath;
+    }
+  }
+
+  return process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg";
 }
 
 function toWebStream(filePath: string, onClose: () => Promise<void>) {
@@ -253,9 +292,7 @@ export async function buildDownloadResponse(input: DownloadRequest) {
     args.push("-f", `${input.formatId}+bestaudio[ext=m4a]/${input.formatId}+bestaudio/${input.formatId}/best[ext=mp4]/best`);
     args.push("--merge-output-format", "mp4");
   } else {
-    if (!ffmpegPath) {
-      throw new Error("MP3 conversion is not available because FFmpeg is missing.");
-    }
+    const ffmpegPath = await resolveFfmpegBinaryPath();
 
     args.push("-f", "bestaudio/best");
     args.push("--extract-audio", "--audio-format", "mp3", "--audio-quality", `${input.quality}K`, "--ffmpeg-location", ffmpegPath);

@@ -4,8 +4,6 @@ import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import sharp from "sharp";
-import ffmpegPath from "ffmpeg-static";
-import { path as ffprobePath } from "ffprobe-static";
 import { getPlatformSettings } from "@/lib/platform-settings";
 
 export type AiDetectionVerdict = "LIKELY_SYNTHETIC" | "POSSIBLY_SYNTHETIC" | "LIKELY_AUTHENTIC" | "INSUFFICIENT_SIGNAL";
@@ -296,7 +294,60 @@ async function writeTempFile(name: string, buffer: Buffer) {
   return tempPath;
 }
 
+async function pathExists(candidatePath: string) {
+  try {
+    await fs.access(candidatePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function resolveFfprobeBinaryPath() {
+  const envPath = process.env.FFPROBE_BINARY?.trim();
+
+  if (envPath) {
+    return envPath;
+  }
+
+  const localCandidates = [
+    path.join(process.cwd(), "node_modules", "ffprobe-static", "bin", process.platform, process.arch, process.platform === "win32" ? "ffprobe.exe" : "ffprobe"),
+    path.join(process.cwd(), "bin", process.platform === "win32" ? "ffprobe.exe" : "ffprobe")
+  ];
+
+  for (const candidatePath of localCandidates) {
+    if (await pathExists(candidatePath)) {
+      return candidatePath;
+    }
+  }
+
+  return process.platform === "win32" ? "ffprobe.exe" : "ffprobe";
+}
+
+async function resolveFfmpegBinaryPath() {
+  const envPath = process.env.FFMPEG_BINARY?.trim();
+
+  if (envPath) {
+    return envPath;
+  }
+
+  const localCandidates = [
+    path.join(process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg.exe"),
+    path.join(process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg"),
+    path.join(process.cwd(), "bin", process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg")
+  ];
+
+  for (const candidatePath of localCandidates) {
+    if (await pathExists(candidatePath)) {
+      return candidatePath;
+    }
+  }
+
+  return process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg";
+}
+
 async function readProbeData(filePath: string) {
+  const ffprobePath = await resolveFfprobeBinaryPath();
   const { stdout } = await runProcess(ffprobePath, [
     "-v",
     "quiet",
@@ -313,9 +364,7 @@ async function readProbeData(filePath: string) {
 }
 
 async function extractVideoFrames(videoPath: string, durationSeconds: number) {
-  if (!ffmpegPath) {
-    throw new Error("FFmpeg is not available in this environment.");
-  }
+  const ffmpegPath = await resolveFfmpegBinaryPath();
 
   const samplePoints = [0.18, 0.5, 0.82]
     .map((ratio) => clamp(durationSeconds * ratio, 0.1, Math.max(durationSeconds - 0.1, 0.1)));
@@ -351,7 +400,33 @@ async function assessVideoBuffer(buffer: Buffer, fileName: string): Promise<Heur
   const videoPath = await writeTempFile(fileName, buffer);
 
   try {
-    const probe = await readProbeData(videoPath);
+    let probe: Awaited<ReturnType<typeof readProbeData>>;
+
+    try {
+      probe = await readProbeData(videoPath);
+    } catch {
+      return {
+        score: 50,
+        metadata: {
+          duration: "Unknown",
+          dimensions: "Unknown",
+          bitrate: "Unknown",
+          videoCodec: "Unavailable",
+          audioCodec: "Unavailable",
+          sampledFrames: "0"
+        },
+        signals: [{
+          label: "Video forensic tooling unavailable",
+          value: fileName,
+          impact: "low",
+          direction: "neutral",
+          rationale: "FFmpeg/FFprobe are not available on this server, so only a minimal non-forensic video assessment can be returned."
+        }],
+        summary: "This video could not be deeply analyzed because server-side video forensic tooling is unavailable.",
+        sampledFrames: []
+      };
+    }
+
     const streams = probe.streams ?? [];
     const videoStream = streams.find((stream) => stream.codec_type === "video");
     const audioStream = streams.find((stream) => stream.codec_type === "audio");
@@ -361,7 +436,9 @@ async function assessVideoBuffer(buffer: Buffer, fileName: string): Promise<Heur
     const height = Number(videoStream?.height ?? 0);
     const metadataText = JSON.stringify(probe).toLowerCase();
     const syntheticHits = detectSyntheticMetadataHits(metadataText);
-    const frames = durationSeconds > 0 ? await extractVideoFrames(videoPath, durationSeconds) : [];
+    const frames = durationSeconds > 0
+      ? await extractVideoFrames(videoPath, durationSeconds).catch(() => [] as Array<{ timecode: string; buffer: Buffer }>)
+      : [];
     const frameAssessments = await Promise.all(frames.map((frame) => assessImageBuffer(frame.buffer, `${fileName}-${frame.timecode}.jpg`)));
     const averageFrameScore = frameAssessments.length > 0
       ? frameAssessments.reduce((sum, entry) => sum + entry.score, 0) / frameAssessments.length
