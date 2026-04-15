@@ -6,15 +6,15 @@ import { useTranslations } from "next-intl";
 import { InfiniteMarquee } from "@/components/home/infinite-marquee";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
 
-const partnerAssetVersion = "2026-04-15";
+const partnerAssetVersion = "2026-04-15-desktop";
 
 const partners = [
-  { name: "Cloudflare", src: `/partners/cloudflare.svg?v=${partnerAssetVersion}`, width: 200, height: 44 },
-  { name: "Mastercard", src: `/partners/mastercard.svg?v=${partnerAssetVersion}`, width: 190, height: 44 },
-  { name: "Stripe", src: `/partners/stripe.svg?v=${partnerAssetVersion}`, width: 190, height: 44 },
-  { name: "AWS", src: `/partners/aws.svg?v=${partnerAssetVersion}`, width: 180, height: 44 },
-  { name: "Apple Pay", src: `/partners/apple-pay.svg?v=${partnerAssetVersion}`, width: 220, height: 44 },
-  { name: "Visa", src: `/partners/visa.svg?v=${partnerAssetVersion}`, width: 180, height: 44 }
+  { name: "Cloudflare", src: `/partners/cloudflare.png?v=${partnerAssetVersion}`, width: 200, height: 56 },
+  { name: "Mastercard", src: `/partners/mastercard.png?v=${partnerAssetVersion}`, width: 190, height: 56 },
+  { name: "Stripe", src: `/partners/stripe.jpg?v=${partnerAssetVersion}`, width: 190, height: 56 },
+  { name: "AWS", src: `/partners/aws.webp?v=${partnerAssetVersion}`, width: 180, height: 56 },
+  { name: "Apple Pay", src: `/partners/apple-pay.jpg?v=${partnerAssetVersion}`, width: 220, height: 56 },
+  { name: "Visa", src: `/partners/visa.jpg?v=${partnerAssetVersion}`, width: 180, height: 56 }
 ] as const;
 
 export function TrustedPartnersMarquee() {

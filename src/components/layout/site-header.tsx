@@ -155,7 +155,7 @@ export function SiteHeader({ locale, activeLanguages, sessionUser, hasMagneticSo
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.98 }}
                       transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                      className="absolute left-1/2 top-[calc(100%+1rem)] w-[min(94vw,980px)] -translate-x-1/2 overflow-hidden rounded-[32px] border border-violet-100 bg-white/95 p-3 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/95"
+                      className="absolute left-1/2 top-[calc(100%+0.35rem)] w-[min(94vw,980px)] -translate-x-1/2 overflow-hidden rounded-[32px] border border-violet-100 bg-white/95 p-3 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/95"
                     >
                       <div className="rounded-[28px] border border-violet-100 bg-gradient-to-br from-white via-violet-50/60 to-cyan-50/70 p-6 dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.95),rgba(30,41,59,0.9))]">
                         <div className="mx-auto mb-6 max-w-2xl text-center">

@@ -56,6 +56,8 @@ export default async function AdminServicesPage() {
   ]);
 
   const typedOrders = orders as ServiceOrder[];
+  const activeServices = services.filter((service: ServiceOverride) => !service.visibility.deleted);
+  const deletedServices = services.filter((service: ServiceOverride) => service.visibility.deleted);
 
   return (
     <AdminShell
@@ -76,13 +78,13 @@ export default async function AdminServicesPage() {
       }
     >
       <section className="grid gap-5 md:grid-cols-3">
-        <StatCard label="Catalog services" value={String(services.length)} />
+        <StatCard label="Catalog services" value={String(activeServices.length)} />
         <StatCard label="Hidden or deleted" value={String(services.filter((service: ServiceOverride) => !service.visibility.enabled || service.visibility.deleted).length)} />
         <StatCard label="Total tiers" value={String(services.reduce((sum: number, service: ServiceOverride) => sum + service.tiers.length, 0))} />
       </section>
 
       <section className="space-y-4">
-        {services.map((service: ServiceOverride) => {
+        {activeServices.map((service: ServiceOverride) => {
           const tierIds = new Set(service.tiers.map((tier: ServiceOverride["tiers"][number]) => tier.id));
           const serviceOrders = typedOrders.filter((order) => tierIds.has(order.serviceTierId) && (order.status === "PAID" || order.status === "FULFILLED"));
           const grossRevenue = serviceOrders.reduce((sum, order) => sum + order.amount, 0);
@@ -145,6 +147,33 @@ export default async function AdminServicesPage() {
           );
         })}
       </section>
+
+      {deletedServices.length > 0 ? (
+        <section className="space-y-4">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Deleted services</div>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Restore removed services</h2>
+            <p className="mt-2 text-sm text-slate-600">Deleted services stay out of the main admin list and storefront until restored.</p>
+          </div>
+
+          {deletedServices.map((service: ServiceOverride) => (
+            <div key={service.id} className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)] sm:p-8">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                <div className="max-w-3xl">
+                  <div className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">{service.category}</div>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">{service.name}</h2>
+                  <p className="mt-3 text-sm leading-7 text-slate-600">{service.description}</p>
+                </div>
+                <div className="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-rose-800">Deleted</div>
+              </div>
+
+              <div className="mt-6">
+                <AdminServiceVisibilityControls service={service} disabled={!hasDatabase} />
+              </div>
+            </div>
+          ))}
+        </section>
+      ) : null}
     </AdminShell>
   );
 }

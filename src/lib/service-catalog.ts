@@ -630,13 +630,7 @@ export const liveServiceCatalogKeys = [
   "websiteBackup",
   "emailServices",
   "siteLockVpn",
-  "nordVpn",
-  "imageConversion",
-  "siteMonitoring",
-  "aiDetection",
-  "videoDownloader",
-  "magneticSocialBot",
-  "magneticFaceSearch"
+  "nordVpn"
 ] as const satisfies ReadonlyArray<ServiceMenuKey>;
 
 const liveServiceCatalogKeySet = new Set<ServiceMenuKey>(liveServiceCatalogKeys);

@@ -40,25 +40,41 @@ export function AdminServiceVisibilityControls({ service, disabled }: { service:
   const isDeleted = service.visibility.deleted;
   const isEnabled = service.visibility.enabled && !isDeleted;
 
+  function handleDeleteToggle() {
+    const nextDeleted = !isDeleted;
+
+    if (nextDeleted && typeof window !== "undefined") {
+      const confirmed = window.confirm("Delete this service from the admin list and storefront? You can restore it later.");
+
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    updateVisibility({ deleted: nextDeleted, enabled: isDeleted });
+  }
+
   return (
     <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
       <div className="flex flex-wrap items-center gap-2">
         <StatusBadge label={isDeleted ? "Deleted" : isEnabled ? "Enabled" : "Disabled"} tone={isDeleted ? "rose" : isEnabled ? "emerald" : "amber"} />
+        {!isDeleted ? (
+          <button
+            type="button"
+            onClick={() => updateVisibility({ enabled: !isEnabled, deleted: false })}
+            disabled={disabled || isPending}
+            className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isEnabled ? "Disable" : "Enable"}
+          </button>
+        ) : null}
         <button
           type="button"
-          onClick={() => updateVisibility({ enabled: !isEnabled, deleted: false })}
+          onClick={handleDeleteToggle}
           disabled={disabled || isPending}
           className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isEnabled ? "Disable" : "Enable"}
-        </button>
-        <button
-          type="button"
-          onClick={() => updateVisibility({ deleted: !isDeleted, enabled: isDeleted })}
-          disabled={disabled || isPending}
-          className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isDeleted ? "Restore" : "Delete"}
+          {isDeleted ? "Restore service" : "Delete service"}
         </button>
       </div>
       {message ? <p className={`mt-3 text-sm ${isError ? "text-rose-600" : "text-emerald-600"}`}>{message}</p> : null}
