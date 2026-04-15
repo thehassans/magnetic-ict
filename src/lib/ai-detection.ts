@@ -43,6 +43,7 @@ type GeminiAssessment = {
 };
 
 type HeuristicAssessment = {
+  verdict: AiDetectionVerdict;
   score: number;
   metadata: Record<string, string>;
   signals: AiDetectionSignal[];
@@ -86,36 +87,91 @@ function formatSeconds(seconds: number) {
   return `${minutes}:${String(remainder).padStart(2, "0")}`;
 }
 
-function verdictFromScore(score: number): AiDetectionVerdict {
-  if (score >= 72) {
+function signalWeight(signal: AiDetectionSignal) {
+  if (signal.impact === "high") {
+    return 3;
+  }
+
+  if (signal.impact === "medium") {
+    return 2;
+  }
+
+  return 1;
+}
+
+function strongestSignal(signals: AiDetectionSignal[], direction?: AiDetectionSignal["direction"]) {
+  return signals
+    .filter((signal) => signal.direction !== "neutral" && (!direction || signal.direction === direction))
+    .sort((left, right) => signalWeight(right) - signalWeight(left))[0] ?? null;
+}
+
+function verdictFromAssessment(score: number, signals: AiDetectionSignal[]): AiDetectionVerdict {
+  const syntheticWeight = signals
+    .filter((signal) => signal.direction === "synthetic")
+    .reduce((sum, signal) => sum + signalWeight(signal), 0);
+  const authenticWeight = signals
+    .filter((signal) => signal.direction === "authentic")
+    .reduce((sum, signal) => sum + signalWeight(signal), 0);
+  const hasStrongSyntheticSignal = signals.some((signal) => signal.direction === "synthetic" && signal.impact === "high");
+  const hasStrongAuthenticSignal = signals.some((signal) => signal.direction === "authentic" && signal.impact !== "low");
+
+  if (score >= 78 && (hasStrongSyntheticSignal || syntheticWeight >= 4) && syntheticWeight >= authenticWeight + 2) {
     return "LIKELY_SYNTHETIC";
   }
 
-  if (score >= 52) {
+  if (score >= 64 && syntheticWeight >= 3 && syntheticWeight >= authenticWeight + 1) {
     return "POSSIBLY_SYNTHETIC";
   }
 
-  if (score <= 36) {
+  if (score <= 34 && hasStrongAuthenticSignal && authenticWeight >= syntheticWeight + 1) {
     return "LIKELY_AUTHENTIC";
   }
 
   return "INSUFFICIENT_SIGNAL";
 }
 
-function summaryFromVerdict(verdict: AiDetectionVerdict, confidence: number, mediaType: "image" | "video") {
-  if (verdict === "LIKELY_SYNTHETIC") {
-    return `This ${mediaType} shows several signals that commonly appear in AI-generated or heavily synthetic media.`;
+function confidenceFromAssessment(score: number, verdict: AiDetectionVerdict, signals: AiDetectionSignal[]) {
+  const weightedEvidence = signals.reduce((sum, signal) => sum + signalWeight(signal), 0);
+  const distanceFromCenter = Math.abs(score - 50);
+
+  if (verdict === "LIKELY_SYNTHETIC" || verdict === "LIKELY_AUTHENTIC") {
+    return clamp(64 + distanceFromCenter + weightedEvidence * 2, 64, 96);
   }
 
   if (verdict === "POSSIBLY_SYNTHETIC") {
-    return `This ${mediaType} contains mixed signals. Some characteristics lean synthetic, but the evidence is not fully decisive.`;
+    return clamp(48 + Math.round(distanceFromCenter * 0.8) + weightedEvidence * 2, 48, 78);
+  }
+
+  return clamp(18 + Math.round(distanceFromCenter * 0.5) + weightedEvidence, 18, 42);
+}
+
+function summaryFromVerdict(verdict: AiDetectionVerdict, mediaType: "image" | "video", signals: AiDetectionSignal[]) {
+  const topSyntheticSignal = strongestSignal(signals, "synthetic");
+  const topAuthenticSignal = strongestSignal(signals, "authentic");
+
+  if (verdict === "LIKELY_SYNTHETIC") {
+    return topSyntheticSignal
+      ? `Likely AI-generated. ${topSyntheticSignal.label} stood out most.`
+      : `Likely AI-generated. Multiple synthetic signals were found.`;
+  }
+
+  if (verdict === "POSSIBLY_SYNTHETIC") {
+    return topSyntheticSignal
+      ? `Leans AI-generated. ${topSyntheticSignal.label} raised concern.`
+      : `Leans AI-generated. Some synthetic signals were found.`;
   }
 
   if (verdict === "LIKELY_AUTHENTIC") {
-    return `This ${mediaType} leans authentic based on the available forensic and metadata signals.`;
+    return topAuthenticSignal
+      ? `Likely authentic. ${topAuthenticSignal.label} looked natural.`
+      : `Likely authentic. The file looks more like real captured media.`;
   }
 
-  return `This ${mediaType} does not expose enough reliable signals for a strong authenticity verdict. Confidence is ${confidence}%.`;
+  if (topSyntheticSignal || topAuthenticSignal) {
+    return `Unclear. The ${mediaType} does not contain enough strong evidence yet.`;
+  }
+
+  return `Unclear. Not enough reliable evidence was found.`;
 }
 
 async function runProcess(command: string, args: string[]) {
@@ -225,12 +281,12 @@ async function assessImageBuffer(buffer: Buffer, fileName: string): Promise<Heur
 
   if (!metadata.exif && syntheticHits.length === 0) {
     pushSignal(signals, scoreRef, {
-      label: "Missing EXIF context",
+      label: "Missing camera metadata",
       value: "No structured EXIF detected",
       impact: "low",
-      direction: "synthetic",
-      rationale: "Many exported or generated assets ship without capture metadata, though edited real photos can behave the same way.",
-      scoreDelta: 8
+      direction: "neutral",
+      rationale: "Missing EXIF alone is common after screenshots, exports, and edits, so it is only a weak clue.",
+      scoreDelta: 4
     });
   }
 
@@ -279,11 +335,13 @@ async function assessImageBuffer(buffer: Buffer, fileName: string): Promise<Heur
   }
 
   const score = clamp(scoreRef.current, 0, 100);
+  const verdict = verdictFromAssessment(score, signals);
   return {
+    verdict,
     score,
     metadata: metadataMap,
     signals,
-    summary: summaryFromVerdict(verdictFromScore(score), Math.round(Math.abs(score - 50) * 2), "image"),
+    summary: summaryFromVerdict(verdict, "image", signals),
     sampledFrames: []
   };
 }
@@ -414,6 +472,7 @@ async function assessVideoBuffer(buffer: Buffer, fileName: string): Promise<Heur
       probe = await readProbeData(videoPath);
     } catch {
       return {
+        verdict: "INSUFFICIENT_SIGNAL",
         score: 50,
         metadata: {
           duration: "Unknown",
@@ -430,7 +489,7 @@ async function assessVideoBuffer(buffer: Buffer, fileName: string): Promise<Heur
           direction: "neutral",
           rationale: "FFmpeg/FFprobe are not available on this server, so only a minimal non-forensic video assessment can be returned."
         }],
-        summary: "This video could not be deeply analyzed because server-side video forensic tooling is unavailable.",
+        summary: "Unclear. Video analysis tools are not available on this server.",
         sampledFrames: []
       };
     }
@@ -518,17 +577,20 @@ async function assessVideoBuffer(buffer: Buffer, fileName: string): Promise<Heur
     }
 
     const score = clamp(Math.round(scoreRef.current), 0, 100);
+    const fallbackSignals = signals.length > 0 ? signals : [{
+      label: "Limited video indicators",
+      value: fileName,
+      impact: "low",
+      direction: "neutral",
+      rationale: "The clip did not expose enough strong synthetic or authentic markers for a decisive forensic-only verdict."
+    } satisfies AiDetectionSignal];
+    const verdict = verdictFromAssessment(score, fallbackSignals);
     return {
+      verdict,
       score,
       metadata,
-      signals: signals.length > 0 ? signals : [{
-        label: "Limited video indicators",
-        value: fileName,
-        impact: "low",
-        direction: "neutral",
-        rationale: "The clip did not expose enough strong synthetic or authentic markers for a decisive forensic-only verdict."
-      }],
-      summary: summaryFromVerdict(verdictFromScore(score), Math.round(Math.abs(score - 50) * 2), "video"),
+      signals: fallbackSignals,
+      summary: summaryFromVerdict(verdict, "video", fallbackSignals),
       sampledFrames: frameAssessments.map((frame, index) => ({ timecode: frames[index]?.timecode ?? `${index + 1}`, score: Math.round(frame.score) }))
     };
   } finally {
@@ -597,6 +659,7 @@ async function getGeminiImageAssessment(file: File, heuristic: HeuristicAssessme
       text: [
         "Assess whether this uploaded media is likely AI-generated or likely authentic.",
         "Return strict JSON with keys: verdict, confidence, summary, reasons.",
+        "Make summary one short sentence.",
         "Allowed verdict values: LIKELY_SYNTHETIC, POSSIBLY_SYNTHETIC, LIKELY_AUTHENTIC, INSUFFICIENT_SIGNAL.",
         `Heuristic summary: ${heuristic.summary}`,
         `Metadata: ${JSON.stringify(heuristic.metadata)}`,
@@ -621,6 +684,7 @@ async function getGeminiVideoAssessment(fileName: string, heuristic: HeuristicAs
         "Assess whether this uploaded video is likely AI-generated or likely authentic.",
         "The actual video is represented by sampled frames plus forensic metadata.",
         "Return strict JSON with keys: verdict, confidence, summary, reasons.",
+        "Make summary one short sentence.",
         "Allowed verdict values: LIKELY_SYNTHETIC, POSSIBLY_SYNTHETIC, LIKELY_AUTHENTIC, INSUFFICIENT_SIGNAL.",
         `Video file: ${fileName}`,
         `Metadata: ${JSON.stringify(heuristic.metadata)}`,
@@ -643,8 +707,8 @@ async function getGeminiVideoAssessment(fileName: string, heuristic: HeuristicAs
 }
 
 function mergeGeminiAssessment(heuristic: HeuristicAssessment, gemini: GeminiAssessment | null, mediaType: "image" | "video") {
-  const heuristicVerdict = verdictFromScore(heuristic.score);
-  const heuristicConfidence = clamp(Math.round(Math.abs(heuristic.score - 50) * 2), 20, 96);
+  const heuristicVerdict = heuristic.verdict;
+  const heuristicConfidence = confidenceFromAssessment(heuristic.score, heuristic.verdict, heuristic.signals);
 
   if (!gemini) {
     return {
@@ -664,13 +728,14 @@ function mergeGeminiAssessment(heuristic: HeuristicAssessment, gemini: GeminiAss
         : 50;
 
   const blendedScore = Math.round(heuristic.score * 0.55 + geminiScoreAnchor * 0.45);
-  const verdict = verdictFromScore(blendedScore);
-  const confidence = clamp(Math.round((heuristicConfidence * 0.5) + (gemini.confidence * 0.5)), 28, 98);
+  const verdict = verdictFromAssessment(blendedScore, heuristic.signals);
+  const confidenceFloor = verdict === "INSUFFICIENT_SIGNAL" ? 24 : verdict === "POSSIBLY_SYNTHETIC" ? 50 : 64;
+  const confidence = clamp(Math.round((heuristicConfidence * 0.55) + (gemini.confidence * 0.45)), confidenceFloor, 98);
 
   return {
     verdict,
     confidence,
-    summary: gemini.summary || summaryFromVerdict(verdict, confidence, mediaType),
+    summary: summaryFromVerdict(verdict, mediaType, heuristic.signals),
     modelAssisted: true
   };
 }

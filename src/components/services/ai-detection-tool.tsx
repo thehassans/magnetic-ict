@@ -33,19 +33,19 @@ type AiDetectionResult = {
 
 const verdictConfig = {
   LIKELY_SYNTHETIC: {
-    label: "Likely AI-generated",
+    label: "Looks AI-generated",
     card: "border-rose-200 bg-rose-50/90 text-rose-700 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-200"
   },
   POSSIBLY_SYNTHETIC: {
-    label: "Possibly synthetic",
+    label: "May be AI-generated",
     card: "border-amber-200 bg-amber-50/90 text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-200"
   },
   LIKELY_AUTHENTIC: {
-    label: "Likely authentic",
+    label: "Looks real",
     card: "border-emerald-200 bg-emerald-50/90 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-200"
   },
   INSUFFICIENT_SIGNAL: {
-    label: "Insufficient signal",
+    label: "Not enough evidence",
     card: "border-slate-200 bg-slate-50/90 text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
   }
 } as const;
@@ -76,13 +76,14 @@ export function AiDetectionTool({ compact = false }: { compact?: boolean }) {
 
   const isVideo = selectedFile?.type.startsWith("video/") ?? false;
   const verdict = result ? verdictConfig[result.verdict] : null;
+  const mainSignal = result?.signals.find((signal) => signal.direction !== "neutral") ?? result?.signals[0] ?? null;
   const stats = useMemo(
     () => [
+      { label: "Result", value: result ? verdictConfig[result.verdict].label : "-" },
       { label: "Confidence", value: result ? `${result.confidence}%` : "-" },
-      { label: "Signal score", value: result ? `${result.signalScore}/100` : "-" },
-      { label: "Reasoning", value: result ? (result.modelAssisted ? "Forensics + Gemini" : "Forensics only") : "-" }
+      { label: "Main clue", value: result ? (mainSignal?.label ?? "No strong clue") : "-" }
     ],
-    [result]
+    [mainSignal, result]
   );
 
   function handleFile(file: File | null) {
@@ -130,7 +131,7 @@ export function AiDetectionTool({ compact = false }: { compact?: boolean }) {
       }
 
       setResult(payload.result);
-      setMessage(compact ? "Done." : "Analysis complete. Review the verdict, evidence signals, and confidence breakdown.");
+      setMessage(compact ? "Done." : "Analysis complete. Review the result and the main clue behind it.");
     } catch (caughtError) {
       const nextError = caughtError instanceof Error ? caughtError.message : "Unable to analyze this media right now.";
       setError(nextError);
@@ -232,9 +233,9 @@ export function AiDetectionTool({ compact = false }: { compact?: boolean }) {
                     <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-gradient-to-br from-violet-500 to-cyan-400 text-white shadow-glow">
                       {isVideo ? <FileVideo2 className="h-6 w-6" /> : <ImageIcon className="h-6 w-6" />}
                     </div>
-                    <h2 className="mt-5 text-2xl font-semibold text-slate-950 dark:text-white">Upload media and inspect whether it looks synthetic.</h2>
+                    <h2 className="mt-5 text-2xl font-semibold text-slate-950 dark:text-white">Upload media and get a simple AI-likelihood verdict.</h2>
                     <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
-                      This workspace combines local forensic heuristics, metadata signals, sampled-frame analysis, and optional Gemini-assisted reasoning when your admin Gemini key is configured.
+                      The result is designed to be short and readable: a verdict, confidence level, and the strongest clue behind it.
                     </p>
                     <p className={cn("mt-4 text-sm", error ? "text-rose-600" : "text-slate-500 dark:text-slate-400")}>{message}</p>
                   </>
@@ -341,6 +342,7 @@ export function AiDetectionTool({ compact = false }: { compact?: boolean }) {
               <div className="text-xs uppercase tracking-[0.26em]">Verdict</div>
               <div className="mt-4 text-3xl font-semibold tracking-tight">{verdict?.label}</div>
               <p className="mt-4 text-sm leading-7">{result.summary}</p>
+              {mainSignal ? <p className="mt-2 text-sm opacity-80">Main clue: {mainSignal.label}</p> : null}
             </div>
 
             <div className="rounded-[34px] border border-violet-100 bg-white/90 p-6 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70">
@@ -358,7 +360,7 @@ export function AiDetectionTool({ compact = false }: { compact?: boolean }) {
 
           <div className="space-y-6">
             <div className="rounded-[34px] border border-violet-100 bg-white/90 p-6 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70">
-              <div className="text-xs uppercase tracking-[0.26em] text-cyan-700 dark:text-cyan-300">Signal breakdown</div>
+              <div className="text-xs uppercase tracking-[0.26em] text-cyan-700 dark:text-cyan-300">Why this result</div>
               <div className="mt-5 space-y-4">
                 {result.signals.map((signal) => (
                   <div key={`${signal.label}-${signal.value}`} className="rounded-[26px] border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
