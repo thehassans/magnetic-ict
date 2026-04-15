@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Activity, Briefcase, Bot, Database, Globe, ImageIcon, LayoutGrid, Lock, Mail, ScanFace, Search, Shield, ShieldCheck } from "lucide-react";
+import { Activity, Briefcase, Bot, BrainCircuit, Database, Download, Globe, ImageIcon, LayoutGrid, Lock, Mail, ScanFace, Search, Shield, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getServiceDescription, getServiceTitle } from "@/lib/service-i18n";
@@ -16,6 +16,8 @@ const iconMap = {
   professionalEmail: Briefcase,
   seoTools: Search,
   imageConversion: ImageIcon,
+  aiDetection: BrainCircuit,
+  videoDownloader: Download,
   magneticSocialBot: Bot,
   magneticFaceSearch: ScanFace,
   siteLockVpn: Lock,

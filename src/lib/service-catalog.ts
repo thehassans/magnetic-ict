@@ -257,6 +257,84 @@ const allServiceCatalog: CatalogService[] = [
     ]
   },
   {
+    id: "aiDetection",
+    name: "AI Detection",
+    category: "AI Media Forensics",
+    eyebrow: "Synthetic media analysis",
+    tagline: "Upload an image or video and inspect whether it appears AI-generated using media forensics, sampled-frame analysis, and Gemini-assisted reasoning.",
+    description:
+      "Launch a premium AI detection workspace where users can upload images or short videos, review forensic indicators, inspect confidence scoring, and understand why content looks synthetic or authentic.",
+    imageLabel: "Media Authenticity Lab",
+    highlights: ["Image and video support", "Forensic signal scoring", "Confidence-backed decision summary"],
+    benefits: [
+      "Let visitors check suspicious images or videos inside a polished trust-first workflow.",
+      "Combine metadata, compression, frame sampling, and AI reasoning into one readable result.",
+      "Present clear findings, confidence levels, and signals instead of a black-box yes-or-no answer."
+    ],
+    tiers: [
+      {
+        id: "aiDetection-starter",
+        name: "Starter",
+        price: 0,
+        summary: "Free authenticity checks for a single uploaded image or short video.",
+        features: ["Image or video upload", "Confidence score", "Plain-language verdict"]
+      },
+      {
+        id: "aiDetection-professional",
+        name: "Professional",
+        price: 0,
+        summary: "Free forensic breakdown with metadata, signal cards, and reasoning highlights.",
+        features: ["Metadata review", "Frame-sample analysis", "Synthetic signal explanation"]
+      },
+      {
+        id: "aiDetection-enterprise",
+        name: "Enterprise",
+        price: 0,
+        summary: "Free premium experience with side-by-side insights and downloadable evidence summary.",
+        features: ["Premium analysis UI", "Evidence panel", "No checkout required"]
+      }
+    ]
+  },
+  {
+    id: "videoDownloader",
+    name: "Video Downloader",
+    category: "Media Utilities",
+    eyebrow: "Universal save flow",
+    tagline: "Paste YouTube, Instagram, or Facebook links and download available audio or video outputs in the format and quality you want.",
+    description:
+      "Offer a polished downloader experience where users paste a supported video link, preview the media, choose MP4 or MP3 output, select available quality options, and save the file cleanly.",
+    imageLabel: "Premium Download Console",
+    highlights: ["YouTube, Instagram, and Facebook", "MP4 or MP3 output", "Quality-aware download selection"],
+    benefits: [
+      "Turn a common user need into a premium utility that drives repeat visits.",
+      "Give users a clear format and quality selection flow instead of a cluttered downloader UI.",
+      "Support fast previews, direct downloads, and clean feedback for unsupported or restricted links."
+    ],
+    tiers: [
+      {
+        id: "videoDownloader-starter",
+        name: "Starter",
+        price: 0,
+        summary: "Free link analysis with preview, source details, and available download formats.",
+        features: ["Paste supported URL", "Preview title and thumbnail", "Inspect available outputs"]
+      },
+      {
+        id: "videoDownloader-professional",
+        name: "Professional",
+        price: 0,
+        summary: "Free quality selection for MP4 video and MP3 audio downloads.",
+        features: ["MP4 quality options", "MP3 conversion", "Source-aware format choices"]
+      },
+      {
+        id: "videoDownloader-enterprise",
+        name: "Enterprise",
+        price: 0,
+        summary: "Free premium download workflow built for speed, clarity, and cross-platform support.",
+        features: ["Clean downloader UX", "Cross-platform link support", "No payment required"]
+      }
+    ]
+  },
+  {
     id: "magneticSocialBot",
     name: "Magnetic Social Bot",
     category: "AI Messaging Automation",
@@ -543,7 +621,7 @@ const allServiceCatalog: CatalogService[] = [
   }
 ];
 
-export const liveServiceCatalogKeys = ["imageConversion", "magneticSocialBot", "magneticFaceSearch"] as const satisfies ReadonlyArray<ServiceMenuKey>;
+export const liveServiceCatalogKeys = ["imageConversion", "aiDetection", "videoDownloader", "magneticSocialBot", "magneticFaceSearch"] as const satisfies ReadonlyArray<ServiceMenuKey>;
 
 const liveServiceCatalogKeySet = new Set<ServiceMenuKey>(liveServiceCatalogKeys);
 

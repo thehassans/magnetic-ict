@@ -61,8 +61,16 @@
         "description": "Visibilité, analytique et intelligence de classement pour les marques en croissance."
       },
       "imageConversion": {
-        "title": "Image Conversion",
-        "description": "Un convertisseur et redimensionneur d'images gratuit pour les téléchargements JPG, PNG et WebP."
+        "title": "Conversion d'images",
+        "description": "Un convertisseur et redimensionneur d’images gratuit pour les téléchargements JPG, PNG et WebP."
+      },
+      "aiDetection": {
+        "title": "AI Detection",
+        "description": "Téléversez une image ou une vidéo et vérifiez si elle semble générée par IA avec des signaux forensiques premium."
+      },
+      "videoDownloader": {
+        "title": "Video Downloader",
+        "description": "Collez un lien YouTube, Instagram ou Facebook et téléchargez en MP4 ou MP3 avec la qualité souhaitée."
       },
       "magneticSocialBot": {
         "title": "Magnetic Social Bot",

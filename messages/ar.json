@@ -57,8 +57,13 @@
       "emailServices": {"title": "خدمات البريد", "description": "ادوات موثوقة للبريد التجاري والمعاملاتي مع تسليم امن."},
       "professionalEmail": {"title": "البريد الاحترافي والتطبيقات", "description": "حزم تواصل تحمل علامتك للفرق سريعة الحركة."},
       "seoTools": {"title": "ادوات SEO", "description": "ظهور وتحليلات وذكاء ترتيب للعلامات سريعة النمو."},
-      "imageConversion": {"title": "Image Conversion", "description": "اداة مجانية لتحويل الصور وتغيير حجمها لملفات JPG وPNG وWebP."},
-      "magneticSocialBot": {"title": "Magnetic Social Bot", "description": "صندوق وارد ذكي متعدد القنوات لواتساب وانستغرام وماسنجر مع Gemini وبيانات RAG الخاصة بالنشاط."},
+      "imageConversion": {"title": "تحويل الصور", "description": "اداة مجانية لتحويل وتغيير حجم صور JPG وPNG وWebP."},
+      "aiDetection": {"title": "AI Detection", "description": "ارفع صورة او فيديو وتحقق مما اذا كان يبدو مولدا بالذكاء الاصطناعي باستخدام اشارات تحليلية مميزة."},
+      "videoDownloader": {"title": "Video Downloader", "description": "الصق رابط YouTube او Instagram او Facebook وقم بالتنزيل بصيغة MP4 او MP3 بالجودة التي تريدها."},
+      "magneticSocialBot": {
+        "title": "Magnetic Social Bot",
+        "description": "صندوق رسائل متعدد القنوات لواتساب وانستغرام ومسنجر مع Gemini ومعرفة النشاط التجاري."
+      },
       "magneticFaceSearch": {"title": "Magnetic Face Search", "description": "خارطة طريق بحث بيومتري تراعي الخصوصية مع ادخال بيانات مرخصة وبحث متجهي وتجربة رفع مميزة للبحث."},
       "siteLockVpn": {"title": "SiteLock VPN", "description": "احم جلسات التصفح والعمل عن بعد بخصوصية مُدارة."},
       "siteMonitoring": {"title": "مراقبة الموقع والخادم", "description": "متابعة استباقية للتوفر وتنبيه فوري للحوادث في الانظمة الحرجة."},

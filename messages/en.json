@@ -101,6 +101,14 @@
         "title": "Image Conversion",
         "description": "A free image converter and resizer for JPG, PNG, and WebP downloads."
       },
+      "aiDetection": {
+        "title": "AI Detection",
+        "description": "Upload an image or video and review whether it appears AI-generated using premium forensic signals."
+      },
+      "videoDownloader": {
+        "title": "Video Downloader",
+        "description": "Paste a YouTube, Instagram, or Facebook link and download MP4 or MP3 in the quality you want."
+      },
       "magneticSocialBot": {
         "title": "Magnetic Social Bot",
         "description": "A multi-channel AI inbox for WhatsApp, Instagram, and Messenger with Gemini and business RAG."

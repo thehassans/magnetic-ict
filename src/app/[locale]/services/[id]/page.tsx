@@ -3,8 +3,10 @@ import { Bot, Instagram, MessageCircle, Sparkles } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
+import { AiDetectionTool } from "@/components/services/ai-detection-tool";
 import { ImageConversionTool } from "@/components/services/image-conversion-tool";
 import { ServiceTierSelector } from "@/components/services/service-tier-selector";
+import { VideoDownloaderTool } from "@/components/services/video-downloader-tool";
 import { Link } from "@/i18n/navigation";
 import { getServiceDescription, getServiceTitle } from "@/lib/service-i18n";
 import { getServiceByIdWithOverrides } from "@/lib/service-overrides";
@@ -30,7 +32,10 @@ export default async function ServiceDetailPage({
   const description = service.overrides.description ? service.description : getServiceDescription(navigation, service.id);
   const isFaceSearchService = service.id === "magneticFaceSearch";
   const isImageConversionService = service.id === "imageConversion";
+  const isAiDetectionService = service.id === "aiDetection";
+  const isVideoDownloaderService = service.id === "videoDownloader";
   const isMagneticSocialBotService = service.id === "magneticSocialBot";
+  const isFreeUtilityService = isImageConversionService || isAiDetectionService || isVideoDownloaderService;
 
   return (
     <main className="mx-auto max-w-7xl space-y-10 px-4 py-10 sm:px-6 lg:px-8">
@@ -48,7 +53,7 @@ export default async function ServiceDetailPage({
               <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
                 {description}
               </p>
-              {!isImageConversionService ? (
+              {!isFreeUtilityService ? (
                 <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500 dark:text-slate-400 sm:text-base">
                   {service.tagline}
                 </p>
@@ -91,6 +96,18 @@ export default async function ServiceDetailPage({
         <section>
           <ScrollReveal>
             <ImageConversionTool compact />
+          </ScrollReveal>
+        </section>
+      ) : isAiDetectionService ? (
+        <section>
+          <ScrollReveal>
+            <AiDetectionTool compact />
+          </ScrollReveal>
+        </section>
+      ) : isVideoDownloaderService ? (
+        <section>
+          <ScrollReveal>
+            <VideoDownloaderTool compact />
           </ScrollReveal>
         </section>
       ) : (
@@ -182,7 +199,7 @@ export default async function ServiceDetailPage({
         </section>
       ) : null}
 
-      {isImageConversionService ? (
+      {isFreeUtilityService ? (
         null
       ) : (
         <section className="space-y-5">
