@@ -1,0 +1,5 @@
+<svg width="190" height="44" viewBox="0 0 190 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="5" y="7" width="30" height="30" rx="10" fill="#635BFF"/>
+  <path d="M13 24C13 20 16 17 21 17H30V22H21C20 22 19 23 19 24C19 25 20 26 21 26H25C30 26 33 28 33 32C33 37 29 40 23 40H14V35H23C25 35 26 34 26 33C26 31 25 31 23 31H19C15 31 13 28 13 24Z" fill="white"/>
+  <text x="47" y="29" font-size="24" font-weight="800" fill="#635BFF" font-family="Inter, Arial, sans-serif">Stripe</text>
+</svg>
