@@ -48,6 +48,8 @@
     "dashboard": "Panel",
     "adminOps": "Admin ops",
     "profile": "Profil",
+    "memberships": "Uyelikler",
+    "signOut": "Cikis yap",
     "allServices": "Tum hizmetler",
     "servicesMenuEyebrow": "Hizmet katalogu",
     "servicesMenuTitle": "Magnetic dijital altyapi ve buyume cozumleri",

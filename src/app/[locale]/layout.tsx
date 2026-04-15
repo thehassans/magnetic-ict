@@ -9,6 +9,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { AppProviders } from "@/components/providers/app-providers";
 import { routing } from "@/i18n/routing";
+import { userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
 import { fallbackLanguages, getActiveLanguages } from "@/lib/settings";
 
 export function generateStaticParams() {
@@ -35,6 +36,9 @@ export default async function LocaleLayout({
     auth(),
     getActiveLanguages().catch(() => fallbackLanguages)
   ]);
+  const hasMagneticSocialBotAccess = session?.user?.id
+    ? await userHasMagneticSocialBotAccess(session.user.id).catch(() => false)
+    : false;
 
   const activeLocale = activeLanguages.find((language) => language.code === locale);
 
@@ -54,6 +58,7 @@ export default async function LocaleLayout({
               locale={locale}
               activeLanguages={activeLanguages}
               sessionUser={session?.user}
+              hasMagneticSocialBotAccess={hasMagneticSocialBotAccess}
             />
             <AnimatedPageShell>
               <div className="relative z-10">{children}</div>

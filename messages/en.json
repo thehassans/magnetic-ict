@@ -73,6 +73,8 @@
     "dashboard": "Dashboard",
     "adminOps": "Admin ops",
     "profile": "Profile",
+    "memberships": "Memberships",
+    "signOut": "Sign out",
     "allServices": "All services",
     "servicesMenuEyebrow": "Service catalog",
     "servicesMenuTitle": "Magnetic digital infrastructure & growth solutions",

@@ -1,8 +1,10 @@
 "use client";
 
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  BadgeCheck,
+  BotMessageSquare,
   ChevronDown,
   Globe,
   Grid2x2,
@@ -14,6 +16,7 @@ import {
   Mail,
   Menu,
   Bot,
+  LogOut,
   Search,
   Shield,
   ShieldCheck,
@@ -22,8 +25,10 @@ import {
   X,
   Briefcase,
   Database,
-  Activity
+  Activity,
+  Sparkles
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import NextLink from "next/link";
 import { BrandLogo } from "@/components/branding/brand-logo";
@@ -46,6 +51,7 @@ type SiteHeaderProps = {
   locale: string;
   activeLanguages: ActiveLanguage[];
   sessionUser?: SessionUser | null;
+  hasMagneticSocialBotAccess?: boolean;
 };
 
 const iconMap = {
@@ -66,9 +72,12 @@ const iconMap = {
   nordVpn: Globe
 } satisfies Record<ServiceMenuKey, typeof ShieldCheck>;
 
-export function SiteHeader({ locale, activeLanguages, sessionUser }: SiteHeaderProps) {
+export function SiteHeader({ locale, activeLanguages, sessionUser, hasMagneticSocialBotAccess = false }: SiteHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [isSigningOut, startSignOutTransition] = useTransition();
+  const accountMenuRef = useRef<HTMLDivElement | null>(null);
   const t = useTranslations("Navigation");
   const signInHref = "/customer/sign-in?callback=/dashboard";
 
@@ -76,6 +85,38 @@ export function SiteHeader({ locale, activeLanguages, sessionUser }: SiteHeaderP
     const source = sessionUser?.name?.trim() || sessionUser?.email?.trim() || "M";
     return source.slice(0, 1).toUpperCase();
   }, [sessionUser?.email, sessionUser?.name]);
+
+  useEffect(() => {
+    if (!accountMenuOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: MouseEvent) {
+      if (!accountMenuRef.current?.contains(event.target as Node)) {
+        setAccountMenuOpen(false);
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setAccountMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [accountMenuOpen]);
+
+  function handleSignOut() {
+    startSignOutTransition(() => {
+      void signOut({ redirectTo: `/${locale}` });
+    });
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/70 bg-white/80 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70">
@@ -196,18 +237,89 @@ export function SiteHeader({ locale, activeLanguages, sessionUser }: SiteHeaderP
             ) : null}
 
             {sessionUser ? (
-              <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
-                <Link
-                  href="/dashboard"
-                  locale={locale}
-                  className="inline-flex h-11 items-center gap-3 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-cyan-400/20 dark:hover:bg-white/10"
+              <div className="relative" ref={accountMenuRef}>
+                <motion.button
+                  type="button"
+                  whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setAccountMenuOpen((value) => !value)}
+                  className={cn(
+                    "inline-flex h-11 items-center gap-3 rounded-full border px-2.5 pl-3.5 pr-3 text-sm font-medium transition",
+                    accountMenuOpen
+                      ? "border-violet-200 bg-violet-50 text-slate-950 dark:border-cyan-400/20 dark:bg-white/10 dark:text-white"
+                      : "border-slate-200 bg-white text-slate-900 hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-cyan-400/20 dark:hover:bg-white/10"
+                  )}
+                  aria-expanded={accountMenuOpen}
+                  aria-haspopup="menu"
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-cyan-300 text-xs font-semibold text-white">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-cyan-300 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(124,58,237,0.22)]">
                     {initials}
                   </span>
-                  <span className="max-w-32 truncate">{sessionUser.name || sessionUser.email || t("profile")}</span>
-                </Link>
-              </motion.div>
+                  <span className="flex max-w-36 flex-col items-start leading-none">
+                    <span className="max-w-36 truncate font-semibold">{sessionUser.name || t("profile")}</span>
+                    <span className="mt-1 max-w-36 truncate text-[11px] text-slate-500 dark:text-slate-400">{sessionUser.email || t("profile")}</span>
+                  </span>
+                  <ChevronDown className={cn("h-4 w-4 text-slate-400 transition dark:text-slate-500", accountMenuOpen && "rotate-180 text-violet-600 dark:text-cyan-300")} />
+                </motion.button>
+
+                <AnimatePresence>
+                  {accountMenuOpen ? (
+                    <motion.div
+                      initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                      className="absolute right-0 top-[calc(100%+0.9rem)] z-50 w-[320px] overflow-hidden rounded-[30px] border border-violet-100 bg-white/95 p-3 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/95"
+                    >
+                      <div className="rounded-[24px] border border-violet-100 bg-gradient-to-br from-white via-violet-50/55 to-cyan-50/70 p-4 dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(30,41,59,0.92))]">
+                        <div className="flex items-start gap-3">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-cyan-300 text-sm font-semibold text-white shadow-[0_16px_32px_rgba(124,58,237,0.24)]">
+                            {initials}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs uppercase tracking-[0.28em] text-violet-600 dark:text-cyan-300">{t("profile")}</div>
+                            <div className="mt-2 truncate text-base font-semibold text-slate-950 dark:text-white">{sessionUser.name || t("profile")}</div>
+                            <div className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">{sessionUser.email}</div>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 space-y-2">
+                          <AccountMenuLink
+                            href="/dashboard"
+                            locale={locale}
+                            icon={<BadgeCheck className="h-4 w-4" />}
+                            label={t("memberships")}
+                            onClick={() => setAccountMenuOpen(false)}
+                          />
+                          {hasMagneticSocialBotAccess ? (
+                            <AccountMenuLink
+                              href="/dashboard/magnetic-social-bot"
+                              locale={locale}
+                              icon={<BotMessageSquare className="h-4 w-4" />}
+                              label={t("dashboard")}
+                              onClick={() => setAccountMenuOpen(false)}
+                            />
+                          ) : null}
+                          <button
+                            type="button"
+                            onClick={handleSignOut}
+                            disabled={isSigningOut}
+                            className="flex h-12 w-full items-center justify-between rounded-[20px] border border-transparent bg-white/80 px-4 text-sm font-medium text-slate-700 transition hover:border-violet-200 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:hover:border-cyan-400/20 dark:hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <span className="flex items-center gap-3">
+                              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-200">
+                                {isSigningOut ? <Sparkles className="h-4 w-4 animate-pulse" /> : <LogOut className="h-4 w-4" />}
+                              </span>
+                              <span>{t("signOut")}</span>
+                            </span>
+                            <span className="text-[11px] uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">H</span>
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
+              </div>
             ) : (
               <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
                 <Link href={signInHref} locale={locale} className="inline-flex h-11 items-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-violet-700">
@@ -289,8 +401,19 @@ export function SiteHeader({ locale, activeLanguages, sessionUser }: SiteHeaderP
                     className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 text-sm font-medium text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
                   >
                     <UserRound className="h-4 w-4" />
-                    {t("dashboard")}
+                    {t("memberships")}
                   </Link>
+                  {hasMagneticSocialBotAccess ? (
+                    <Link
+                      href="/dashboard/magnetic-social-bot"
+                      locale={locale}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 text-sm font-medium text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                    >
+                      <BotMessageSquare className="h-4 w-4" />
+                      {t("dashboard")}
+                    </Link>
+                  ) : null}
                   {sessionUser.role === "ADMIN" ? (
                     <NextLink
                       href="/admin/dashboard"
@@ -301,6 +424,15 @@ export function SiteHeader({ locale, activeLanguages, sessionUser }: SiteHeaderP
                       {t("adminOps")}
                     </NextLink>
                   ) : null}
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    disabled={isSigningOut}
+                    className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 text-sm font-medium text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {t("signOut")}
+                  </button>
                 </>
               ) : (
                 <Link href={signInHref} locale={locale} onClick={() => setMobileMenuOpen(false)} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-semibold text-white">
@@ -360,3 +492,34 @@ function MobileNavLink({
     </Link>
   );
 }
+
+function AccountMenuLink({
+  locale,
+  href,
+  icon,
+  label,
+  onClick
+}: {
+  locale: string;
+  href: string;
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      locale={locale}
+      onClick={onClick}
+      className="flex h-12 items-center justify-between rounded-[20px] border border-transparent bg-white/80 px-4 text-sm font-medium text-slate-700 transition hover:border-violet-200 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:hover:border-cyan-400/20 dark:hover:bg-white/10"
+    >
+      <span className="flex items-center gap-3">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-50 text-violet-600 dark:bg-white/10 dark:text-cyan-300">
+          {icon}
+        </span>
+        <span>{label}</span>
+      </span>
+      <ChevronDown className="h-4 w-4 -rotate-90 text-slate-300 dark:text-slate-600" />
+    </Link>
+  );
+ }

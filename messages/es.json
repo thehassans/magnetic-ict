@@ -48,6 +48,8 @@
     "dashboard": "Panel",
     "adminOps": "Admin ops",
     "profile": "Perfil",
+    "memberships": "Membresias",
+    "signOut": "Cerrar sesion",
     "allServices": "Todos los servicios",
     "servicesMenuEyebrow": "Catalogo de servicios",
     "servicesMenuTitle": "Soluciones Magnetic de infraestructura digital y crecimiento",
