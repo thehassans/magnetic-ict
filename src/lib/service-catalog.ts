@@ -621,7 +621,23 @@ const allServiceCatalog: CatalogService[] = [
   }
 ];
 
-export const liveServiceCatalogKeys = ["imageConversion", "aiDetection", "videoDownloader", "magneticSocialBot", "magneticFaceSearch"] as const satisfies ReadonlyArray<ServiceMenuKey>;
+export const liveServiceCatalogKeys = [
+  "ssl",
+  "professionalEmail",
+  "websiteSecurity",
+  "websiteBuilder",
+  "seoTools",
+  "websiteBackup",
+  "emailServices",
+  "siteLockVpn",
+  "nordVpn",
+  "imageConversion",
+  "siteMonitoring",
+  "aiDetection",
+  "videoDownloader",
+  "magneticSocialBot",
+  "magneticFaceSearch"
+] as const satisfies ReadonlyArray<ServiceMenuKey>;
 
 const liveServiceCatalogKeySet = new Set<ServiceMenuKey>(liveServiceCatalogKeys);
 

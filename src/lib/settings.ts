@@ -9,8 +9,19 @@ export const fallbackLanguages: ActiveLanguage[] = [
   { code: "ar", label: "العربية", direction: "rtl" },
   { code: "de", label: "Deutsch", direction: "ltr" },
   { code: "es", label: "Español", direction: "ltr" },
-  { code: "tr", label: "Türkçe", direction: "ltr" }
+  { code: "tr", label: "Türkçe", direction: "ltr" },
+  { code: "bn", label: "বাংলা", direction: "ltr" }
 ];
+
+function ensureBanglaLanguage(languages: ActiveLanguage[]) {
+  const bangla = fallbackLanguages.find((language) => language.code === "bn");
+
+  if (!bangla || languages.some((language) => language.code === "bn")) {
+    return languages;
+  }
+
+  return [...languages, bangla];
+}
 
 export async function getActiveLanguages() {
   if (!hasDatabase) {
@@ -25,5 +36,19 @@ export async function getActiveLanguages() {
     return fallbackLanguages;
   }
 
-  return setting.value as unknown as ActiveLanguage[];
+  const savedLanguages = (setting.value as unknown[])
+    .filter(
+      (entry): entry is ActiveLanguage =>
+        typeof entry === "object" &&
+        entry !== null &&
+        typeof (entry as ActiveLanguage).code === "string" &&
+        typeof (entry as ActiveLanguage).label === "string"
+    )
+    .map((entry) => ({
+      code: entry.code,
+      label: entry.label,
+      direction: (entry.direction === "rtl" ? "rtl" : "ltr") as "ltr" | "rtl"
+    }));
+
+  return ensureBanglaLanguage(savedLanguages.length > 0 ? savedLanguages : fallbackLanguages);
 }

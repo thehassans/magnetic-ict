@@ -155,10 +155,10 @@ export function SiteHeader({ locale, activeLanguages, sessionUser, hasMagneticSo
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.98 }}
                       transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                      className="absolute left-0 top-[calc(100%+1rem)] w-[min(90vw,760px)] overflow-hidden rounded-[32px] border border-violet-100 bg-white/95 p-3 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/95"
+                      className="absolute left-1/2 top-[calc(100%+1rem)] w-[min(94vw,980px)] -translate-x-1/2 overflow-hidden rounded-[32px] border border-violet-100 bg-white/95 p-3 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/95"
                     >
                       <div className="rounded-[28px] border border-violet-100 bg-gradient-to-br from-white via-violet-50/60 to-cyan-50/70 p-6 dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.95),rgba(30,41,59,0.9))]">
-                        <div className="mb-5 flex items-end justify-between gap-4">
+                        <div className="mx-auto mb-6 max-w-2xl text-center">
                           <div>
                             <div className="text-xs uppercase tracking-[0.28em] text-violet-600 dark:text-cyan-300">
                               {t("servicesMenuEyebrow")}
@@ -168,14 +168,14 @@ export function SiteHeader({ locale, activeLanguages, sessionUser, hasMagneticSo
                           <Link
                             href="/services"
                             locale={locale}
-                            className="inline-flex items-center gap-2 rounded-full border border-violet-100 bg-white px-4 py-2 text-sm text-slate-700 transition hover:border-violet-200 hover:text-violet-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:text-white"
+                            className="mt-4 inline-flex items-center gap-2 rounded-full border border-violet-100 bg-white px-4 py-2 text-sm text-slate-700 transition hover:border-violet-200 hover:text-violet-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:text-white"
                           >
                             <Grid2x2 className="h-4 w-4 text-violet-600 dark:text-cyan-300" />
                             {t("allServices")}
                           </Link>
                         </div>
 
-                        <div className="grid gap-3 md:grid-cols-2">
+                        <div className="mx-auto flex max-w-[860px] flex-wrap justify-center gap-3">
                           {serviceMenuItems.map((item, index) => {
                             const Icon = iconMap[item.key];
 
@@ -185,16 +185,17 @@ export function SiteHeader({ locale, activeLanguages, sessionUser, hasMagneticSo
                                 initial={{ opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.03, duration: 0.2 }}
+                                className="w-full sm:max-w-[calc(50%-0.375rem)] md:max-w-[calc(33.333%-0.5rem)] md:basis-[calc(33.333%-0.5rem)]"
                               >
                                 <Link
                                   href={`/services/${item.key}`}
                                   locale={locale}
-                                  className="group flex items-start gap-4 rounded-[24px] border border-transparent bg-transparent px-4 py-4 transition hover:border-violet-200 hover:bg-white/70 dark:hover:border-cyan-400/20 dark:hover:bg-white/5"
+                                  className="group flex h-full items-start gap-4 rounded-[24px] border border-violet-100/70 bg-white/75 px-4 py-4 text-left shadow-[0_12px_36px_rgba(15,23,42,0.06)] transition hover:border-violet-200 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:border-cyan-400/20 dark:hover:bg-white/10"
                                 >
                                   <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 transition group-hover:bg-violet-100 dark:bg-white/5 dark:text-cyan-300 dark:group-hover:bg-cyan-400/10">
                                     <Icon className="h-5 w-5" />
                                   </div>
-                                  <div>
+                                  <div className="min-w-0">
                                     <div className="font-medium text-slate-950 dark:text-white">{t(`items.${item.key}.title`)}</div>
                                     <div className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">
                                       {t(`items.${item.key}.description`)}

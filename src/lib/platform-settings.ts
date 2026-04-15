@@ -150,6 +150,16 @@ export const supportedActiveLanguages = fallbackLanguages.filter((language) =>
   routing.locales.includes(language.code as (typeof routing.locales)[number])
 );
 
+function ensureBanglaLanguage(languages: ActiveLanguage[]) {
+  const bangla = supportedActiveLanguages.find((language) => language.code === "bn");
+
+  if (!bangla || languages.some((language) => language.code === "bn")) {
+    return languages;
+  }
+
+  return [...languages, bangla];
+}
+
 export function normalizeActiveLanguages(value: unknown) {
   if (!Array.isArray(value)) {
     return supportedActiveLanguages;
@@ -164,7 +174,7 @@ export function normalizeActiveLanguages(value: unknown) {
     }))
     .filter((entry) => routing.locales.includes(entry.code as (typeof routing.locales)[number]));
 
-  return validLanguages.length > 0 ? validLanguages : supportedActiveLanguages;
+  return ensureBanglaLanguage(validLanguages.length > 0 ? validLanguages : supportedActiveLanguages);
 }
 
 export function normalizeFooterDetails(value: unknown): FooterSettings {

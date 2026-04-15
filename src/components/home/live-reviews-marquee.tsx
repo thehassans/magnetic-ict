@@ -19,6 +19,9 @@ export function LiveReviewsMarquee() {
         <h2 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
           {t("reviewsTitle")}
         </h2>
+        <p className="mx-auto max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
+          {t("reviewsDescription")}
+        </p>
       </ScrollReveal>
 
       <div className="space-y-4 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
@@ -49,23 +52,27 @@ function ReviewCard({
 }) {
   const t = useTranslations("Landing");
   const numericRating = review.rating.toFixed(1);
+  const contentClampClass =
+    review.contentLines === 2 ? "line-clamp-2" : review.contentLines === 3 ? "line-clamp-3" : "line-clamp-4";
 
   return (
     <div className="w-[23rem] rounded-[26px] border border-slate-200/90 bg-white/95 p-6 shadow-[0_22px_70px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="overflow-hidden rounded-full bg-gradient-to-br from-violet-100 to-cyan-100 p-1 shadow-[0_10px_28px_rgba(15,23,42,0.12)] ring-1 ring-slate-200/70 dark:from-violet-400/20 dark:to-cyan-400/20 dark:ring-white/10">
+          <div className={`overflow-hidden rounded-full bg-gradient-to-br p-1 shadow-[0_10px_28px_rgba(15,23,42,0.12)] ring-1 ring-slate-200/70 dark:ring-white/10 ${review.accent}`}>
             <Image
               src={review.avatar}
               alt={review.name}
               width={72}
               height={72}
               className="h-[4.5rem] w-[4.5rem] rounded-full border border-white/80 object-cover"
+              unoptimized
             />
           </div>
           <div>
             <div className="font-semibold text-slate-950 dark:text-white">{review.name}</div>
             <div className="text-sm text-slate-500 dark:text-slate-400">{t(`reviewRoles.${review.id}`)}</div>
+            <div className="mt-1 text-xs font-medium uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">{review.company}</div>
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">
@@ -94,7 +101,7 @@ function ReviewCard({
         })}
       </div>
 
-      <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300">{t(`reviewContent.${review.id}`)}</p>
+      <p className={`mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300 ${contentClampClass}`}>{t(`reviewContent.${review.id}`)}</p>
     </div>
   );
 }
