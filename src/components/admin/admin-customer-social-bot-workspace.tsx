@@ -518,6 +518,31 @@ function Field({ label, value, onChange, compact = false }: { label: string; val
   );
 }
 
+type IntegrationFieldKey = "label" | "pageId" | "phoneNumberId" | "accountId" | "accessToken";
+
+function getIntegrationFieldMeta(channel: SocialChannel) {
+  switch (channel) {
+    case "WHATSAPP":
+      return {
+        description: "Use the customer's WhatsApp phone number ID and permanent access token.",
+        fields: ["label", "phoneNumberId", "accessToken"] as readonly IntegrationFieldKey[],
+        buttonLabel: "Save WhatsApp"
+      };
+    case "INSTAGRAM":
+      return {
+        description: "Use the connected Instagram business account ID and the related access token.",
+        fields: ["label", "accountId", "accessToken"] as readonly IntegrationFieldKey[],
+        buttonLabel: "Save Instagram"
+      };
+    case "MESSENGER":
+      return {
+        description: "Use the Facebook Page ID and the Page access token for Messenger.",
+        fields: ["label", "pageId", "accessToken"] as readonly IntegrationFieldKey[],
+        buttonLabel: "Save Messenger"
+      };
+  }
+}
+
 function AdminIntegrationCard({ integration, onSave }: { integration: SocialBotIntegration; onSave: (integration: SocialBotIntegration, updates: Partial<SocialBotIntegration> & { accessToken?: string }) => Promise<void> }) {
   const [label, setLabel] = useState(integration.label);
   const [pageId, setPageId] = useState(integration.pageId);
@@ -535,6 +560,8 @@ function AdminIntegrationCard({ integration, onSave }: { integration: SocialBotI
     setAccessToken("");
   }, [integration]);
 
+  const fieldMeta = getIntegrationFieldMeta(integration.channel);
+
   return (
     <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
       <div className="flex items-center justify-between gap-3">
@@ -547,14 +574,15 @@ function AdminIntegrationCard({ integration, onSave }: { integration: SocialBotI
           On
         </label>
       </div>
+      <div className="mt-3 text-xs leading-6 text-slate-500">{fieldMeta.description}</div>
       <div className="mt-4 grid gap-3">
-        <Field label="Label" value={label} onChange={setLabel} compact />
-        <Field label="Page ID" value={pageId} onChange={setPageId} compact />
-        <Field label="Phone Number ID" value={phoneNumberId} onChange={setPhoneNumberId} compact />
-        <Field label="Account ID" value={accountId} onChange={setAccountId} compact />
-        <input value={accessToken} onChange={(event) => setAccessToken(event.target.value)} placeholder="Access Token" className="h-11 w-full rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none" />
+        {fieldMeta.fields.includes("label") ? <Field label="Label" value={label} onChange={setLabel} compact /> : null}
+        {fieldMeta.fields.includes("pageId") ? <Field label="Page ID" value={pageId} onChange={setPageId} compact /> : null}
+        {fieldMeta.fields.includes("phoneNumberId") ? <Field label="Phone Number ID" value={phoneNumberId} onChange={setPhoneNumberId} compact /> : null}
+        {fieldMeta.fields.includes("accountId") ? <Field label="Instagram Account ID" value={accountId} onChange={setAccountId} compact /> : null}
+        {fieldMeta.fields.includes("accessToken") ? <input value={accessToken} onChange={(event) => setAccessToken(event.target.value)} placeholder="Access Token" className="h-11 w-full rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none" /> : null}
         <button type="button" onClick={() => void onSave(integration, { enabled, label, pageId, phoneNumberId, accountId, accessToken })} className="inline-flex h-11 items-center justify-center rounded-full bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-violet-700">
-          Save integration
+          {fieldMeta.buttonLabel}
         </button>
       </div>
     </div>
