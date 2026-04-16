@@ -28,11 +28,12 @@ function isValidMetaSignature(signature: string | null, rawBody: string, appSecr
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const mode = searchParams.get("hub.mode");
-  const token = searchParams.get("hub.verify_token");
+  const token = searchParams.get("hub.verify_token")?.trim();
   const challenge = searchParams.get("hub.challenge");
   const settings = await getPlatformSettings();
+  const expectedToken = settings.socialBotConfig.webhookVerifyToken.trim();
 
-  if (mode === "subscribe" && token && token === settings.socialBotConfig.webhookVerifyToken) {
+  if (mode === "subscribe" && token && token === expectedToken) {
     return new Response(challenge ?? "", { status: 200 });
   }
 

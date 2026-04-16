@@ -114,10 +114,10 @@ export function AdminSettingsClient({
     }
   }
 
-  function handleGenerateVerifyToken() {
-    const webhookVerifyToken = createVerifyToken();
-    setSocialBotState((current) => ({ ...current, webhookVerifyToken }));
-    setToast({ type: "success", message: "Webhook verify token generated." });
+  async function handleGenerateVerifyToken() {
+    const nextState = { ...socialBotState, webhookVerifyToken: createVerifyToken() };
+    setSocialBotState(nextState);
+    await saveSection("socialBot", nextState);
   }
 
   async function handleSaveSocialBot() {
@@ -306,7 +306,7 @@ export function AdminSettingsClient({
         </div>
 
         <div className="mt-4 flex flex-wrap gap-3">
-          <Button label={socialBotState.webhookVerifyToken ? "Regenerate verify token" : "Generate verify token"} loading={false} onClick={handleGenerateVerifyToken} variant="secondary" />
+          <Button label={socialBotState.webhookVerifyToken ? "Regenerate & save verify token" : "Generate & save verify token"} loading={loadingSection === "socialBot"} onClick={() => void handleGenerateVerifyToken()} variant="secondary" />
           {socialBotState.webhookVerifyToken ? <Button label="Copy verify token" loading={false} onClick={() => void copyValue("Webhook verify token", socialBotState.webhookVerifyToken)} variant="secondary" /> : null}
         </div>
 
