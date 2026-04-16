@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Activity, Box, LogOut, Settings2, ShoppingCart, Users } from "lucide-react";
+import { Activity, Bot, Box, LogOut, Settings2, ShoppingCart, Users } from "lucide-react";
 import { logoutAdmin } from "@/app/admin/actions";
 import { BrandLogo } from "@/components/branding/brand-logo";
 
@@ -8,7 +8,7 @@ type AdminShellProps = {
   title: string;
   description: string;
   eyebrow?: string;
-  activePath: "/admin/dashboard" | "/admin/orders" | "/admin/services" | "/admin/users" | "/admin/settings";
+  activePath: "/admin/dashboard" | "/admin/orders" | "/admin/services" | "/admin/users" | "/admin/social-bot" | "/admin/settings";
   children: ReactNode;
   actions?: ReactNode;
 };
@@ -18,6 +18,7 @@ const navItems = [
   { href: "/admin/orders", label: "Orders", Icon: ShoppingCart },
   { href: "/admin/services", label: "Services", Icon: Box },
   { href: "/admin/users", label: "Users", Icon: Users },
+  { href: "/admin/social-bot", label: "Social Bot", Icon: Bot },
   { href: "/admin/settings", label: "Settings", Icon: Settings2 }
 ] as const;
 

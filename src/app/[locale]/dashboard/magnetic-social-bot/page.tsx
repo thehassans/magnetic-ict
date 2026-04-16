@@ -1,8 +1,9 @@
 import { Bot, Instagram, MessageCircle, Sparkles } from "lucide-react";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
-import { MagneticSocialBotWorkspace } from "@/components/dashboard/magnetic-social-bot-workspace";
+import { CustomerSocialBotWorkspace } from "@/components/dashboard/customer-social-bot-workspace";
 import { userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
+import { getPlatformSettings } from "@/lib/platform-settings";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -19,6 +20,8 @@ export default async function MagneticSocialBotDashboardPage() {
   if (!hasAccess) {
     notFound();
   }
+
+  const settings = await getPlatformSettings();
 
   return (
     <main className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
@@ -43,11 +46,14 @@ export default async function MagneticSocialBotDashboardPage() {
         </div>
         <h1 className="mt-5 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl">Command Center</h1>
         <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
-          Connect channels, upload knowledge, and manage AI or manual replies from one inbox.
+          Connect channels through a guided Meta flow, upload knowledge, and manage AI or manual replies from one inbox.
         </p>
       </section>
 
-      <MagneticSocialBotWorkspace />
+      <CustomerSocialBotWorkspace
+        metaAppId={settings.socialBotConfig.metaAppId}
+        metaConfigId={settings.socialBotConfig.metaConfigId}
+      />
     </main>
   );
 }
