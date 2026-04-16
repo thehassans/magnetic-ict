@@ -30,6 +30,24 @@ type ToastState = {
   message: string;
 } | null;
 
+const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "welcomeEmail", string> = {
+  languages: "Language",
+  footer: "Footer",
+  payments: "Payment",
+  oauth: "OAuth",
+  gemini: "Gemini",
+  socialBot: "Social Bot",
+  welcomeEmail: "Welcome email"
+};
+
+function createVerifyToken() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+}
+
 export function AdminSettingsClient({
   activeLanguages,
   availableLanguages,
@@ -78,7 +96,7 @@ export function AdminSettingsClient({
       return;
     }
 
-    setToast({ type: "success", message: `${section.charAt(0).toUpperCase() + section.slice(1)} settings saved.` });
+    setToast({ type: "success", message: `${settingsSectionLabel[section]} settings saved.` });
     setLoadingSection(null);
   }
 
@@ -94,6 +112,24 @@ export function AdminSettingsClient({
     } catch {
       setToast({ type: "error", message: `Unable to copy ${label.toLowerCase()} right now.` });
     }
+  }
+
+  function handleGenerateVerifyToken() {
+    const webhookVerifyToken = createVerifyToken();
+    setSocialBotState((current) => ({ ...current, webhookVerifyToken }));
+    setToast({ type: "success", message: "Webhook verify token generated." });
+  }
+
+  async function handleSaveSocialBot() {
+    const nextState = socialBotState.webhookVerifyToken.trim()
+      ? socialBotState
+      : { ...socialBotState, webhookVerifyToken: createVerifyToken() };
+
+    if (nextState.webhookVerifyToken !== socialBotState.webhookVerifyToken) {
+      setSocialBotState(nextState);
+    }
+
+    await saveSection("socialBot", nextState);
   }
 
   async function handleGeminiTest() {
@@ -260,13 +296,18 @@ export function AdminSettingsClient({
       <SettingsCard
         title="Magnetic Social Bot"
         description="Configure the Meta app values required by WhatsApp, Messenger, and Instagram. This follows the Meta setup flow for webhook callback URL, verify token, app secret validation, and embedded business login configuration."
-        action={<Button label="Save Social Bot config" loading={loadingSection === "socialBot"} onClick={() => saveSection("socialBot", socialBotState)} />}
+        action={<Button label="Save Social Bot config" loading={loadingSection === "socialBot"} onClick={() => void handleSaveSocialBot()} />}
       >
         <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           <Input label="Meta App ID" value={socialBotState.metaAppId} onChange={(value) => setSocialBotState((current) => ({ ...current, metaAppId: value }))} />
           <Input label="Meta App Secret" value={socialBotState.metaAppSecret} onChange={(value) => setSocialBotState((current) => ({ ...current, metaAppSecret: value }))} type="password" />
           <Input label="Meta Config ID" value={socialBotState.metaConfigId} onChange={(value) => setSocialBotState((current) => ({ ...current, metaConfigId: value }))} />
           <Input label="Webhook verify token" value={socialBotState.webhookVerifyToken} onChange={(value) => setSocialBotState((current) => ({ ...current, webhookVerifyToken: value }))} type="password" />
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Button label={socialBotState.webhookVerifyToken ? "Regenerate verify token" : "Generate verify token"} loading={false} onClick={handleGenerateVerifyToken} variant="secondary" />
+          {socialBotState.webhookVerifyToken ? <Button label="Copy verify token" loading={false} onClick={() => void copyValue("Webhook verify token", socialBotState.webhookVerifyToken)} variant="secondary" /> : null}
         </div>
 
         <div className="mt-6 grid gap-4 xl:grid-cols-2">
