@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
+import { getManualSocialBotAccessGrant } from "@/lib/social-bot-access";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
@@ -11,6 +11,9 @@ export type AdminSocialBotCustomer = {
   name: string | null;
   createdAt: Date;
   orderCount: number;
+  hasPurchasedAccess: boolean;
+  hasManualAccess: boolean;
+  hasAccess: boolean;
 };
 
 export async function getAdminSocialBotCustomers(): Promise<AdminSocialBotCustomer[]> {
@@ -20,19 +23,7 @@ export async function getAdminSocialBotCustomers(): Promise<AdminSocialBotCustom
 
   const users = await prisma.user.findMany({
     where: {
-      role: "USER",
-      orders: {
-        some: {
-          status: {
-            in: ["PAID", "FULFILLED"]
-          },
-          serviceTier: {
-            service: {
-              catalogKey: "magneticSocialBot"
-            }
-          }
-        }
-      }
+      role: "USER"
     },
     orderBy: { createdAt: "desc" },
     take: 50,
@@ -41,6 +32,21 @@ export async function getAdminSocialBotCustomers(): Promise<AdminSocialBotCustom
       email: true,
       name: true,
       createdAt: true,
+      orders: {
+        where: {
+          status: {
+            in: ["PAID", "FULFILLED"]
+          },
+          serviceTier: {
+            service: {
+              catalogKey: "magneticSocialBot"
+            }
+          }
+        },
+        select: {
+          id: true
+        }
+      },
       _count: {
         select: {
           orders: true
@@ -49,13 +55,23 @@ export async function getAdminSocialBotCustomers(): Promise<AdminSocialBotCustom
     }
   });
 
-  return users.map((user) => ({
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    createdAt: user.createdAt,
-    orderCount: user._count.orders
-  }));
+  const grants = await Promise.all(users.map((user) => getManualSocialBotAccessGrant(user.id)));
+
+  return users.map((user, index) => {
+    const hasPurchasedAccess = user.orders.length > 0;
+    const hasManualAccess = Boolean(grants[index]);
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      createdAt: user.createdAt,
+      orderCount: user._count.orders,
+      hasPurchasedAccess,
+      hasManualAccess,
+      hasAccess: hasPurchasedAccess || hasManualAccess
+    };
+  });
 }
 
 export async function requireAdminSocialBotTarget(request: Request) {
@@ -86,21 +102,12 @@ export async function requireAdminSocialBotTarget(request: Request) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true }
+    select: { id: true, role: true }
   });
 
-  if (!user) {
+  if (!user || user.role !== "USER") {
     return {
       response: NextResponse.json({ error: "Customer not found." }, { status: 404 }),
-      userId: null as string | null
-    };
-  }
-
-  const hasAccess = await userHasMagneticSocialBotAccess(userId);
-
-  if (!hasAccess) {
-    return {
-      response: NextResponse.json({ error: "Magnetic Social Bot is not unlocked for this customer." }, { status: 403 }),
       userId: null as string | null
     };
   }

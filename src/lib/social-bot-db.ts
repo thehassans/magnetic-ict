@@ -110,6 +110,7 @@ export function createSocialBotId(prefix: string) {
 }
 
 export const socialBotCollections = {
+  access: "SocialBotAccessGrants",
   profiles: "SocialBotProfiles",
   documents: "SocialBotDocuments",
   chunks: "SocialBotChunks",

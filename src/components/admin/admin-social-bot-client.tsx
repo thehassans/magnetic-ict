@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bot, Settings2, Users } from "lucide-react";
@@ -14,6 +15,8 @@ type AdminSocialBotClientProps = {
 
 export function AdminSocialBotClient({ customers, selectedUserId }: AdminSocialBotClientProps) {
   const router = useRouter();
+  const [isUpdatingAccess, setIsUpdatingAccess] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const selectedCustomer = customers.find((customer) => customer.id === selectedUserId) ?? customers[0] ?? null;
 
   if (!selectedCustomer) {
@@ -24,8 +27,39 @@ export function AdminSocialBotClient({ customers, selectedUserId }: AdminSocialB
     );
   }
 
+  async function updateAccess(enabled: boolean) {
+    setIsUpdatingAccess(true);
+    setFeedback(null);
+
+    const response = await fetch(`/api/admin/social-bot/access?userId=${encodeURIComponent(selectedCustomer.id)}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ enabled })
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as { error?: string };
+
+    if (!response.ok) {
+      setFeedback({ type: "error", message: payload.error ?? "Unable to update access." });
+      setIsUpdatingAccess(false);
+      return;
+    }
+
+    setFeedback({ type: "success", message: enabled ? "Social Bot access granted." : "Social Bot access removed." });
+    setIsUpdatingAccess(false);
+    router.refresh();
+  }
+
   return (
     <div className="space-y-6">
+      {feedback ? (
+        <div className={`rounded-[24px] border px-4 py-3 text-sm ${feedback.type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-rose-200 bg-rose-50 text-rose-800"}`}>
+          {feedback.message}
+        </div>
+      ) : null}
+
       <section className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
         <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)] sm:p-8">
           <div className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Customer context</div>
@@ -51,6 +85,33 @@ export function AdminSocialBotClient({ customers, selectedUserId }: AdminSocialB
               <Settings2 className="h-4 w-4" />
               Open platform settings
             </Link>
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${selectedCustomer.hasAccess ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-slate-200 bg-slate-50 text-slate-600"}`}>
+              {selectedCustomer.hasAccess ? "Access enabled" : "Access disabled"}
+            </span>
+            {selectedCustomer.hasPurchasedAccess ? <span className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-800">Purchased</span> : null}
+            {selectedCustomer.hasManualAccess ? <span className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-800">Admin assigned</span> : null}
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => void updateAccess(true)}
+              disabled={isUpdatingAccess}
+              className="inline-flex h-11 items-center justify-center rounded-full bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+            >
+              {selectedCustomer.hasAccess ? "Keep access enabled" : "Grant Social Bot access"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void updateAccess(false)}
+              disabled={isUpdatingAccess || !selectedCustomer.hasManualAccess}
+              className="inline-flex h-11 items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-5 text-sm font-semibold text-slate-700 transition hover:bg-white hover:text-slate-950 disabled:opacity-60"
+            >
+              Remove admin access
+            </button>
           </div>
         </div>
 
