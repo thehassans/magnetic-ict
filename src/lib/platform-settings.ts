@@ -38,6 +38,7 @@ export type GeminiSettings = {
 export type SocialBotSettings = {
   globalBotInstructions: string;
   metaAppId: string;
+  metaAppSecret: string;
   metaConfigId: string;
   webhookVerifyToken: string;
 };
@@ -100,6 +101,7 @@ export const defaultGeminiConfig: GeminiSettings = {
 export const defaultSocialBotConfig: SocialBotSettings = {
   globalBotInstructions: "",
   metaAppId: "",
+  metaAppSecret: "",
   metaConfigId: "",
   webhookVerifyToken: ""
 };
@@ -233,6 +235,7 @@ export function normalizeSocialBotConfig(value: unknown): SocialBotSettings {
   return {
     globalBotInstructions: coerceString(value.globalBotInstructions, defaultSocialBotConfig.globalBotInstructions),
     metaAppId: coerceString(value.metaAppId, defaultSocialBotConfig.metaAppId),
+    metaAppSecret: coerceString(value.metaAppSecret, defaultSocialBotConfig.metaAppSecret),
     metaConfigId: coerceString(value.metaConfigId, defaultSocialBotConfig.metaConfigId),
     webhookVerifyToken: coerceString(value.webhookVerifyToken, defaultSocialBotConfig.webhookVerifyToken)
   };

@@ -21,6 +21,7 @@ type AdminSettingsClientProps = {
   geminiConfig: GeminiSettings;
   socialBotConfig: SocialBotSettings;
   welcomeEmailConfig: WelcomeEmailSettings;
+  appBaseUrl: string;
   canPersist: boolean;
 };
 
@@ -38,6 +39,7 @@ export function AdminSettingsClient({
   geminiConfig,
   socialBotConfig,
   welcomeEmailConfig,
+  appBaseUrl,
   canPersist
 }: AdminSettingsClientProps) {
   const [selectedLanguageCodes, setSelectedLanguageCodes] = useState(activeLanguages.map((language) => language.code));
@@ -54,6 +56,7 @@ export function AdminSettingsClient({
     () => availableLanguages.filter((language) => selectedLanguageCodes.includes(language.code)),
     [availableLanguages, selectedLanguageCodes]
   );
+  const metaWebhookUrl = useMemo(() => (appBaseUrl ? `${appBaseUrl}/api/social-bot/meta/webhook` : ""), [appBaseUrl]);
 
   async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "welcomeEmail", value: unknown) {
     setLoadingSection(section);
@@ -77,6 +80,20 @@ export function AdminSettingsClient({
 
     setToast({ type: "success", message: `${section.charAt(0).toUpperCase() + section.slice(1)} settings saved.` });
     setLoadingSection(null);
+  }
+
+  async function copyValue(label: string, value: string) {
+    if (!value || typeof navigator === "undefined" || !navigator.clipboard) {
+      setToast({ type: "error", message: `Unable to copy ${label.toLowerCase()} right now.` });
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(value);
+      setToast({ type: "success", message: `${label} copied.` });
+    } catch {
+      setToast({ type: "error", message: `Unable to copy ${label.toLowerCase()} right now.` });
+    }
   }
 
   async function handleGeminiTest() {
@@ -242,14 +259,67 @@ export function AdminSettingsClient({
 
       <SettingsCard
         title="Magnetic Social Bot"
-        description="Set the global instructions used by the bot, plus Meta embedded-signup values for WhatsApp, Instagram, and Messenger onboarding."
+        description="Configure the Meta app values required by WhatsApp, Messenger, and Instagram. This follows the Meta setup flow for webhook callback URL, verify token, app secret validation, and embedded business login configuration."
         action={<Button label="Save Social Bot config" loading={loadingSection === "socialBot"} onClick={() => saveSection("socialBot", socialBotState)} />}
       >
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           <Input label="Meta App ID" value={socialBotState.metaAppId} onChange={(value) => setSocialBotState((current) => ({ ...current, metaAppId: value }))} />
+          <Input label="Meta App Secret" value={socialBotState.metaAppSecret} onChange={(value) => setSocialBotState((current) => ({ ...current, metaAppSecret: value }))} type="password" />
           <Input label="Meta Config ID" value={socialBotState.metaConfigId} onChange={(value) => setSocialBotState((current) => ({ ...current, metaConfigId: value }))} />
           <Input label="Webhook verify token" value={socialBotState.webhookVerifyToken} onChange={(value) => setSocialBotState((current) => ({ ...current, webhookVerifyToken: value }))} type="password" />
         </div>
+
+        <div className="mt-6 grid gap-4 xl:grid-cols-2">
+          <ReadOnlyValueCard
+            label="Webhook callback URL"
+            value={metaWebhookUrl || "Set AUTH_URL, NEXTAUTH_URL, or NEXT_PUBLIC_APP_URL to generate this callback URL."}
+            onCopy={metaWebhookUrl ? () => void copyValue("Webhook callback URL", metaWebhookUrl) : undefined}
+          />
+          <ReadOnlyValueCard
+            label="Webhook verify token"
+            value={socialBotState.webhookVerifyToken || "Add a webhook verify token, save settings, then paste the same token into Meta."}
+            onCopy={socialBotState.webhookVerifyToken ? () => void copyValue("Webhook verify token", socialBotState.webhookVerifyToken) : undefined}
+          />
+        </div>
+
+        <div className="mt-6 grid gap-4 xl:grid-cols-3">
+          <MetaChannelCard
+            title="Instagram API"
+            description="Use Instagram API setup with Instagram Login. Add messaging permissions, connect the Instagram account, configure the webhook callback URL and verify token above, then use the saved account or page identifiers in the customer social-bot workspace."
+            checklist={[
+              "Set Meta App ID, App Secret, Config ID, and webhook verify token here.",
+              "Paste the webhook callback URL and verify token into developers.facebook.com.",
+              "Enable Instagram messaging permissions and add the Instagram business account.",
+              "Use the connected account ID and access token in the workspace integration card."
+            ]}
+          />
+          <MetaChannelCard
+            title="Messenger"
+            description="Messenger requires the same webhook endpoint plus a Facebook Page connection. Generate the page access token in Meta, subscribe the page to messaging events, then store the page ID and page access token in the workspace integration card."
+            checklist={[
+              "Subscribe the app webhook using the callback URL and verify token above.",
+              "Generate the Facebook Page access token from the Messenger setup flow.",
+              "Add the Page ID in the workspace integration settings.",
+              "Use the Page access token as the workspace integration access token."
+            ]}
+          />
+          <MetaChannelCard
+            title="WhatsApp Cloud API"
+            description="WhatsApp uses the same webhook URL and verify token, plus a phone number ID and permanent access token. After webhook verification, manage phone numbers in Meta and save the phone number ID and permanent token in the workspace integration card."
+            checklist={[
+              "Verify the webhook in the WhatsApp configuration screen with the callback URL above.",
+              "Create or rotate a permanent access token in Meta.",
+              "Manage phone numbers and copy the phone number ID into the workspace integration.",
+              "Use the permanent token as the workspace integration access token."
+            ]}
+          />
+        </div>
+
+        <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
+          <div className="font-semibold text-slate-950">Meta webhook security</div>
+          <p className="mt-2">The webhook endpoint uses the verify token for the Meta subscription challenge and can validate `X-Hub-Signature-256` when a Meta App Secret is saved here. Save the app secret before moving the app into a live production state.</p>
+        </div>
+
         <div className="mt-6">
           <label className="space-y-2 text-sm">
             <span className="font-semibold text-slate-700">Global bot instructions</span>
@@ -368,6 +438,52 @@ function Input({
         />
       </span>
     </label>
+  );
+}
+
+function ReadOnlyValueCard({
+  label,
+  value,
+  onCopy
+}: {
+  label: string;
+  value: string;
+  onCopy?: () => void;
+}) {
+  return (
+    <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-semibold text-slate-950">{label}</div>
+          <div className="mt-3 break-all rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">{value}</div>
+        </div>
+        {onCopy ? <Button label="Copy" loading={false} onClick={onCopy} variant="secondary" /> : null}
+      </div>
+    </div>
+  );
+}
+
+function MetaChannelCard({
+  title,
+  description,
+  checklist
+}: {
+  title: string;
+  description: string;
+  checklist: string[];
+}) {
+  return (
+    <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
+      <div className="font-semibold text-slate-950">{title}</div>
+      <p className="mt-2 text-sm leading-7 text-slate-600">{description}</p>
+      <div className="mt-4 space-y-2">
+        {checklist.map((item) => (
+          <div key={item} className="rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

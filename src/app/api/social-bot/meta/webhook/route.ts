@@ -1,3 +1,4 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { findOneMongoDocument, socialBotCollections } from "@/lib/social-bot-db";
 import { getPlatformSettings } from "@/lib/platform-settings";
@@ -6,6 +7,22 @@ import type { SocialBotIntegration } from "@/lib/social-bot-types";
 
 function normalizeText(value: unknown) {
   return typeof value === "string" ? value : "";
+}
+
+function isValidMetaSignature(signature: string | null, rawBody: string, appSecret: string) {
+  if (!signature || !appSecret) {
+    return false;
+  }
+
+  const expected = `sha256=${createHmac("sha256", appSecret).update(rawBody, "utf8").digest("hex")}`;
+  const left = Buffer.from(signature, "utf8");
+  const right = Buffer.from(expected, "utf8");
+
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return timingSafeEqual(left, right);
 }
 
 export async function GET(request: Request) {
@@ -24,7 +41,15 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const payload = (await request.json()) as {
+    const settings = await getPlatformSettings();
+    const rawBody = await request.text();
+    const appSecret = settings.socialBotConfig.metaAppSecret.trim();
+
+    if (appSecret && !isValidMetaSignature(request.headers.get("x-hub-signature-256"), rawBody, appSecret)) {
+      return NextResponse.json({ error: "Invalid Meta webhook signature." }, { status: 403 });
+    }
+
+    const payload = JSON.parse(rawBody) as {
       entry?: Array<{
         id?: string;
         changes?: Array<{

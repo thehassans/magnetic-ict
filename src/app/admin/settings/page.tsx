@@ -5,6 +5,13 @@ import { getPlatformSettings, supportedActiveLanguages } from "@/lib/platform-se
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
+function getCanonicalAppUrl() {
+  return process.env.AUTH_URL?.replace(/\/$/, "")
+    || process.env.NEXTAUTH_URL?.replace(/\/$/, "")
+    || process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "")
+    || "";
+}
+
 export default async function AdminSettingsPage() {
   await requireAdmin("/admin/settings");
 
@@ -25,6 +32,7 @@ export default async function AdminSettingsPage() {
         geminiConfig={settings.geminiConfig}
         socialBotConfig={settings.socialBotConfig}
         welcomeEmailConfig={settings.welcomeEmailConfig}
+        appBaseUrl={getCanonicalAppUrl()}
         canPersist={hasDatabase}
       />
     </AdminShell>

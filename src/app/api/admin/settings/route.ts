@@ -73,6 +73,7 @@ const requestSchema = z.discriminatedUnion("section", [
     value: z.object({
       globalBotInstructions: z.string(),
       metaAppId: z.string(),
+      metaAppSecret: z.string(),
       metaConfigId: z.string(),
       webhookVerifyToken: z.string()
     })
