@@ -56,6 +56,70 @@ body {
   animation-direction: var(--marquee-direction, normal);
 }
 
+.dark .admin-theme .border-slate-200,
+.dark .admin-theme .border-slate-200\/80,
+.dark .admin-theme .border-slate-200\/90,
+.dark .admin-theme .border-dashed.border-slate-200 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .admin-theme .bg-white,
+.dark .admin-theme .bg-white\/80,
+.dark .admin-theme .bg-white\/88,
+.dark .admin-theme .bg-white\/90,
+.dark .admin-theme .bg-white\/95,
+.dark .admin-theme .bg-white\/96 {
+  background-color: rgba(2, 6, 23, 0.78) !important;
+}
+
+.dark .admin-theme .bg-slate-50,
+.dark .admin-theme .bg-slate-50\/70 {
+  background-color: rgba(15, 23, 42, 0.84) !important;
+}
+
+.dark .admin-theme .bg-slate-100 {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.dark .admin-theme .text-slate-950 {
+  color: #f8fafc !important;
+}
+
+.dark .admin-theme .text-slate-700 {
+  color: rgba(226, 232, 240, 0.92) !important;
+}
+
+.dark .admin-theme .text-slate-600 {
+  color: rgba(203, 213, 225, 0.88) !important;
+}
+
+.dark .admin-theme .text-slate-500,
+.dark .admin-theme .text-slate-400 {
+  color: rgba(148, 163, 184, 0.94) !important;
+}
+
+.dark .admin-theme input:not([type="checkbox"]),
+.dark .admin-theme select,
+.dark .admin-theme textarea {
+  background-color: rgba(15, 23, 42, 0.82);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+
+.dark .admin-theme input::placeholder,
+.dark .admin-theme textarea::placeholder {
+  color: rgba(148, 163, 184, 0.84);
+}
+
+.dark .admin-theme table tr {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dark .admin-theme .shadow-\[0_16px_50px_rgba\(15\,23\,42\,0\.05\)\],
+.dark .admin-theme .shadow-\[0_24px_80px_rgba\(15\,23\,42\,0\.06\)\] {
+  box-shadow: 0 24px 80px rgba(2, 6, 23, 0.42) !important;
+}
+
 * {
   border-color: var(--app-border);
 }
