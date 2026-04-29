@@ -18,24 +18,24 @@
     "reviewsEyebrow": "Musteri yorumlari",
     "reviewsTitle": "Gercek musteriler tarafindan guveniliyor.",
     "reviewRoles": {
-      "avaCarter": "E-ticaret sahibi",
-      "noahBennett": "SaaS kurucusu",
-      "sophiaMartinez": "Pazarlama direktoru",
-      "liamFoster": "Ajans ortagi",
-      "miaJohnson": "Operasyon lideri",
-      "ethanWalker": "Startup CTO",
-      "charlotteKim": "DTC marka sahibi",
-      "jamesPatel": "Urun lideri"
+      "aminaRahman": "E-ticaret sahibi",
+      "omarHassan": "SaaS kurucusu",
+      "priyaSharma": "Pazarlama direktoru",
+      "abdullahKhan": "Ajans ortagi",
+      "fatimaAlSaud": "Operasyon lideri",
+      "raheelAhmed": "Startup CTO",
+      "tasmiaIslam": "DTC marka sahibi",
+      "arjunPatel": "Urun lideri"
     },
     "reviewContent": {
-      "avaCarter": "MagneticICT, checkout guvenilirligimizi ve site hizimizi haftalar icinde donusturdu. Tek cati altinda ust duzey altyapi, guvenlik ve buyume ekiplerine sahip olmak gibi hissettiriyor.",
-      "noahBennett": "Deneyim her anlamda premium. Strateji, uygulama ve destek; genelde ancak enterprise ortaklarda gordugum netlik ve disiplinle ilerledi.",
-      "sophiaMartinez": "AI-first yaklasimlari SEO, guvenlik ve performansi tek bir isletim sisteminde toplamamiza yardim etti. Donusumler neredeyse hemen artti.",
-      "liamFoster": "White-glove teslimat, harika iletisim ve gercekten ust seviye teknik kararlar. Kalite, sonuclarla tamamen uyumlu.",
-      "miaJohnson": "Izleme, yedekleme ve guvenlik artik reaktif degil proaktif. Sonunda tum yigin genelinde gorunurluk ve ic rahatligi kazandik.",
-      "ethanWalker": "Beni en cok etkileyen sey hiz ve disiplin dengesiydi. Hicbir sey aceleye getirilmis hissettirmedi ama her sey hizli ilerledi.",
-      "charlotteKim": "Landing deneyimi, hizmet netligi ve destek hizli geri donusleri tamamen Magnetic hissi veriyor. Daha gorusme olmadan guven olusturuyor.",
-      "jamesPatel": "Buyume, altyapi ve guvenligi birlikte anlayan bir ortak gerekiyordu. MagneticICT bunu ciddi bir detay dikkatiyle sundu."
+      "aminaRahman": "MagneticICT, checkout guvenilirligimizi ve site hizimizi haftalar icinde donusturdu. Tek cati altinda ust duzey altyapi, guvenlik ve buyume ekiplerine sahip olmak gibi hissettiriyor.",
+      "omarHassan": "Deneyim her anlamda premium. Strateji, uygulama ve destek; genelde ancak enterprise ortaklarda gordugum netlik ve disiplinle ilerledi.",
+      "priyaSharma": "AI-first yaklasimlari SEO, guvenlik ve performansi tek bir isletim sisteminde toplamamiza yardim etti. Donusumler neredeyse hemen artti.",
+      "abdullahKhan": "White-glove teslimat, harika iletisim ve gercekten ust seviye teknik kararlar. Kalite, sonuclarla tamamen uyumlu.",
+      "fatimaAlSaud": "Izleme, yedekleme ve guvenlik artik reaktif degil proaktif. Sonunda tum yigin genelinde gorunurluk ve ic rahatligi kazandik.",
+      "raheelAhmed": "Beni en cok etkileyen sey hiz ve disiplin dengesiydi. Hicbir sey aceleye getirilmis hissettirmedi ama her sey hizli ilerledi.",
+      "tasmiaIslam": "Landing deneyimi, hizmet netligi ve destek hizli geri donusleri tamamen Magnetic hissi veriyor. Daha gorusme olmadan guven olusturuyor.",
+      "arjunPatel": "Buyume, altyapi ve guvenligi birlikte anlayan bir ortak gerekiyordu. MagneticICT bunu ciddi bir detay dikkatiyle sundu."
     }
   },
   "Navigation": {

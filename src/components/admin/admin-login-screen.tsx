@@ -2,13 +2,30 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { LockKeyhole, ShieldCheck } from "lucide-react";
+import { Lock, Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { authenticateAdmin, type AdminLoginState } from "@/app/admin/actions";
+import { BrandLogo } from "@/components/branding/brand-logo";
+import { useTheme } from "@/components/providers/theme-provider";
 
 const initialState: AdminLoginState = {
   error: null
 };
+
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
+  
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
+      aria-label="Toggle theme"
+    >
+      {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </button>
+  );
+}
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -18,9 +35,10 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex h-12 w-full items-center justify-center rounded-full bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+      className="group relative inline-flex h-14 w-full items-center justify-center overflow-hidden rounded-2xl bg-slate-950 px-6 text-sm font-medium text-white transition-all hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
     >
-      {pending ? t("adminAuthButton") : t("adminAuthButton")}
+      <span className="relative z-10">{t("adminAuthButton")}</span>
+      <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
     </button>
   );
 }
@@ -47,73 +65,90 @@ export function AdminLoginScreen({
         : null;
 
   return (
-    <section className="w-full max-w-5xl rounded-[36px] border border-slate-200 bg-white p-6 shadow-[0_30px_90px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
-      <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-        <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-600">
-            <ShieldCheck className="h-4 w-4" />
-            {t("adminOrdersEyebrow")}
-          </div>
-          <div className="space-y-4">
-            <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
-              {t("adminAuthTitle")}
-            </h1>
-            <p className="max-w-xl text-base leading-8 text-slate-600 sm:text-lg">
-              Access the Magnetic operations panel through a dedicated administrator sign-in.
-            </p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5">
-              <div className="text-xs uppercase tracking-[0.28em] text-slate-500">Magnetic ICT</div>
-              <div className="mt-3 text-2xl font-semibold text-slate-950">Admin panel</div>
-              <div className="mt-2 text-sm leading-7 text-slate-600">A clean internal workspace for orders, fulfillment, and payment operations.</div>
-            </div>
-            <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5">
-              <div className="text-xs uppercase tracking-[0.28em] text-slate-500">Restricted access</div>
-              <div className="mt-3 flex items-start gap-3 text-slate-950">
-                <LockKeyhole className="mt-1 h-5 w-5 text-slate-500" />
-                <span className="text-sm leading-7 text-slate-600">Only configured administrator credentials can enter this workspace.</span>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="mb-8 flex items-center justify-between">
+          <BrandLogo className="w-[160px]" priority />
+          <ThemeToggle />
+        </div>
+
+        {/* Card */}
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_2px_40px_-12px_rgba(0,0,0,0.12)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_2px_40px_-12px_rgba(0,0,0,0.5)]">
+          {/* Gradient accent bar */}
+          <div className="h-1.5 w-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500" />
+          
+          <div className="p-8">
+            {/* Title */}
+            <div className="mb-8 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-950 dark:bg-white">
+                <Lock className="h-6 w-6 text-white dark:text-slate-950" />
               </div>
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
+                {t("adminAuthTitle")}
+              </h1>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                Secure admin access only
+              </p>
             </div>
+
+            {/* Form */}
+            <form action={formAction} className="space-y-5">
+              <input type="hidden" name="callback" value={callbackPath} />
+              
+              <div className="space-y-1.5">
+                <label htmlFor="admin-email" className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                  {commerce("emailPlaceholder")}
+                </label>
+                <input
+                  id="admin-email"
+                  name="email"
+                  type="email"
+                  autoComplete="username"
+                  placeholder="admin@magneticict.com"
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-slate-600 dark:focus:bg-slate-800"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="admin-password" className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                  {commerce("passwordPlaceholder")}
+                </label>
+                <input
+                  id="admin-password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-slate-600 dark:focus:bg-slate-800"
+                />
+              </div>
+
+              <div className="pt-2">
+                <SubmitButton />
+              </div>
+            </form>
+
+            {/* Messages */}
+            {showAccessDenied ? (
+              <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/30 dark:bg-amber-900/20">
+                <p className="text-sm text-amber-700 dark:text-amber-400">{t("adminAccessDenied")}</p>
+              </div>
+            ) : null}
+            
+            {errorMessage ? (
+              <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-900/30 dark:bg-rose-900/20">
+                <p className="text-sm text-rose-600 dark:text-rose-400">{errorMessage}</p>
+              </div>
+            ) : null}
           </div>
         </div>
 
-        <div className="rounded-[32px] border border-slate-200 bg-slate-50 p-6 sm:p-7">
-          <form action={formAction} className="space-y-4">
-            <input type="hidden" name="callback" value={callbackPath} />
-            <div className="space-y-2">
-              <label htmlFor="admin-email" className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
-                {commerce("emailPlaceholder")}
-              </label>
-              <input
-                id="admin-email"
-                name="email"
-                type="email"
-                autoComplete="username"
-                placeholder={commerce("emailPlaceholder")}
-                className="h-12 w-full rounded-[22px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-950"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="admin-password" className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
-                {commerce("passwordPlaceholder")}
-              </label>
-              <input
-                id="admin-password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                placeholder={commerce("passwordPlaceholder")}
-                className="h-12 w-full rounded-[22px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-950"
-              />
-            </div>
-            <SubmitButton />
-          </form>
-
-          {showAccessDenied ? <p className="mt-4 text-sm leading-6 text-amber-700">{t("adminAccessDenied")}</p> : null}
-          {errorMessage ? <p className="mt-4 text-sm leading-6 text-rose-600">{errorMessage}</p> : null}
-        </div>
+        {/* Footer */}
+        <p className="mt-8 text-center text-xs text-slate-400 dark:text-slate-600">
+          Protected area. Unauthorized access is prohibited.
+        </p>
       </div>
-    </section>
+    </div>
   );
 }

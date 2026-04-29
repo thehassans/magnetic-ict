@@ -1,8 +1,11 @@
+"use client";
+
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Activity, Bot, Box, LogOut, Settings2, ShoppingCart, Users } from "lucide-react";
+import { Activity, Bot, Box, LogOut, Moon, Settings2, ShoppingCart, Sun, Users } from "lucide-react";
 import { logoutAdmin } from "@/app/admin/actions";
 import { BrandLogo } from "@/components/branding/brand-logo";
+import { useTheme } from "@/components/providers/theme-provider";
 
 type AdminShellProps = {
   title: string;
@@ -22,17 +25,35 @@ const navItems = [
   { href: "/admin/settings", label: "Settings", Icon: Settings2 }
 ] as const;
 
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
+  
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+      aria-label="Toggle theme"
+    >
+      {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </button>
+  );
+}
+
 export function AdminShell({ title, description, eyebrow = "Operations cockpit", activePath, children, actions }: AdminShellProps) {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.08),transparent_22%),radial-gradient(circle_at_top_right,rgba(6,182,212,0.08),transparent_18%),#f8fafc]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.08),transparent_22%),radial-gradient(circle_at_top_right,rgba(6,182,212,0.08),transparent_18%),#f8fafc] dark:bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.15),transparent_22%),radial-gradient(circle_at_top_right,rgba(6,182,212,0.15),transparent_18%),#0f172a]">
       <div className="grid min-h-screen xl:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="border-r border-slate-200 bg-white/96 px-4 py-6 shadow-[0_24px_80px_rgba(15,23,42,0.06)] backdrop-blur xl:sticky xl:top-0 xl:h-screen xl:px-5 xl:py-8">
+        <aside className="border-r border-slate-200 bg-white/96 px-4 py-6 shadow-[0_24px_80px_rgba(15,23,42,0.06)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/96 xl:sticky xl:top-0 xl:h-screen xl:px-5 xl:py-8">
           <div className="flex h-full flex-col">
-            <Link href="/admin/dashboard" className="rounded-[28px] p-2 transition hover:opacity-90">
-              <BrandLogo className="w-[138px]" priority />
-            </Link>
+            <div className="flex items-center justify-between rounded-[28px] p-2">
+              <Link href="/admin/dashboard" className="transition hover:opacity-90">
+                <BrandLogo className="w-[138px]" priority />
+              </Link>
+              <ThemeToggle />
+            </div>
 
-            <nav className="mt-6 flex-1 rounded-[30px] border border-slate-200 bg-white p-3">
+            <nav className="mt-6 flex-1 rounded-[30px] border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
               <div className="space-y-1">
               {navItems.map(({ href, label, Icon }) => {
                 const active = href === activePath;
@@ -43,11 +64,11 @@ export function AdminShell({ title, description, eyebrow = "Operations cockpit",
                     href={href}
                     className={`flex items-center gap-3 rounded-[22px] px-4 py-3 text-sm font-medium transition ${
                       active
-                        ? "bg-slate-950 text-white shadow-[0_16px_40px_rgba(15,23,42,0.16)]"
-                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                        ? "bg-slate-950 text-white shadow-[0_16px_40px_rgba(15,23,42,0.16)] dark:bg-white dark:text-slate-950"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                     }`}
                   >
-                    <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${active ? "bg-white/10 text-white" : "bg-slate-100 text-slate-700"}`}>
+                    <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${active ? "bg-white/10 text-white dark:bg-slate-950/20 dark:text-slate-950" : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"}`}>
                       <Icon className="h-4 w-4" />
                     </span>
                     <span>{label}</span>
@@ -60,9 +81,9 @@ export function AdminShell({ title, description, eyebrow = "Operations cockpit",
             <form action={logoutAdmin} className="mt-4">
               <button
                 type="submit"
-                className="flex w-full items-center gap-3 rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
+                className="flex w-full items-center gap-3 rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-700 shadow-sm">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-700 shadow-sm dark:bg-slate-800 dark:text-slate-300">
                   <LogOut className="h-4 w-4" />
                 </span>
                 <span>Logout</span>
@@ -72,12 +93,12 @@ export function AdminShell({ title, description, eyebrow = "Operations cockpit",
         </aside>
 
         <section className="space-y-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <div className="rounded-[36px] border border-slate-200 bg-white p-7 shadow-[0_24px_80px_rgba(15,23,42,0.06)] sm:p-8">
+          <div className="rounded-[36px] border border-slate-200 bg-white p-7 shadow-[0_24px_80px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-[0_24px_80px_rgba(0,0,0,0.3)] sm:p-8">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-500">{eyebrow}</div>
-                <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">{title}</h1>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{description}</p>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-500 dark:text-slate-400">{eyebrow}</div>
+                <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">{title}</h1>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-400">{description}</p>
               </div>
               {actions ? <div className="shrink-0">{actions}</div> : null}
             </div>

@@ -25,14 +25,10 @@ export default async function AdminEntryPage({
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#fbfcfe_0%,#f4f7fb_100%)] px-6 py-10 sm:px-10 lg:px-16">
-      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl items-center justify-center">
-        <AdminLoginScreen
-          callbackPath={callbackPath}
-          hasConfiguredCredentials={hasConfiguredAdminCredentials()}
-          showAccessDenied={showAccessDenied}
-        />
-      </div>
-    </main>
+    <AdminLoginScreen
+      callbackPath={callbackPath}
+      hasConfiguredCredentials={hasConfiguredAdminCredentials()}
+      showAccessDenied={showAccessDenied}
+    />
   );
 }
