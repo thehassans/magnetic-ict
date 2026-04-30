@@ -2,6 +2,7 @@ import { Activity, BarChart3, Layers3 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { Link } from "@/i18n/navigation";
+import { getDomainOrdersForUser } from "@/lib/domain-db";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
 import { prisma } from "@/lib/prisma";
 import { userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
@@ -35,38 +36,38 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   const navigation = await getTranslations("Navigation");
   const session = await auth();
 
-  const orders: DashboardOrder[] = session?.user?.id
-    ? await prisma.order.findMany({
-        where: { userId: session.user.id },
-        orderBy: { createdAt: "desc" },
-        take: 6,
-        include: {
-          serviceTier: {
-            select: {
-              catalogKey: true,
-              service: {
-                select: {
-                  catalogKey: true
+  const [orders, domainOrders, hasMagneticSocialBotAccess] = session?.user?.id
+    ? await Promise.all([
+        prisma.order.findMany({
+          where: { userId: session.user.id },
+          orderBy: { createdAt: "desc" },
+          take: 6,
+          include: {
+            serviceTier: {
+              select: {
+                catalogKey: true,
+                service: {
+                  select: {
+                    catalogKey: true
+                  }
                 }
               }
-            }
-          },
-          events: {
-            orderBy: { createdAt: "desc" },
-            take: 3,
-            select: {
-              id: true,
-              type: true,
-              createdAt: true
+            },
+            events: {
+              orderBy: { createdAt: "desc" },
+              take: 3,
+              select: {
+                id: true,
+                type: true,
+                createdAt: true
+              }
             }
           }
-        }
-      })
-    : [];
-
-  const hasMagneticSocialBotAccess = session?.user?.id
-    ? await userHasMagneticSocialBotAccess(session.user.id)
-    : false;
+        }),
+        getDomainOrdersForUser(session.user.id),
+        userHasMagneticSocialBotAccess(session.user.id)
+      ])
+    : [[], [], false];
 
   const activeServices = orders.filter((order: DashboardOrder) => order.status === "PAID" || order.status === "FULFILLED").length;
   const pendingOrders = orders.filter((order: DashboardOrder) => order.status === "PENDING").length;
@@ -74,6 +75,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
     (order: DashboardOrder) => order.status === "FAILED" || order.status === "CANCELLED"
   ).length;
   const totalSpend = orders.reduce((sum: number, order: DashboardOrder) => sum + order.amount, 0);
+  const activeDomains = domainOrders.filter((order) => order.status === "paid" || order.status === "registered").length;
 
   const getStatusLabel = (status: DashboardOrder["status"]) => {
     switch (status) {
@@ -158,6 +160,31 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           <Layers3 className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
           <h2 className="mt-4 text-lg font-semibold text-slate-950 dark:text-white">{t("dashboardTotalSpend")}</h2>
           <p className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">${totalSpend.toFixed(2)}</p>
+        </div>
+      </section>
+
+      <section className="mt-8 grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.6fr)]">
+        <div className="rounded-[30px] border border-slate-200 bg-white/90 p-6 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/40">
+          <div className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">Domains</div>
+          <h2 className="mt-4 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">Manage your purchased domains</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400">Track payment, registration, and registrar references from your signed-in dashboard.</p>
+          <div className="mt-6 flex flex-wrap items-center gap-4">
+            <div className="rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+              Active domains: <span className="font-semibold text-slate-950 dark:text-white">{activeDomains}</span>
+            </div>
+            <Link href="/dashboard/domains" locale={locale} className="inline-flex h-11 items-center justify-center rounded-full bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-violet-700">
+              Open domain management
+            </Link>
+            <Link href="/domains" locale={locale} className="inline-flex h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">
+              Search new domains
+            </Link>
+          </div>
+        </div>
+
+        <div className="rounded-[30px] border border-slate-200 bg-white/90 p-6 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/40">
+          <div className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">Domain summary</div>
+          <div className="mt-4 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">{domainOrders.length}</div>
+          <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">Total domain orders tied to your customer account.</p>
         </div>
       </section>
 

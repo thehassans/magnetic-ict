@@ -2,6 +2,7 @@
 
 import { type ReactNode, useMemo, useState } from "react";
 import { Check, Loader2, Sparkles } from "lucide-react";
+import type { DomainProviderSettings } from "@/lib/domain-types";
 import type { HostingProviderSettings } from "@/lib/hosting-types";
 import type { ActiveLanguage } from "@/types/i18n";
 import type {
@@ -22,6 +23,7 @@ type AdminSettingsClientProps = {
   geminiConfig: GeminiSettings;
   socialBotConfig: SocialBotSettings;
   welcomeEmailConfig: WelcomeEmailSettings;
+  domainProviderConfig: DomainProviderSettings;
   hostingProviderConfig: HostingProviderSettings;
   appBaseUrl: string;
   canPersist: boolean;
@@ -32,7 +34,7 @@ type ToastState = {
   message: string;
 } | null;
 
-const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "welcomeEmail" | "hosting", string> = {
+const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "welcomeEmail" | "domain" | "hosting", string> = {
   languages: "Language",
   footer: "Footer",
   payments: "Payment",
@@ -40,6 +42,7 @@ const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth"
   gemini: "Gemini",
   socialBot: "Social Bot",
   welcomeEmail: "Welcome email",
+  domain: "Domain",
   hosting: "Hosting"
 };
 
@@ -60,6 +63,7 @@ export function AdminSettingsClient({
   geminiConfig,
   socialBotConfig,
   welcomeEmailConfig,
+  domainProviderConfig,
   hostingProviderConfig,
   appBaseUrl,
   canPersist
@@ -71,6 +75,7 @@ export function AdminSettingsClient({
   const [geminiState, setGeminiState] = useState(geminiConfig);
   const [socialBotState, setSocialBotState] = useState(socialBotConfig);
   const [welcomeEmailState, setWelcomeEmailState] = useState(welcomeEmailConfig);
+  const [domainState, setDomainState] = useState(domainProviderConfig);
   const [hostingState, setHostingState] = useState(hostingProviderConfig);
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState>(null);
@@ -81,7 +86,7 @@ export function AdminSettingsClient({
   );
   const metaWebhookUrl = useMemo(() => (appBaseUrl ? `${appBaseUrl}/api/social-bot/meta/webhook` : ""), [appBaseUrl]);
 
-  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "welcomeEmail" | "hosting", value: unknown) {
+  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "welcomeEmail" | "domain" | "hosting", value: unknown) {
     setLoadingSection(section);
     setToast(null);
 
@@ -296,6 +301,29 @@ export function AdminSettingsClient({
         }
       >
         <Input label="Gemini API key" value={geminiState.apiKey} onChange={(value) => setGeminiState({ apiKey: value })} type="password" icon={<Sparkles className="h-4 w-4" />} />
+      </SettingsCard>
+
+      <SettingsCard
+        title="Domain operations"
+        description="Configure domain pricing, public search behavior, and optional live registration automation. Search uses RDAP availability checks. Live registration can post paid orders to your registrar automation endpoint from the admin-managed configuration below."
+        action={<Button label="Save domain config" loading={loadingSection === "domain"} onClick={() => saveSection("domain", domainState)} />}
+      >
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <ToggleCard label="Domains enabled" checked={domainState.enabled} onChange={(checked) => setDomainState((current) => ({ ...current, enabled: checked }))} />
+          <ToggleCard label="Live automation" checked={domainState.mode === "live"} onChange={(checked) => setDomainState((current) => ({ ...current, mode: checked ? "live" : "manual" }))} />
+          <ToggleCard label="Auto-register after payment" checked={domainState.autoRegisterAfterPayment} onChange={(checked) => setDomainState((current) => ({ ...current, autoRegisterAfterPayment: checked }))} />
+        </div>
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <Input label="Provider label" value={domainState.providerLabel} onChange={(value) => setDomainState((current) => ({ ...current, providerLabel: value }))} />
+          <Input label="Automation endpoint" value={domainState.automationEndpoint} onChange={(value) => setDomainState((current) => ({ ...current, automationEndpoint: value }))} />
+          <Input label="Automation token" value={domainState.automationToken} onChange={(value) => setDomainState((current) => ({ ...current, automationToken: value }))} type="password" />
+          <Input label="Default registration years" value={String(domainState.defaultYears)} onChange={(value) => setDomainState((current) => ({ ...current, defaultYears: Math.max(1, Number(value) || 1) }))} type="number" />
+          <Input label=".com yearly price" value={String(domainState.comPrice)} onChange={(value) => setDomainState((current) => ({ ...current, comPrice: Number(value) || 0 }))} type="number" />
+          <Input label=".net yearly price" value={String(domainState.netPrice)} onChange={(value) => setDomainState((current) => ({ ...current, netPrice: Number(value) || 0 }))} type="number" />
+          <Input label=".org yearly price" value={String(domainState.orgPrice)} onChange={(value) => setDomainState((current) => ({ ...current, orgPrice: Number(value) || 0 }))} type="number" />
+          <Input label=".io yearly price" value={String(domainState.ioPrice)} onChange={(value) => setDomainState((current) => ({ ...current, ioPrice: Number(value) || 0 }))} type="number" />
+          <Input label="Fallback yearly price" value={String(domainState.defaultPrice)} onChange={(value) => setDomainState((current) => ({ ...current, defaultPrice: Number(value) || 0 }))} type="number" />
+        </div>
       </SettingsCard>
 
       <SettingsCard

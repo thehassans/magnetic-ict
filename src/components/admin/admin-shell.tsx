@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Activity, Bot, Box, LogOut, Server, Settings2, ShoppingCart, Users } from "lucide-react";
+import { Activity, Bot, Box, Globe, LogOut, Server, Settings2, ShoppingCart, Users } from "lucide-react";
 import { logoutAdmin } from "@/app/admin/actions";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -9,7 +9,7 @@ type AdminShellProps = {
   title: string;
   description: string;
   eyebrow?: string;
-  activePath: "/admin/dashboard" | "/admin/orders" | "/admin/services" | "/admin/users" | "/admin/social-bot" | "/admin/hosting" | "/admin/settings";
+  activePath: "/admin/dashboard" | "/admin/orders" | "/admin/services" | "/admin/users" | "/admin/social-bot" | "/admin/domains" | "/admin/hosting" | "/admin/settings";
   children: ReactNode;
   actions?: ReactNode;
 };
@@ -18,6 +18,7 @@ const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", Icon: Activity },
   { href: "/admin/orders", label: "Orders", Icon: ShoppingCart },
   { href: "/admin/services", label: "Services", Icon: Box },
+  { href: "/admin/domains", label: "Domains", Icon: Globe },
   { href: "/admin/hosting", label: "Hosting", Icon: Server },
   { href: "/admin/users", label: "Users", Icon: Users },
   { href: "/admin/social-bot", label: "Social Bot", Icon: Bot },

@@ -90,6 +90,23 @@ const requestSchema = z.discriminatedUnion("section", [
     })
   }),
   z.object({
+    section: z.literal("domain"),
+    value: z.object({
+      enabled: z.boolean(),
+      mode: z.enum(["manual", "live"]),
+      providerLabel: z.string().min(1),
+      automationEndpoint: z.string(),
+      automationToken: z.string(),
+      defaultYears: z.number().min(1).max(10),
+      autoRegisterAfterPayment: z.boolean(),
+      comPrice: z.number().nonnegative(),
+      netPrice: z.number().nonnegative(),
+      orgPrice: z.number().nonnegative(),
+      ioPrice: z.number().nonnegative(),
+      defaultPrice: z.number().nonnegative()
+    })
+  }),
+  z.object({
     section: z.literal("hosting"),
     value: z.object({
       enabled: z.boolean(),
@@ -116,6 +133,7 @@ const settingKeyBySection = {
   gemini: "gemini_api_key",
   socialBot: "social_bot_config",
   welcomeEmail: "welcome_email_config",
+  domain: "domain_provider_config",
   hosting: "hosting_provider_config"
 } as const;
 

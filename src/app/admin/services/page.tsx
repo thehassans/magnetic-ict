@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { AdminServiceEditor } from "@/components/admin/admin-service-editor";
@@ -109,18 +108,6 @@ export default async function AdminServicesPage() {
                   <div className="mt-1 text-2xl font-semibold text-slate-950">{formatCurrency(grossRevenue)}</div>
                   <div className="mt-1 text-sm text-slate-500">{serviceOrders.length} sold tiers</div>
                 </div>
-              </div>
-
-              <div className="mt-6 overflow-hidden rounded-[28px] border border-slate-200 bg-slate-50">
-                {service.imageUrl ? (
-                  <div className="relative aspect-[16/7] w-full">
-                    <Image src={service.imageUrl} alt={service.name} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 900px" unoptimized />
-                  </div>
-                ) : (
-                  <div className="flex aspect-[16/7] items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.12),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(6,182,212,0.14),transparent_24%),#f8fafc] text-sm text-slate-500">
-                    No service image uploaded yet.
-                  </div>
-                )}
               </div>
 
               <div className="mt-6 grid gap-4 lg:grid-cols-3">

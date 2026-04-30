@@ -1,4 +1,5 @@
 import { routing } from "@/i18n/routing";
+import type { DomainProviderSettings } from "@/lib/domain-types";
 import type { HostingProviderSettings } from "@/lib/hosting-types";
 import { prisma } from "@/lib/prisma";
 import { fallbackLanguages } from "@/lib/settings";
@@ -61,6 +62,7 @@ export type PlatformSettingsBundle = {
   geminiConfig: GeminiSettings;
   socialBotConfig: SocialBotSettings;
   welcomeEmailConfig: WelcomeEmailSettings;
+  domainProviderConfig: DomainProviderSettings;
   hostingProviderConfig: HostingProviderSettings;
 };
 
@@ -115,6 +117,21 @@ export const defaultWelcomeEmailConfig: WelcomeEmailSettings = {
   body: "Your account is now ready. Explore your dashboard, browse our services, and reach out anytime if you need help getting started.",
   ctaLabel: "Open your dashboard",
   ctaHref: "/dashboard"
+};
+
+export const defaultDomainProviderConfig: DomainProviderSettings = {
+  enabled: true,
+  mode: "manual",
+  providerLabel: "IONOS / Registrar Automation",
+  automationEndpoint: "",
+  automationToken: "",
+  defaultYears: 1,
+  autoRegisterAfterPayment: false,
+  comPrice: 14.99,
+  netPrice: 16.99,
+  orgPrice: 15.99,
+  ioPrice: 49.99,
+  defaultPrice: 19.99
 };
 
 export const defaultHostingProviderConfig: HostingProviderSettings = {
@@ -273,6 +290,27 @@ export function normalizeWelcomeEmailConfig(value: unknown): WelcomeEmailSetting
   };
 }
 
+export function normalizeDomainProviderConfig(value: unknown): DomainProviderSettings {
+  if (!isObject(value)) {
+    return defaultDomainProviderConfig;
+  }
+
+  return {
+    enabled: coerceBoolean(value.enabled, defaultDomainProviderConfig.enabled),
+    mode: value.mode === "live" ? "live" : defaultDomainProviderConfig.mode,
+    providerLabel: coerceString(value.providerLabel, defaultDomainProviderConfig.providerLabel),
+    automationEndpoint: coerceString(value.automationEndpoint, defaultDomainProviderConfig.automationEndpoint),
+    automationToken: coerceString(value.automationToken, defaultDomainProviderConfig.automationToken),
+    defaultYears: Math.max(1, Number(value.defaultYears) || defaultDomainProviderConfig.defaultYears),
+    autoRegisterAfterPayment: coerceBoolean(value.autoRegisterAfterPayment, defaultDomainProviderConfig.autoRegisterAfterPayment),
+    comPrice: Number(value.comPrice) || defaultDomainProviderConfig.comPrice,
+    netPrice: Number(value.netPrice) || defaultDomainProviderConfig.netPrice,
+    orgPrice: Number(value.orgPrice) || defaultDomainProviderConfig.orgPrice,
+    ioPrice: Number(value.ioPrice) || defaultDomainProviderConfig.ioPrice,
+    defaultPrice: Number(value.defaultPrice) || defaultDomainProviderConfig.defaultPrice
+  };
+}
+
 export function normalizeHostingProviderConfig(value: unknown): HostingProviderSettings {
   if (!isObject(value)) {
     return defaultHostingProviderConfig;
@@ -308,7 +346,7 @@ async function getSettingValue(key: string) {
 }
 
 export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
-  const [activeLanguages, footerDetails, paymentIntegrations, oauthConfig, geminiConfig, socialBotConfig, welcomeEmailConfig, hostingProviderConfig] = await Promise.all([
+  const [activeLanguages, footerDetails, paymentIntegrations, oauthConfig, geminiConfig, socialBotConfig, welcomeEmailConfig, domainProviderConfig, hostingProviderConfig] = await Promise.all([
     getSettingValue("active_languages"),
     getSettingValue("footer_details"),
     getSettingValue("payment_integrations"),
@@ -316,6 +354,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     getSettingValue("gemini_api_key"),
     getSettingValue("social_bot_config"),
     getSettingValue("welcome_email_config"),
+    getSettingValue("domain_provider_config"),
     getSettingValue("hosting_provider_config")
   ]);
 
@@ -327,6 +366,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     geminiConfig: normalizeGeminiConfig(geminiConfig),
     socialBotConfig: normalizeSocialBotConfig(socialBotConfig),
     welcomeEmailConfig: normalizeWelcomeEmailConfig(welcomeEmailConfig),
+    domainProviderConfig: normalizeDomainProviderConfig(domainProviderConfig),
     hostingProviderConfig: normalizeHostingProviderConfig(hostingProviderConfig)
   };
 }
@@ -359,6 +399,11 @@ export function getResolvedOAuthSettings(settings: OAuthSettings): OAuthSettings
 export async function getWelcomeEmailSettings() {
   const value = await getSettingValue("welcome_email_config");
   return normalizeWelcomeEmailConfig(value);
+}
+
+export async function getDomainProviderSettings() {
+  const value = await getSettingValue("domain_provider_config");
+  return normalizeDomainProviderConfig(value);
 }
 
 export async function getHostingProviderSettings() {

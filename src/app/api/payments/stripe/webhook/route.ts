@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import {
+  getDomainOrdersByPaymentReference,
+  markDomainOrdersFailed,
+  markDomainOrdersPaid
+} from "@/lib/domain-orders";
+import {
   getOrdersByPaymentReference,
   markOrdersFailed,
   markOrdersPaid
@@ -39,6 +44,13 @@ export async function POST(request: Request) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
+        const domainOrderIds = session.metadata?.domainOrderIds?.split(",").filter(Boolean);
+
+        if (domainOrderIds && domainOrderIds.length > 0 && session.id) {
+          await markDomainOrdersPaid(domainOrderIds, session.id);
+          break;
+        }
+
         const orderIds = session.metadata?.orderIds?.split(",").filter(Boolean);
 
         if (orderIds && orderIds.length > 0 && session.id) {
@@ -49,6 +61,13 @@ export async function POST(request: Request) {
       case "checkout.session.async_payment_failed":
       case "checkout.session.expired": {
         const session = event.data.object as Stripe.Checkout.Session;
+        const domainOrders = session.id ? await getDomainOrdersByPaymentReference(session.id) : [];
+
+        if (domainOrders.length > 0) {
+          await markDomainOrdersFailed(domainOrders.map((order) => order._id));
+          break;
+        }
+
         const orders = (session.id ? await getOrdersByPaymentReference(session.id) : []) as ReferencedOrder[];
         await markOrdersFailed(orders.map((order: ReferencedOrder) => order.id));
         break;

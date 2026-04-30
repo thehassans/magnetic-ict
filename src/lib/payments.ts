@@ -8,6 +8,8 @@ type PayPalCheckoutOrderInput = {
   amount: number;
   orderIds: string[];
   locale: string;
+  successPath?: string;
+  cancelPath?: string;
 };
 
 type PayPalLink = {
@@ -85,7 +87,7 @@ async function getPayPalAccessToken() {
   return payload.access_token ?? null;
 }
 
-export async function createPayPalCheckoutOrder({ amount, orderIds, locale }: PayPalCheckoutOrderInput) {
+export async function createPayPalCheckoutOrder({ amount, orderIds, locale, successPath = "/checkout/success", cancelPath = "/checkout/cancel" }: PayPalCheckoutOrderInput) {
   const accessToken = await getPayPalAccessToken();
   const appUrl = getAppUrl();
 
@@ -117,8 +119,8 @@ export async function createPayPalCheckoutOrder({ amount, orderIds, locale }: Pa
           experience_context: {
             user_action: "PAY_NOW",
             shipping_preference: "NO_SHIPPING",
-            return_url: `${appUrl}/${locale}/checkout/success?provider=paypal&order_refs=${orderIds.join(",")}`,
-            cancel_url: `${appUrl}/${locale}/checkout/cancel?provider=paypal&order_refs=${orderIds.join(",")}`
+            return_url: `${appUrl}/${locale}${successPath}?provider=paypal&order_refs=${orderIds.join(",")}`,
+            cancel_url: `${appUrl}/${locale}${cancelPath}?provider=paypal&order_refs=${orderIds.join(",")}`
           }
         }
       }
