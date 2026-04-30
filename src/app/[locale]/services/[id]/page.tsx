@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Bot, Instagram, MessageCircle, Sparkles } from "lucide-react";
+import { Bot, Instagram, MessageCircle, Server, Sparkles } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
@@ -35,6 +35,7 @@ export default async function ServiceDetailPage({
   const isAiDetectionService = service.id === "aiDetection";
   const isVideoDownloaderService = service.id === "videoDownloader";
   const isMagneticSocialBotService = service.id === "magneticSocialBot";
+  const isMagneticVpsHostingService = service.id === "magneticVpsHosting";
   const isFreeUtilityService = isImageConversionService || isAiDetectionService || isVideoDownloaderService;
 
   return (
@@ -194,6 +195,39 @@ export default async function ServiceDetailPage({
               <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
                 After purchase, your dashboard unlocks the onboarding wizard, document-to-RAG upload, channel setup, and the unified messaging command center.
               </p>
+            </div>
+          </ScrollReveal>
+        </section>
+      ) : null}
+
+      {isMagneticVpsHostingService ? (
+        <section>
+          <ScrollReveal>
+            <div className="rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs uppercase tracking-[0.24em] text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+                <Server className="h-4 w-4" />
+                IONOS-backed delivery
+              </div>
+              <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+                Magnetic storefront. Reseller logic. Cloud provisioning.
+              </h2>
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
+                Magnetic VPS Hosting keeps the buying experience on your platform while the backend can create reseller-side customer records, provision IONOS cloud infrastructure, and track provisioning state in the admin panel.
+              </p>
+              <div className="mt-6 grid gap-4 md:grid-cols-3">
+                <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
+                  <div className="text-sm font-semibold text-slate-950 dark:text-white">Platform checkout</div>
+                  <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">Customers select a VPS tier, complete checkout on Magnetic, and stay inside your service flow.</p>
+                </div>
+                <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
+                  <div className="text-sm font-semibold text-slate-950 dark:text-white">Admin fulfillment</div>
+                  <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">Operators trigger fulfillment from admin and can review reseller, datacenter, server, and volume references.</p>
+                </div>
+                <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
+                  <div className="text-sm font-semibold text-slate-950 dark:text-white">Configurable provider mode</div>
+                  <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">Run in manual mode first or switch to live IONOS API-backed provisioning once credentials and contract settings are ready.</p>
+                </div>
+              </div>
             </div>
           </ScrollReveal>
         </section>

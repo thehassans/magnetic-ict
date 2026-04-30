@@ -62,6 +62,7 @@
       "imageConversion": {"title": "Gorsel Donusum", "description": "JPG, PNG ve WebP indirmeleri icin ucretsiz gorsel donusturucu ve boyutlandirici."},
       "aiDetection": {"title": "AI Detection", "description": "Bir gorsel veya video yukleyin ve premium adli sinyallerle yapay zeka uretimi gibi gorunup gorunmedigini inceleyin."},
       "videoDownloader": {"title": "Video Downloader", "description": "Bir YouTube, Instagram veya Facebook baglantisi yapistirin ve istediginiz kalitede MP4 ya da MP3 indirin."},
+      "magneticVpsHosting": {"title": "Magnetic VPS Hosting", "description": "IONOS destekli VPS altyapisi; Magnetic markali odeme, fulfillment ve yonetici saglama kontrolu ile."},
       "magneticSocialBot": {"title": "Magnetic Social Bot", "description": "WhatsApp, Instagram ve Messenger icin Gemini ve isletme RAG verisiyle cok kanalli bir AI gelen kutusu."},
       "magneticFaceSearch": {"title": "Magnetic Face Search", "description": "Lisansli veri alimi, vektor arama ve premium yukle-ara deneyimi iceren gizlilik odakli bir biyometrik arama yol haritasi."},
       "siteLockVpn": {"title": "SiteLock VPN", "description": "Yonetilen gizlilik ile gezinme oturumlarini ve uzaktan calismayi koruyun."},

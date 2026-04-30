@@ -20,7 +20,7 @@ export default async function AdminSettingsPage() {
   return (
     <AdminShell
       title="Platform settings"
-      description="Languages, payments, footer, OAuth, and Gemini."
+      description="Languages, payments, footer, OAuth, Gemini, social automations, and hosting infrastructure."
       activePath="/admin/settings"
     >
       <AdminSettingsClient
@@ -32,6 +32,7 @@ export default async function AdminSettingsPage() {
         geminiConfig={settings.geminiConfig}
         socialBotConfig={settings.socialBotConfig}
         welcomeEmailConfig={settings.welcomeEmailConfig}
+        hostingProviderConfig={settings.hostingProviderConfig}
         appBaseUrl={getCanonicalAppUrl()}
         canPersist={hasDatabase}
       />

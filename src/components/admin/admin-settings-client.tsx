@@ -2,6 +2,7 @@
 
 import { type ReactNode, useMemo, useState } from "react";
 import { Check, Loader2, Sparkles } from "lucide-react";
+import type { HostingProviderSettings } from "@/lib/hosting-types";
 import type { ActiveLanguage } from "@/types/i18n";
 import type {
   FooterSettings,
@@ -21,6 +22,7 @@ type AdminSettingsClientProps = {
   geminiConfig: GeminiSettings;
   socialBotConfig: SocialBotSettings;
   welcomeEmailConfig: WelcomeEmailSettings;
+  hostingProviderConfig: HostingProviderSettings;
   appBaseUrl: string;
   canPersist: boolean;
 };
@@ -30,14 +32,15 @@ type ToastState = {
   message: string;
 } | null;
 
-const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "welcomeEmail", string> = {
+const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "welcomeEmail" | "hosting", string> = {
   languages: "Language",
   footer: "Footer",
   payments: "Payment",
   oauth: "OAuth",
   gemini: "Gemini",
   socialBot: "Social Bot",
-  welcomeEmail: "Welcome email"
+  welcomeEmail: "Welcome email",
+  hosting: "Hosting"
 };
 
 function createVerifyToken() {
@@ -57,6 +60,7 @@ export function AdminSettingsClient({
   geminiConfig,
   socialBotConfig,
   welcomeEmailConfig,
+  hostingProviderConfig,
   appBaseUrl,
   canPersist
 }: AdminSettingsClientProps) {
@@ -67,6 +71,7 @@ export function AdminSettingsClient({
   const [geminiState, setGeminiState] = useState(geminiConfig);
   const [socialBotState, setSocialBotState] = useState(socialBotConfig);
   const [welcomeEmailState, setWelcomeEmailState] = useState(welcomeEmailConfig);
+  const [hostingState, setHostingState] = useState(hostingProviderConfig);
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState>(null);
 
@@ -76,7 +81,7 @@ export function AdminSettingsClient({
   );
   const metaWebhookUrl = useMemo(() => (appBaseUrl ? `${appBaseUrl}/api/social-bot/meta/webhook` : ""), [appBaseUrl]);
 
-  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "welcomeEmail", value: unknown) {
+  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "welcomeEmail" | "hosting", value: unknown) {
     setLoadingSection(section);
     setToast(null);
 
@@ -291,6 +296,38 @@ export function AdminSettingsClient({
         }
       >
         <Input label="Gemini API key" value={geminiState.apiKey} onChange={(value) => setGeminiState({ apiKey: value })} type="password" icon={<Sparkles className="h-4 w-4" />} />
+      </SettingsCard>
+
+      <SettingsCard
+        title="Magnetic VPS Hosting provider"
+        description="Configure the IONOS-backed reseller and cloud settings used by Magnetic VPS Hosting fulfillment. Manual mode keeps provisioning records internal without calling IONOS. Live mode enables direct API-backed contract and infrastructure orchestration."
+        action={<Button label="Save hosting config" loading={loadingSection === "hosting"} onClick={() => saveSection("hosting", hostingState)} />}
+      >
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <ToggleCard label="Hosting enabled" checked={hostingState.enabled} onChange={(checked) => setHostingState((current) => ({ ...current, enabled: checked }))} />
+          <ToggleCard label="Live provisioning" checked={hostingState.mode === "live"} onChange={(checked) => setHostingState((current) => ({ ...current, mode: checked ? "live" : "manual" }))} />
+          <ToggleCard label="Create reseller contracts" checked={hostingState.createResellerContracts} onChange={(checked) => setHostingState((current) => ({ ...current, createResellerContracts: checked }))} />
+          <ToggleCard label="Create contract admins" checked={hostingState.createContractAdmins} onChange={(checked) => setHostingState((current) => ({ ...current, createContractAdmins: checked }))} />
+        </div>
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <Input label="Reseller base URL" value={hostingState.resellerBaseUrl} onChange={(value) => setHostingState((current) => ({ ...current, resellerBaseUrl: value }))} />
+          <Input label="Cloud base URL" value={hostingState.cloudBaseUrl} onChange={(value) => setHostingState((current) => ({ ...current, cloudBaseUrl: value }))} />
+          <Input label="Reseller username" value={hostingState.resellerUsername} onChange={(value) => setHostingState((current) => ({ ...current, resellerUsername: value }))} />
+          <Input label="Reseller password" value={hostingState.resellerPassword} onChange={(value) => setHostingState((current) => ({ ...current, resellerPassword: value }))} type="password" />
+          <Input label="Cloud API token" value={hostingState.cloudToken} onChange={(value) => setHostingState((current) => ({ ...current, cloudToken: value }))} type="password" />
+          <Input label="Cloud contract number" value={hostingState.cloudContractNumber} onChange={(value) => setHostingState((current) => ({ ...current, cloudContractNumber: value }))} />
+          <Input label="Default location" value={hostingState.defaultLocation} onChange={(value) => setHostingState((current) => ({ ...current, defaultLocation: value }))} />
+          <Input label="Default image alias" value={hostingState.defaultImageAlias} onChange={(value) => setHostingState((current) => ({ ...current, defaultImageAlias: value }))} />
+        </div>
+        <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
+          <div className="font-semibold text-slate-950">Provisioning mode</div>
+          <p className="mt-2">
+            <span className="font-medium text-slate-950">Manual:</span> store provisioning requests and operator references inside Magnetic only.
+          </p>
+          <p>
+            <span className="font-medium text-slate-950">Live:</span> call the IONOS reseller API for contracts/admins and the cloud API for data center and server provisioning during fulfillment.
+          </p>
+        </div>
       </SettingsCard>
 
       <SettingsCard

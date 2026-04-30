@@ -374,6 +374,45 @@ const allServiceCatalog: CatalogService[] = [
     ]
   },
   {
+    id: "magneticVpsHosting",
+    name: "Magnetic VPS Hosting",
+    category: "Cloud Infrastructure",
+    eyebrow: "IONOS-backed compute",
+    tagline: "Launch Magnetic-branded VPS infrastructure on top of IONOS partner and cloud operations with clean provisioning and operator visibility.",
+    description:
+      "Provision premium VPS hosting with Magnetic as the customer-facing brand while using IONOS-backed reseller and cloud workflows behind the scenes for contract creation, infrastructure orchestration, and delivery tracking.",
+    imageLabel: "Managed VPS Control Plane",
+    highlights: ["IONOS-backed provisioning", "Magnetic-branded delivery", "Admin-visible fulfillment workflow"],
+    benefits: [
+      "Sell VPS infrastructure directly on your platform without pushing customers into a separate provider UI first.",
+      "Keep reseller and cloud provisioning logic organized behind admin-controlled provider settings.",
+      "Track hosting fulfillment, provider references, and provisioning status inside your own Magnetic admin panel."
+    ],
+    tiers: [
+      {
+        id: "magneticVpsHosting-starter",
+        name: "Starter",
+        price: 49,
+        summary: "Entry VPS hosting for lean sites, prototypes, and internal tooling.",
+        features: ["2 vCPU", "2 GB RAM", "60 GB SSD boot volume"]
+      },
+      {
+        id: "magneticVpsHosting-professional",
+        name: "Professional",
+        price: 99,
+        summary: "Balanced VPS capacity for production web apps and operational dashboards.",
+        features: ["4 vCPU", "8 GB RAM", "120 GB SSD boot volume"]
+      },
+      {
+        id: "magneticVpsHosting-enterprise",
+        name: "Enterprise",
+        price: 199,
+        summary: "Higher-capacity VPS hosting for demanding applications and scaling teams.",
+        features: ["8 vCPU", "16 GB RAM", "240 GB SSD boot volume"]
+      }
+    ]
+  },
+  {
     id: "magneticFaceSearch",
     name: "Magnetic Face Search",
     category: "AI Vision & Search",
@@ -624,6 +663,7 @@ const allServiceCatalog: CatalogService[] = [
 export const liveServiceCatalogKeys = [
   "imageConversion",
   "siteMonitoring",
+  "magneticVpsHosting",
   "aiDetection",
   "videoDownloader",
   "magneticSocialBot",

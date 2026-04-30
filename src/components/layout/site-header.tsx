@@ -26,7 +26,8 @@ import {
   Briefcase,
   Database,
   Activity,
-  Sparkles
+  Sparkles,
+  Server
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -64,6 +65,7 @@ const iconMap = {
   aiDetection: BrainCircuit,
   videoDownloader: Download,
   magneticSocialBot: Bot,
+  magneticVpsHosting: Server,
   magneticFaceSearch: ScanFace,
   siteLockVpn: Lock,
   siteMonitoring: Activity,

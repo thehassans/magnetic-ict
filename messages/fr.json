@@ -74,6 +74,10 @@
         "title": "Video Downloader",
         "description": "Collez un lien YouTube, Instagram ou Facebook et téléchargez en MP4 ou MP3 avec la qualité souhaitée."
       },
+      "magneticVpsHosting": {
+        "title": "Magnetic VPS Hosting",
+        "description": "Une infrastructure VPS adossée à IONOS avec paiement, fulfillment et contrôle d’administration sous la marque Magnetic."
+      },
       "magneticSocialBot": {
         "title": "Magnetic Social Bot",
         "description": "Une boîte de réception IA multi-canal pour WhatsApp, Instagram et Messenger avec Gemini et une base RAG métier."

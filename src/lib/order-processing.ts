@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { syncServiceCatalog } from "@/lib/catalog-sync";
 import { sendOrderStatusEmail } from "@/lib/email";
+import { createProvisionRequestFromOrder, provisionMagneticVpsHosting } from "@/lib/ionos-hosting";
+import { isMagneticVpsService } from "@/lib/hosting-plans";
 import { getVisibleServiceCatalogWithOverrides } from "@/lib/service-overrides";
 
 export type CheckoutPaymentMethod = "STRIPE" | "PAYPAL" | "APPLE_PAY" | "GOOGLE_PAY";
@@ -29,10 +31,17 @@ type CreatedOrder = {
 
 type LifecycleOrder = {
   id: string;
+  userId: string;
   amount: number;
   serviceNameSnapshot: string;
   tierNameSnapshot: string;
   invoiceNumber: string | null;
+  serviceTier: {
+    catalogKey: string;
+    service: {
+      catalogKey: string;
+    };
+  } | null;
   user: {
     email: string;
     name: string | null;
@@ -86,10 +95,21 @@ async function getLifecycleOrders(orderIds: string[]) {
     },
     select: {
       id: true,
+      userId: true,
       amount: true,
       serviceNameSnapshot: true,
       tierNameSnapshot: true,
       invoiceNumber: true,
+      serviceTier: {
+        select: {
+          catalogKey: true,
+          service: {
+            select: {
+              catalogKey: true
+            }
+          }
+        }
+      },
       user: {
         select: {
           email: true,
@@ -325,6 +345,28 @@ export async function markOrdersFulfilled(orderIds: string[]) {
   }
 
   const fulfilledOrders = await getLifecycleOrders(orderIds);
+  const paidOrders = fulfilledOrders.filter((order) => order.serviceTier && orderIds.includes(order.id));
+
+  for (const order of paidOrders) {
+    const serviceCatalogKey = order.serviceTier?.service.catalogKey;
+    const tierCatalogKey = order.serviceTier?.catalogKey;
+
+    if (!serviceCatalogKey || !tierCatalogKey || !isMagneticVpsService(serviceCatalogKey)) {
+      continue;
+    }
+
+    const provisionRequest = createProvisionRequestFromOrder({
+      orderId: order.id,
+      userId: order.userId,
+      customerEmail: order.user.email,
+      customerName: order.user.name,
+      serviceCatalogKey,
+      tierCatalogKey,
+      tierName: order.tierNameSnapshot
+    });
+
+    await provisionMagneticVpsHosting(provisionRequest);
+  }
 
   await prisma.order.updateMany({
     where: {

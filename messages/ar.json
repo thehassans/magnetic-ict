@@ -62,6 +62,7 @@
       "imageConversion": {"title": "تحويل الصور", "description": "اداة مجانية لتحويل وتغيير حجم صور JPG وPNG وWebP."},
       "aiDetection": {"title": "AI Detection", "description": "ارفع صورة او فيديو وتحقق مما اذا كان يبدو مولدا بالذكاء الاصطناعي باستخدام اشارات تحليلية مميزة."},
       "videoDownloader": {"title": "Video Downloader", "description": "الصق رابط YouTube او Instagram او Facebook وقم بالتنزيل بصيغة MP4 او MP3 بالجودة التي تريدها."},
+      "magneticVpsHosting": {"title": "Magnetic VPS Hosting", "description": "بنية VPS مدعومة من IONOS مع تجربة شراء وتسليم وتحكم اداري بعلامة Magnetic."},
       "magneticSocialBot": {
         "title": "Magnetic Social Bot",
         "description": "صندوق رسائل متعدد القنوات لواتساب وانستغرام ومسنجر مع Gemini ومعرفة النشاط التجاري."

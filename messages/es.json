@@ -62,6 +62,7 @@
       "imageConversion": {"title": "Conversion de imagenes", "description": "Un conversor y redimensionador gratuito para descargas JPG, PNG y WebP."},
       "aiDetection": {"title": "AI Detection", "description": "Sube una imagen o video y revisa si parece generado por IA con senales forenses premium."},
       "videoDownloader": {"title": "Video Downloader", "description": "Pega un enlace de YouTube, Instagram o Facebook y descarga MP4 o MP3 con la calidad que quieras."},
+      "magneticVpsHosting": {"title": "Magnetic VPS Hosting", "description": "Infraestructura VPS respaldada por IONOS con checkout, fulfillment y control administrativo bajo la marca Magnetic."},
       "magneticSocialBot": {
         "title": "Magnetic Social Bot",
         "description": "Una bandeja IA multicanal para WhatsApp, Instagram y Messenger con Gemini y RAG empresarial."

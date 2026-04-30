@@ -1,4 +1,5 @@
 import { routing } from "@/i18n/routing";
+import type { HostingProviderSettings } from "@/lib/hosting-types";
 import { prisma } from "@/lib/prisma";
 import { fallbackLanguages } from "@/lib/settings";
 import type { ActiveLanguage } from "@/types/i18n";
@@ -60,6 +61,7 @@ export type PlatformSettingsBundle = {
   geminiConfig: GeminiSettings;
   socialBotConfig: SocialBotSettings;
   welcomeEmailConfig: WelcomeEmailSettings;
+  hostingProviderConfig: HostingProviderSettings;
 };
 
 export const defaultFooterDetails: FooterSettings = {
@@ -113,6 +115,21 @@ export const defaultWelcomeEmailConfig: WelcomeEmailSettings = {
   body: "Your account is now ready. Explore your dashboard, browse our services, and reach out anytime if you need help getting started.",
   ctaLabel: "Open your dashboard",
   ctaHref: "/dashboard"
+};
+
+export const defaultHostingProviderConfig: HostingProviderSettings = {
+  enabled: false,
+  mode: "manual",
+  resellerBaseUrl: "https://api.ionos.com",
+  resellerUsername: "",
+  resellerPassword: "",
+  cloudBaseUrl: "https://api.ionos.com",
+  cloudToken: "",
+  cloudContractNumber: "",
+  defaultLocation: "de/fra",
+  defaultImageAlias: "ubuntu:latest",
+  createResellerContracts: true,
+  createContractAdmins: false
 };
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -256,6 +273,27 @@ export function normalizeWelcomeEmailConfig(value: unknown): WelcomeEmailSetting
   };
 }
 
+export function normalizeHostingProviderConfig(value: unknown): HostingProviderSettings {
+  if (!isObject(value)) {
+    return defaultHostingProviderConfig;
+  }
+
+  return {
+    enabled: coerceBoolean(value.enabled, defaultHostingProviderConfig.enabled),
+    mode: value.mode === "live" ? "live" : defaultHostingProviderConfig.mode,
+    resellerBaseUrl: coerceString(value.resellerBaseUrl, defaultHostingProviderConfig.resellerBaseUrl),
+    resellerUsername: coerceString(value.resellerUsername, defaultHostingProviderConfig.resellerUsername),
+    resellerPassword: coerceString(value.resellerPassword, defaultHostingProviderConfig.resellerPassword),
+    cloudBaseUrl: coerceString(value.cloudBaseUrl, defaultHostingProviderConfig.cloudBaseUrl),
+    cloudToken: coerceString(value.cloudToken, defaultHostingProviderConfig.cloudToken),
+    cloudContractNumber: coerceString(value.cloudContractNumber, defaultHostingProviderConfig.cloudContractNumber),
+    defaultLocation: coerceString(value.defaultLocation, defaultHostingProviderConfig.defaultLocation),
+    defaultImageAlias: coerceString(value.defaultImageAlias, defaultHostingProviderConfig.defaultImageAlias),
+    createResellerContracts: coerceBoolean(value.createResellerContracts, defaultHostingProviderConfig.createResellerContracts),
+    createContractAdmins: coerceBoolean(value.createContractAdmins, defaultHostingProviderConfig.createContractAdmins)
+  };
+}
+
 async function getSettingValue(key: string) {
   if (!hasDatabase) {
     return null;
@@ -270,14 +308,15 @@ async function getSettingValue(key: string) {
 }
 
 export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
-  const [activeLanguages, footerDetails, paymentIntegrations, oauthConfig, geminiConfig, socialBotConfig, welcomeEmailConfig] = await Promise.all([
+  const [activeLanguages, footerDetails, paymentIntegrations, oauthConfig, geminiConfig, socialBotConfig, welcomeEmailConfig, hostingProviderConfig] = await Promise.all([
     getSettingValue("active_languages"),
     getSettingValue("footer_details"),
     getSettingValue("payment_integrations"),
     getSettingValue("oauth_config"),
     getSettingValue("gemini_api_key"),
     getSettingValue("social_bot_config"),
-    getSettingValue("welcome_email_config")
+    getSettingValue("welcome_email_config"),
+    getSettingValue("hosting_provider_config")
   ]);
 
   return {
@@ -287,7 +326,8 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     oauthConfig: normalizeOAuthConfig(oauthConfig),
     geminiConfig: normalizeGeminiConfig(geminiConfig),
     socialBotConfig: normalizeSocialBotConfig(socialBotConfig),
-    welcomeEmailConfig: normalizeWelcomeEmailConfig(welcomeEmailConfig)
+    welcomeEmailConfig: normalizeWelcomeEmailConfig(welcomeEmailConfig),
+    hostingProviderConfig: normalizeHostingProviderConfig(hostingProviderConfig)
   };
 }
 
@@ -319,6 +359,11 @@ export function getResolvedOAuthSettings(settings: OAuthSettings): OAuthSettings
 export async function getWelcomeEmailSettings() {
   const value = await getSettingValue("welcome_email_config");
   return normalizeWelcomeEmailConfig(value);
+}
+
+export async function getHostingProviderSettings() {
+  const value = await getSettingValue("hosting_provider_config");
+  return normalizeHostingProviderConfig(value);
 }
 
 export function getOAuthProviderAvailability(settings: OAuthSettings) {

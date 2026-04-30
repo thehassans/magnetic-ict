@@ -88,6 +88,23 @@ const requestSchema = z.discriminatedUnion("section", [
       ctaLabel: z.string().min(1),
       ctaHref: z.string().min(1)
     })
+  }),
+  z.object({
+    section: z.literal("hosting"),
+    value: z.object({
+      enabled: z.boolean(),
+      mode: z.enum(["manual", "live"]),
+      resellerBaseUrl: z.string().min(1),
+      resellerUsername: z.string(),
+      resellerPassword: z.string(),
+      cloudBaseUrl: z.string().min(1),
+      cloudToken: z.string(),
+      cloudContractNumber: z.string(),
+      defaultLocation: z.string().min(1),
+      defaultImageAlias: z.string().min(1),
+      createResellerContracts: z.boolean(),
+      createContractAdmins: z.boolean()
+    })
   })
 ]);
 
@@ -98,7 +115,8 @@ const settingKeyBySection = {
   oauth: "oauth_config",
   gemini: "gemini_api_key",
   socialBot: "social_bot_config",
-  welcomeEmail: "welcome_email_config"
+  welcomeEmail: "welcome_email_config",
+  hosting: "hosting_provider_config"
 } as const;
 
 export async function PATCH(request: Request) {
