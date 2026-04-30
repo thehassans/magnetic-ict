@@ -36,7 +36,7 @@ import { BrandLogo } from "@/components/branding/brand-logo";
 import { CartTrigger } from "@/components/commerce/cart-trigger";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Link } from "@/i18n/navigation";
-import { serviceMenuItems, type ServiceMenuKey } from "@/lib/service-menu";
+import { type ServiceMenuKey } from "@/lib/service-menu";
 import { cn } from "@/lib/utils";
 import type { ActiveLanguage } from "@/types/i18n";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
@@ -51,6 +51,7 @@ type SessionUser = {
 type SiteHeaderProps = {
   locale: string;
   activeLanguages: ActiveLanguage[];
+  visibleServiceMenuItems: ReadonlyArray<{ key: ServiceMenuKey; id: string; href: string }>;
   sessionUser?: SessionUser | null;
   hasMagneticSocialBotAccess?: boolean;
 };
@@ -74,7 +75,7 @@ const iconMap = {
   nordVpn: Globe
 } satisfies Record<ServiceMenuKey, typeof ShieldCheck>;
 
-export function SiteHeader({ locale, activeLanguages, sessionUser, hasMagneticSocialBotAccess = false }: SiteHeaderProps) {
+export function SiteHeader({ locale, activeLanguages, visibleServiceMenuItems, sessionUser, hasMagneticSocialBotAccess = false }: SiteHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -178,7 +179,7 @@ export function SiteHeader({ locale, activeLanguages, sessionUser, hasMagneticSo
                         </div>
 
                         <div className="mx-auto flex max-w-[860px] flex-wrap justify-center gap-3">
-                          {serviceMenuItems.map((item, index) => {
+                          {visibleServiceMenuItems.map((item, index) => {
                             const Icon = iconMap[item.key];
 
                             return (
@@ -373,7 +374,7 @@ export function SiteHeader({ locale, activeLanguages, sessionUser, hasMagneticSo
                   {t("servicesMenuEyebrow")}
                 </div>
                 <div className="grid gap-2">
-                  {serviceMenuItems.map((item) => {
+                  {visibleServiceMenuItems.map((item) => {
                     const Icon = iconMap[item.key];
                     return (
                       <Link

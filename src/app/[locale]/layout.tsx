@@ -9,6 +9,8 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { AppProviders } from "@/components/providers/app-providers";
 import { routing } from "@/i18n/routing";
+import { serviceMenuItems } from "@/lib/service-menu";
+import { getVisibleServiceCatalogWithOverrides } from "@/lib/service-overrides";
 import { userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
 import { fallbackLanguages, getActiveLanguages } from "@/lib/settings";
 
@@ -31,11 +33,14 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
 
-  const [messages, session, activeLanguages] = await Promise.all([
+  const [messages, session, activeLanguages, visibleServices] = await Promise.all([
     getMessages(),
     auth(),
-    getActiveLanguages().catch(() => fallbackLanguages)
+    getActiveLanguages().catch(() => fallbackLanguages),
+    getVisibleServiceCatalogWithOverrides()
   ]);
+  const visibleServiceIds = new Set(visibleServices.map((service) => service.id));
+  const visibleServiceMenuItems = serviceMenuItems.filter((item) => visibleServiceIds.has(item.key));
   const hasMagneticSocialBotAccess = session?.user?.id
     ? await userHasMagneticSocialBotAccess(session.user.id).catch(() => false)
     : false;
@@ -57,6 +62,7 @@ export default async function LocaleLayout({
             <SiteHeader
               locale={locale}
               activeLanguages={activeLanguages}
+              visibleServiceMenuItems={visibleServiceMenuItems}
               sessionUser={session?.user}
               hasMagneticSocialBotAccess={hasMagneticSocialBotAccess}
             />
