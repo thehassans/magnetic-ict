@@ -11,7 +11,7 @@ export function calculateDomainAmount({ price, years }: { price: number; years: 
   return Number((price * years).toFixed(2));
 }
 
-export async function createDomainCheckoutOrder(args: {
+function createDomainOrderRecord(args: {
   userId: string;
   customerEmail: string;
   customerName: string | null;
@@ -20,11 +20,12 @@ export async function createDomainCheckoutOrder(args: {
   privacyProtection: boolean;
   unitPrice: number;
   paymentMethod: DomainPaymentMethod;
-  locale: string;
-}) {
+}): DomainOrderRecord {
   const now = createTimestamp();
-  const record: DomainOrderRecord = {
-    _id: createDomainOrderId(),
+  const recordId = createDomainOrderId();
+
+  return {
+    _id: recordId,
     userId: args.userId,
     customerEmail: args.customerEmail,
     customerName: args.customerName,
@@ -38,87 +39,154 @@ export async function createDomainCheckoutOrder(args: {
     status: "pending",
     errorMessage: null,
     registrarReference: null,
-    invoiceNumber: createDomainInvoiceNumber(createDomainOrderId()),
+    invoiceNumber: createDomainInvoiceNumber(recordId),
     createdAt: now,
     updatedAt: now,
     paidAt: null,
     registeredAt: null,
     cancelledAt: null
   };
+}
 
-  await upsertDomainOrder(record);
+export async function createDomainCheckoutOrders(args: {
+  userId: string;
+  customerEmail: string;
+  customerName: string | null;
+  items: Array<{
+    domain: string;
+    years: number;
+    privacyProtection: boolean;
+    unitPrice: number;
+  }>;
+  paymentMethod: DomainPaymentMethod;
+  locale: string;
+}) {
+  const records = args.items.map((item) => createDomainOrderRecord({
+    userId: args.userId,
+    customerEmail: args.customerEmail,
+    customerName: args.customerName,
+    domain: item.domain,
+    years: item.years,
+    privacyProtection: item.privacyProtection,
+    unitPrice: item.unitPrice,
+    paymentMethod: args.paymentMethod
+  }));
+
+  await Promise.all(records.map((record) => upsertDomainOrder(record)));
+
+  const orderIds = records.map((record) => record._id);
+  const totalAmount = Number(records.reduce((sum, record) => sum + record.amount, 0).toFixed(2));
 
   if (args.paymentMethod === "PAYPAL") {
     if (!isPayPalConfigured()) {
-      record.status = "failed";
-      record.updatedAt = createTimestamp();
-      record.errorMessage = "PayPal is not configured yet.";
-      await upsertDomainOrder(record);
-      throw new Error(record.errorMessage);
+      await Promise.all(records.map(async (record) => {
+        record.status = "failed";
+        record.updatedAt = createTimestamp();
+        record.errorMessage = "PayPal is not configured yet.";
+        await upsertDomainOrder(record);
+      }));
+      throw new Error("PayPal is not configured yet.");
     }
 
     const paypalOrder = await createPayPalCheckoutOrder({
-      amount: record.amount,
-      orderIds: [record._id],
+      amount: totalAmount,
+      orderIds,
       locale: args.locale,
       successPath: "/domains/checkout/success",
       cancelPath: "/domains/checkout/cancel"
     });
 
     if (!paypalOrder) {
-      record.status = "failed";
-      record.updatedAt = createTimestamp();
-      record.errorMessage = "Unable to create a PayPal order for this domain.";
-      await upsertDomainOrder(record);
-      throw new Error(record.errorMessage);
+      await Promise.all(records.map(async (record) => {
+        record.status = "failed";
+        record.updatedAt = createTimestamp();
+        record.errorMessage = "Unable to create a PayPal order for this domain selection.";
+        await upsertDomainOrder(record);
+      }));
+      throw new Error("Unable to create a PayPal order for this domain selection.");
     }
 
-    record.paymentReference = paypalOrder.id;
-    record.updatedAt = createTimestamp();
-    await upsertDomainOrder(record);
+    await Promise.all(records.map(async (record) => {
+      record.paymentReference = paypalOrder.id;
+      record.updatedAt = createTimestamp();
+      await upsertDomainOrder(record);
+    }));
 
-    return { orderId: record._id, redirectUrl: paypalOrder.approveUrl };
+    return { orderIds, redirectUrl: paypalOrder.approveUrl };
   }
 
   const stripe = getStripeClient();
   const appUrl = getAppUrl();
 
   if (!stripe || !appUrl) {
-    record.status = "failed";
-    record.updatedAt = createTimestamp();
-    record.errorMessage = "Stripe is not configured yet.";
-    await upsertDomainOrder(record);
-    throw new Error(record.errorMessage);
+    await Promise.all(records.map(async (record) => {
+      record.status = "failed";
+      record.updatedAt = createTimestamp();
+      record.errorMessage = "Stripe is not configured yet.";
+      await upsertDomainOrder(record);
+    }));
+    throw new Error("Stripe is not configured yet.");
   }
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     success_url: `${appUrl}/${args.locale}/domains/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${appUrl}/${args.locale}/domains/checkout/cancel?order_refs=${record._id}`,
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: "usd",
-          unit_amount: Math.round(record.amount * 100),
-          product_data: {
-            name: `Domain Registration — ${record.domain}`
-          }
+    cancel_url: `${appUrl}/${args.locale}/domains/checkout/cancel?order_refs=${orderIds.join(",")}`,
+    line_items: records.map((record) => ({
+      quantity: 1,
+      price_data: {
+        currency: "usd",
+        unit_amount: Math.round(record.amount * 100),
+        product_data: {
+          name: `Domain Registration — ${record.domain}`
         }
       }
-    ],
+    })),
     metadata: {
       checkoutType: "domain",
-      domainOrderIds: record._id,
-      domainName: record.domain
+      domainOrderIds: orderIds.join(","),
+      domainNames: records.map((record) => record.domain).join(",")
     }
   });
 
-  record.paymentReference = session.id;
-  record.updatedAt = createTimestamp();
-  await upsertDomainOrder(record);
+  await Promise.all(records.map(async (record) => {
+    record.paymentReference = session.id;
+    record.updatedAt = createTimestamp();
+    await upsertDomainOrder(record);
+  }));
 
-  return { orderId: record._id, redirectUrl: session.url };
+  return { orderIds, redirectUrl: session.url };
+}
+
+export async function createDomainCheckoutOrder(args: {
+  userId: string;
+  customerEmail: string;
+  customerName: string | null;
+  domain: string;
+  years: number;
+  privacyProtection: boolean;
+  unitPrice: number;
+  paymentMethod: DomainPaymentMethod;
+  locale: string;
+}) {
+  const checkout = await createDomainCheckoutOrders({
+    userId: args.userId,
+    customerEmail: args.customerEmail,
+    customerName: args.customerName,
+    items: [{
+      domain: args.domain,
+      years: args.years,
+      privacyProtection: args.privacyProtection,
+      unitPrice: args.unitPrice
+    }],
+    paymentMethod: args.paymentMethod,
+    locale: args.locale
+  });
+
+  return {
+    orderId: checkout.orderIds[0],
+    redirectUrl: checkout.redirectUrl
+  };
 }
 
 export async function markDomainOrdersPaid(orderIds: string[], paymentReference: string) {

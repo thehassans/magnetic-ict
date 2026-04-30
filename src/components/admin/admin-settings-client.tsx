@@ -305,7 +305,7 @@ export function AdminSettingsClient({
 
       <SettingsCard
         title="Domain operations"
-        description="Configure domain pricing, public search behavior, and optional live registration automation. Search uses RDAP availability checks. Live registration can post paid orders to your registrar automation endpoint from the admin-managed configuration below."
+        description="Configure domain pricing, public search behavior, checkout provider, and optional live registration automation. Search uses RDAP availability checks. Public customers do not choose the payment provider here; checkout uses the admin-managed configuration below."
         action={<Button label="Save domain config" loading={loadingSection === "domain"} onClick={() => saveSection("domain", domainState)} />}
       >
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -317,6 +317,7 @@ export function AdminSettingsClient({
           <Input label="Provider label" value={domainState.providerLabel} onChange={(value) => setDomainState((current) => ({ ...current, providerLabel: value }))} />
           <Input label="Automation endpoint" value={domainState.automationEndpoint} onChange={(value) => setDomainState((current) => ({ ...current, automationEndpoint: value }))} />
           <Input label="Automation token" value={domainState.automationToken} onChange={(value) => setDomainState((current) => ({ ...current, automationToken: value }))} type="password" />
+          <SelectInput label="Checkout provider" value={domainState.checkoutProvider} onChange={(value) => setDomainState((current) => ({ ...current, checkoutProvider: value as "STRIPE" | "PAYPAL" }))} options={[{ value: "STRIPE", label: "Stripe" }, { value: "PAYPAL", label: "PayPal" }]} />
           <Input label="Default registration years" value={String(domainState.defaultYears)} onChange={(value) => setDomainState((current) => ({ ...current, defaultYears: Math.max(1, Number(value) || 1) }))} type="number" />
           <Input label=".com yearly price" value={String(domainState.comPrice)} onChange={(value) => setDomainState((current) => ({ ...current, comPrice: Number(value) || 0 }))} type="number" />
           <Input label=".net yearly price" value={String(domainState.netPrice)} onChange={(value) => setDomainState((current) => ({ ...current, netPrice: Number(value) || 0 }))} type="number" />
@@ -542,6 +543,33 @@ function Input({
           onChange={(event) => onChange(event.target.value)}
           className="w-full bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400"
         />
+      </span>
+    </label>
+  );
+}
+
+function SelectInput({
+  label,
+  value,
+  onChange,
+  options
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: Array<{ value: string; label: string }>;
+}) {
+  return (
+    <label className="space-y-2 text-sm">
+      <span className="font-semibold text-slate-700">{label}</span>
+      <span className="flex h-12 items-center rounded-[18px] border border-slate-200 bg-slate-50 px-4 text-slate-700 focus-within:border-slate-950 focus-within:bg-white">
+        <select value={value} onChange={(event) => onChange(event.target.value)} className="w-full bg-transparent text-sm text-slate-950 outline-none">
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </span>
     </label>
   );

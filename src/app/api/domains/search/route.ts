@@ -8,12 +8,24 @@ export async function GET(request: Request) {
   const settings = await getDomainProviderSettings();
 
   if (!query.trim()) {
-    return NextResponse.json({ results: [], defaultYears: settings.defaultYears, domainsEnabled: settings.enabled });
+    return NextResponse.json({
+      results: [],
+      defaultYears: settings.defaultYears,
+      domainsEnabled: settings.enabled,
+      providerLabel: settings.providerLabel,
+      checkoutProvider: settings.checkoutProvider
+    });
   }
 
   try {
     const results = await searchDomains(query);
-    return NextResponse.json({ results, defaultYears: settings.defaultYears, domainsEnabled: settings.enabled });
+    return NextResponse.json({
+      results,
+      defaultYears: settings.defaultYears,
+      domainsEnabled: settings.enabled,
+      providerLabel: settings.providerLabel,
+      checkoutProvider: settings.checkoutProvider
+    });
   } catch (error) {
     console.error("Domain search failed", error);
     return NextResponse.json({ error: "Unable to search domains right now." }, { status: 500 });

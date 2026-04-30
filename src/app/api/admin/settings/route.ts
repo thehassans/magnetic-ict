@@ -97,6 +97,7 @@ const requestSchema = z.discriminatedUnion("section", [
       providerLabel: z.string().min(1),
       automationEndpoint: z.string(),
       automationToken: z.string(),
+      checkoutProvider: z.enum(["STRIPE", "PAYPAL"]),
       defaultYears: z.number().min(1).max(10),
       autoRegisterAfterPayment: z.boolean(),
       comPrice: z.number().nonnegative(),
