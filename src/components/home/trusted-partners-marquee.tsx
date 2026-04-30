@@ -21,7 +21,7 @@ export function TrustedPartnersMarquee() {
   const t = useTranslations("Landing");
 
   return (
-    <section className="space-y-6 py-4 sm:py-8">
+    <section id="trusted-ecosystem" className="space-y-6 py-4 sm:py-8">
       <ScrollReveal className="space-y-3 text-center">
         <div className="text-xs uppercase tracking-[0.3em] text-cyan-700 dark:text-cyan-300">{t("partnersEyebrow")}</div>
         <h2 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">

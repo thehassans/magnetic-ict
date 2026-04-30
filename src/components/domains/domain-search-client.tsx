@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Search, ShieldCheck } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import type { DomainSearchResult } from "@/lib/domain-types";
 
@@ -18,6 +19,7 @@ const paymentMethods = ["STRIPE", "PAYPAL"] as const;
 export function DomainSearchClient() {
   const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, status } = useSession();
   const [query, setQuery] = useState("");
   const [years, setYears] = useState(1);
@@ -27,15 +29,17 @@ export function DomainSearchClient() {
   const [error, setError] = useState("");
   const [isSearching, startSearch] = useTransition();
   const [isBuying, startBuy] = useTransition();
+  const autoSearchRef = useRef<string>("");
 
   const availableResults = useMemo(() => results.filter((result) => result.available !== false), [results]);
+  const queryFromUrl = (searchParams.get("query") ?? "").trim();
 
-  function handleSearch() {
+  const performSearch = useCallback((searchValue: string) => {
     setError("");
     setMessage("");
 
     startSearch(async () => {
-      const response = await fetch(`/api/domains/search?query=${encodeURIComponent(query)}`, { cache: "no-store" });
+      const response = await fetch(`/api/domains/search?query=${encodeURIComponent(searchValue)}`, { cache: "no-store" });
       const payload = (await response.json().catch(() => ({ results: [] }))) as Partial<SearchResponse> & { error?: string };
 
       if (!response.ok) {
@@ -51,7 +55,27 @@ export function DomainSearchClient() {
         setMessage(payload.results?.length ? "Search completed." : "No matching domain results yet.");
       }
     });
+  }, [startSearch]);
+
+  function handleSearch() {
+    const searchValue = query.trim();
+
+    if (!searchValue) {
+      return;
+    }
+
+    void performSearch(searchValue);
   }
+
+  useEffect(() => {
+    if (!queryFromUrl || autoSearchRef.current === queryFromUrl) {
+      return;
+    }
+
+    autoSearchRef.current = queryFromUrl;
+    setQuery(queryFromUrl);
+    void performSearch(queryFromUrl);
+  }, [performSearch, queryFromUrl]);
 
   function handleBuy(domain: string, price: number) {
     setError("");

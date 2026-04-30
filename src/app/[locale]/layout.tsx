@@ -6,7 +6,7 @@ import { auth } from "@/auth";
 import { CommerceOverlays } from "@/components/commerce/commerce-overlays";
 import { AnimatedPageShell } from "@/components/layout/animated-page-shell";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
+import { Header } from "@/components/ui/header-3";
 import { AppProviders } from "@/components/providers/app-providers";
 import { routing } from "@/i18n/routing";
 import { serviceMenuItems } from "@/lib/service-menu";
@@ -59,7 +59,7 @@ export default async function LocaleLayout({
         >
           <div className="relative overflow-hidden">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(circle_at_top,rgba(124,58,237,0.12),transparent_36%),radial-gradient(circle_at_80%_10%,rgba(6,182,212,0.12),transparent_24%)] dark:bg-[radial-gradient(circle_at_top,rgba(124,58,237,0.2),transparent_38%),radial-gradient(circle_at_80%_10%,rgba(6,182,212,0.16),transparent_24%)]" />
-            <SiteHeader
+            <Header
               locale={locale}
               activeLanguages={activeLanguages}
               visibleServiceMenuItems={visibleServiceMenuItems}

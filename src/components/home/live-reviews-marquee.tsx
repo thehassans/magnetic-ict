@@ -21,7 +21,7 @@ export function LiveReviewsMarquee() {
   const highlightReviews = reviews.slice(0, 3);
 
   return (
-    <section className="space-y-10 py-8 sm:py-12">
+    <section id="home-reviews" className="space-y-10 py-8 sm:py-12">
       <ScrollReveal className="space-y-4 text-center">
         <div className="text-xs uppercase tracking-[0.3em] text-cyan-700 dark:text-cyan-300">{t("reviewsEyebrow")}</div>
         <h2 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">

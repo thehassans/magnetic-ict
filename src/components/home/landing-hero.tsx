@@ -1,21 +1,17 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
+import { HeroDomainSearch } from "@/components/home/hero-domain-search";
 import { Component as Globe } from "@/components/ui/interactive-globe";
 import { serviceCatalog } from "@/lib/service-catalog";
 
 type LandingHeroProps = {
   locale: string;
-  isSignedIn: boolean;
 };
 
-export function LandingHero({ locale, isSignedIn }: LandingHeroProps) {
+export function LandingHero({ locale }: LandingHeroProps) {
   const t = useTranslations("Landing");
-  const secondaryHref = isSignedIn ? "/dashboard" : "/customer/sign-in?callback=/dashboard";
 
   return (
     <section className="relative overflow-hidden rounded-[40px] bg-[linear-gradient(135deg,rgba(255,255,255,0.94),rgba(248,250,252,0.98))] shadow-[0_25px_80px_rgba(59,130,246,0.08)] backdrop-blur-2xl dark:bg-[linear-gradient(135deg,rgba(2,6,23,0.96),rgba(15,23,42,0.92))]">
@@ -46,26 +42,8 @@ export function LandingHero({ locale, isSignedIn }: LandingHeroProps) {
           </ScrollReveal>
 
           <ScrollReveal delay={0.1}>
-            <div className="flex flex-wrap items-center gap-4 mb-8">
-              <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
-                <Link
-                  href="/services"
-                  locale={locale}
-                  className="inline-flex h-12 items-center gap-2 rounded-full bg-slate-950 px-6 text-sm font-semibold text-white transition hover:bg-violet-700"
-                >
-                  {t("primaryCta")}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </motion.div>
-              <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
-                <Link
-                  href={secondaryHref}
-                  locale={locale}
-                  className="inline-flex h-12 items-center gap-2 rounded-full border border-slate-200 bg-white/95 px-6 text-sm font-semibold text-slate-800 backdrop-blur-xl transition hover:border-violet-200 hover:text-violet-700 dark:border-white/10 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
-                >
-                  {isSignedIn ? t("secondaryCtaSignedIn") : t("secondaryCtaGuest")}
-                </Link>
-              </motion.div>
+            <div className="mb-8 max-w-2xl">
+              <HeroDomainSearch locale={locale} />
             </div>
           </ScrollReveal>
 
@@ -97,9 +75,6 @@ export function LandingHero({ locale, isSignedIn }: LandingHeroProps) {
                 <Globe size={420} />
               </div>
 
-              <div className="mt-5 space-y-3">
-                <PanelMetric title={t("panelMetricOneTitle")} description={t("panelMetricOneDescription")} accent="from-violet-500 to-fuchsia-400" />
-              </div>
             </div>
           </ScrollReveal>
         </div>
@@ -113,28 +88,6 @@ function HeroStat({ value, label }: { value: string; label: string }) {
     <div>
       <p className="text-2xl font-bold text-slate-950 dark:text-white">{value}</p>
       <p className="text-xs text-slate-600 dark:text-slate-400">{label}</p>
-    </div>
-  );
-}
-
-function PanelMetric({
-  title,
-  description,
-  accent
-}: {
-  title: string;
-  description: string;
-  accent: string;
-}) {
-  return (
-    <div className="rounded-[28px] bg-white/95 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] dark:bg-slate-50">
-      <div className="flex items-start gap-4">
-        <div className={`mt-1 h-12 w-2 rounded-full bg-gradient-to-b ${accent}`} />
-        <div>
-          <div className="text-base font-semibold text-slate-950">{title}</div>
-          <div className="mt-1 text-sm leading-6 text-slate-600">{description}</div>
-        </div>
-      </div>
     </div>
   );
 }
