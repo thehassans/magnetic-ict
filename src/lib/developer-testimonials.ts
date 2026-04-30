@@ -7,7 +7,7 @@ export const developerTestimonials = [
     content:
       "MagneticICT feels like working with senior engineers who understand delivery pressure in South Asia. The handoff quality, architecture, and speed all made our release cycle much smoother.",
     rating: 5,
-    avatar: "/reviews/noah-bennett-portrait.svg"
+    avatar: "https://randomuser.me/api/portraits/men/32.jpg"
   },
   {
     id: 2,
@@ -17,7 +17,7 @@ export const developerTestimonials = [
     content:
       "The UI quality is genuinely premium. We were able to move from rough requirements to polished production flows without losing responsiveness, accessibility, or design consistency.",
     rating: 5,
-    avatar: "/reviews/mia-johnson-portrait.svg"
+    avatar: "https://randomuser.me/api/portraits/women/72.jpg"
   },
   {
     id: 3,
@@ -27,7 +27,7 @@ export const developerTestimonials = [
     content:
       "What impressed me most was the engineering discipline. Deployment, payment integration, and admin operations were handled with the kind of structure I expect from experienced product teams.",
     rating: 5,
-    avatar: "/reviews/ethan-walker-portrait.svg"
+    avatar: "https://randomuser.me/api/portraits/men/46.jpg"
   },
   {
     id: 4,
@@ -37,7 +37,7 @@ export const developerTestimonials = [
     content:
       "For fast-moving regional teams, clarity matters. MagneticICT delivered strong product thinking, reliable implementation, and a far better customer-facing experience than we had before.",
     rating: 5,
-    avatar: "/reviews/ava-carter-portrait.svg"
+    avatar: "https://randomuser.me/api/portraits/women/63.jpg"
   },
   {
     id: 5,
@@ -47,6 +47,6 @@ export const developerTestimonials = [
     content:
       "Security, operational visibility, and clean admin tooling were all treated as first-class concerns. That saved us real time and reduced a lot of manual support work after launch.",
     rating: 5,
-    avatar: "/reviews/james-patel-portrait.svg"
+    avatar: "https://randomuser.me/api/portraits/men/67.jpg"
   }
 ] as const;
