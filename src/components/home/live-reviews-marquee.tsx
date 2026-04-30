@@ -1,16 +1,24 @@
 "use client";
 
-import Image from "next/image";
-import { Star } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { InfiniteMarquee } from "@/components/home/infinite-marquee";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
+import { CircularTestimonials } from "@/components/ui/circular-testimonials";
+import { TestimonialsSection } from "@/components/ui/simple-animated-testimonials";
+import { developerTestimonials } from "@/lib/developer-testimonials";
 import { reviews } from "@/lib/reviews";
 
 export function LiveReviewsMarquee() {
   const t = useTranslations("Landing");
-  const firstRow = reviews.slice(0, Math.ceil(reviews.length / 2));
-  const secondRow = reviews.slice(Math.ceil(reviews.length / 2));
+  const testimonials = reviews.map((review) => ({
+    name: review.name,
+    designation: `${t(`reviewRoles.${review.id}`)} · ${review.company}`,
+    quote: t(`reviewContent.${review.id}`),
+    src: review.avatar,
+    company: review.company,
+    rating: review.rating,
+    badgeLabel: "Verified customer"
+  }));
+  const highlightReviews = reviews.slice(0, 3);
 
   return (
     <section className="space-y-8 py-8 sm:py-12">
@@ -24,95 +32,58 @@ export function LiveReviewsMarquee() {
         </p>
       </ScrollReveal>
 
-      <div className="space-y-4 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
-        <InfiniteMarquee
-          duration={26}
-          itemClassName="shrink-0"
-          items={firstRow.map((review) => (
-            <ReviewCard key={review.name} review={review} />
-          ))}
-        />
-        <InfiniteMarquee
-          duration={30}
-          reverse
-          itemClassName="shrink-0"
-          items={secondRow.map((review) => (
-            <ReviewCard key={review.name} review={review} />
-          ))}
-        />
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(6,182,212,0.18),transparent_26%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.2),transparent_28%),linear-gradient(180deg,rgba(15,23,42,0.96),rgba(2,6,23,1))] px-4 py-6 shadow-[0_28px_90px_rgba(2,6,23,0.45)] sm:px-6 sm:py-8 lg:px-10 lg:py-10">
+          <CircularTestimonials
+            testimonials={testimonials}
+            autoplay
+            theme="dark"
+            colors={{
+              name: "#f8fafc",
+              designation: "#cbd5e1",
+              testimony: "#e2e8f0",
+              arrowBackground: "#e2e8f0",
+              arrowForeground: "#020617",
+              arrowHoverBackground: "#22d3ee"
+            }}
+            fontSizes={{
+              name: "clamp(1.75rem, 2vw, 2.5rem)",
+              designation: "1rem",
+              quote: "clamp(1rem, 1.4vw, 1.25rem)"
+            }}
+          />
+        </div>
+
+        <div className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.12),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(139,92,246,0.16),transparent_30%),linear-gradient(180deg,rgba(15,23,42,0.92),rgba(2,6,23,0.96))] px-4 py-6 shadow-[0_28px_90px_rgba(2,6,23,0.32)] sm:px-6 sm:py-8">
+          <TestimonialsSection
+            title="Built with developers across Bangladesh & South Asia"
+            subtitle="A second signal of trust from engineers who care about clean architecture, strong delivery, and premium customer-facing product quality."
+            testimonials={[...developerTestimonials]}
+            autoRotateInterval={6500}
+            trustedCompanies={["Dhaka", "Chattogram", "Sylhet", "Colombo", "Karachi"]}
+            trustedCompaniesTitle="Regional developer voices"
+            theme="dark"
+            className="py-0"
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {highlightReviews.map((review) => (
+          <div key={review.id} className="rounded-[1.5rem] border border-slate-200/90 bg-white/90 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-slate-950/60">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="text-base font-semibold text-slate-950 dark:text-white">{review.name}</div>
+                <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t(`reviewRoles.${review.id}`)}</div>
+              </div>
+              <div className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold tracking-[0.18em] text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">
+                {review.rating.toFixed(1)}
+              </div>
+            </div>
+            <p className="mt-4 line-clamp-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{t(`reviewContent.${review.id}`)}</p>
+          </div>
+        ))}
       </div>
     </section>
-  );
-}
-
-function ReviewCard({
-  review
-}: {
-  review: (typeof reviews)[number];
-}) {
-  const t = useTranslations("Landing");
-  const numericRating = review.rating.toFixed(1);
-  const contentClampClass =
-    review.contentLines === 2 ? "line-clamp-2" : review.contentLines === 3 ? "line-clamp-3" : "line-clamp-4";
-
-  return (
-    <div className="w-[23rem] rounded-[26px] border border-slate-200/90 bg-white/95 p-6 shadow-[0_22px_70px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className={`overflow-hidden rounded-full bg-gradient-to-br p-1 shadow-[0_10px_28px_rgba(15,23,42,0.12)] ring-1 ring-slate-200/70 dark:ring-white/10 ${review.accent}`}>
-            <Image
-              src={review.avatar}
-              alt={review.name}
-              width={72}
-              height={72}
-              className="h-[4.5rem] w-[4.5rem] rounded-full border border-white/80 object-cover"
-              unoptimized
-            />
-          </div>
-          <div>
-            <div className="font-semibold text-slate-950 dark:text-white">{review.name}</div>
-            <div className="text-sm text-slate-500 dark:text-slate-400">{t(`reviewRoles.${review.id}`)}</div>
-            <div className="mt-1 text-xs font-medium uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">{review.company}</div>
-          </div>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-            <GoogleIcon />
-            Google
-          </div>
-          <div className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold tracking-[0.18em] text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">
-            {numericRating}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 flex items-center gap-1 text-amber-500">
-        {Array.from({ length: 5 }).map((_, index) => {
-          const fillPercent = Math.max(0, Math.min(1, review.rating - index)) * 100;
-
-          return (
-            <span key={index} className="relative h-4 w-4">
-              <Star className="absolute inset-0 h-4 w-4 text-slate-200 dark:text-slate-700" />
-              <span className="absolute inset-0 overflow-hidden" style={{ width: `${fillPercent}%` }}>
-                <Star className="h-4 w-4 fill-current text-amber-500" />
-              </span>
-            </span>
-          );
-        })}
-      </div>
-
-      <p className={`mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300 ${contentClampClass}`}>{t(`reviewContent.${review.id}`)}</p>
-    </div>
-  );
-}
-
-function GoogleIcon() {
-  return (
-    <svg viewBox="0 0 18 18" className="h-4 w-4" fill="none" aria-hidden="true">
-      <path d="M16.64 9.2c0-.58-.05-1.14-.16-1.68H9v3.18h4.27a3.66 3.66 0 0 1-1.58 2.4v1.99h2.56c1.5-1.38 2.39-3.41 2.39-5.89Z" fill="#4285F4" />
-      <path d="M9 17c2.02 0 3.71-.67 4.95-1.82l-2.56-1.99c-.71.47-1.62.75-2.39.75-1.84 0-3.41-1.24-3.97-2.91H2.38v2.05A8 8 0 0 0 9 17Z" fill="#34A853" />
-      <path d="M5.03 11.03A4.8 4.8 0 0 1 4.81 10c0-.36.08-.71.22-1.03V6.92H2.38A8 8 0 0 0 1.5 10c0 1.29.31 2.51.88 3.58l2.65-2.05Z" fill="#FBBC05" />
-      <path d="M9 4.06c1.1 0 2.08.38 2.85 1.11l2.13-2.13C12.7 1.85 11.01 1 9 1 5.87 1 3.18 2.8 2.38 5.42l2.65 2.05c.56-1.67 2.13-2.91 3.97-2.91Z" fill="#EA4335" />
-    </svg>
   );
 }
