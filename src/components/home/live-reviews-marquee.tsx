@@ -78,7 +78,6 @@ export function LiveReviewsMarquee() {
             trustedCompanies={["Dhaka", "Chattogram", "Sylhet", "Colombo", "Karachi"]}
             trustedCompaniesTitle="Regional developer voices"
             className="py-0"
-            theme="dark"
           />
         </div>
       </div>

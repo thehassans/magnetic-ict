@@ -226,14 +226,14 @@ export function AdminLoginForm({
   accessDeniedMessage
 }: AdminLoginFormProps) {
   return (
-    <section className="relative isolate w-full overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/70 shadow-[0_40px_120px_rgba(15,23,42,0.14)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70 dark:shadow-[0_40px_120px_rgba(2,6,23,0.55)]">
+    <section className="relative isolate h-screen w-full overflow-hidden rounded-none border-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 dark:hidden">
-        <SmokeyBackground color="#38BDF8" backdropBlurAmount="sm" className="opacity-60" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(56,189,248,0.12),transparent_50%),radial-gradient(circle_at_70%_80%,rgba(99,102,241,0.1),transparent_50%)]" />
       </div>
       <div className="absolute inset-0 hidden dark:block">
         <SmokeyBackground color="#1D4ED8" backdropBlurAmount="md" className="opacity-80" />
       </div>
-      <div className="relative z-10 grid min-h-[680px] lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="relative z-10 grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
         <div className="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
           <div className="flex items-center justify-between gap-4">
             <BrandLogo className="w-[150px] sm:w-[170px]" framed priority />
@@ -241,7 +241,7 @@ export function AdminLoginForm({
           </div>
 
           <div className="mt-10 max-w-xl space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-900 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-200">
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-700 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-200">
               <ShieldCheck className="h-4 w-4" />
               Magnetic ICT admin access
             </div>
@@ -254,26 +254,26 @@ export function AdminLoginForm({
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-[1.75rem] border border-white/25 bg-white/20 p-5 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]">
-                <div className="text-xs uppercase tracking-[0.28em] text-slate-600 dark:text-slate-400">Protected workspace</div>
-                <div className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">Operations cockpit</div>
-                <p className="mt-3 text-sm leading-7 text-slate-700 dark:text-slate-300">Orders, services, users, domains, hosting, and platform settings live behind this dedicated administrator entry.</p>
+              <div className="rounded-[1.75rem] border border-slate-200 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]">
+                <div className="text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">Protected workspace</div>
+                <div className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Operations cockpit</div>
+                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">Orders, services, users, domains, hosting, and platform settings live behind this dedicated administrator entry.</p>
               </div>
-              <div className="rounded-[1.75rem] border border-white/25 bg-white/20 p-5 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]">
-                <div className="text-xs uppercase tracking-[0.28em] text-slate-600 dark:text-slate-400">Theme aware</div>
-                <div className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">Light & dark ready</div>
-                <p className="mt-3 text-sm leading-7 text-slate-700 dark:text-slate-300">Use the theme toggle in the header to switch the admin entry between bright glass and dark glass surfaces.</p>
+              <div className="rounded-[1.75rem] border border-slate-200 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]">
+                <div className="text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">Theme aware</div>
+                <div className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Light & dark ready</div>
+                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">Use the theme toggle in the header to switch the admin entry between bright glass and dark glass surfaces.</p>
               </div>
             </div>
           </div>
 
-          <div className="mt-10 text-xs uppercase tracking-[0.28em] text-slate-600 dark:text-slate-400">
+          <div className="mt-10 text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
             Restricted to configured administrator credentials
           </div>
         </div>
 
-        <div className="flex items-center justify-center border-t border-white/20 p-6 dark:border-white/10 lg:border-l lg:border-t-0 sm:p-8 lg:p-10">
-          <div className="w-full max-w-md rounded-[2rem] border border-white/25 bg-white/20 p-8 shadow-2xl backdrop-blur-lg dark:border-white/10 dark:bg-slate-950/45">
+        <div className="flex items-center justify-center border-t border-slate-200 bg-white/50 p-6 dark:border-white/10 dark:bg-slate-950/45 lg:border-l lg:border-t-0 sm:p-8 lg:p-10">
+          <div className="w-full max-w-md rounded-[2rem] border border-slate-200 bg-white p-8 shadow-xl backdrop-blur-lg dark:border-white/10 dark:bg-slate-950/60">
             <div className="text-center">
               <h2 className="text-3xl font-bold text-slate-950 dark:text-white">Welcome Back</h2>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Sign in to continue to the admin panel</p>
@@ -334,3 +334,5 @@ export function AdminLoginForm({
     </section>
   );
 }
+
+export default AdminLoginForm;
