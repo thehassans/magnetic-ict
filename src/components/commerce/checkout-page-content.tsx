@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "@/i18n/navigation";
+import { HostingConfigurationSummary } from "@/components/commerce/hosting-configuration-summary";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
 import { CreditCardForm } from "@/components/ui/credit-card-form";
@@ -148,21 +149,29 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
           Back to cart
         </Link>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="mt-6 grid gap-8 lg:grid-cols-[1.12fr_0.88fr]">
           <div className="space-y-6">
-            <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/50 sm:p-8">
+            <div className="rounded-[2rem] border border-slate-200/80 bg-white/92 p-7 shadow-[0_24px_80px_rgba(15,23,42,0.05)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/50 sm:p-9">
               <p className="text-xs uppercase tracking-widest text-cyan-700 dark:text-cyan-300">{t("checkoutEyebrow")}</p>
-              <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">{t("checkoutTitle")}</h1>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{t("checkoutDescription")}</p>
+              <h1 className="mt-3 max-w-2xl text-[2rem] font-semibold tracking-tight text-slate-950 dark:text-white sm:text-[2.35rem]">{t("checkoutTitle")}</h1>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">{t("checkoutDescription")}</p>
 
-              <div className="mt-6 flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-300">
+              <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 <span>{status === "authenticated" ? t("checkoutAuthenticated") : t("checkoutAuthRequired")}</span>
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/50 sm:p-8">
-              <h2 className="text-sm font-medium text-slate-950 dark:text-white">Payment Method</h2>
+            <div className="rounded-[2rem] border border-slate-200/80 bg-white/92 p-7 shadow-[0_24px_80px_rgba(15,23,42,0.04)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/50 sm:p-9">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-base font-semibold text-slate-950 dark:text-white">Payment method</h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Choose the most convenient way to complete your order.</p>
+                </div>
+                <div className="hidden rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-500 md:block dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-400">
+                  Secure checkout
+                </div>
+              </div>
 
               <div className="mt-4 grid gap-3">
                 {enabledPaymentMethods.map(({ id, titleKey, Icon, brands }) => {
@@ -228,9 +237,14 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
               {status === "authenticated" && !error && success && <p className="mt-4 text-sm text-emerald-600 dark:text-emerald-300">{success}</p>}
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 dark:border-white/10 dark:from-slate-900/50 dark:to-slate-900/30 sm:p-8">
-              <h3 className="text-sm font-medium text-slate-950 dark:text-white">Trusted by customers</h3>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-[2rem] border border-slate-200/80 bg-gradient-to-br from-slate-50 to-white p-7 dark:border-white/10 dark:from-slate-900/50 dark:to-slate-900/30 sm:p-9">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-base font-semibold text-slate-950 dark:text-white">Trusted by customers</h3>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Quiet confidence from operators who buy premium managed services.</p>
+                </div>
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {featuredReviews.map((review) => (
                   <ReviewMiniCard key={review.id} review={review} />
                 ))}
@@ -239,15 +253,16 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
           </div>
 
           <div className="lg:sticky lg:top-8 lg:h-fit">
-            <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/50 sm:p-8">
-              <h2 className="text-sm font-medium text-slate-950 dark:text-white">{t("orderSummary")}</h2>
+            <div className="rounded-[2rem] border border-slate-200/80 bg-white/95 p-7 shadow-[0_28px_90px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/55 sm:p-9">
+              <h2 className="text-base font-semibold text-slate-950 dark:text-white">{t("orderSummary")}</h2>
 
-              <div className="mt-4 space-y-3">
+              <div className="mt-5 space-y-3">
                 {items.map((item) => (
                   <div key={item.tierId} className="flex items-start justify-between gap-4 rounded-xl border border-slate-100 bg-white p-4 dark:border-white/5 dark:bg-white/[0.03]">
                     <div>
                       <div className="font-medium text-slate-950 dark:text-white">{getServiceTitle(navigation, item.serviceId)}</div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">{getLocalizedTierName(t, item.tierId, item.tierId)}</div>
+                      {item.hostingSummary?.length ? <HostingConfigurationSummary lines={item.hostingSummary} tone="subtle" className="mt-3" /> : null}
                     </div>
                     <div className="font-semibold text-slate-950 dark:text-white">${item.price}</div>
                   </div>
@@ -288,22 +303,6 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
                   PCI Compliant
                 </span>
               </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              {featuredReviews.map((review) => (
-                <div key={review.id} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white/50 p-2 dark:border-white/10 dark:bg-slate-900/30">
-                  <img src={review.avatar} alt="" className="h-8 w-8 rounded-full object-cover" />
-                  <div className="hidden text-[10px] leading-tight sm:block">
-                    <p className="font-medium text-slate-950 dark:text-white">{review.name.split(" ")[0]}</p>
-                    <div className="flex items-center gap-0.5">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className={`h-2.5 w-2.5 ${i < Math.floor(review.rating) ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700"}`} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </section>

@@ -7,6 +7,13 @@ type HostingProvision = {
   status: string;
   errorMessage: string | null;
   updatedAt: string;
+  configuration: {
+    controlPanelName: string | null;
+    addonNames: string[];
+    locationName: string | null;
+    extraMonthlyPrice: number;
+    summaryLines: string[];
+  };
   reseller: {
     contractId: string | null;
     adminId: string | null;
@@ -51,6 +58,15 @@ export function AdminHostingClient({ provisions }: { provisions: HostingProvisio
             </div>
           </div>
           <div className="mt-6 grid gap-4 lg:grid-cols-2">
+            <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
+              <div className="text-sm font-semibold text-slate-950">Configuration</div>
+              <div className="mt-3 space-y-2 text-sm text-slate-600">
+                <div>Control panel: {provision.configuration.controlPanelName ?? "None"}</div>
+                <div>Region: {provision.configuration.locationName ?? "Default"}</div>
+                <div>Configuration uplift: ${provision.configuration.extraMonthlyPrice.toFixed(2)}</div>
+                <div>Add-ons: {provision.configuration.addonNames.length ? provision.configuration.addonNames.join(", ") : "None"}</div>
+              </div>
+            </div>
             <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
               <div className="text-sm font-semibold text-slate-950">Reseller</div>
               <div className="mt-3 space-y-2 text-sm text-slate-600">

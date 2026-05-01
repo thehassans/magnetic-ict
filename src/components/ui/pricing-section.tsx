@@ -1,35 +1,59 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { CircleCheck, ShoppingBag } from "lucide-react";
+import { HostingConfigurationSummary } from "@/components/commerce/hosting-configuration-summary";
+import { HostingConfigurator } from "@/components/services/hosting-configurator";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { createDefaultHostingSelection, getHostingConfigurationTotal, resolveHostingConfiguration } from "@/lib/hosting-commerce";
+import type { HostingProviderSettings } from "@/lib/hosting-types";
 import { getLocalizedTierName } from "@/lib/service-i18n";
 import type { CatalogService } from "@/lib/service-catalog";
 import { cn } from "@/lib/utils";
 
 type PricingSectionProps = {
   service: CatalogService;
+  hostingProviderConfig?: HostingProviderSettings | null;
 };
 
-export function PricingSection({ service }: PricingSectionProps) {
+export function PricingSection({ service, hostingProviderConfig }: PricingSectionProps) {
   const t = useTranslations("Commerce");
   const { addItem } = useCommerce();
   const router = useRouter();
+  const [hostingSelection, setHostingSelection] = useState(
+    hostingProviderConfig ? createDefaultHostingSelection(hostingProviderConfig) : undefined
+  );
 
   const featuredTierId = useMemo(() => {
     return service.tiers.find((tier) => tier.name === "Professional")?.id ?? service.tiers[1]?.id ?? service.tiers[0]?.id;
   }, [service.tiers]);
+  const isHostingService = service.id === "magneticVpsHosting" && Boolean(hostingProviderConfig);
+  const resolvedHostingConfiguration = useMemo(
+    () => (hostingProviderConfig ? resolveHostingConfiguration(hostingSelection, hostingProviderConfig) : null),
+    [hostingProviderConfig, hostingSelection]
+  );
 
   return (
-    <section className="rounded-[2rem] border border-slate-200/80 bg-white/90 p-6 shadow-[0_28px_90px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60 dark:shadow-[0_28px_90px_rgba(2,6,23,0.45)] sm:p-8">
+    <section className="space-y-6 rounded-[2rem] border border-slate-200/80 bg-white/90 p-6 shadow-[0_28px_90px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60 dark:shadow-[0_28px_90px_rgba(2,6,23,0.45)] sm:p-8">
+      {isHostingService && hostingProviderConfig && resolvedHostingConfiguration ? (
+        <HostingConfigurator
+          settings={hostingProviderConfig}
+          basePrice={service.tiers[0]?.price ?? 0}
+          value={hostingSelection}
+          onChange={(selection) => setHostingSelection(selection)}
+        />
+      ) : null}
       <div className="grid grid-cols-1 gap-6 min-[900px]:grid-cols-3">
         {service.tiers.map((tier) => {
           const localizedTierName = getLocalizedTierName(t, tier.id, tier.name);
           const featured = tier.id === featuredTierId;
+          const displayPrice = resolvedHostingConfiguration && isHostingService
+            ? getHostingConfigurationTotal(tier.price, resolvedHostingConfiguration)
+            : tier.price;
 
           return (
             <article
@@ -50,13 +74,22 @@ export function PricingSection({ service }: PricingSectionProps) {
                   ) : null}
                 </div>
                 <h3 className="mb-2 mt-4 text-3xl font-semibold text-slate-950 dark:text-white">
-                  ${tier.price}
+                  ${displayPrice}
                   <span className="ml-1 text-base font-medium text-slate-500 dark:text-slate-400">/ plan</span>
                 </h3>
+                {resolvedHostingConfiguration && isHostingService ? (
+                  <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+                    Base ${tier.price} + configuration ${resolvedHostingConfiguration.extraMonthlyPrice.toFixed(2)}
+                  </p>
+                ) : null}
                 <p className="text-sm text-slate-500 dark:text-slate-400">{tier.summary}</p>
               </div>
 
               <div className="my-5 border-t border-slate-200 dark:border-white/10" />
+
+              {resolvedHostingConfiguration && isHostingService ? (
+                <HostingConfigurationSummary lines={resolvedHostingConfiguration.summaryLines} tone="subtle" className="mb-4" />
+              ) : null}
 
               <ul className="space-y-3">
                 {tier.features.map((feature) => (
@@ -76,7 +109,17 @@ export function PricingSection({ service }: PricingSectionProps) {
                   )}
                   variant={featured ? "default" : "secondary"}
                   onClick={() => {
-                    addItem({ serviceId: service.id, tierId: tier.id, price: tier.price });
+                    addItem({
+                      serviceId: service.id,
+                      tierId: tier.id,
+                      price: displayPrice,
+                      ...(resolvedHostingConfiguration && isHostingService
+                        ? {
+                            hostingConfiguration: resolvedHostingConfiguration.selection,
+                            hostingSummary: resolvedHostingConfiguration.summaryLines
+                          }
+                        : {})
+                    });
                     router.push("/cart");
                   }}
                 >

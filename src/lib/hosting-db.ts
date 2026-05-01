@@ -37,6 +37,13 @@ export type HostingProvisionRecord = {
     imageAlias: string;
     location: string;
   };
+  configuration: {
+    controlPanelName: string | null;
+    addonNames: string[];
+    locationName: string | null;
+    extraMonthlyPrice: number;
+    summaryLines: string[];
+  };
   reseller: {
     contractId: string | null;
     adminId: string | null;
@@ -85,6 +92,7 @@ export async function upsertHostingProvision(record: HostingProvisionRecord) {
       updatedAt: record.updatedAt,
       provisionedAt: record.provisionedAt,
       plan: record.plan,
+      configuration: record.configuration,
       reseller: record.reseller,
       cloud: record.cloud
     },

@@ -1,8 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { syncServiceCatalog } from "@/lib/catalog-sync";
 import { sendOrderStatusEmail } from "@/lib/email";
+import { getHostingConfigurationTotal, resolveHostingConfiguration } from "@/lib/hosting-commerce";
 import { createProvisionRequestFromOrder, provisionMagneticVpsHosting } from "@/lib/ionos-hosting";
+import type { HostingConfigurationSelection, ResolvedHostingConfiguration } from "@/lib/hosting-types";
 import { isMagneticVpsService } from "@/lib/hosting-plans";
+import { getHostingProviderSettings } from "@/lib/platform-settings";
 import { getVisibleServiceCatalogWithOverrides } from "@/lib/service-overrides";
 
 export type CheckoutPaymentMethod = "STRIPE" | "PAYPAL" | "APPLE_PAY" | "GOOGLE_PAY";
@@ -10,6 +13,8 @@ export type CheckoutCartItem = {
   serviceId: string;
   tierId: string;
   price: number;
+  hostingConfiguration?: HostingConfigurationSelection;
+  hostingSummary?: string[];
 };
 
 type PersistedTier = {
@@ -46,6 +51,16 @@ type LifecycleOrder = {
     email: string;
     name: string | null;
   };
+  events: Array<{
+    type: "CREATED" | "PAID" | "FAILED" | "CANCELLED" | "FULFILLED";
+    metadata: Record<string, unknown> | null;
+  }>;
+};
+
+type OrderCreatedMetadata = {
+  paymentMethod: CheckoutPaymentMethod;
+  itemCount: number;
+  hostingConfiguration?: ResolvedHostingConfiguration;
 };
 
 function createInvoiceNumber(orderId: string) {
@@ -57,13 +72,15 @@ async function createOrderEvents({
   type,
   statusSnapshot,
   paymentRef,
-  metadata
+  metadata,
+  metadataByOrderId
 }: {
   orderIds: string[];
   type: "CREATED" | "PAID" | "FAILED" | "CANCELLED" | "FULFILLED";
   statusSnapshot: "PENDING" | "PAID" | "FAILED" | "CANCELLED" | "FULFILLED";
   paymentRef?: string;
   metadata?: Record<string, unknown>;
+  metadataByOrderId?: Record<string, Record<string, unknown>>;
 }) {
   if (orderIds.length === 0) {
     return;
@@ -74,7 +91,7 @@ async function createOrderEvents({
     type,
     statusSnapshot,
     paymentRef,
-    metadata: metadata ?? undefined
+    metadata: metadataByOrderId?.[orderId] ?? metadata ?? undefined
   }));
 
   await prisma.orderEvent.createMany({
@@ -115,9 +132,32 @@ async function getLifecycleOrders(orderIds: string[]) {
           email: true,
           name: true
         }
+      },
+      events: {
+        where: {
+          type: "CREATED"
+        },
+        select: {
+          type: true,
+          metadata: true
+        },
+        orderBy: {
+          createdAt: "desc"
+        },
+        take: 1
       }
     }
   })) as LifecycleOrder[];
+}
+
+function getCreatedMetadata(order: LifecycleOrder): OrderCreatedMetadata | null {
+  const metadata = order.events[0]?.metadata;
+
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
+    return null;
+  }
+
+  return metadata as OrderCreatedMetadata;
 }
 
 async function notifyOrders(
@@ -177,14 +217,24 @@ export async function createPendingOrders({
   }
 
   const tiersByCatalogKey = new Map(tiers.map((tier) => [tier.catalogKey, tier] as const));
+  const hostingSettings = await getHostingProviderSettings();
+  const resolvedHostingConfigurations = items.map((item) =>
+    isMagneticVpsService(item.serviceId) ? resolveHostingConfiguration(item.hostingConfiguration, hostingSettings) : null
+  );
 
   const createdOrders = (await prisma.$transaction(
-    items.map((item) => {
+    items.map((item, index) => {
       const tier = tiersByCatalogKey.get(item.tierId);
+      const hostingConfiguration = resolvedHostingConfigurations[index];
 
       if (!tier) {
         throw new Error(`Missing tier for ${item.tierId}`);
       }
+
+      const amount = hostingConfiguration ? getHostingConfigurationTotal(tier.price, hostingConfiguration) : tier.price;
+      const tierNameSnapshot = hostingConfiguration?.controlPanel
+        ? `${tier.name} · ${hostingConfiguration.controlPanel.name}`
+        : tier.name;
 
       return prisma.order.create({
         data: {
@@ -193,9 +243,9 @@ export async function createPendingOrders({
           status: "PENDING",
           paymentMethod,
           currency: "USD",
-          amount: tier.price,
+          amount,
           serviceNameSnapshot: tier.service.name,
-          tierNameSnapshot: tier.name
+          tierNameSnapshot
         },
         select: {
           id: true,
@@ -211,10 +261,20 @@ export async function createPendingOrders({
     orderIds: createdOrders.map((order) => order.id),
     type: "CREATED",
     statusSnapshot: "PENDING",
-    metadata: {
-      paymentMethod,
-      itemCount: items.length
-    }
+    metadataByOrderId: Object.fromEntries(
+      createdOrders.map((order, index) => [
+        order.id,
+        {
+          paymentMethod,
+          itemCount: items.length,
+          ...(resolvedHostingConfigurations[index]
+            ? {
+                hostingConfiguration: resolvedHostingConfigurations[index]
+              }
+            : {})
+        }
+      ])
+    )
   });
 
   return createdOrders;
@@ -346,10 +406,12 @@ export async function markOrdersFulfilled(orderIds: string[]) {
 
   const fulfilledOrders = await getLifecycleOrders(orderIds);
   const paidOrders = fulfilledOrders.filter((order) => order.serviceTier && orderIds.includes(order.id));
+  const hostingSettings = await getHostingProviderSettings();
 
   for (const order of paidOrders) {
     const serviceCatalogKey = order.serviceTier?.service.catalogKey;
     const tierCatalogKey = order.serviceTier?.catalogKey;
+    const createdMetadata = getCreatedMetadata(order);
 
     if (!serviceCatalogKey || !tierCatalogKey || !isMagneticVpsService(serviceCatalogKey)) {
       continue;
@@ -362,7 +424,8 @@ export async function markOrdersFulfilled(orderIds: string[]) {
       customerName: order.user.name,
       serviceCatalogKey,
       tierCatalogKey,
-      tierName: order.tierNameSnapshot
+      tierName: order.tierNameSnapshot,
+      configuration: createdMetadata?.hostingConfiguration ?? resolveHostingConfiguration(undefined, hostingSettings)
     });
 
     await provisionMagneticVpsHosting(provisionRequest);

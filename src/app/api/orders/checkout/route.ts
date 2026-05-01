@@ -25,7 +25,16 @@ const checkoutSchema = z.object({
       z.object({
         serviceId: z.string(),
         tierId: z.string(),
-        price: z.number().nonnegative()
+        price: z.number().nonnegative(),
+        hostingConfiguration: z
+          .object({
+            type: z.literal("hosting_vps"),
+            controlPanelId: z.string(),
+            addonIds: z.array(z.string()),
+            locationId: z.string()
+          })
+          .optional(),
+        hostingSummary: z.array(z.string()).optional()
       })
     )
     .min(1)

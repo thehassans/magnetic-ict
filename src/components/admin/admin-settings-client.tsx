@@ -2,6 +2,7 @@
 
 import { type ReactNode, useMemo, useState } from "react";
 import { Check, Loader2, Sparkles } from "lucide-react";
+import { HostingConfigEditor } from "@/components/admin/hosting-config-editor";
 import type { DomainProviderSettings } from "@/lib/domain-types";
 import type { HostingProviderSettings } from "@/lib/hosting-types";
 import type { ActiveLanguage } from "@/types/i18n";
@@ -357,6 +358,7 @@ export function AdminSettingsClient({
             <span className="font-medium text-slate-950">Live:</span> call the IONOS reseller API for contracts/admins and the cloud API for data center and server provisioning during fulfillment.
           </p>
         </div>
+        <HostingConfigEditor value={hostingState} onChange={setHostingState} />
       </SettingsCard>
 
       <SettingsCard

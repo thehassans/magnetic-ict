@@ -5,6 +5,7 @@ import { ShoppingBag, Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
 import { cn } from "@/lib/utils";
+import { HostingConfigurationSummary } from "@/components/commerce/hosting-configuration-summary";
 import { CheckoutButton } from "@/components/commerce/checkout-button";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 
@@ -70,6 +71,7 @@ export function CartDrawer() {
                         <div>
                           <div className="mt-2 text-xl font-semibold text-slate-950 dark:text-white">{getServiceTitle(navigation, item.serviceId)}</div>
                           <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{getLocalizedTierName(t, item.tierId, item.tierId)}</div>
+                          {item.hostingSummary?.length ? <HostingConfigurationSummary lines={item.hostingSummary} tone="subtle" className="mt-3" /> : null}
                         </div>
                         <button
                           type="button"

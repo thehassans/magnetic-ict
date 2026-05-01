@@ -193,7 +193,14 @@ function createProvisionRecord(request: HostingProvisionRequest, settings: Hosti
       ramMb: request.plan.ramMb,
       storageGb: request.plan.storageGb,
       imageAlias: settings.defaultImageAlias,
-      location: settings.defaultLocation
+      location: request.configuration.location?.value ?? settings.defaultLocation
+    },
+    configuration: {
+      controlPanelName: request.configuration.controlPanel?.name ?? null,
+      addonNames: request.configuration.addons.map((addon) => addon.name),
+      locationName: request.configuration.location?.name ?? null,
+      extraMonthlyPrice: request.configuration.extraMonthlyPrice,
+      summaryLines: request.configuration.summaryLines
     },
     reseller: {
       contractId: null,
@@ -288,6 +295,7 @@ export function createProvisionRequestFromOrder(args: {
   serviceCatalogKey: string;
   tierCatalogKey: string;
   tierName: string;
+  configuration: HostingProvisionRequest["configuration"];
 }) {
   const plan = getHostingPlanForTier(args.tierCatalogKey);
 

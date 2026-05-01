@@ -147,7 +147,93 @@ export const defaultHostingProviderConfig: HostingProviderSettings = {
   defaultLocation: "de/fra",
   defaultImageAlias: "ubuntu:latest",
   createResellerContracts: true,
-  createContractAdmins: false
+  createContractAdmins: false,
+  controlPanels: [
+    {
+      id: "none",
+      name: "No control panel",
+      description: "Lean server delivery for operators who manage the stack directly.",
+      monthlyPrice: 0,
+      enabled: true,
+      recommended: true
+    },
+    {
+      id: "plesk",
+      name: "Plesk",
+      description: "Premium website and mail management panel for production hosting.",
+      monthlyPrice: 18,
+      enabled: true,
+      recommended: false
+    },
+    {
+      id: "cpanel",
+      name: "cPanel",
+      description: "Familiar multi-site hosting panel with account-level management.",
+      monthlyPrice: 24,
+      enabled: true,
+      recommended: false
+    },
+    {
+      id: "directadmin",
+      name: "DirectAdmin",
+      description: "Lightweight control panel for efficient managed VPS operations.",
+      monthlyPrice: 12,
+      enabled: true,
+      recommended: false
+    }
+  ],
+  addons: [
+    {
+      id: "managed-backups",
+      name: "Managed backups",
+      description: "Automated daily snapshots with restore readiness.",
+      monthlyPrice: 9,
+      enabled: true,
+      defaultSelected: true
+    },
+    {
+      id: "advanced-monitoring",
+      name: "Advanced monitoring",
+      description: "Resource monitoring, alerting, and uptime oversight.",
+      monthlyPrice: 14,
+      enabled: true,
+      defaultSelected: true
+    },
+    {
+      id: "managed-hardening",
+      name: "Managed hardening",
+      description: "Baseline firewall, access, and OS hardening support.",
+      monthlyPrice: 19,
+      enabled: true,
+      defaultSelected: false
+    }
+  ],
+  locations: [
+    {
+      id: "de-fra",
+      name: "Frankfurt, Germany",
+      description: "Low-latency central EU region for business apps.",
+      value: "de/fra",
+      enabled: true,
+      recommended: true
+    },
+    {
+      id: "gb-lhr",
+      name: "London, United Kingdom",
+      description: "Regional UK placement for audience proximity.",
+      value: "gb/lhr",
+      enabled: true,
+      recommended: false
+    },
+    {
+      id: "us-las",
+      name: "Las Vegas, United States",
+      description: "US deployment option for North American workloads.",
+      value: "us/las",
+      enabled: true,
+      recommended: false
+    }
+  ]
 };
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -160,6 +246,70 @@ function coerceString(value: unknown, fallback: string) {
 
 function coerceBoolean(value: unknown, fallback: boolean) {
   return typeof value === "boolean" ? value : fallback;
+}
+
+function coerceNumber(value: unknown, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function normalizeHostingControlPanels(value: unknown, fallback: HostingProviderSettings["controlPanels"]) {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  const normalized = value
+    .filter((entry) => isObject(entry))
+    .map((entry, index) => ({
+      id: coerceString(entry.id, fallback[index]?.id ?? `panel-${index + 1}`),
+      name: coerceString(entry.name, fallback[index]?.name ?? "Control panel"),
+      description: coerceString(entry.description, fallback[index]?.description ?? ""),
+      monthlyPrice: Math.max(0, coerceNumber(entry.monthlyPrice, fallback[index]?.monthlyPrice ?? 0)),
+      enabled: coerceBoolean(entry.enabled, fallback[index]?.enabled ?? true),
+      recommended: coerceBoolean(entry.recommended, fallback[index]?.recommended ?? false)
+    }))
+    .filter((entry) => entry.id.trim().length > 0 && entry.name.trim().length > 0);
+
+  return normalized.length > 0 ? normalized : fallback;
+}
+
+function normalizeHostingAddons(value: unknown, fallback: HostingProviderSettings["addons"]) {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  const normalized = value
+    .filter((entry) => isObject(entry))
+    .map((entry, index) => ({
+      id: coerceString(entry.id, fallback[index]?.id ?? `addon-${index + 1}`),
+      name: coerceString(entry.name, fallback[index]?.name ?? "Addon"),
+      description: coerceString(entry.description, fallback[index]?.description ?? ""),
+      monthlyPrice: Math.max(0, coerceNumber(entry.monthlyPrice, fallback[index]?.monthlyPrice ?? 0)),
+      enabled: coerceBoolean(entry.enabled, fallback[index]?.enabled ?? true),
+      defaultSelected: coerceBoolean(entry.defaultSelected, fallback[index]?.defaultSelected ?? false)
+    }))
+    .filter((entry) => entry.id.trim().length > 0 && entry.name.trim().length > 0);
+
+  return normalized.length > 0 ? normalized : fallback;
+}
+
+function normalizeHostingLocations(value: unknown, fallback: HostingProviderSettings["locations"]) {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  const normalized = value
+    .filter((entry) => isObject(entry))
+    .map((entry, index) => ({
+      id: coerceString(entry.id, fallback[index]?.id ?? `location-${index + 1}`),
+      name: coerceString(entry.name, fallback[index]?.name ?? "Region"),
+      description: coerceString(entry.description, fallback[index]?.description ?? ""),
+      value: coerceString(entry.value, fallback[index]?.value ?? defaultHostingProviderConfig.defaultLocation),
+      enabled: coerceBoolean(entry.enabled, fallback[index]?.enabled ?? true),
+      recommended: coerceBoolean(entry.recommended, fallback[index]?.recommended ?? false)
+    }))
+    .filter((entry) => entry.id.trim().length > 0 && entry.name.trim().length > 0 && entry.value.trim().length > 0);
+
+  return normalized.length > 0 ? normalized : fallback;
 }
 
 function normalizeOAuthProviderSettings(
@@ -330,7 +480,10 @@ export function normalizeHostingProviderConfig(value: unknown): HostingProviderS
     defaultLocation: coerceString(value.defaultLocation, defaultHostingProviderConfig.defaultLocation),
     defaultImageAlias: coerceString(value.defaultImageAlias, defaultHostingProviderConfig.defaultImageAlias),
     createResellerContracts: coerceBoolean(value.createResellerContracts, defaultHostingProviderConfig.createResellerContracts),
-    createContractAdmins: coerceBoolean(value.createContractAdmins, defaultHostingProviderConfig.createContractAdmins)
+    createContractAdmins: coerceBoolean(value.createContractAdmins, defaultHostingProviderConfig.createContractAdmins),
+    controlPanels: normalizeHostingControlPanels(value.controlPanels, defaultHostingProviderConfig.controlPanels),
+    addons: normalizeHostingAddons(value.addons, defaultHostingProviderConfig.addons),
+    locations: normalizeHostingLocations(value.locations, defaultHostingProviderConfig.locations)
   };
 }
 

@@ -121,7 +121,37 @@ const requestSchema = z.discriminatedUnion("section", [
       defaultLocation: z.string().min(1),
       defaultImageAlias: z.string().min(1),
       createResellerContracts: z.boolean(),
-      createContractAdmins: z.boolean()
+      createContractAdmins: z.boolean(),
+      controlPanels: z.array(
+        z.object({
+          id: z.string().min(1),
+          name: z.string().min(1),
+          description: z.string(),
+          monthlyPrice: z.number().nonnegative(),
+          enabled: z.boolean(),
+          recommended: z.boolean()
+        })
+      ),
+      addons: z.array(
+        z.object({
+          id: z.string().min(1),
+          name: z.string().min(1),
+          description: z.string(),
+          monthlyPrice: z.number().nonnegative(),
+          enabled: z.boolean(),
+          defaultSelected: z.boolean()
+        })
+      ),
+      locations: z.array(
+        z.object({
+          id: z.string().min(1),
+          name: z.string().min(1),
+          description: z.string(),
+          value: z.string().min(1),
+          enabled: z.boolean(),
+          recommended: z.boolean()
+        })
+      )
     })
   })
 ]);

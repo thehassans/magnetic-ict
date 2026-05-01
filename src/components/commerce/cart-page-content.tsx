@@ -5,6 +5,7 @@ import { ArrowRight, Clock, Lock, Package, ShieldCheck, ShoppingBag, Star, Trash
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { CheckoutButton } from "@/components/commerce/checkout-button";
+import { HostingConfigurationSummary } from "@/components/commerce/hosting-configuration-summary";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
 import { reviews } from "@/lib/reviews";
@@ -97,6 +98,7 @@ export function CartPageContent() {
                       <div>
                         <h3 className="font-medium text-slate-950 dark:text-white">{getServiceTitle(navigation, item.serviceId)}</h3>
                         <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{getLocalizedTierName(t, item.tierId, item.tierId)}</p>
+                        {item.hostingSummary?.length ? <HostingConfigurationSummary lines={item.hostingSummary} tone="subtle" className="mt-3" /> : null}
                       </div>
                     </div>
                     <button

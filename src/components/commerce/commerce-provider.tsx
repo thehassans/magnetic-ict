@@ -1,11 +1,14 @@
 "use client";
 
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
+import type { HostingConfigurationSelection } from "@/lib/hosting-types";
 
 type CartItem = {
   serviceId: string;
   tierId: string;
   price: number;
+  hostingConfiguration?: HostingConfigurationSelection;
+  hostingSummary?: string[];
 };
 
 type AddCartItemInput = CartItem;

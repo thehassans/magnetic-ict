@@ -7,6 +7,7 @@ import { ImageConversionTool } from "@/components/services/image-conversion-tool
 import { ServiceTierSelector } from "@/components/services/service-tier-selector";
 import { VideoDownloaderTool } from "@/components/services/video-downloader-tool";
 import { Link } from "@/i18n/navigation";
+import { getHostingProviderSettings } from "@/lib/platform-settings";
 import { getServiceDescription, getServiceTitle } from "@/lib/service-i18n";
 import { getServiceByIdWithOverrides } from "@/lib/service-overrides";
 
@@ -36,6 +37,7 @@ export default async function ServiceDetailPage({
   const isMagneticSocialBotService = service.id === "magneticSocialBot";
   const isMagneticVpsHostingService = service.id === "magneticVpsHosting";
   const isFreeUtilityService = isImageConversionService || isAiDetectionService || isVideoDownloaderService;
+  const hostingProviderConfig = isMagneticVpsHostingService ? await getHostingProviderSettings() : null;
 
   return (
     <main className="mx-auto max-w-7xl space-y-10 px-4 py-10 sm:px-6 lg:px-8">
@@ -237,7 +239,7 @@ export default async function ServiceDetailPage({
             </div>
           </ScrollReveal>
   
-          <ServiceTierSelector service={service} />
+          <ServiceTierSelector service={service} hostingProviderConfig={hostingProviderConfig} />
         </section>
       )}
     </main>
