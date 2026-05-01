@@ -1,23 +1,24 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { Apple, ArrowLeft, BadgeCheck, CreditCard, Lock, ShieldCheck, Star } from "lucide-react";
+import { ArrowLeft, Lock, ShieldCheck, Star } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "@/i18n/navigation";
 import { HostingConfigurationSummary } from "@/components/commerce/hosting-configuration-summary";
 import { useCommerce } from "@/components/commerce/commerce-provider";
+import { ApplePayMark, GooglePayMark, MastercardMark, PayPalMark, VisaMark } from "@/components/ui/payment-brand-icons";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
 import { CreditCardForm } from "@/components/ui/credit-card-form";
 import { reviews } from "@/lib/reviews";
 import { Card, CardContent } from "@/components/ui/card";
 
 const paymentMethods = [
-  { id: "STRIPE", titleKey: "paymentStripe", Icon: CreditCard, brands: ["Visa", "Mastercard", "Amex"] as const },
-  { id: "PAYPAL", titleKey: "paymentPaypal", Icon: BadgeCheck, brands: undefined },
-  { id: "APPLE_PAY", titleKey: "paymentApplePay", Icon: Apple, brands: undefined },
-  { id: "GOOGLE_PAY", titleKey: "paymentGooglePay", Icon: BadgeCheck, brands: undefined }
+  { id: "STRIPE", titleKey: "paymentStripe" },
+  { id: "PAYPAL", titleKey: "paymentPaypal" },
+  { id: "APPLE_PAY", titleKey: "paymentApplePay" },
+  { id: "GOOGLE_PAY", titleKey: "paymentGooglePay" }
 ] as const;
 
 function ReviewMiniCard({ review }: { review: typeof reviews[number] }) {
@@ -65,7 +66,7 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
     () => paymentMethods.filter((method) => availablePaymentMethods[method.id]),
     [availablePaymentMethods]
   );
-  const [paymentMethod, setPaymentMethod] = useState<(typeof paymentMethods)[number]["id"]>(enabledPaymentMethods[0]?.id ?? "STRIPE");
+  const [paymentMethod, setPaymentMethod] = useState<(typeof paymentMethods)[number]["id"] | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -75,7 +76,7 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
 
   useEffect(() => {
     if (!enabledPaymentMethods.some((method) => method.id === paymentMethod)) {
-      setPaymentMethod(enabledPaymentMethods[0]?.id ?? "STRIPE");
+      setPaymentMethod(null);
     }
   }, [enabledPaymentMethods, paymentMethod]);
 
@@ -85,6 +86,11 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
   function handlePlaceOrder() {
     setError("");
     setSuccess("");
+
+    if (!paymentMethod) {
+      setError("Please choose a payment method to continue.");
+      return;
+    }
 
     startTransition(async () => {
       const response = await fetch("/api/orders/checkout", {
@@ -141,6 +147,24 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
 
   const showCardForm = paymentMethod === "STRIPE";
 
+  function renderPaymentBadge(methodId: (typeof paymentMethods)[number]["id"]) {
+    switch (methodId) {
+      case "STRIPE":
+        return (
+          <div className="flex flex-wrap items-center gap-2">
+            <VisaMark className="h-9" />
+            <MastercardMark className="h-9" />
+          </div>
+        );
+      case "PAYPAL":
+        return <PayPalMark className="h-9" />;
+      case "APPLE_PAY":
+        return <ApplePayMark className="h-9" />;
+      case "GOOGLE_PAY":
+        return <GooglePayMark className="h-9" />;
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.06),transparent_50%),radial-gradient(circle_at_20%_80%,rgba(56,189,248,0.04),transparent_40%)] dark:bg-slate-950">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -149,110 +173,8 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
           Back to cart
         </Link>
 
-        <section className="mt-6 grid gap-8 lg:grid-cols-[1.12fr_0.88fr]">
-          <div className="space-y-6">
-            <div className="rounded-[2rem] border border-slate-200/80 bg-white/92 p-7 shadow-[0_24px_80px_rgba(15,23,42,0.05)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/50 sm:p-9">
-              <p className="text-xs uppercase tracking-widest text-cyan-700 dark:text-cyan-300">{t("checkoutEyebrow")}</p>
-              <h1 className="mt-3 max-w-2xl text-[2rem] font-semibold tracking-tight text-slate-950 dark:text-white sm:text-[2.35rem]">{t("checkoutTitle")}</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">{t("checkoutDescription")}</p>
-
-              <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                <span>{status === "authenticated" ? t("checkoutAuthenticated") : t("checkoutAuthRequired")}</span>
-              </div>
-            </div>
-
-            <div className="rounded-[2rem] border border-slate-200/80 bg-white/92 p-7 shadow-[0_24px_80px_rgba(15,23,42,0.04)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/50 sm:p-9">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-base font-semibold text-slate-950 dark:text-white">Payment method</h2>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Choose the most convenient way to complete your order.</p>
-                </div>
-                <div className="hidden rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-500 md:block dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-400">
-                  Secure checkout
-                </div>
-              </div>
-
-              <div className="mt-4 grid gap-3">
-                {enabledPaymentMethods.map(({ id, titleKey, Icon, brands }) => {
-                  const active = paymentMethod === id;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setPaymentMethod(id)}
-                      className={`flex items-center gap-4 rounded-2xl border px-4 py-4 text-left transition ${
-                        active
-                          ? "border-indigo-200 bg-indigo-50/50 dark:border-indigo-400/30 dark:bg-indigo-400/10"
-                          : "border-slate-200 bg-white hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.07]"
-                      }`}
-                    >
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${active ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300" : "bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-400"}`}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-slate-950 dark:text-white">{t(titleKey)}</div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">{t(`${titleKey}Description`)}</div>
-                      </div>
-                      {brands && (
-                        <div className="flex items-center gap-1 text-[10px] font-medium text-slate-400 dark:text-slate-500">
-                          {brands.map((b: string) => (
-                            <span key={b} className="rounded bg-slate-100 px-1.5 py-0.5 dark:bg-slate-800">{b}</span>
-                          ))}
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {enabledPaymentMethods.length === 0 && (
-                <p className="mt-4 text-sm text-amber-700 dark:text-amber-300">Payment methods are currently unavailable. Please contact support.</p>
-              )}
-
-              {showCardForm && (
-                <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/50 p-4 dark:border-white/10 dark:bg-white/[0.02]">
-                  <CreditCardForm
-                    showSubmit={false}
-                    onChange={(_, validity) => setCardValid(validity.allValid)}
-                    maskMiddle={true}
-                    ring1="#6366f1"
-                    ring2="#06b6d4"
-                  />
-                </div>
-              )}
-
-              {status !== "authenticated" && (
-                <button
-                  type="button"
-                  onClick={() => router.push(`/customer/sign-in?callback=${encodeURIComponent("/checkout")}`)}
-                  className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
-                >
-                  <Lock className="h-4 w-4" />
-                  {t("authenticateToContinue")}
-                </button>
-              )}
-
-              {status === "authenticated" && error && <p className="mt-4 text-sm text-rose-600 dark:text-rose-300">{error}</p>}
-              {status === "authenticated" && !error && success && <p className="mt-4 text-sm text-emerald-600 dark:text-emerald-300">{success}</p>}
-            </div>
-
-            <div className="rounded-[2rem] border border-slate-200/80 bg-gradient-to-br from-slate-50 to-white p-7 dark:border-white/10 dark:from-slate-900/50 dark:to-slate-900/30 sm:p-9">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-base font-semibold text-slate-950 dark:text-white">Trusted by customers</h3>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Quiet confidence from operators who buy premium managed services.</p>
-                </div>
-              </div>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                {featuredReviews.map((review) => (
-                  <ReviewMiniCard key={review.id} review={review} />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:sticky lg:top-8 lg:h-fit">
+        <section className="mt-6 grid gap-8 lg:grid-cols-[0.88fr_1.12fr]">
+          <div className="order-2 space-y-6 lg:order-1 lg:sticky lg:top-8 lg:h-fit">
             <div className="rounded-[2rem] border border-slate-200/80 bg-white/95 p-7 shadow-[0_28px_90px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/55 sm:p-9">
               <h2 className="text-base font-semibold text-slate-950 dark:text-white">{t("orderSummary")}</h2>
 
@@ -287,7 +209,7 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
               <button
                 type="button"
                 onClick={handlePlaceOrder}
-                disabled={status !== "authenticated" || isPending || enabledPaymentMethods.length === 0 || (showCardForm && !cardValid)}
+                disabled={status !== "authenticated" || isPending || enabledPaymentMethods.length === 0 || !paymentMethod || (showCardForm && !cardValid)}
                 className="mt-6 h-12 w-full rounded-xl bg-slate-950 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
               >
                 {isPending ? t("placingOrder") : t("placeOrder")}
@@ -302,6 +224,106 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
                   <ShieldCheck className="h-3 w-3" />
                   PCI Compliant
                 </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="order-1 space-y-6 lg:order-2">
+            <div className="rounded-[2rem] border border-slate-200/80 bg-white/92 p-7 shadow-[0_24px_80px_rgba(15,23,42,0.05)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/50 sm:p-9">
+              <p className="text-xs uppercase tracking-widest text-cyan-700 dark:text-cyan-300">{t("checkoutEyebrow")}</p>
+              <h1 className="mt-3 max-w-2xl text-[2rem] font-semibold tracking-tight text-slate-950 dark:text-white sm:text-[2.35rem]">{t("checkoutTitle")}</h1>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">{t("checkoutDescription")}</p>
+
+              <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span>{status === "authenticated" ? t("checkoutAuthenticated") : t("checkoutAuthRequired")}</span>
+              </div>
+            </div>
+
+            <div className="rounded-[2rem] border border-slate-200/80 bg-white/92 p-7 shadow-[0_24px_80px_rgba(15,23,42,0.04)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/50 sm:p-9">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-base font-semibold text-slate-950 dark:text-white">Payment method</h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Choose the most convenient way to complete your order.</p>
+                </div>
+                <div className="hidden rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-slate-500 md:block dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-400">
+                  Secure checkout
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-3">
+                {enabledPaymentMethods.map(({ id, titleKey }) => {
+                  const active = paymentMethod === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setPaymentMethod(id)}
+                      className={`flex items-center gap-4 rounded-2xl border px-4 py-4 text-left transition ${
+                        active
+                          ? "border-indigo-200 bg-indigo-50/50 dark:border-indigo-400/30 dark:bg-indigo-400/10"
+                          : "border-slate-200 bg-white hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.07]"
+                      }`}
+                    >
+                      <div className="flex-1">
+                        <div className="font-medium text-slate-950 dark:text-white">{t(titleKey)}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">{t(`${titleKey}Description`)}</div>
+                        {id === "STRIPE" ? (
+                          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                            <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 dark:border-white/10 dark:bg-white/[0.04]">Debit card</span>
+                            <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 dark:border-white/10 dark:bg-white/[0.04]">Credit card</span>
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="shrink-0">{renderPaymentBadge(id)}</div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {enabledPaymentMethods.length === 0 && (
+                <p className="mt-4 text-sm text-amber-700 dark:text-amber-300">Payment methods are currently unavailable. Please contact support.</p>
+              )}
+
+              {showCardForm && (
+                <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/50 p-4 dark:border-white/10 dark:bg-white/[0.02] sm:p-5">
+                  <CreditCardForm
+                    showSubmit={false}
+                    onChange={(_, validity) => setCardValid(validity.allValid)}
+                    maskMiddle={true}
+                    ring1="#6366f1"
+                    ring2="#06b6d4"
+                    layout="stacked"
+                  />
+                </div>
+              )}
+
+              {status !== "authenticated" && (
+                <button
+                  type="button"
+                  onClick={() => router.push(`/customer/sign-in?callback=${encodeURIComponent("/checkout")}`)}
+                  className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                >
+                  <Lock className="h-4 w-4" />
+                  {t("authenticateToContinue")}
+                </button>
+              )}
+
+              {status === "authenticated" && error && <p className="mt-4 text-sm text-rose-600 dark:text-rose-300">{error}</p>}
+              {status === "authenticated" && !error && success && <p className="mt-4 text-sm text-emerald-600 dark:text-emerald-300">{success}</p>}
+            </div>
+
+            <div className="rounded-[2rem] border border-slate-200/80 bg-gradient-to-br from-slate-50 to-white p-7 dark:border-white/10 dark:from-slate-900/50 dark:to-slate-900/30 sm:p-9">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-base font-semibold text-slate-950 dark:text-white">Trusted by customers</h3>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Quiet confidence from operators who buy premium managed services.</p>
+                </div>
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {featuredReviews.map((review) => (
+                  <ReviewMiniCard key={review.id} review={review} />
+                ))}
               </div>
             </div>
           </div>

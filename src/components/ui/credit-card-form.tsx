@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { MastercardMark, VisaMark } from "@/components/ui/payment-brand-icons";
 
 type CardState = {
   number: string;
@@ -32,6 +33,7 @@ type Props = {
   onChange?: (state: CardState, validity: CardValidity) => void;
   onSubmit?: (state: CardState, validity: CardValidity) => void;
   className?: string;
+  layout?: "split" | "stacked";
 };
 
 function formatNumberSpaces(num: string) {
@@ -40,6 +42,20 @@ function formatNumberSpaces(num: string) {
 
 function clampDigits(value: string, maxLen: number) {
   return value.replace(/\D/g, "").slice(0, maxLen);
+}
+
+function getCardNetwork(number: string) {
+  const normalized = number.replace(/\D/g, "");
+
+  if (/^4/.test(normalized)) {
+    return "visa" as const;
+  }
+
+  if (/^(5[1-5]|2(2[2-9]|[3-6]\d|7[01]|720))/.test(normalized)) {
+    return "mastercard" as const;
+  }
+
+  return "unknown" as const;
 }
 
 export function CreditCardForm({
@@ -54,7 +70,8 @@ export function CreditCardForm({
   showSubmit = true,
   onChange,
   onSubmit,
-  className = ""
+  className = "",
+  layout = "split"
 }: Props) {
   const [number, setNumber] = useState(clampDigits(defaultNumber, 19));
   const [holder, setHolder] = useState(defaultHolder.toUpperCase());
@@ -90,10 +107,11 @@ export function CreditCardForm({
   }, [number, holder, month, year, cvv, validity, onChange]);
 
   const displayDigits = useMemo(() => number.slice(0, 16).split(""), [number]);
+  const cardNetwork = useMemo(() => getCardNetwork(number), [number]);
 
   const displayedSlots = useMemo(() => {
     return Array.from({ length: 16 }, (_, i) => {
-      let content = "#";
+      let content = "";
       if (i < displayDigits.length) {
         const digit = displayDigits[i];
         const shouldMask = maskMiddle && i >= 4 && i <= 11;
@@ -128,28 +146,35 @@ export function CreditCardForm({
     onSubmit?.({ number, holder, month, year, cvv }, validity);
   }
 
+  function renderCardBrand() {
+    if (cardNetwork === "visa") {
+      return <VisaMark className="h-10 border-white/15 bg-white text-[#1434cb] shadow-none" />;
+    }
+
+    if (cardNetwork === "mastercard") {
+      return <MastercardMark className="h-10 border-white/15 bg-white shadow-none" />;
+    }
+
+    return <div className="rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white/80">Debit / Credit</div>;
+  }
+
   return (
     <section className={`ccp ${className}`}>
-      <div className="wrap">
+      <div className={`wrap ${layout === "stacked" ? "wrap--stacked" : ""}`}>
         <section id="card" className={`card ${flip ? "flip" : ""}`}>
           <div id="highlight" className={highlightClass} />
 
           <section className="card__front" style={ringStyle}>
             <div className="card__header">
-              <div>CreditCard</div>
-              <svg xmlns="http://www.w3.org/2000/svg" height="40" width="60" viewBox="-96 -98.908 832 593.448">
-                <path fill="#ff5f00" d="M224.833 42.298h190.416v311.005H224.833z" />
-                <path d="M244.446 197.828a197.448 197.448 0 0175.54-155.475 197.777 197.777 0 100 311.004 197.448 197.448 0 01-75.54-155.53z" fill="#eb001b" />
-                <path d="M621.101 320.394v-6.372h2.747v-1.319h-6.537v1.319h2.582v6.373zm12.691 0v-7.69h-1.978l-2.307 5.493-2.308-5.494h-1.977v7.691h1.428v-5.823l2.143 5h1.483l2.143-5v5.823z" fill="#f79e1b" />
-                <path d="M640 197.828a197.777 197.777 0 01-320.015 155.474 197.777 197.777 0 000-311.004A197.777 197.777 0 01640 197.773z" fill="#f79e1b" />
-              </svg>
+              <div className="card__header__title">Card details</div>
+              <div className="card__brand">{renderCardBrand()}</div>
             </div>
 
             <div id="card_number" className="card__number" aria-label="Card number">
               {displayedSlots.map((slot, idx) => (
                 <span key={idx} className="slot">
                   <span className={`digit ${slot.filled ? "filled" : ""}`}>
-                    <span className="row placeholder">#</span>
+                    <span className="row placeholder"> </span>
                     <span className="row value">{slot.textTop}</span>
                   </span>
                 </span>
@@ -159,11 +184,13 @@ export function CreditCardForm({
             <div className="card__footer">
               <div className="card__holder">
                 <div className="card__section__title">Card Holder</div>
-                <div id="card_holder">{holder || "NAME ON CARD"}</div>
+                <div id="card_holder">{holder || ""}</div>
               </div>
               <div className="card__expires">
                 <div className="card__section__title">Expires</div>
-                <span id="card_expires_month">{month || "MM"}</span>/<span id="card_expires_year">{year ? year.slice(-2) : "YY"}</span>
+                <span id="card_expires_month">{month || ""}</span>
+                <span className={`card__expires__divider ${month || year ? "is-visible" : ""}`}>/</span>
+                <span id="card_expires_year">{year ? year.slice(-2) : ""}</span>
               </div>
             </div>
           </section>
@@ -289,6 +316,21 @@ export function CreditCardForm({
           grid-template-columns: 1fr 1fr;
           gap: 24px;
           align-items: start;
+        }
+
+        .wrap--stacked {
+          max-width: 100%;
+          grid-template-columns: 1fr;
+        }
+
+        .wrap--stacked .card {
+          max-width: 100%;
+        }
+
+        .wrap--stacked .card__front,
+        .wrap--stacked .card__back,
+        .wrap--stacked .form {
+          max-width: 100%;
         }
 
         @media (max-width: 920px) {
@@ -445,6 +487,18 @@ export function CreditCardForm({
           z-index: 1;
         }
 
+        .card__header__title {
+          font-size: 13px;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: rgba(255, 255, 255, 0.74);
+        }
+
+        .card__brand {
+          display: flex;
+          align-items: center;
+        }
+
         .card_cvv {
           position: relative;
           z-index: 1;
@@ -517,6 +571,23 @@ export function CreditCardForm({
         .card__number .row {
           height: 33px;
           display: block;
+          min-width: 12px;
+        }
+
+        .card__number .row.placeholder {
+          opacity: 0;
+        }
+
+        .card__number .row.value:empty::after,
+        #card_holder:empty::after,
+        #card_expires_month:empty::after,
+        #card_expires_year:empty::after {
+          content: "";
+          display: inline-block;
+          width: 0.55em;
+          height: 1.1em;
+          border-radius: 4px;
+          background: rgba(255, 255, 255, 0.12);
         }
 
         .card__footer {
@@ -529,6 +600,28 @@ export function CreditCardForm({
 
         .card__holder {
           text-transform: uppercase;
+          min-height: 42px;
+        }
+
+        #card_holder,
+        .card__expires {
+          margin-top: 4px;
+          min-height: 24px;
+        }
+
+        .card__expires {
+          min-width: 72px;
+          text-align: right;
+        }
+
+        .card__expires__divider {
+          opacity: 0;
+          padding: 0 2px;
+          transition: opacity 0.2s ease;
+        }
+
+        .card__expires__divider.is-visible {
+          opacity: 0.55;
         }
 
         .card__section__title {
@@ -550,6 +643,12 @@ export function CreditCardForm({
           gap: 12px;
           color: #0d0c22;
           backdrop-filter: blur(12px);
+        }
+
+        .wrap--stacked .form {
+          width: 100%;
+          max-width: 100%;
+          margin-top: 4px;
         }
 
         label {
