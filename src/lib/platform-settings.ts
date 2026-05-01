@@ -128,6 +128,14 @@ export const defaultDomainProviderConfig: DomainProviderSettings = {
   checkoutProvider: "STRIPE",
   defaultYears: 1,
   autoRegisterAfterPayment: false,
+  defaultDnsTtl: 3600,
+  includePrivacyProtectionByDefault: true,
+  allowCustomNameservers: true,
+  priceMarkupPercent: 15,
+  priceMarkupFlat: 1,
+  renewalMarkupPercent: 12,
+  renewalMarkupFlat: 1,
+  defaultNameservers: ["ns1045.ui-dns.com", "ns1045.ui-dns.de", "ns1045.ui-dns.org", "ns1045.ui-dns.biz"],
   comPrice: 14.99,
   netPrice: 16.99,
   orgPrice: 15.99,
@@ -500,6 +508,12 @@ export function normalizeDomainProviderConfig(value: unknown): DomainProviderSet
     return defaultDomainProviderConfig;
   }
 
+  const defaultNameservers = Array.isArray(value.defaultNameservers)
+    ? value.defaultNameservers
+        .map((entry) => coerceString(entry, "").trim())
+        .filter((entry) => entry.length > 0)
+    : defaultDomainProviderConfig.defaultNameservers;
+
   return {
     enabled: coerceBoolean(value.enabled, defaultDomainProviderConfig.enabled),
     mode: value.mode === "live" ? "live" : defaultDomainProviderConfig.mode,
@@ -509,6 +523,14 @@ export function normalizeDomainProviderConfig(value: unknown): DomainProviderSet
     checkoutProvider: value.checkoutProvider === "PAYPAL" ? "PAYPAL" : defaultDomainProviderConfig.checkoutProvider,
     defaultYears: Math.max(1, Number(value.defaultYears) || defaultDomainProviderConfig.defaultYears),
     autoRegisterAfterPayment: coerceBoolean(value.autoRegisterAfterPayment, defaultDomainProviderConfig.autoRegisterAfterPayment),
+    defaultDnsTtl: Math.max(60, Number(value.defaultDnsTtl) || defaultDomainProviderConfig.defaultDnsTtl),
+    includePrivacyProtectionByDefault: coerceBoolean(value.includePrivacyProtectionByDefault, defaultDomainProviderConfig.includePrivacyProtectionByDefault),
+    allowCustomNameservers: coerceBoolean(value.allowCustomNameservers, defaultDomainProviderConfig.allowCustomNameservers),
+    priceMarkupPercent: Number(value.priceMarkupPercent) || value.priceMarkupPercent === 0 ? Number(value.priceMarkupPercent) : defaultDomainProviderConfig.priceMarkupPercent,
+    priceMarkupFlat: Number(value.priceMarkupFlat) || value.priceMarkupFlat === 0 ? Number(value.priceMarkupFlat) : defaultDomainProviderConfig.priceMarkupFlat,
+    renewalMarkupPercent: Number(value.renewalMarkupPercent) || value.renewalMarkupPercent === 0 ? Number(value.renewalMarkupPercent) : defaultDomainProviderConfig.renewalMarkupPercent,
+    renewalMarkupFlat: Number(value.renewalMarkupFlat) || value.renewalMarkupFlat === 0 ? Number(value.renewalMarkupFlat) : defaultDomainProviderConfig.renewalMarkupFlat,
+    defaultNameservers: defaultNameservers.length > 0 ? defaultNameservers : defaultDomainProviderConfig.defaultNameservers,
     comPrice: Number(value.comPrice) || defaultDomainProviderConfig.comPrice,
     netPrice: Number(value.netPrice) || defaultDomainProviderConfig.netPrice,
     orgPrice: Number(value.orgPrice) || defaultDomainProviderConfig.orgPrice,

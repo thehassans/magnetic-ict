@@ -2,6 +2,7 @@ import { AdminDomainsClient } from "@/components/admin/admin-domains-client";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { requireAdmin } from "@/lib/admin";
 import { getDomainOrders } from "@/lib/domain-db";
+import { getManagedDomains } from "@/lib/domain-management-db";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
@@ -22,15 +23,18 @@ export default async function AdminDomainsPage() {
     );
   }
 
-  const orders = await getDomainOrders();
+  const [orders, managedDomains] = await Promise.all([
+    getDomainOrders(),
+    getManagedDomains()
+  ]);
 
   return (
     <AdminShell
       title="Domain operations"
-      description="Track searchable domain purchases and registration status from the admin panel."
+      description="Track checkout orders, managed domains, renewal posture, and registrar state from the admin panel."
       activePath="/admin/domains"
     >
-      <AdminDomainsClient orders={orders} />
+      <AdminDomainsClient orders={orders} managedDomains={managedDomains} />
     </AdminShell>
   );
 }

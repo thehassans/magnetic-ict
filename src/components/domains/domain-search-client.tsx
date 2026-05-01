@@ -6,13 +6,14 @@ import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
-import type { DomainSearchResult } from "@/lib/domain-types";
+import type { DomainRegistrantContact, DomainSearchResult } from "@/lib/domain-types";
 
 type SearchResponse = {
   results: DomainSearchResult[];
   defaultYears: number;
   domainsEnabled: boolean;
   providerLabel: string;
+  includePrivacyProtectionByDefault: boolean;
 };
 
 type DomainCartItem = {
@@ -24,17 +25,40 @@ type DomainCartItem = {
 
 const storageKey = "magneticict-domain-cart";
 
+function splitName(value: string | null | undefined) {
+  const parts = (value ?? "").trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] ?? "",
+    lastName: parts.slice(1).join(" ")
+  };
+}
+
 export function DomainSearchClient() {
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+  const initialNameParts = splitName(session?.user?.name);
   const [query, setQuery] = useState("");
   const [years, setYears] = useState(1);
   const [results, setResults] = useState<DomainSearchResult[]>([]);
   const [domainsEnabled, setDomainsEnabled] = useState(true);
   const [providerLabel, setProviderLabel] = useState("");
+  const [privacyProtectionDefault, setPrivacyProtectionDefault] = useState(true);
   const [domainCart, setDomainCart] = useState<DomainCartItem[]>([]);
+  const [registrantContact, setRegistrantContact] = useState<DomainRegistrantContact>({
+    firstName: initialNameParts.firstName,
+    lastName: initialNameParts.lastName,
+    organization: "",
+    email: session?.user?.email ?? "",
+    phone: "",
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "US"
+  });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSearching, startSearch] = useTransition();
@@ -71,6 +95,17 @@ export function DomainSearchClient() {
     window.localStorage.setItem(storageKey, JSON.stringify(domainCart));
   }, [domainCart, isHydrated]);
 
+  useEffect(() => {
+    const nextNameParts = splitName(session?.user?.name);
+
+    setRegistrantContact((current) => ({
+      ...current,
+      firstName: current.firstName || nextNameParts.firstName,
+      lastName: current.lastName || nextNameParts.lastName,
+      email: current.email || session?.user?.email || ""
+    }));
+  }, [session?.user?.email, session?.user?.name]);
+
   const performSearch = useCallback((searchValue: string) => {
     setError("");
     setMessage("");
@@ -88,6 +123,7 @@ export function DomainSearchClient() {
       setYears(payload.defaultYears ?? 1);
       setDomainsEnabled(payload.domainsEnabled !== false);
       setProviderLabel(payload.providerLabel ?? "");
+      setPrivacyProtectionDefault(payload.includePrivacyProtectionByDefault !== false);
 
       if (payload.domainsEnabled === false) {
         setMessage("Domain registrations are currently disabled in admin settings.");
@@ -151,7 +187,7 @@ export function DomainSearchClient() {
         domain: result.domain,
         years,
         price: result.price,
-        privacyProtection: true
+        privacyProtection: privacyProtectionDefault
       }];
     });
   }
@@ -186,6 +222,7 @@ export function DomainSearchClient() {
             years: item.years,
             privacyProtection: item.privacyProtection
           })),
+          registrantContact,
           locale
         })
       });
@@ -328,7 +365,7 @@ export function DomainSearchClient() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="text-lg font-semibold text-slate-950 dark:text-white">{item.domain}</div>
-                    <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{item.years} year registration · Privacy protection included</div>
+                    <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{item.years} year registration · Privacy protection {item.privacyProtection ? "included" : "disabled"}</div>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
@@ -343,6 +380,24 @@ export function DomainSearchClient() {
               </div>
             ))
           )}
+        </div>
+
+        <div className="mt-6 rounded-[28px] border border-slate-200 bg-slate-50 p-6 dark:border-white/10 dark:bg-white/[0.04]">
+          <div className="text-sm uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Registrant contact</div>
+          <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">This contact is used for domain ownership, WHOIS, and live registrar registration.</p>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            <input value={registrantContact.firstName} onChange={(event) => setRegistrantContact((current) => ({ ...current, firstName: event.target.value }))} placeholder="First name" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
+            <input value={registrantContact.lastName} onChange={(event) => setRegistrantContact((current) => ({ ...current, lastName: event.target.value }))} placeholder="Last name" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
+            <input value={registrantContact.organization} onChange={(event) => setRegistrantContact((current) => ({ ...current, organization: event.target.value }))} placeholder="Organization" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
+            <input value={registrantContact.email} onChange={(event) => setRegistrantContact((current) => ({ ...current, email: event.target.value }))} placeholder="Email" type="email" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
+            <input value={registrantContact.phone} onChange={(event) => setRegistrantContact((current) => ({ ...current, phone: event.target.value }))} placeholder="Phone" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
+            <input value={registrantContact.country} onChange={(event) => setRegistrantContact((current) => ({ ...current, country: event.target.value.toUpperCase() }))} placeholder="Country code" maxLength={2} className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm uppercase text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
+            <input value={registrantContact.addressLine1} onChange={(event) => setRegistrantContact((current) => ({ ...current, addressLine1: event.target.value }))} placeholder="Address line 1" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white md:col-span-2" />
+            <input value={registrantContact.addressLine2} onChange={(event) => setRegistrantContact((current) => ({ ...current, addressLine2: event.target.value }))} placeholder="Address line 2" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white md:col-span-2" />
+            <input value={registrantContact.city} onChange={(event) => setRegistrantContact((current) => ({ ...current, city: event.target.value }))} placeholder="City" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
+            <input value={registrantContact.state} onChange={(event) => setRegistrantContact((current) => ({ ...current, state: event.target.value }))} placeholder="State / region" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
+            <input value={registrantContact.postalCode} onChange={(event) => setRegistrantContact((current) => ({ ...current, postalCode: event.target.value }))} placeholder="Postal code" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
+          </div>
         </div>
 
         <div className="mt-6 flex flex-col gap-4 border-t border-slate-200 pt-6 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">

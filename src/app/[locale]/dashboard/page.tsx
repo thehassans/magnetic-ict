@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { Link } from "@/i18n/navigation";
 import { getDomainOrdersForUser } from "@/lib/domain-db";
+import { getManagedDomainsForUser } from "@/lib/domain-management-db";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
 import { prisma } from "@/lib/prisma";
 import { userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
@@ -36,7 +37,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   const navigation = await getTranslations("Navigation");
   const session = await auth();
 
-  const [orders, domainOrders, hasMagneticSocialBotAccess] = session?.user?.id
+  const [orders, domainOrders, managedDomains, hasMagneticSocialBotAccess] = session?.user?.id
     ? await Promise.all([
         prisma.order.findMany({
           where: { userId: session.user.id },
@@ -65,9 +66,10 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           }
         }),
         getDomainOrdersForUser(session.user.id),
+        getManagedDomainsForUser(session.user.id),
         userHasMagneticSocialBotAccess(session.user.id)
       ])
-    : [[], [], false];
+    : [[], [], [], false];
 
   const activeServices = orders.filter((order: DashboardOrder) => order.status === "PAID" || order.status === "FULFILLED").length;
   const pendingOrders = orders.filter((order: DashboardOrder) => order.status === "PENDING").length;
@@ -75,7 +77,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
     (order: DashboardOrder) => order.status === "FAILED" || order.status === "CANCELLED"
   ).length;
   const totalSpend = orders.reduce((sum: number, order: DashboardOrder) => sum + order.amount, 0);
-  const activeDomains = domainOrders.filter((order) => order.status === "paid" || order.status === "registered").length;
+  const activeDomains = managedDomains.filter((domain) => domain.status === "active").length;
 
   const getStatusLabel = (status: DashboardOrder["status"]) => {
     switch (status) {
@@ -183,8 +185,8 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
 
         <div className="rounded-[30px] border border-slate-200 bg-white/90 p-6 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/40">
           <div className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">Domain summary</div>
-          <div className="mt-4 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">{domainOrders.length}</div>
-          <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">Total domain orders tied to your customer account.</p>
+          <div className="mt-4 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">{managedDomains.length}</div>
+          <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">Total managed domains tied to your customer account.</p>
         </div>
       </section>
 

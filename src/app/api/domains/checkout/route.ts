@@ -5,12 +5,27 @@ import { createDomainCheckoutOrders } from "@/lib/domain-orders";
 import { searchDomains } from "@/lib/domain-search";
 import { getDomainProviderSettings, getEnabledPaymentMethodIds, getPaymentIntegrationsSettings } from "@/lib/platform-settings";
 
+const registrantContactSchema = z.object({
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  organization: z.string(),
+  email: z.string().email(),
+  phone: z.string().min(6),
+  addressLine1: z.string().min(3),
+  addressLine2: z.string(),
+  city: z.string().min(2),
+  state: z.string().min(2),
+  postalCode: z.string().min(2),
+  country: z.string().min(2).max(2)
+});
+
 const requestSchema = z.object({
   items: z.array(z.object({
     domain: z.string().min(3),
     years: z.number().min(1).max(10),
     privacyProtection: z.boolean()
   })).min(1),
+  registrantContact: registrantContactSchema,
   locale: z.string().min(2)
 });
 
@@ -63,6 +78,7 @@ export async function POST(request: Request) {
       userId: session.user.id,
       customerEmail: session.user.email,
       customerName: session.user.name ?? null,
+      registrantContact: parsed.data.registrantContact,
       items: domainItems,
       paymentMethod: settings.checkoutProvider,
       locale: parsed.data.locale

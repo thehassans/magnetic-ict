@@ -320,12 +320,33 @@ export function AdminSettingsClient({
           <Input label="Automation token" value={domainState.automationToken} onChange={(value) => setDomainState((current) => ({ ...current, automationToken: value }))} type="password" />
           <SelectInput label="Checkout provider" value={domainState.checkoutProvider} onChange={(value) => setDomainState((current) => ({ ...current, checkoutProvider: value as "STRIPE" | "PAYPAL" }))} options={[{ value: "STRIPE", label: "Stripe" }, { value: "PAYPAL", label: "PayPal" }]} />
           <Input label="Default registration years" value={String(domainState.defaultYears)} onChange={(value) => setDomainState((current) => ({ ...current, defaultYears: Math.max(1, Number(value) || 1) }))} type="number" />
+          <Input label="Default DNS TTL" value={String(domainState.defaultDnsTtl)} onChange={(value) => setDomainState((current) => ({ ...current, defaultDnsTtl: Math.max(60, Number(value) || 60) }))} type="number" />
+          <Input label="Search markup %" value={String(domainState.priceMarkupPercent)} onChange={(value) => setDomainState((current) => ({ ...current, priceMarkupPercent: Number(value) || 0 }))} type="number" />
+          <Input label="Search markup flat" value={String(domainState.priceMarkupFlat)} onChange={(value) => setDomainState((current) => ({ ...current, priceMarkupFlat: Number(value) || 0 }))} type="number" />
+          <Input label="Renewal markup %" value={String(domainState.renewalMarkupPercent)} onChange={(value) => setDomainState((current) => ({ ...current, renewalMarkupPercent: Number(value) || 0 }))} type="number" />
+          <Input label="Renewal markup flat" value={String(domainState.renewalMarkupFlat)} onChange={(value) => setDomainState((current) => ({ ...current, renewalMarkupFlat: Number(value) || 0 }))} type="number" />
           <Input label=".com yearly price" value={String(domainState.comPrice)} onChange={(value) => setDomainState((current) => ({ ...current, comPrice: Number(value) || 0 }))} type="number" />
           <Input label=".net yearly price" value={String(domainState.netPrice)} onChange={(value) => setDomainState((current) => ({ ...current, netPrice: Number(value) || 0 }))} type="number" />
           <Input label=".org yearly price" value={String(domainState.orgPrice)} onChange={(value) => setDomainState((current) => ({ ...current, orgPrice: Number(value) || 0 }))} type="number" />
           <Input label=".io yearly price" value={String(domainState.ioPrice)} onChange={(value) => setDomainState((current) => ({ ...current, ioPrice: Number(value) || 0 }))} type="number" />
           <Input label="Fallback yearly price" value={String(domainState.defaultPrice)} onChange={(value) => setDomainState((current) => ({ ...current, defaultPrice: Number(value) || 0 }))} type="number" />
         </div>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <ToggleCard label="Privacy by default" checked={domainState.includePrivacyProtectionByDefault} onChange={(checked) => setDomainState((current) => ({ ...current, includePrivacyProtectionByDefault: checked }))} />
+          <ToggleCard label="Allow custom nameservers" checked={domainState.allowCustomNameservers} onChange={(checked) => setDomainState((current) => ({ ...current, allowCustomNameservers: checked }))} />
+        </div>
+        <label className="mt-6 block space-y-2 text-sm">
+          <span className="font-semibold text-slate-700">Default nameservers</span>
+          <textarea
+            value={domainState.defaultNameservers.join("\n")}
+            onChange={(event) => setDomainState((current) => ({
+              ...current,
+              defaultNameservers: event.target.value.split(/\r?\n/).map((entry) => entry.trim()).filter(Boolean)
+            }))}
+            rows={4}
+            className="w-full rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white"
+          />
+        </label>
       </SettingsCard>
 
       <SettingsCard

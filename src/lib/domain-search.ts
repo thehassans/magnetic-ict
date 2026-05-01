@@ -1,4 +1,5 @@
 import type { DomainSearchResult } from "@/lib/domain-types";
+import { applyDomainMarkup, checkIonosDomainAvailability, isIonosDomainApiAvailable } from "@/lib/ionos-domain";
 import { getDomainProviderSettings } from "@/lib/platform-settings";
 
 const suggestedTlds = ["com", "net", "org", "io"] as const;
@@ -57,6 +58,7 @@ async function checkDomain(domain: string): Promise<DomainSearchResult["status"]
 export async function searchDomains(query: string) {
   const normalized = normalizeQuery(query);
   const settings = await getDomainProviderSettings();
+  const ionosAvailable = settings.mode === "live" && await isIonosDomainApiAvailable();
 
   if (!normalized) {
     return [] as DomainSearchResult[];
@@ -71,15 +73,23 @@ export async function searchDomains(query: string) {
     return Boolean(label) && isValidDomainLabel(label);
   });
 
+  if (ionosAvailable) {
+    return Promise.all(uniqueCandidates.map((candidate) => checkIonosDomainAvailability(candidate)));
+  }
+
   const statuses = await Promise.all(uniqueCandidates.map((candidate) => checkDomain(candidate)));
 
   return uniqueCandidates.map((domain, index) => {
     const status = statuses[index];
+    const basePrice = resolvePrice(domain, settings);
+    const { markupAmount, price } = applyDomainMarkup(basePrice, settings.priceMarkupPercent, settings.priceMarkupFlat);
     return {
       domain,
       status,
       available: status === "unknown" ? null : status === "available",
-      price: resolvePrice(domain, settings),
+      basePrice,
+      markupAmount,
+      price,
       currency: "USD",
       source: "rdap"
     } satisfies DomainSearchResult;

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { findMongoDocuments, findOneMongoDocument, upsertMongoDocument } from "@/lib/social-bot-db";
-import type { DomainPaymentMethod } from "@/lib/domain-types";
+import type { DomainPaymentMethod, DomainRegistrantContact } from "@/lib/domain-types";
 
 export type DomainOrderStatus = "pending" | "paid" | "registered" | "cancelled" | "failed";
 
@@ -9,6 +9,7 @@ export type DomainOrderRecord = {
   userId: string;
   customerEmail: string;
   customerName: string | null;
+  registrantContact?: DomainRegistrantContact;
   domain: string;
   years: number;
   privacyProtection: boolean;
@@ -63,6 +64,7 @@ export async function upsertDomainOrder(record: DomainOrderRecord) {
       userId: record.userId,
       customerEmail: record.customerEmail,
       customerName: record.customerName,
+      registrantContact: record.registrantContact,
       domain: record.domain,
       years: record.years,
       privacyProtection: record.privacyProtection,

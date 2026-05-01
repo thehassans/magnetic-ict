@@ -13,6 +13,7 @@ export async function GET(request: Request) {
       defaultYears: settings.defaultYears,
       domainsEnabled: settings.enabled,
       providerLabel: settings.providerLabel,
+      includePrivacyProtectionByDefault: settings.includePrivacyProtectionByDefault,
       checkoutProvider: settings.checkoutProvider
     });
   }
@@ -24,6 +25,7 @@ export async function GET(request: Request) {
       defaultYears: settings.defaultYears,
       domainsEnabled: settings.enabled,
       providerLabel: settings.providerLabel,
+      includePrivacyProtectionByDefault: settings.includePrivacyProtectionByDefault,
       checkoutProvider: settings.checkoutProvider
     });
   } catch (error) {

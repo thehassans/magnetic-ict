@@ -1,7 +1,7 @@
 import { createPayPalCheckoutOrder, getAppUrl, getStripeClient, isPayPalConfigured } from "@/lib/payments";
 import { createDomainInvoiceNumber, createDomainOrderId, getDomainOrderById, getDomainOrderByPaymentReference, type DomainOrderRecord, upsertDomainOrder } from "@/lib/domain-db";
 import { registerDomainOrderIfNeeded } from "@/lib/domain-provider";
-import type { DomainPaymentMethod } from "@/lib/domain-types";
+import type { DomainPaymentMethod, DomainRegistrantContact } from "@/lib/domain-types";
 
 function createTimestamp() {
   return new Date().toISOString();
@@ -15,6 +15,7 @@ function createDomainOrderRecord(args: {
   userId: string;
   customerEmail: string;
   customerName: string | null;
+  registrantContact: DomainRegistrantContact;
   domain: string;
   years: number;
   privacyProtection: boolean;
@@ -29,6 +30,7 @@ function createDomainOrderRecord(args: {
     userId: args.userId,
     customerEmail: args.customerEmail,
     customerName: args.customerName,
+    registrantContact: args.registrantContact,
     domain: args.domain,
     years: args.years,
     privacyProtection: args.privacyProtection,
@@ -52,6 +54,7 @@ export async function createDomainCheckoutOrders(args: {
   userId: string;
   customerEmail: string;
   customerName: string | null;
+  registrantContact: DomainRegistrantContact;
   items: Array<{
     domain: string;
     years: number;
@@ -65,6 +68,7 @@ export async function createDomainCheckoutOrders(args: {
     userId: args.userId,
     customerEmail: args.customerEmail,
     customerName: args.customerName,
+    registrantContact: args.registrantContact,
     domain: item.domain,
     years: item.years,
     privacyProtection: item.privacyProtection,
@@ -162,6 +166,7 @@ export async function createDomainCheckoutOrder(args: {
   userId: string;
   customerEmail: string;
   customerName: string | null;
+  registrantContact: DomainRegistrantContact;
   domain: string;
   years: number;
   privacyProtection: boolean;
@@ -173,6 +178,7 @@ export async function createDomainCheckoutOrder(args: {
     userId: args.userId,
     customerEmail: args.customerEmail,
     customerName: args.customerName,
+    registrantContact: args.registrantContact,
     items: [{
       domain: args.domain,
       years: args.years,
@@ -197,10 +203,14 @@ export async function markDomainOrdersPaid(orderIds: string[], paymentReference:
       continue;
     }
 
-    record.status = "paid";
+     if (record.status === "registered" && record.paymentReference === paymentReference) {
+      continue;
+    }
+
+    record.status = record.status === "registered" ? "registered" : "paid";
     record.paymentReference = paymentReference;
-    record.paidAt = createTimestamp();
-    record.updatedAt = record.paidAt;
+    record.paidAt = record.paidAt ?? createTimestamp();
+    record.updatedAt = createTimestamp();
     record.errorMessage = null;
     await upsertDomainOrder(record);
     await registerDomainOrderIfNeeded(record);

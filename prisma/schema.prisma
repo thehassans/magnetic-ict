@@ -38,6 +38,38 @@ enum OrderEventType {
   FULFILLED
 }
 
+enum DomainStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  FAILED
+  CANCELLED
+}
+
+enum DomainTransactionType {
+  REGISTRATION
+  RENEWAL
+  DNS_CHANGE
+  NAMESERVER_UPDATE
+}
+
+enum DomainTransactionStatus {
+  PENDING
+  PAID
+  ACTIVE
+  FAILED
+  CANCELLED
+}
+
+enum DnsRecordType {
+  A
+  AAAA
+  CNAME
+  MX
+  TXT
+  NS
+}
+
 model User {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
   email         String    @unique
@@ -48,8 +80,87 @@ model User {
   accounts      Account[]
   sessions      Session[]
   orders        Order[]
+  domains       Domain[]
+  transactions  Transaction[]
+  dnsRecords    DnsRecord[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model Domain {
+  id                String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String         @db.ObjectId
+  orderReference    String?
+  domain            String         @unique
+  status            DomainStatus   @default(PENDING)
+  years             Int            @default(1)
+  privacyProtection Boolean        @default(true)
+  autoRenew         Boolean        @default(false)
+  purchasePrice     Float          @default(0)
+  renewalPrice      Float          @default(0)
+  currency          String         @default("USD")
+  registrarReference String?
+  provider          String         @default("manual")
+  nameservers       String[]
+  registeredAt      DateTime?
+  expiresAt         DateTime?
+  errorMessage      String?
+  whoisSnapshot     Json?
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions      Transaction[]
+  dnsRecords        DnsRecord[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([orderReference])
+}
+
+model Transaction {
+  id                String                  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String                  @db.ObjectId
+  domainId          String?                 @db.ObjectId
+  orderReference    String?
+  domainSnapshot    String
+  type              DomainTransactionType
+  status            DomainTransactionStatus @default(PENDING)
+  amount            Float                   @default(0)
+  currency          String                  @default("USD")
+  paymentMethod     PaymentMethod           @default(MANUAL)
+  paymentReference  String?
+  registrarReference String?
+  metadata          Json?
+  completedAt       DateTime?
+  failedAt          DateTime?
+  errorMessage      String?
+  user              User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domain            Domain?                 @relation(fields: [domainId], references: [id], onDelete: SetNull)
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+
+  @@index([userId])
+  @@index([domainId])
+  @@index([orderReference])
+}
+
+model DnsRecord {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String        @db.ObjectId
+  domainId    String        @db.ObjectId
+  externalId  String?
+  type        DnsRecordType
+  name        String
+  value       String
+  ttl         Int           @default(3600)
+  priority    Int?
+  source      String        @default("platform")
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domain       Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([domainId])
 }
 
 model Service {

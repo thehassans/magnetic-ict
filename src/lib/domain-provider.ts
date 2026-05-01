@@ -1,64 +1,135 @@
+import {
+  createDomainTransactionRecord,
+  createManagedDomainRecord,
+  getDomainTransactionByOrderId,
+  getManagedDomainByOrderId,
+  upsertDomainTransaction,
+  upsertManagedDomain
+} from "@/lib/domain-management-db";
 import { type DomainOrderRecord, upsertDomainOrder } from "@/lib/domain-db";
 import { type HostingProvisionRecord, upsertHostingProvision } from "@/lib/hosting-db";
+import { applyDomainMarkup, registerIonosDomain } from "@/lib/ionos-domain";
 import { getDomainProviderSettings } from "@/lib/platform-settings";
-
-function createAuthHeaders(token: string) {
-  const headers: Record<string, string> = {};
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  return headers;
-}
 
 export async function registerDomainOrderIfNeeded(record: DomainOrderRecord) {
   const settings = await getDomainProviderSettings();
+  const existingDomain = await getManagedDomainByOrderId(record._id);
+  const existingTransaction = await getDomainTransactionByOrderId(record._id);
 
-  if (!settings.enabled || !settings.autoRegisterAfterPayment || record.status !== "paid") {
+  const renewalPricing = applyDomainMarkup(record.amount / Math.max(record.years, 1), settings.renewalMarkupPercent, settings.renewalMarkupFlat);
+
+  const managedDomain = existingDomain ?? createManagedDomainRecord({
+    userId: record.userId,
+    orderId: record._id,
+    domain: record.domain,
+    status: "pending",
+    years: record.years,
+    privacyProtection: record.privacyProtection,
+    autoRenew: false,
+    purchasePrice: record.amount,
+    renewalPrice: renewalPricing.price,
+    registrarReference: record.registrarReference,
+    nameservers: settings.defaultNameservers,
+    provider: settings.mode === "live" ? "ionos" : "manual"
+  });
+
+  const transaction = existingTransaction ?? createDomainTransactionRecord({
+    userId: record.userId,
+    domainId: managedDomain._id,
+    orderId: record._id,
+    domain: record.domain,
+    type: "registration",
+    amount: record.amount,
+    paymentMethod: record.paymentMethod,
+    paymentReference: record.paymentReference,
+    registrarReference: record.registrarReference,
+    metadata: {
+      years: record.years,
+      privacyProtection: record.privacyProtection
+    },
+    status: record.status === "registered" ? "active" : record.status === "failed" ? "failed" : record.status === "paid" ? "paid" : "pending"
+  });
+
+  transaction.paymentReference = record.paymentReference;
+  transaction.updatedAt = new Date().toISOString();
+  await upsertDomainTransaction(transaction);
+
+  if (!settings.enabled || record.status !== "paid") {
+    managedDomain.status = record.status === "registered"
+      ? "active"
+      : record.status === "failed"
+        ? "failed"
+        : record.status === "cancelled"
+          ? "cancelled"
+          : managedDomain.status;
+    managedDomain.registrarReference = record.registrarReference;
+    managedDomain.registeredAt = record.registeredAt;
+    managedDomain.updatedAt = transaction.updatedAt;
+    managedDomain.errorMessage = record.errorMessage;
+    await upsertManagedDomain(managedDomain);
     return record;
   }
 
-  if (settings.mode !== "live" || !settings.automationEndpoint) {
+  if (!settings.autoRegisterAfterPayment || settings.mode !== "live") {
+    managedDomain.status = "pending";
+    managedDomain.updatedAt = transaction.updatedAt;
+    await upsertManagedDomain(managedDomain);
     return record;
   }
 
   try {
-    const response = await fetch(settings.automationEndpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...createAuthHeaders(settings.automationToken)
-      },
-      body: JSON.stringify({
-        domain: record.domain,
-        years: record.years,
-        privacyProtection: record.privacyProtection,
-        customerEmail: record.customerEmail,
-        customerName: record.customerName,
-        orderId: record._id,
-        providerLabel: settings.providerLabel
-      })
+    const registration = await registerIonosDomain({
+      domain: record.domain,
+      years: record.years,
+      privacyProtection: record.privacyProtection,
+      registrantContact: record.registrantContact,
+      nameservers: managedDomain.nameservers.length > 0 ? managedDomain.nameservers : settings.defaultNameservers
     });
 
-    const payload = (await response.json().catch(() => null)) as { reference?: string; error?: string } | null;
-
-    if (!response.ok) {
-      throw new Error(payload?.error ?? "Domain automation request failed.");
-    }
+    const now = new Date().toISOString();
 
     record.status = "registered";
-    record.registrarReference = payload?.reference ?? null;
-    record.registeredAt = new Date().toISOString();
+    record.registrarReference = registration.registrarReference;
+    record.registeredAt = now;
     record.updatedAt = record.registeredAt;
     record.errorMessage = null;
+
+    managedDomain.status = "active";
+    managedDomain.registrarReference = registration.registrarReference;
+    managedDomain.nameservers = registration.nameservers.length > 0 ? registration.nameservers : managedDomain.nameservers;
+    managedDomain.registeredAt = now;
+    managedDomain.expiresAt = registration.expiresAt;
+    managedDomain.updatedAt = now;
+    managedDomain.errorMessage = null;
+
+    transaction.status = "active";
+    transaction.registrarReference = registration.registrarReference;
+    transaction.updatedAt = now;
+    transaction.completedAt = now;
+    transaction.errorMessage = null;
+
     await upsertDomainOrder(record);
+    await upsertManagedDomain(managedDomain);
+    await upsertDomainTransaction(transaction);
     return record;
   } catch (error) {
+    const now = new Date().toISOString();
     record.status = "failed";
     record.errorMessage = error instanceof Error ? error.message : "Domain registration failed.";
-    record.updatedAt = new Date().toISOString();
+    record.updatedAt = now;
+
+    managedDomain.status = "failed";
+    managedDomain.errorMessage = record.errorMessage;
+    managedDomain.updatedAt = now;
+
+    transaction.status = "failed";
+    transaction.errorMessage = record.errorMessage;
+    transaction.updatedAt = now;
+    transaction.failedAt = now;
+
     await upsertDomainOrder(record);
+    await upsertManagedDomain(managedDomain);
+    await upsertDomainTransaction(transaction);
     return record;
   }
 }
@@ -76,7 +147,7 @@ export async function registerHostingProvisionDomainIfNeeded(provision: HostingP
     return provision;
   }
 
-  if (settings.mode !== "live" || !settings.automationEndpoint) {
+  if (settings.mode !== "live") {
     provision.domain.status = "pending";
     provision.domain.errorMessage = null;
     provision.updatedAt = new Date().toISOString();
@@ -86,32 +157,17 @@ export async function registerHostingProvisionDomainIfNeeded(provision: HostingP
   }
 
   try {
-    const response = await fetch(settings.automationEndpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...createAuthHeaders(settings.automationToken)
-      },
-      body: JSON.stringify({
-        domain: provision.domain.name,
-        years: provision.domain.years,
-        privacyProtection: provision.domain.privacyProtection,
-        customerEmail: provision.customerEmail,
-        customerName: provision.customerName,
-        orderId: provision.orderId,
-        providerLabel: settings.providerLabel,
-        service: "magnetic_vps_hosting"
-      })
+    const registration = await registerIonosDomain({
+      domain: provision.domain.name,
+      years: provision.domain.years,
+      privacyProtection: provision.domain.privacyProtection,
+      customerEmail: provision.customerEmail,
+      customerName: provision.customerName,
+      nameservers: settings.defaultNameservers
     });
 
-    const payload = (await response.json().catch(() => null)) as { reference?: string; error?: string } | null;
-
-    if (!response.ok) {
-      throw new Error(payload?.error ?? "Domain automation request failed.");
-    }
-
     provision.domain.status = "registered";
-    provision.domain.registrarReference = payload?.reference ?? null;
+    provision.domain.registrarReference = registration.registrarReference;
     provision.domain.errorMessage = null;
     provision.updatedAt = new Date().toISOString();
     await upsertHostingProvision(provision);
