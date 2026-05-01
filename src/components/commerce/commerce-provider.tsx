@@ -77,7 +77,6 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
           );
           return [...withoutCurrentService, item];
         });
-        setIsCartOpen(true);
       },
       removeItem: (tierId) => {
         setItems((current) => current.filter((item) => item.tierId !== tierId));

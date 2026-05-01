@@ -212,7 +212,7 @@ export function Header({
               </NavigationMenuLink>
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="bg-transparent">{t("services")}</NavigationMenuTrigger>
-                <NavigationMenuContent className="rounded-xl border border-slate-200 bg-white/95 p-1 pr-1.5 shadow-[0_24px_80px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/96 dark:shadow-[0_24px_80px_rgba(2,6,23,0.55)]">
+                <NavigationMenuContent className="rounded-xl border border-slate-200 bg-white p-1 pr-1.5 shadow-[0_24px_80px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/96 dark:shadow-[0_24px_80px_rgba(2,6,23,0.55)]">
                   <ul className="grid w-[min(92vw,760px)] grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-slate-950/92 dark:shadow-none">
                     {productLinks.map((item) => (
                       <li key={item.title}>
@@ -220,19 +220,11 @@ export function Header({
                       </li>
                     ))}
                   </ul>
-                  <div className="p-2">
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Discover the full catalog{" "}
-                      <Link href="/services" locale={locale} className="font-medium text-slate-950 hover:underline dark:text-white">
-                        {t("allServices")}
-                      </Link>
-                    </p>
-                  </div>
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="bg-transparent">Company</NavigationMenuTrigger>
-                <NavigationMenuContent className="rounded-xl border border-slate-200 bg-white/95 p-1 pr-1.5 pb-1.5 shadow-[0_24px_80px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/96 dark:shadow-[0_24px_80px_rgba(2,6,23,0.55)]">
+                <NavigationMenuContent className="rounded-xl border border-slate-200 bg-white p-1 pr-1.5 pb-1.5 shadow-[0_24px_80px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/96 dark:shadow-[0_24px_80px_rgba(2,6,23,0.55)]">
                   <div className="grid w-[min(92vw,760px)] grid-cols-2 gap-2">
                     <ul className="space-y-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-slate-950/92 dark:shadow-none">
                       {companyLinks.map((item) => (

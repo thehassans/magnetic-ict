@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { CircleCheck, ShoppingBag } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCommerce } from "@/components/commerce/commerce-provider";
@@ -17,6 +18,7 @@ type PricingSectionProps = {
 export function PricingSection({ service }: PricingSectionProps) {
   const t = useTranslations("Commerce");
   const { addItem } = useCommerce();
+  const router = useRouter();
 
   const featuredTierId = useMemo(() => {
     return service.tiers.find((tier) => tier.name === "Professional")?.id ?? service.tiers[1]?.id ?? service.tiers[0]?.id;
@@ -73,7 +75,10 @@ export function PricingSection({ service }: PricingSectionProps) {
                     featured ? "bg-slate-950 text-white hover:bg-slate-800 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400" : ""
                   )}
                   variant={featured ? "default" : "secondary"}
-                  onClick={() => addItem({ serviceId: service.id, tierId: tier.id, price: tier.price })}
+                  onClick={() => {
+                    addItem({ serviceId: service.id, tierId: tier.id, price: tier.price });
+                    router.push("/cart");
+                  }}
                 >
                   <ShoppingBag className="mr-2 h-4 w-4" />
                   {t("addToCart")}

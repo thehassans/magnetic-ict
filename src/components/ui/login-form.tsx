@@ -228,7 +228,8 @@ export function AdminLoginForm({
   return (
     <section className="relative isolate h-screen w-full overflow-hidden rounded-none border-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 dark:hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(56,189,248,0.12),transparent_50%),radial-gradient(circle_at_70%_80%,rgba(99,102,241,0.1),transparent_50%)]" />
+        <SmokeyBackground color="#38BDF8" backdropBlurAmount="sm" className="opacity-30" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(56,189,248,0.08),transparent_50%),radial-gradient(circle_at_70%_80%,rgba(99,102,241,0.06),transparent_50%)]" />
       </div>
       <div className="absolute inset-0 hidden dark:block">
         <SmokeyBackground color="#1D4ED8" backdropBlurAmount="md" className="opacity-80" />
