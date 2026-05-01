@@ -1,10 +1,10 @@
 "use client";
 
-import { Minus, ShieldCheck, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ShieldCheck, ShoppingBag, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { motion, AnimatePresence } from "framer-motion";
 import { CheckoutButton } from "@/components/commerce/checkout-button";
 import { useCommerce } from "@/components/commerce/commerce-provider";
+import { Link } from "@/i18n/navigation";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
 
 export function CartPageContent() {
@@ -13,115 +13,98 @@ export function CartPageContent() {
   const navigation = useTranslations("Navigation");
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 lg:px-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <div className="mb-16 space-y-3">
-            <p className="text-xs font-medium uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">{t("cartDrawerEyebrow")}</p>
-            <h1 className="text-5xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-6xl">
-              {t("cartPageTitle")}
-            </h1>
-          </div>
-
-          {items.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center py-32 text-center"
-            >
-              <div className="flex h-20 w-20 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-                <ShoppingBag className="h-8 w-8 text-slate-300 dark:text-slate-600" />
-              </div>
-              <h2 className="mt-8 text-2xl font-semibold text-slate-950 dark:text-white">{t("emptyTitle")}</h2>
-              <p className="mt-3 max-w-md text-sm leading-7 text-slate-500 dark:text-slate-400">{t("emptyDescription")}</p>
-            </motion.div>
-          ) : (
-            <div className="grid gap-16 lg:grid-cols-[1fr_380px]">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-white/5">
-                  <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Service</span>
-                  <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Price</span>
-                </div>
-
-                <AnimatePresence mode="popLayout">
-                  {items.map((item, index) => (
-                    <motion.div
-                      key={item.tierId}
-                      layout
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, x: -40, transition: { duration: 0.25 } }}
-                      transition={{ duration: 0.4, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                      className="group"
-                    >
-                      <div className="flex items-center justify-between border-b border-slate-100 py-7 transition-colors hover:border-slate-200 dark:border-white/5 dark:hover:border-white/10">
-                        <div className="flex items-center gap-5">
-                          <button
-                            type="button"
-                            onClick={() => removeItem(item.tierId)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-400 opacity-0 transition-all hover:border-rose-200 hover:text-rose-500 group-hover:opacity-100 dark:border-white/10 dark:text-slate-500"
-                          >
-                            <Minus className="h-3.5 w-3.5" />
-                          </button>
-                          <div>
-                            <h3 className="text-lg font-medium text-slate-950 dark:text-white">
-                              {getServiceTitle(navigation, item.serviceId)}
-                            </h3>
-                            <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-                              {getLocalizedTierName(t, item.tierId, item.tierId)}
-                            </p>
-                          </div>
-                        </div>
-                        <span className="text-lg font-medium tabular-nums text-slate-950 dark:text-white">
-                          ${item.price.toFixed(2)}
-                        </span>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="space-y-6"
-              >
-                <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-[0_2px_20px_rgba(0,0,0,0.03)] dark:border-white/5 dark:bg-slate-900/50">
-                  <div className="space-y-5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-500 dark:text-slate-400">Subtotal</span>
-                      <span className="text-sm font-medium text-slate-950 dark:text-white">${subtotal.toFixed(2)}</span>
-                    </div>
-                    <div className="flex items-center justify-between border-t border-slate-50 pt-5 dark:border-white/5">
-                      <span className="text-lg font-semibold text-slate-950 dark:text-white">Total</span>
-                      <span className="text-3xl font-semibold tabular-nums tracking-tight text-slate-950 dark:text-white">${subtotal.toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-8">
-                    <CheckoutButton disabled={items.length === 0} className="w-full rounded-2xl py-4 text-base font-medium" />
-                  </div>
-
-                  <div className="mt-6 flex items-center justify-center gap-2 text-xs text-slate-400 dark:text-slate-500">
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    <span>Secure SSL encrypted checkout</span>
-                  </div>
-                </div>
-
-                <div className="rounded-3xl border border-slate-100 bg-white/50 p-6 dark:border-white/5 dark:bg-white/[0.02]">
-                  <p className="text-xs leading-6 text-slate-400 dark:text-slate-500">
-                    All services are billed once per selected tier. You can modify or remove items before completing checkout.
+    <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_48%,#f3f7fb_100%)] dark:bg-[linear-gradient(180deg,#020617_0%,#07111f_50%,#020617_100%)]">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+        <section className="overflow-hidden rounded-[40px] border border-slate-200 bg-white/90 shadow-[0_30px_120px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60 dark:shadow-[0_30px_120px_rgba(2,6,23,0.55)]">
+          <div className="grid gap-0 lg:grid-cols-[1.2fr_0.8fr]">
+            <div className="border-b border-slate-200 p-8 sm:p-10 lg:border-b-0 lg:border-r dark:border-white/10">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">{t("cartDrawerEyebrow")}</p>
+                  <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl">
+                    {t("cartPageTitle")}
+                  </h1>
+                  <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
+                    {t("cartPageDescription")}
                   </p>
                 </div>
-              </motion.div>
+                <Link
+                  href="/services"
+                  className="inline-flex h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10 dark:hover:text-white"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Continue exploring
+                </Link>
+              </div>
+
+              <div className="mt-10 space-y-4">
+                {items.length === 0 ? (
+                  <div className="rounded-[32px] border border-dashed border-slate-200 bg-slate-50/90 p-10 text-center dark:border-white/10 dark:bg-white/[0.03]">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-400/10 dark:text-cyan-300">
+                      <ShoppingBag className="h-7 w-7" />
+                    </div>
+                    <div className="mt-6 text-2xl font-semibold text-slate-950 dark:text-white">{t("emptyTitle")}</div>
+                    <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-slate-600 dark:text-slate-400">{t("emptyDescription")}</p>
+                  </div>
+                ) : (
+                  items.map((item, index) => (
+                    <div
+                      key={item.tierId}
+                      className="rounded-[32px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] p-6 shadow-[0_18px_55px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.74),rgba(2,6,23,0.82))]"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-3">
+                          <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
+                            Selection {index + 1}
+                          </div>
+                          <div>
+                            <div className="text-2xl font-semibold text-slate-950 dark:text-white">{getServiceTitle(navigation, item.serviceId)}</div>
+                            <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">{getLocalizedTierName(t, item.tierId, item.tierId)}</div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.tierId)}
+                          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-200"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="mt-8 flex items-end justify-between gap-4 border-t border-slate-200 pt-5 dark:border-white/10">
+                        <span className="text-sm uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">Plan total</span>
+                        <span className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">${item.price.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-          )}
-        </motion.div>
+
+            <div className="bg-slate-50/80 p-8 sm:p-10 dark:bg-slate-950/40">
+              <div className="sticky top-24 space-y-5">
+                <div className="flex items-center gap-3 rounded-[28px] border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
+                  <ShieldCheck className="h-5 w-5" />
+                  <span>{t("authSecureLabel")}</span>
+                </div>
+                <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_18px_55px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-white/[0.04]">
+                  <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+                    <span>{t("subtotal")}</span>
+                    <span>{items.length} {items.length === 1 ? t("cartItemSingular") : t("cartItemPlural")}</span>
+                  </div>
+                  <div className="mt-5 flex items-end justify-between gap-4">
+                    <span className="text-lg font-semibold text-slate-950 dark:text-white">{t("todayTotal")}</span>
+                    <span className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">${subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="mt-6 h-px bg-slate-200 dark:bg-white/10" />
+                  <CheckoutButton disabled={items.length === 0} className="mt-6 w-full !rounded-2xl !h-12" />
+                  <p className="mt-4 text-xs leading-6 text-slate-500 dark:text-slate-400">
+                    Secure checkout continues after authentication and keeps your selected services intact.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );
