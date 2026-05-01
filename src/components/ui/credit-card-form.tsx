@@ -58,6 +58,24 @@ function getCardNetwork(number: string) {
   return "unknown" as const;
 }
 
+function getPreviewGroups(number: string, maskMiddle: boolean) {
+  const normalized = number.replace(/\D/g, "").slice(0, 16);
+
+  return Array.from({ length: 4 }, (_, index) => {
+    const group = normalized.slice(index * 4, index * 4 + 4);
+
+    if (!group) {
+      return "";
+    }
+
+    if (maskMiddle && index > 0 && index < 3) {
+      return "•".repeat(group.length);
+    }
+
+    return group;
+  });
+}
+
 export function CreditCardForm({
   defaultNumber = "",
   defaultHolder = "",
@@ -106,20 +124,8 @@ export function CreditCardForm({
     onChange?.({ number, holder, month, year, cvv }, validity);
   }, [number, holder, month, year, cvv, validity, onChange]);
 
-  const displayDigits = useMemo(() => number.slice(0, 16).split(""), [number]);
   const cardNetwork = useMemo(() => getCardNetwork(number), [number]);
-
-  const displayedSlots = useMemo(() => {
-    return Array.from({ length: 16 }, (_, i) => {
-      let content = "";
-      if (i < displayDigits.length) {
-        const digit = displayDigits[i];
-        const shouldMask = maskMiddle && i >= 4 && i <= 11;
-        content = shouldMask ? "*" : digit;
-      }
-      return { textTop: content, filled: i < displayDigits.length };
-    });
-  }, [displayDigits, maskMiddle]);
+  const previewGroups = useMemo(() => getPreviewGroups(number, maskMiddle), [number, maskMiddle]);
 
   const highlightClass = (() => {
     switch (focusField) {
@@ -158,147 +164,151 @@ export function CreditCardForm({
     return <div className="rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white/80">Debit / Credit</div>;
   }
 
+  const formElement = (
+    <form className="form" onSubmit={handleSubmit} noValidate>
+      <div>
+        <label htmlFor="number">Card Number</label>
+        <input
+          id="number"
+          inputMode="numeric"
+          autoComplete="cc-number"
+          placeholder="1234 5678 9012 3456"
+          value={formatNumberSpaces(number)}
+          onChange={(e) => setNumber(clampDigits(e.target.value, 19))}
+          onFocus={() => setFocusField("number")}
+          onBlur={() => setFocusField(null)}
+          aria-invalid={!validity.number}
+        />
+        {!validity.number && number.length >= 13 ? <small className="err">Card number looks invalid</small> : null}
+      </div>
+
+      <div>
+        <label htmlFor="holder">Card Holder</label>
+        <input
+          id="holder"
+          type="text"
+          autoComplete="cc-name"
+          placeholder="JANE DOE"
+          value={holder}
+          onChange={(e) => setHolder(e.target.value.toUpperCase())}
+          onFocus={() => setFocusField("holder")}
+          onBlur={() => setFocusField(null)}
+          aria-invalid={!validity.holder}
+        />
+      </div>
+
+      <div className="field__group">
+        <div>
+          <label>Expiration Date</label>
+          <div className="field__date">
+            <select
+              id="expiration_month"
+              value={month || ""}
+              onChange={(e) => setMonth(e.target.value)}
+              onFocus={() => setFocusField("expire")}
+              onBlur={() => setFocusField(null)}
+              aria-invalid={!validity.month}
+            >
+              <option value="" disabled>
+                Month
+              </option>
+              {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+            <select
+              id="expiration_year"
+              value={year || ""}
+              onChange={(e) => setYear(e.target.value)}
+              onFocus={() => setFocusField("expire")}
+              onBlur={() => setFocusField(null)}
+              aria-invalid={!validity.year}
+            >
+              <option value="" disabled>
+                Year
+              </option>
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="cvv">CVV</label>
+          <input
+            id="cvv"
+            inputMode="numeric"
+            autoComplete="cc-csc"
+            placeholder="***"
+            value={cvv}
+            onChange={(e) => setCVV(clampDigits(e.target.value, 4))}
+            onFocus={() => setFocusField("cvv")}
+            onBlur={() => setFocusField(null)}
+            aria-invalid={!validity.cvv}
+          />
+        </div>
+      </div>
+
+      {showSubmit ? (
+        <button className="submit" type="submit" disabled={!validity.allValid} aria-disabled={!validity.allValid}>
+          {validity.allValid ? "Submit" : "Complete all fields"}
+        </button>
+      ) : null}
+    </form>
+  );
+
+  const cardElement = (
+    <section id="card" className={`card ${flip ? "flip" : ""}`}>
+      <div id="highlight" className={highlightClass} />
+
+      <section className="card__front" style={ringStyle}>
+        <div className="card__header">
+          <div className="card__header__title">Card details</div>
+          <div className="card__brand">{renderCardBrand()}</div>
+        </div>
+
+        <div id="card_number" className="card__number" aria-label="Card number">
+          {previewGroups.map((group, index) => (
+            <span key={index} className={`card__number__group ${group ? "is-filled" : ""}`}>
+              {group || "••••"}
+            </span>
+          ))}
+        </div>
+
+        <div className="card__footer">
+          <div className="card__holder">
+            <div className="card__section__title">Card Holder</div>
+            <div id="card_holder">{holder || ""}</div>
+          </div>
+          <div className="card__expires">
+            <div className="card__section__title">Expires</div>
+            <span id="card_expires_month">{month || ""}</span>
+            <span className={`card__expires__divider ${month || year ? "is-visible" : ""}`}>/</span>
+            <span id="card_expires_year">{year ? year.slice(-2) : ""}</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="card__back" style={ringStyle}>
+        <div className="card__hide_line" />
+        <div className="card_cvv">
+          <span>CVV</span>
+          <div id="card_cvv_field" className="card_cvv_field">{"*".repeat(cvv.length)}</div>
+        </div>
+      </section>
+    </section>
+  );
+
   return (
     <section className={`ccp ${className}`}>
       <div className={`wrap ${layout === "stacked" ? "wrap--stacked" : ""}`}>
-        <section id="card" className={`card ${flip ? "flip" : ""}`}>
-          <div id="highlight" className={highlightClass} />
-
-          <section className="card__front" style={ringStyle}>
-            <div className="card__header">
-              <div className="card__header__title">Card details</div>
-              <div className="card__brand">{renderCardBrand()}</div>
-            </div>
-
-            <div id="card_number" className="card__number" aria-label="Card number">
-              {displayedSlots.map((slot, idx) => (
-                <span key={idx} className="slot">
-                  <span className={`digit ${slot.filled ? "filled" : ""}`}>
-                    <span className="row placeholder"> </span>
-                    <span className="row value">{slot.textTop}</span>
-                  </span>
-                </span>
-              ))}
-            </div>
-
-            <div className="card__footer">
-              <div className="card__holder">
-                <div className="card__section__title">Card Holder</div>
-                <div id="card_holder">{holder || ""}</div>
-              </div>
-              <div className="card__expires">
-                <div className="card__section__title">Expires</div>
-                <span id="card_expires_month">{month || ""}</span>
-                <span className={`card__expires__divider ${month || year ? "is-visible" : ""}`}>/</span>
-                <span id="card_expires_year">{year ? year.slice(-2) : ""}</span>
-              </div>
-            </div>
-          </section>
-
-          <section className="card__back" style={ringStyle}>
-            <div className="card__hide_line" />
-            <div className="card_cvv">
-              <span>CVV</span>
-              <div id="card_cvv_field" className="card_cvv_field">{"*".repeat(cvv.length)}</div>
-            </div>
-          </section>
-        </section>
-
-        <form className="form" onSubmit={handleSubmit} noValidate>
-          <div>
-            <label htmlFor="number">Card Number</label>
-            <input
-              id="number"
-              inputMode="numeric"
-              autoComplete="cc-number"
-              placeholder="1234 5678 9012 3456"
-              value={formatNumberSpaces(number)}
-              onChange={(e) => setNumber(clampDigits(e.target.value, 19))}
-              onFocus={() => setFocusField("number")}
-              onBlur={() => setFocusField(null)}
-              aria-invalid={!validity.number}
-            />
-            {!validity.number && number.length >= 13 ? <small className="err">Card number looks invalid</small> : null}
-          </div>
-
-          <div>
-            <label htmlFor="holder">Card Holder</label>
-            <input
-              id="holder"
-              type="text"
-              autoComplete="cc-name"
-              placeholder="JANE DOE"
-              value={holder}
-              onChange={(e) => setHolder(e.target.value.toUpperCase())}
-              onFocus={() => setFocusField("holder")}
-              onBlur={() => setFocusField(null)}
-              aria-invalid={!validity.holder}
-            />
-          </div>
-
-          <div className="field__group">
-            <div>
-              <label>Expiration Date</label>
-              <div className="field__date">
-                <select
-                  id="expiration_month"
-                  value={month || ""}
-                  onChange={(e) => setMonth(e.target.value)}
-                  onFocus={() => setFocusField("expire")}
-                  onBlur={() => setFocusField(null)}
-                  aria-invalid={!validity.month}
-                >
-                  <option value="" disabled>
-                    Month
-                  </option>
-                  {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  id="expiration_year"
-                  value={year || ""}
-                  onChange={(e) => setYear(e.target.value)}
-                  onFocus={() => setFocusField("expire")}
-                  onBlur={() => setFocusField(null)}
-                  aria-invalid={!validity.year}
-                >
-                  <option value="" disabled>
-                    Year
-                  </option>
-                  {years.map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="cvv">CVV</label>
-              <input
-                id="cvv"
-                inputMode="numeric"
-                autoComplete="cc-csc"
-                placeholder="***"
-                value={cvv}
-                onChange={(e) => setCVV(clampDigits(e.target.value, 4))}
-                onFocus={() => setFocusField("cvv")}
-                onBlur={() => setFocusField(null)}
-                aria-invalid={!validity.cvv}
-              />
-            </div>
-          </div>
-
-          {showSubmit ? (
-            <button className="submit" type="submit" disabled={!validity.allValid} aria-disabled={!validity.allValid}>
-              {validity.allValid ? "Submit" : "Complete all fields"}
-            </button>
-          ) : null}
-        </form>
+        {layout === "stacked" ? formElement : cardElement}
+        {layout === "stacked" ? cardElement : formElement}
       </div>
 
       <style jsx>{`
@@ -325,6 +335,11 @@ export function CreditCardForm({
 
         .wrap--stacked .card {
           max-width: 100%;
+          order: 2;
+        }
+
+        .wrap--stacked .form {
+          order: 1;
         }
 
         .wrap--stacked .card__front,
@@ -543,42 +558,24 @@ export function CreditCardForm({
           position: relative;
           z-index: 1;
           display: flex;
-          height: 33px;
-          overflow: hidden;
+          flex-wrap: wrap;
+          gap: 10px;
+          min-height: 33px;
+          color: #fff;
+          letter-spacing: 0.08em;
+        }
+
+        .card__number__group {
+          display: inline-flex;
+          min-width: 52px;
+          justify-content: center;
+          color: rgba(255, 255, 255, 0.34);
+        }
+
+        .card__number__group.is-filled {
           color: #fff;
         }
 
-        .card__number .slot {
-          display: inline-flex;
-        }
-
-        .card__number .slot:nth-child(4n) {
-          margin-right: 10px;
-        }
-
-        .card__number .digit {
-          display: flex;
-          flex-direction: column;
-          height: 33px;
-          line-height: 33px;
-          transition: transform 0.2s;
-        }
-
-        .card__number .digit.filled {
-          transform: translateY(-33px);
-        }
-
-        .card__number .row {
-          height: 33px;
-          display: block;
-          min-width: 12px;
-        }
-
-        .card__number .row.placeholder {
-          opacity: 0;
-        }
-
-        .card__number .row.value:empty::after,
         #card_holder:empty::after,
         #card_expires_month:empty::after,
         #card_expires_year:empty::after {

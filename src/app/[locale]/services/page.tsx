@@ -1,7 +1,7 @@
 import { Activity, Briefcase, Bot, BrainCircuit, Database, Download, Globe, ImageIcon, LayoutGrid, Lock, Mail, ScanFace, Search, Server, Shield, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { getServiceDescription, getServiceTitle } from "@/lib/service-i18n";
+import { getServiceTitle } from "@/lib/service-i18n";
 import { serviceMenuItems, type ServiceMenuKey } from "@/lib/service-menu";
 import { getVisibleServiceCatalogWithOverrides, type ServiceOverride } from "@/lib/service-overrides";
 
@@ -43,9 +43,6 @@ export default async function ServicesPage() {
         <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl">
           {t("servicesTitle")}
         </h1>
-        <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
-          {t("servicesDescription")}
-        </p>
       </section>
 
       <section className="mt-8 divide-y divide-slate-200 border-t border-slate-200 dark:divide-white/10 dark:border-white/10">
@@ -58,7 +55,6 @@ export default async function ServicesPage() {
           }
 
           const title = service.overrides.title ? service.name : getServiceTitle(navigation, service.id);
-          const description = service.overrides.description ? service.description : getServiceDescription(navigation, service.id);
           const fromPrice = Math.min(...service.tiers.map((tier) => tier.price));
           const priceLabel = fromPrice === 0 ? "Free" : `From $${fromPrice}`;
 
@@ -78,18 +74,9 @@ export default async function ServicesPage() {
                     {service.category}
                   </div>
                   <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{title}</h2>
-                  <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300">{description}</p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                  {service.tiers.map((tier) => (
-                    <span key={tier.id} className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 dark:border-white/10 dark:text-slate-300">
-                      {tier.name}
-                    </span>
-                  ))}
-                  </div>
                 </div>
                 <div className="md:text-right">
                   <div className="text-sm font-semibold text-slate-950 dark:text-white">{priceLabel}</div>
-                  <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">Open service</div>
                 </div>
               </div>
             </Link>

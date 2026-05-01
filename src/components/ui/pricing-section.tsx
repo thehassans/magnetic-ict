@@ -54,6 +54,7 @@ export function PricingSection({ service, hostingProviderConfig }: PricingSectio
           const displayPrice = resolvedHostingConfiguration && isHostingService
             ? getHostingConfigurationTotal(tier.price, resolvedHostingConfiguration)
             : tier.price;
+          const visibleFeatures = tier.features.slice(0, 3);
 
           return (
             <article
@@ -82,7 +83,6 @@ export function PricingSection({ service, hostingProviderConfig }: PricingSectio
                     Base ${tier.price} + configuration ${resolvedHostingConfiguration.extraMonthlyPrice.toFixed(2)}
                   </p>
                 ) : null}
-                <p className="text-sm text-slate-500 dark:text-slate-400">{tier.summary}</p>
               </div>
 
               <div className="my-5 border-t border-slate-200 dark:border-white/10" />
@@ -92,7 +92,7 @@ export function PricingSection({ service, hostingProviderConfig }: PricingSectio
               ) : null}
 
               <ul className="space-y-3">
-                {tier.features.map((feature) => (
+                {visibleFeatures.map((feature) => (
                   <li key={feature} className="flex items-center text-sm text-slate-700 dark:text-slate-300">
                     <CircleCheck className="mr-2 h-4 w-4 text-cyan-600 dark:text-cyan-300" aria-hidden />
                     <span>{feature}</span>
