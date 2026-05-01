@@ -261,48 +261,48 @@ export function AdminLoginForm({
               <h2 className="text-3xl font-bold text-slate-950 dark:text-white">Welcome Back</h2>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Sign in to continue to the admin panel</p>
             </div>
-            <form action={action} className="mt-8 space-y-8">
+            <form action={action} className="mt-10 space-y-7">
               <input type="hidden" name="callback" value={callbackPath} />
-              <div className="relative z-0">
+              <div>
+                <label
+                  htmlFor="admin-email"
+                  className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400"
+                >
+                  <User className="h-4 w-4" />
+                  {emailLabel}
+                </label>
                 <input
                   type="email"
                   id="admin-email"
                   name="email"
-                  className="peer block w-full appearance-none border-0 border-b-2 border-slate-400/60 bg-transparent py-2.5 px-0 text-sm text-slate-950 focus:border-cyan-500 focus:outline-none focus:ring-0 dark:border-slate-500 dark:text-white"
-                  placeholder=" "
+                  className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 shadow-sm transition-colors focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-cyan-400 dark:focus:bg-slate-800"
+                  placeholder="admin@company.com"
                   autoComplete="username"
                   required
                 />
-                <label
-                  htmlFor="admin-email"
-                  className="absolute top-3 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-slate-600 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-cyan-600 dark:text-slate-300 dark:peer-focus:text-cyan-300"
-                >
-                  <User className="-mt-1 mr-2 inline-block" size={16} />
-                  {emailLabel}
-                </label>
               </div>
-              <div className="relative z-0">
+              <div>
+                <label
+                  htmlFor="admin-password"
+                  className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400"
+                >
+                  <Lock className="h-4 w-4" />
+                  {passwordLabel}
+                </label>
                 <input
                   type="password"
                   id="admin-password"
                   name="password"
-                  className="peer block w-full appearance-none border-0 border-b-2 border-slate-400/60 bg-transparent py-2.5 px-0 text-sm text-slate-950 focus:border-cyan-500 focus:outline-none focus:ring-0 dark:border-slate-500 dark:text-white"
-                  placeholder=" "
+                  className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 shadow-sm transition-colors focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-cyan-400 dark:focus:bg-slate-800"
+                  placeholder="Enter your password"
                   autoComplete="current-password"
                   required
                 />
-                <label
-                  htmlFor="admin-password"
-                  className="absolute top-3 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-slate-600 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-cyan-600 dark:text-slate-300 dark:peer-focus:text-cyan-300"
-                >
-                  <Lock className="-mt-1 mr-2 inline-block" size={16} />
-                  {passwordLabel}
-                </label>
               </div>
 
               <button
                 type="submit"
-                className="group flex w-full items-center justify-center rounded-xl bg-slate-950 px-4 py-3 font-semibold text-white transition-all duration-300 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-white dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400 dark:focus:ring-cyan-300 dark:focus:ring-offset-slate-950"
+                className="group mt-2 flex w-full items-center justify-center rounded-xl bg-slate-950 px-4 py-3.5 font-semibold text-white transition-all duration-300 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-white dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400 dark:focus:ring-cyan-300 dark:focus:ring-offset-slate-950"
               >
                 {submitLabel}
                 <ArrowRight className="ml-2 h-5 w-5 transform transition-transform group-hover:translate-x-1" />
