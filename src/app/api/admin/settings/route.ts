@@ -122,6 +122,16 @@ const requestSchema = z.discriminatedUnion("section", [
       defaultImageAlias: z.string().min(1),
       createResellerContracts: z.boolean(),
       createContractAdmins: z.boolean(),
+      operatingSystems: z.array(
+        z.object({
+          id: z.string().min(1),
+          name: z.string().min(1),
+          description: z.string(),
+          imageAlias: z.string().min(1),
+          enabled: z.boolean(),
+          recommended: z.boolean()
+        })
+      ),
       controlPanels: z.array(
         z.object({
           id: z.string().min(1),

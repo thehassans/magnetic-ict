@@ -11,9 +11,19 @@ export type HostingProviderSettings = {
   defaultImageAlias: string;
   createResellerContracts: boolean;
   createContractAdmins: boolean;
+  operatingSystems: HostingOperatingSystemOption[];
   controlPanels: HostingControlPanelOption[];
   addons: HostingAddonOption[];
   locations: HostingLocationOption[];
+};
+
+export type HostingOperatingSystemOption = {
+  id: string;
+  name: string;
+  description: string;
+  imageAlias: string;
+  enabled: boolean;
+  recommended: boolean;
 };
 
 export type HostingControlPanelOption = {
@@ -45,17 +55,34 @@ export type HostingLocationOption = {
 
 export type HostingConfigurationSelection = {
   type: "hosting_vps";
+  operatingSystemId: string;
   controlPanelId: string;
   addonIds: string[];
   locationId: string;
+  domainMode: "none" | "register";
+  domainName: string;
+  domainYears: number;
+  domainPrivacyProtection: boolean;
+  domainUnitPrice: number;
 };
 
 export type ResolvedHostingConfiguration = {
   selection: HostingConfigurationSelection;
+  operatingSystem: HostingOperatingSystemOption | null;
   controlPanel: HostingControlPanelOption | null;
   addons: HostingAddonOption[];
   location: HostingLocationOption | null;
   extraMonthlyPrice: number;
+  domainRegistrationPrice: number;
+  totalPriceAdjustment: number;
+  domain: {
+    mode: "none" | "register";
+    name: string | null;
+    years: number;
+    privacyProtection: boolean;
+    unitPrice: number;
+    totalPrice: number;
+  };
   summaryLines: string[];
 };
 

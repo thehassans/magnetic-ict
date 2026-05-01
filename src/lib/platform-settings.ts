@@ -148,6 +148,40 @@ export const defaultHostingProviderConfig: HostingProviderSettings = {
   defaultImageAlias: "ubuntu:latest",
   createResellerContracts: true,
   createContractAdmins: false,
+  operatingSystems: [
+    {
+      id: "ubuntu-24-04",
+      name: "Ubuntu 24.04",
+      description: "Ubuntu LTS server image for modern Linux workloads.",
+      imageAlias: "ubuntu:latest",
+      enabled: true,
+      recommended: true
+    },
+    {
+      id: "rocky-9",
+      name: "Rocky Linux 9",
+      description: "Enterprise-ready RHEL-compatible distribution.",
+      imageAlias: "rockylinux:latest",
+      enabled: true,
+      recommended: false
+    },
+    {
+      id: "debian-12",
+      name: "Debian 12",
+      description: "Stable Debian server image for clean VPS deployments.",
+      imageAlias: "debian:latest",
+      enabled: true,
+      recommended: false
+    },
+    {
+      id: "alma-9",
+      name: "AlmaLinux 9",
+      description: "Enterprise Linux option for managed server stacks.",
+      imageAlias: "almalinux:latest",
+      enabled: true,
+      recommended: false
+    }
+  ],
   controlPanels: [
     {
       id: "none",
@@ -268,6 +302,26 @@ function normalizeHostingControlPanels(value: unknown, fallback: HostingProvider
       recommended: coerceBoolean(entry.recommended, fallback[index]?.recommended ?? false)
     }))
     .filter((entry) => entry.id.trim().length > 0 && entry.name.trim().length > 0);
+
+  return normalized.length > 0 ? normalized : fallback;
+}
+
+function normalizeHostingOperatingSystems(value: unknown, fallback: HostingProviderSettings["operatingSystems"]) {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  const normalized = value
+    .filter((entry) => isObject(entry))
+    .map((entry, index) => ({
+      id: coerceString(entry.id, fallback[index]?.id ?? `operating-system-${index + 1}`),
+      name: coerceString(entry.name, fallback[index]?.name ?? "Operating system"),
+      description: coerceString(entry.description, fallback[index]?.description ?? ""),
+      imageAlias: coerceString(entry.imageAlias, fallback[index]?.imageAlias ?? defaultHostingProviderConfig.defaultImageAlias),
+      enabled: coerceBoolean(entry.enabled, fallback[index]?.enabled ?? true),
+      recommended: coerceBoolean(entry.recommended, fallback[index]?.recommended ?? false)
+    }))
+    .filter((entry) => entry.id.trim().length > 0 && entry.name.trim().length > 0 && entry.imageAlias.trim().length > 0);
 
   return normalized.length > 0 ? normalized : fallback;
 }
@@ -481,6 +535,7 @@ export function normalizeHostingProviderConfig(value: unknown): HostingProviderS
     defaultImageAlias: coerceString(value.defaultImageAlias, defaultHostingProviderConfig.defaultImageAlias),
     createResellerContracts: coerceBoolean(value.createResellerContracts, defaultHostingProviderConfig.createResellerContracts),
     createContractAdmins: coerceBoolean(value.createContractAdmins, defaultHostingProviderConfig.createContractAdmins),
+    operatingSystems: normalizeHostingOperatingSystems(value.operatingSystems, defaultHostingProviderConfig.operatingSystems),
     controlPanels: normalizeHostingControlPanels(value.controlPanels, defaultHostingProviderConfig.controlPanels),
     addons: normalizeHostingAddons(value.addons, defaultHostingProviderConfig.addons),
     locations: normalizeHostingLocations(value.locations, defaultHostingProviderConfig.locations)

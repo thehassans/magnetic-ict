@@ -8,11 +8,22 @@ type HostingProvision = {
   errorMessage: string | null;
   updatedAt: string;
   configuration: {
+    operatingSystemName: string | null;
     controlPanelName: string | null;
     addonNames: string[];
     locationName: string | null;
     extraMonthlyPrice: number;
     summaryLines: string[];
+  } | null;
+  domain?: {
+    mode: "none" | "register";
+    name: string | null;
+    years: number;
+    privacyProtection: boolean;
+    totalPrice: number;
+    status: string;
+    registrarReference: string | null;
+    errorMessage: string | null;
   };
   reseller: {
     contractId: string | null;
@@ -45,8 +56,27 @@ export function AdminHostingClient({ provisions }: { provisions: HostingProvisio
           No Magnetic VPS Hosting provisions yet. Fulfilled hosting orders will appear here.
         </div>
       ) : null}
-      {provisions.map((provision) => (
-        <section key={provision._id} className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)] sm:p-8">
+      {provisions.map((provision) => {
+        const configuration = provision.configuration ?? {
+          operatingSystemName: null,
+          controlPanelName: null,
+          addonNames: [],
+          locationName: null,
+          extraMonthlyPrice: 0,
+          summaryLines: []
+        };
+        const domain = provision.domain ?? {
+          mode: "none" as const,
+          name: null,
+          years: 1,
+          privacyProtection: true,
+          totalPrice: 0,
+          status: "not_requested",
+          registrarReference: null,
+          errorMessage: null
+        };
+
+        return <section key={provision._id} className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)] sm:p-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <div className="text-sm text-slate-500">{provision.customerEmail}</div>
@@ -61,10 +91,22 @@ export function AdminHostingClient({ provisions }: { provisions: HostingProvisio
             <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
               <div className="text-sm font-semibold text-slate-950">Configuration</div>
               <div className="mt-3 space-y-2 text-sm text-slate-600">
-                <div>Control panel: {provision.configuration.controlPanelName ?? "None"}</div>
-                <div>Region: {provision.configuration.locationName ?? "Default"}</div>
-                <div>Configuration uplift: ${provision.configuration.extraMonthlyPrice.toFixed(2)}</div>
-                <div>Add-ons: {provision.configuration.addonNames.length ? provision.configuration.addonNames.join(", ") : "None"}</div>
+                <div>Operating system: {configuration.operatingSystemName ?? "Default"}</div>
+                <div>Control panel: {configuration.controlPanelName ?? "None"}</div>
+                <div>Region: {configuration.locationName ?? "Default"}</div>
+                <div>Configuration uplift: ${configuration.extraMonthlyPrice.toFixed(2)}</div>
+                <div>Add-ons: {configuration.addonNames.length ? configuration.addonNames.join(", ") : "None"}</div>
+              </div>
+            </div>
+            <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
+              <div className="text-sm font-semibold text-slate-950">Domain</div>
+              <div className="mt-3 space-y-2 text-sm text-slate-600">
+                <div>Mode: {domain.mode === "register" ? "Register with VPS" : "No domain attached"}</div>
+                <div>Domain: {domain.name ?? "None"}</div>
+                <div>Years: {domain.mode === "register" ? domain.years : "-"}</div>
+                <div>Status: {domain.status}</div>
+                <div>Registrar reference: {domain.registrarReference ?? "Pending"}</div>
+                <div>Charge: ${domain.totalPrice.toFixed(2)}</div>
               </div>
             </div>
             <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
@@ -89,11 +131,16 @@ export function AdminHostingClient({ provisions }: { provisions: HostingProvisio
               {provision.errorMessage}
             </div>
           ) : null}
+          {domain.errorMessage ? (
+            <div className="mt-5 rounded-[24px] border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
+              {domain.errorMessage}
+            </div>
+          ) : null}
           <div className="mt-5 text-xs uppercase tracking-[0.22em] text-slate-400">
             Last updated {new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(provision.updatedAt))}
           </div>
-        </section>
-      ))}
+        </section>;
+      })}
     </div>
   );
 }

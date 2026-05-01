@@ -1,4 +1,5 @@
 import { getHostingProviderSettings } from "@/lib/platform-settings";
+import { registerHostingProvisionDomainIfNeeded } from "@/lib/domain-provider";
 import { createHostingProvisionId, getHostingProvisionByOrderId, upsertHostingProvision, type HostingProvisionRecord } from "@/lib/hosting-db";
 import { getHostingPlanForTier } from "@/lib/hosting-plans";
 import type { HostingProviderSettings, HostingProvisionRequest } from "@/lib/hosting-types";
@@ -192,15 +193,27 @@ function createProvisionRecord(request: HostingProvisionRequest, settings: Hosti
       cores: request.plan.cores,
       ramMb: request.plan.ramMb,
       storageGb: request.plan.storageGb,
-      imageAlias: settings.defaultImageAlias,
+      imageAlias: request.configuration.operatingSystem?.imageAlias ?? settings.defaultImageAlias,
       location: request.configuration.location?.value ?? settings.defaultLocation
     },
     configuration: {
+      operatingSystemName: request.configuration.operatingSystem?.name ?? null,
       controlPanelName: request.configuration.controlPanel?.name ?? null,
       addonNames: request.configuration.addons.map((addon) => addon.name),
       locationName: request.configuration.location?.name ?? null,
       extraMonthlyPrice: request.configuration.extraMonthlyPrice,
       summaryLines: request.configuration.summaryLines
+    },
+    domain: {
+      mode: request.configuration.domain.mode,
+      name: request.configuration.domain.name,
+      years: request.configuration.domain.years,
+      privacyProtection: request.configuration.domain.privacyProtection,
+      unitPrice: request.configuration.domain.unitPrice,
+      totalPrice: request.configuration.domain.totalPrice,
+      status: request.configuration.domain.mode === "register" ? "pending" : "not_requested",
+      registrarReference: null,
+      errorMessage: null
     },
     reseller: {
       contractId: null,
@@ -212,7 +225,7 @@ function createProvisionRecord(request: HostingProvisionRequest, settings: Hosti
       datacenterId: null,
       serverId: null,
       volumeId: null,
-      location: settings.defaultLocation || null
+      location: request.configuration.location?.value ?? settings.defaultLocation
     }
   };
 }
@@ -221,6 +234,34 @@ export async function provisionMagneticVpsHosting(request: HostingProvisionReque
   const settings = await getHostingProviderSettings();
   const existing = await getHostingProvisionByOrderId(request.orderId);
   const provision = existing ?? createProvisionRecord(request, settings);
+  const legacyProvision = provision as HostingProvisionRecord & {
+    domain?: Partial<HostingProvisionRecord["domain"]>;
+    configuration?: Partial<HostingProvisionRecord["configuration"]>;
+  };
+
+  provision.domain = {
+    mode: legacyProvision.domain?.mode ?? request.configuration.domain.mode,
+    name: legacyProvision.domain?.name ?? request.configuration.domain.name,
+    years: legacyProvision.domain?.years ?? request.configuration.domain.years,
+    privacyProtection: legacyProvision.domain?.privacyProtection ?? request.configuration.domain.privacyProtection,
+    unitPrice: legacyProvision.domain?.unitPrice ?? request.configuration.domain.unitPrice,
+    totalPrice: legacyProvision.domain?.totalPrice ?? request.configuration.domain.totalPrice,
+    status: legacyProvision.domain?.status ?? (request.configuration.domain.mode === "register" ? "pending" : "not_requested"),
+    registrarReference: legacyProvision.domain?.registrarReference ?? null,
+    errorMessage: legacyProvision.domain?.errorMessage ?? null
+  };
+
+  provision.configuration = {
+    operatingSystemName: legacyProvision.configuration?.operatingSystemName ?? request.configuration.operatingSystem?.name ?? null,
+    controlPanelName: legacyProvision.configuration?.controlPanelName ?? request.configuration.controlPanel?.name ?? null,
+    addonNames: legacyProvision.configuration?.addonNames ?? request.configuration.addons.map((addon) => addon.name),
+    locationName: legacyProvision.configuration?.locationName ?? request.configuration.location?.name ?? null,
+    extraMonthlyPrice: legacyProvision.configuration?.extraMonthlyPrice ?? request.configuration.extraMonthlyPrice,
+    summaryLines: legacyProvision.configuration?.summaryLines ?? request.configuration.summaryLines
+  };
+
+  provision.plan.imageAlias = request.configuration.operatingSystem?.imageAlias ?? provision.plan.imageAlias;
+  provision.cloud.location = request.configuration.location?.value ?? provision.cloud.location;
 
   provision.updatedAt = new Date().toISOString();
   provision.errorMessage = null;
@@ -271,6 +312,10 @@ export async function provisionMagneticVpsHosting(request: HostingProvisionReque
       provision.status = "volume_attached";
       provision.updatedAt = new Date().toISOString();
       await upsertHostingProvision(provision);
+    }
+
+    if (provision.domain.mode === "register") {
+      await registerHostingProvisionDomainIfNeeded(provision);
     }
 
     provision.status = "provisioned";

@@ -1,4 +1,4 @@
-import { Bot, Instagram, MessageCircle, Server, Sparkles } from "lucide-react";
+import { Bot, Instagram, MessageCircle, Sparkles } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
@@ -151,27 +151,6 @@ export default async function ServiceDetailPage({
                 </div>
               </div>
               <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">Unified messaging</h2>
-            </div>
-          </ScrollReveal>
-        </section>
-      ) : null}
-
-      {isMagneticVpsHostingService ? (
-        <section>
-          <ScrollReveal>
-            <div className="rounded-[34px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60">
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs uppercase tracking-[0.24em] text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
-                <Server className="h-4 w-4" />
-                IONOS-backed delivery
-              </div>
-              <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-                Magnetic VPS Hosting
-              </h2>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">Platform checkout</div>
-                <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">Admin fulfillment</div>
-                <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">Provider configuration</div>
-              </div>
             </div>
           </ScrollReveal>
         </section>

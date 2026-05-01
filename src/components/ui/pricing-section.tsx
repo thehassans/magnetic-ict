@@ -80,7 +80,7 @@ export function PricingSection({ service, hostingProviderConfig }: PricingSectio
                 </h3>
                 {resolvedHostingConfiguration && isHostingService ? (
                   <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
-                    Base ${tier.price} + configuration ${resolvedHostingConfiguration.extraMonthlyPrice.toFixed(2)}
+                    Base ${tier.price} + options ${resolvedHostingConfiguration.totalPriceAdjustment.toFixed(2)}
                   </p>
                 ) : null}
               </div>

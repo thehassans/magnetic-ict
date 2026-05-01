@@ -12,6 +12,33 @@ export function HostingConfigEditor({ value, onChange }: HostingConfigEditorProp
   return (
     <div className="mt-6 space-y-6">
       <section className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
+        <div className="text-sm font-semibold text-slate-950">Operating systems</div>
+        <div className="mt-4 grid gap-4 xl:grid-cols-2">
+          {value.operatingSystems.map((operatingSystem, index) => (
+            <div key={operatingSystem.id} className="rounded-[20px] border border-slate-200 bg-white p-4">
+              <div className="grid gap-3 md:grid-cols-2">
+                <InputField label="Name" value={operatingSystem.name} onChange={(next) => onChange((current) => ({ ...current, operatingSystems: current.operatingSystems.map((entry, entryIndex) => (entryIndex === index ? { ...entry, name: next } : entry)) }))} />
+                <InputField label="Image alias" value={operatingSystem.imageAlias} onChange={(next) => onChange((current) => ({ ...current, operatingSystems: current.operatingSystems.map((entry, entryIndex) => (entryIndex === index ? { ...entry, imageAlias: next } : entry)) }))} />
+              </div>
+              <label className="mt-3 block space-y-2 text-sm">
+                <span className="font-semibold text-slate-700">Description</span>
+                <textarea
+                  value={operatingSystem.description}
+                  onChange={(event) => onChange((current) => ({ ...current, operatingSystems: current.operatingSystems.map((entry, entryIndex) => (entryIndex === index ? { ...entry, description: event.target.value } : entry)) }))}
+                  rows={3}
+                  className="w-full rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white"
+                />
+              </label>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <ToggleMini label="Enabled" checked={operatingSystem.enabled} onChange={(checked) => onChange((current) => ({ ...current, operatingSystems: current.operatingSystems.map((entry, entryIndex) => (entryIndex === index ? { ...entry, enabled: checked } : entry)) }))} />
+                <ToggleMini label="Recommended" checked={operatingSystem.recommended} onChange={(checked) => onChange((current) => ({ ...current, operatingSystems: current.operatingSystems.map((entry, entryIndex) => (entryIndex === index ? { ...entry, recommended: checked } : entry)) }))} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
         <div className="text-sm font-semibold text-slate-950">Control panel pricing</div>
         <div className="mt-4 grid gap-4 xl:grid-cols-2">
           {value.controlPanels.map((panel, index) => (

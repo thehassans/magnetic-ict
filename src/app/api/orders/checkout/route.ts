@@ -29,9 +29,15 @@ const checkoutSchema = z.object({
         hostingConfiguration: z
           .object({
             type: z.literal("hosting_vps"),
-            controlPanelId: z.string(),
-            addonIds: z.array(z.string()),
-            locationId: z.string()
+            operatingSystemId: z.string().default(""),
+            controlPanelId: z.string().default("none"),
+            addonIds: z.array(z.string()).default([]),
+            locationId: z.string().default(""),
+            domainMode: z.enum(["none", "register"]).default("none"),
+            domainName: z.string().default(""),
+            domainYears: z.number().int().min(1).max(10).default(1),
+            domainPrivacyProtection: z.boolean().default(true),
+            domainUnitPrice: z.number().nonnegative().default(0)
           })
           .optional(),
         hostingSummary: z.array(z.string()).optional()
