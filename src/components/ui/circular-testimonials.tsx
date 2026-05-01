@@ -234,13 +234,13 @@ export function CircularTestimonials({
   return (
     <div className="w-full max-w-6xl px-2 sm:px-4">
       <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] md:gap-14">
-        <div ref={imageContainerRef} className="relative h-[20rem] w-full perspective-[1400px] sm:h-[24rem] lg:h-[28rem]">
+        <div ref={imageContainerRef} className="relative h-[10rem] w-full perspective-[1400px] sm:h-[12rem] lg:h-[14rem]">
           {testimonials.map((testimonial, index) => (
             <button
               key={`${testimonial.name}-${testimonial.src}`}
               type="button"
               onClick={() => setActiveIndex(index)}
-              className={`absolute left-1/2 top-0 h-full w-[80%] overflow-hidden rounded-[2rem] border backdrop-blur-sm ${
+              className={`absolute left-1/2 top-0 h-full w-[60%] overflow-hidden rounded-[1.5rem] border backdrop-blur-sm ${
                 isDark
                   ? "border-white/10 bg-slate-950/45 shadow-[0_30px_90px_rgba(2,6,23,0.55)] ring-1 ring-white/10"
                   : "border-white/60 bg-white/70 shadow-[0_28px_80px_rgba(15,23,42,0.18)] ring-1 ring-slate-200/70"

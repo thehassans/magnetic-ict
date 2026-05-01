@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Lock, ShieldCheck, User } from "lucide-react";
+import { ArrowRight, Lock, User } from "lucide-react";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { cn } from "@/lib/utils";
@@ -234,41 +234,23 @@ export function AdminLoginForm({
         <SmokeyBackground color="#1D4ED8" backdropBlurAmount="md" className="opacity-80" />
       </div>
       <div className="relative z-10 grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
+        <div className="flex flex-col p-6 sm:p-8 lg:p-10">
           <div className="flex items-center justify-between gap-4">
             <BrandLogo className="w-[150px] sm:w-[170px]" framed priority />
-            <ThemeToggle className="rounded-full border border-white/20 bg-white/15 px-2 py-1 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.06]" />
+            <ThemeToggle className="rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm dark:border-white/10 dark:bg-white/[0.06]" />
           </div>
 
-          <div className="mt-10 max-w-xl space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-700 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-200">
-              <ShieldCheck className="h-4 w-4" />
-              Magnetic ICT admin access
-            </div>
-            <div className="space-y-4">
-              <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-[3.4rem]">
-                {title}
-              </h1>
-              <p className="max-w-2xl text-base leading-8 text-slate-700 dark:text-slate-300 sm:text-lg">
-                {subtitle}
-              </p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-[1.75rem] border border-slate-200 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]">
-                <div className="text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">Protected workspace</div>
-                <div className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Operations cockpit</div>
-                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">Orders, services, users, domains, hosting, and platform settings live behind this dedicated administrator entry.</p>
-              </div>
-              <div className="rounded-[1.75rem] border border-slate-200 bg-white/70 p-5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]">
-                <div className="text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">Theme aware</div>
-                <div className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Light & dark ready</div>
-                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">Use the theme toggle in the header to switch the admin entry between bright glass and dark glass surfaces.</p>
+          <div className="flex flex-1 flex-col justify-center">
+            <div className="max-w-xl space-y-6">
+              <div className="space-y-4">
+                <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-[3.4rem]">
+                  {title}
+                </h1>
+                <p className="max-w-2xl text-base leading-8 text-slate-700 dark:text-slate-300 sm:text-lg">
+                  {subtitle}
+                </p>
               </div>
             </div>
-          </div>
-
-          <div className="mt-10 text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
-            Restricted to configured administrator credentials
           </div>
         </div>
 
