@@ -406,14 +406,14 @@ function ListItem({
   return (
     <NavigationMenuLink
       className={cn(
-        "flex w-full flex-row gap-x-3 rounded-xl p-3 text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 focus:bg-slate-100 focus:text-slate-950 data-[active=true]:bg-slate-100 data-[active=true]:text-slate-950 dark:text-slate-200 dark:hover:bg-white/10 dark:hover:text-white dark:focus:bg-white/10 dark:focus:text-white dark:data-[active=true]:bg-white/10 dark:data-[active=true]:text-white",
+        "flex w-full flex-row gap-x-3 rounded-xl p-3 text-slate-900 transition hover:bg-slate-100 focus:bg-slate-100 focus:outline-none dark:text-white dark:hover:bg-white/[0.06] dark:focus:bg-white/[0.06]",
         className
       )}
       asChild
     >
       <Link href={href} locale={locale}>
-        <div className="flex aspect-square size-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
-          <Icon className="size-5" />
+        <div className="flex aspect-square size-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+          <Icon className="size-5 text-slate-600 dark:text-slate-200" />
         </div>
         <div className="flex flex-col items-start justify-center">
           <span className="font-medium text-slate-950 dark:text-white">{title}</span>

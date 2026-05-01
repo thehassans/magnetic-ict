@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 import { CircleCheck, ShoppingBag } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

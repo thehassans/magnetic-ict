@@ -226,10 +226,13 @@ export function AdminLoginForm({
   accessDeniedMessage
 }: AdminLoginFormProps) {
   return (
-    <section className="relative isolate h-screen w-full overflow-hidden rounded-none border-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <section className="relative isolate h-screen w-full overflow-hidden rounded-none border-0 bg-[linear-gradient(135deg,#f8fbff_0%,#eef7ff_38%,#fdfcff_68%,#f7f3ff_100%)] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 dark:hidden">
-        <SmokeyBackground color="#7DD3FC" backdropBlurAmount="md" className="opacity-45" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(255,255,255,0.86),transparent_28%),radial-gradient(circle_at_78%_24%,rgba(186,230,253,0.45),transparent_24%),radial-gradient(circle_at_72%_72%,rgba(224,231,255,0.32),transparent_26%),linear-gradient(135deg,rgba(248,250,252,0.96),rgba(255,255,255,0.78))]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(56,189,248,0.22),transparent_36%),radial-gradient(circle_at_82%_18%,rgba(167,139,250,0.22),transparent_34%),radial-gradient(circle_at_50%_78%,rgba(59,130,246,0.14),transparent_38%),linear-gradient(180deg,rgba(255,255,255,0.7),rgba(248,250,252,0.92))]" />
+        <div className="absolute left-[-8rem] top-[14%] h-[24rem] w-[24rem] rounded-full bg-cyan-200/45 blur-3xl" />
+        <div className="absolute right-[-6rem] top-[8%] h-[20rem] w-[20rem] rounded-full bg-violet-200/45 blur-3xl" />
+        <div className="absolute bottom-[-10rem] left-[26%] h-[22rem] w-[22rem] rounded-full bg-sky-100/80 blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.35),rgba(255,255,255,0.35)),linear-gradient(90deg,rgba(148,163,184,0.08)_1px,transparent_1px),linear-gradient(rgba(148,163,184,0.08)_1px,transparent_1px)] bg-[length:100%_100%,72px_72px,72px_72px] [mask-image:radial-gradient(circle_at_center,black,transparent_86%)]" />
       </div>
       <div className="absolute inset-0 hidden dark:block">
         <SmokeyBackground color="#1D4ED8" backdropBlurAmount="md" className="opacity-80" />
@@ -261,38 +264,44 @@ export function AdminLoginForm({
               <h2 className="text-3xl font-bold text-slate-950 dark:text-white">Welcome Back</h2>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Sign in to continue to the admin panel</p>
             </div>
-            <form action={action} className="mt-8 space-y-5">
+            <form action={action} className="mt-8 space-y-8">
               <input type="hidden" name="callback" value={callbackPath} />
-              <label htmlFor="admin-email" className="block">
-                <span className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <User className="h-4 w-4" />
-                  {emailLabel}
-                </span>
+              <div className="relative z-0">
                 <input
                   type="email"
                   id="admin-email"
                   name="email"
-                  className="block h-12 w-full rounded-2xl border border-slate-200 bg-slate-50/90 px-4 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-100 dark:border-white/10 dark:bg-slate-900/80 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-cyan-400 dark:focus:bg-slate-900 dark:focus:ring-cyan-400/10"
-                  placeholder={emailLabel}
+                  className="peer block w-full appearance-none border-0 border-b-2 border-slate-400/60 bg-transparent py-2.5 px-0 text-sm text-slate-950 focus:border-cyan-500 focus:outline-none focus:ring-0 dark:border-slate-500 dark:text-white"
+                  placeholder=" "
                   autoComplete="username"
                   required
                 />
-              </label>
-              <label htmlFor="admin-password" className="block">
-                <span className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <Lock className="h-4 w-4" />
-                  {passwordLabel}
-                </span>
+                <label
+                  htmlFor="admin-email"
+                  className="absolute top-3 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-slate-600 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-cyan-600 dark:text-slate-300 dark:peer-focus:text-cyan-300"
+                >
+                  <User className="-mt-1 mr-2 inline-block" size={16} />
+                  {emailLabel}
+                </label>
+              </div>
+              <div className="relative z-0">
                 <input
                   type="password"
                   id="admin-password"
                   name="password"
-                  className="block h-12 w-full rounded-2xl border border-slate-200 bg-slate-50/90 px-4 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-100 dark:border-white/10 dark:bg-slate-900/80 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-cyan-400 dark:focus:bg-slate-900 dark:focus:ring-cyan-400/10"
-                  placeholder={passwordLabel}
+                  className="peer block w-full appearance-none border-0 border-b-2 border-slate-400/60 bg-transparent py-2.5 px-0 text-sm text-slate-950 focus:border-cyan-500 focus:outline-none focus:ring-0 dark:border-slate-500 dark:text-white"
+                  placeholder=" "
                   autoComplete="current-password"
                   required
                 />
-              </label>
+                <label
+                  htmlFor="admin-password"
+                  className="absolute top-3 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-slate-600 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-cyan-600 dark:text-slate-300 dark:peer-focus:text-cyan-300"
+                >
+                  <Lock className="-mt-1 mr-2 inline-block" size={16} />
+                  {passwordLabel}
+                </label>
+              </div>
 
               <button
                 type="submit"

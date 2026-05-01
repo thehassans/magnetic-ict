@@ -2,23 +2,18 @@
 
 import { motion } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
-import { useRouter } from "@/i18n/navigation";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { cn } from "@/lib/utils";
 
 export function CartTrigger({ className }: { className?: string }) {
-  const { itemCount, closeCart } = useCommerce();
-  const router = useRouter();
+  const { itemCount, openCart } = useCommerce();
 
   return (
     <motion.button
       type="button"
       whileHover={{ y: -1 }}
       whileTap={{ scale: 0.97 }}
-      onClick={() => {
-        closeCart();
-        router.push("/cart");
-      }}
+      onClick={openCart}
       className={cn(
         "relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-900 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-cyan-400/20 dark:hover:bg-white/10",
         className

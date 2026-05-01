@@ -1,107 +1,185 @@
 "use client";
 
-import { ArrowLeft, ShieldCheck, ShoppingBag, Trash2 } from "lucide-react";
+import { useMemo } from "react";
+import { ArrowRight, Clock, Lock, Package, ShieldCheck, ShoppingBag, Star, Trash2, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { CheckoutButton } from "@/components/commerce/checkout-button";
 import { useCommerce } from "@/components/commerce/commerce-provider";
-import { Link } from "@/i18n/navigation";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
+import { reviews } from "@/lib/reviews";
+import { Card, CardContent } from "@/components/ui/card";
+
+function ReviewCard({ review }: { review: typeof reviews[number] }) {
+  return (
+    <Card className="border-slate-100 bg-white/70 backdrop-blur-sm dark:border-white/5 dark:bg-slate-900/50">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-3">
+          <div className="relative h-12 w-12 overflow-hidden rounded-full ring-2 ring-slate-100 dark:ring-white/10">
+            <img src={review.avatar} alt={review.name} className="h-full w-full object-cover" />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-slate-950 dark:text-white">{review.name}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{review.company}</p>
+          </div>
+          <div className="flex items-center gap-0.5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                className={`h-3.5 w-3.5 ${
+                  i < Math.floor(review.rating)
+                    ? "fill-amber-400 text-amber-400"
+                    : "fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export function CartPageContent() {
   const { items, subtotal, removeItem } = useCommerce();
   const t = useTranslations("Commerce");
   const navigation = useTranslations("Navigation");
 
+  const featuredReviews = useMemo(() => reviews.slice(0, 3), []);
+
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_48%,#f3f7fb_100%)] dark:bg-[linear-gradient(180deg,#020617_0%,#07111f_50%,#020617_100%)]">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-        <section className="overflow-hidden rounded-[40px] border border-slate-200 bg-white/90 shadow-[0_30px_120px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60 dark:shadow-[0_30px_120px_rgba(2,6,23,0.55)]">
-          <div className="grid gap-0 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="border-b border-slate-200 p-8 sm:p-10 lg:border-b-0 lg:border-r dark:border-white/10">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">{t("cartDrawerEyebrow")}</p>
-                  <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl">
-                    {t("cartPageTitle")}
-                  </h1>
-                  <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
-                    {t("cartPageDescription")}
-                  </p>
+    <main className="min-h-screen bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.06),transparent_50%),radial-gradient(circle_at_80%_60%,rgba(56,189,248,0.04),transparent_40%)] dark:bg-slate-950">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <header className="mb-10">
+          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <Link href="/services" className="hover:text-slate-950 dark:hover:text-white transition">
+              Services
+            </Link>
+            <span>/</span>
+            <span className="text-slate-950 dark:text-white">Cart</span>
+          </div>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+            Your Cart
+          </h1>
+          <p className="mt-2 text-slate-600 dark:text-slate-400">
+            {items.length === 0 ? "Your cart is empty" : `${items.length} item${items.length === 1 ? "" : "s"} ready for checkout`}
+          </p>
+        </header>
+
+        <section className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          <div className="space-y-4">
+            {items.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-slate-200 bg-white/50 p-12 text-center dark:border-white/10 dark:bg-slate-900/30">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
+                  <ShoppingBag className="h-7 w-7 text-slate-400" />
                 </div>
+                <h3 className="mt-4 text-lg font-medium text-slate-950 dark:text-white">Your cart is empty</h3>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Explore our services and add items to your cart</p>
                 <Link
                   href="/services"
-                  className="inline-flex h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10 dark:hover:text-white"
+                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
                 >
-                  <ArrowLeft className="h-4 w-4" />
-                  Continue exploring
+                  Browse Services
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
-
-              <div className="mt-10 space-y-4">
-                {items.length === 0 ? (
-                  <div className="rounded-[32px] border border-dashed border-slate-200 bg-slate-50/90 p-10 text-center dark:border-white/10 dark:bg-white/[0.03]">
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-400/10 dark:text-cyan-300">
-                      <ShoppingBag className="h-7 w-7" />
+            ) : (
+              items.map((item) => (
+                <div
+                  key={item.tierId}
+                  className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:shadow-lg dark:border-white/10 dark:bg-slate-900/50 dark:hover:bg-slate-900/70"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 dark:from-indigo-500/20 dark:to-cyan-500/20">
+                        <Package className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-slate-950 dark:text-white">{getServiceTitle(navigation, item.serviceId)}</h3>
+                        <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{getLocalizedTierName(t, item.tierId, item.tierId)}</p>
+                      </div>
                     </div>
-                    <div className="mt-6 text-2xl font-semibold text-slate-950 dark:text-white">{t("emptyTitle")}</div>
-                    <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-slate-600 dark:text-slate-400">{t("emptyDescription")}</p>
-                  </div>
-                ) : (
-                  items.map((item, index) => (
-                    <div
-                      key={item.tierId}
-                      className="rounded-[32px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] p-6 shadow-[0_18px_55px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.74),rgba(2,6,23,0.82))]"
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.tierId)}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-rose-50 hover:text-rose-500 dark:text-slate-500 dark:hover:bg-rose-500/10"
+                      aria-label="Remove item"
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-3">
-                          <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
-                            Selection {index + 1}
-                          </div>
-                          <div>
-                            <div className="text-2xl font-semibold text-slate-950 dark:text-white">{getServiceTitle(navigation, item.serviceId)}</div>
-                            <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">{getLocalizedTierName(t, item.tierId, item.tierId)}</div>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeItem(item.tierId)}
-                          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-200"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                      <div className="mt-8 flex items-end justify-between gap-4 border-t border-slate-200 pt-5 dark:border-white/10">
-                        <span className="text-sm uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">Plan total</span>
-                        <span className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">${item.price.toFixed(2)}</span>
-                      </div>
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 dark:border-white/5">
+                    <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5" />
+                        Instant delivery
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        Secure
+                      </span>
                     </div>
-                  ))
-                )}
+                    <span className="text-xl font-semibold text-slate-950 dark:text-white">${item.price.toFixed(2)}</span>
+                  </div>
+                </div>
+              ))
+            )}
+
+            {items.length > 0 && (
+              <div className="mt-8 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 dark:border-white/10 dark:from-slate-900/50 dark:to-slate-900/30">
+                <h3 className="text-sm font-medium text-slate-950 dark:text-white">Trusted by customers worldwide</h3>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {featuredReviews.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="lg:sticky lg:top-8 lg:h-fit">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-slate-900/50">
+              <h2 className="text-lg font-medium text-slate-950 dark:text-white">Order Summary</h2>
+
+              <div className="mt-6 space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-600 dark:text-slate-400">Subtotal</span>
+                  <span className="font-medium text-slate-950 dark:text-white">${subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-600 dark:text-slate-400">Processing</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">Free</span>
+                </div>
+                <div className="border-t border-slate-100 pt-3 dark:border-white/10">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-slate-950 dark:text-white">Total</span>
+                    <span className="text-2xl font-semibold text-slate-950 dark:text-white">${subtotal.toFixed(2)}</span>
+                  </div>
+                  <p className="mt-1 text-right text-xs text-slate-500 dark:text-slate-400">Including all taxes</p>
+                </div>
+              </div>
+
+              <CheckoutButton
+                disabled={items.length === 0}
+                className="mt-6 h-12 w-full rounded-xl bg-slate-950 text-base font-medium text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+              />
+
+              <div className="mt-6 flex items-center justify-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                <span className="flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5" />
+                  SSL Secure
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Truck className="h-3.5 w-3.5" />
+                  Instant Delivery
+                </span>
               </div>
             </div>
 
-            <div className="bg-slate-50/80 p-8 sm:p-10 dark:bg-slate-950/40">
-              <div className="sticky top-24 space-y-5">
-                <div className="flex items-center gap-3 rounded-[28px] border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
-                  <ShieldCheck className="h-5 w-5" />
-                  <span>{t("authSecureLabel")}</span>
-                </div>
-                <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_18px_55px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-white/[0.04]">
-                  <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
-                    <span>{t("subtotal")}</span>
-                    <span>{items.length} {items.length === 1 ? t("cartItemSingular") : t("cartItemPlural")}</span>
-                  </div>
-                  <div className="mt-5 flex items-end justify-between gap-4">
-                    <span className="text-lg font-semibold text-slate-950 dark:text-white">{t("todayTotal")}</span>
-                    <span className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">${subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="mt-6 h-px bg-slate-200 dark:bg-white/10" />
-                  <CheckoutButton disabled={items.length === 0} className="mt-6 w-full !rounded-2xl !h-12" />
-                  <p className="mt-4 text-xs leading-6 text-slate-500 dark:text-slate-400">
-                    Secure checkout continues after authentication and keeps your selected services intact.
-                  </p>
-                </div>
-              </div>
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50/50 to-cyan-50/50 p-4 dark:border-white/10 dark:from-indigo-950/20 dark:to-cyan-950/20">
+              <p className="text-center text-xs text-slate-600 dark:text-slate-400">
+                We accept all major payment methods including Visa, Mastercard, PayPal, Apple Pay, and Google Pay
+              </p>
             </div>
           </div>
         </section>
