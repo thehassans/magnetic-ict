@@ -1,12 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { CheckCircle2, Search, ShieldAlert, ShieldCheck, ShoppingCart, Trash2 } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { useLocale } from "next-intl";
+import { CheckCircle2, Search, ShieldAlert, ShieldCheck, ShoppingCart } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
-import type { DomainRegistrantContact, DomainSearchResult } from "@/lib/domain-types";
+import { type DomainCartItem, readDomainCart, writeDomainCart } from "@/lib/domain-cart";
+import type { DomainSearchResult } from "@/lib/domain-types";
 
 type SearchResponse = {
   results: DomainSearchResult[];
@@ -16,29 +15,9 @@ type SearchResponse = {
   includePrivacyProtectionByDefault: boolean;
 };
 
-type DomainCartItem = {
-  domain: string;
-  years: number;
-  price: number;
-  privacyProtection: boolean;
-};
-
-const storageKey = "magneticict-domain-cart";
-
-function splitName(value: string | null | undefined) {
-  const parts = (value ?? "").trim().split(/\s+/).filter(Boolean);
-  return {
-    firstName: parts[0] ?? "",
-    lastName: parts.slice(1).join(" ")
-  };
-}
-
 export function DomainSearchClient() {
-  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session, status } = useSession();
-  const initialNameParts = splitName(session?.user?.name);
   const [query, setQuery] = useState("");
   const [years, setYears] = useState(1);
   const [results, setResults] = useState<DomainSearchResult[]>([]);
@@ -46,40 +25,18 @@ export function DomainSearchClient() {
   const [providerLabel, setProviderLabel] = useState("");
   const [privacyProtectionDefault, setPrivacyProtectionDefault] = useState(true);
   const [domainCart, setDomainCart] = useState<DomainCartItem[]>([]);
-  const [registrantContact, setRegistrantContact] = useState<DomainRegistrantContact>({
-    firstName: initialNameParts.firstName,
-    lastName: initialNameParts.lastName,
-    organization: "",
-    email: session?.user?.email ?? "",
-    phone: "",
-    addressLine1: "",
-    addressLine2: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    country: "US"
-  });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSearching, startSearch] = useTransition();
-  const [isBuying, startBuy] = useTransition();
   const autoSearchRef = useRef<string>("");
   const [isHydrated, setIsHydrated] = useState(false);
 
   const cartDomains = useMemo(() => new Set(domainCart.map((item) => item.domain)), [domainCart]);
-  const cartSubtotal = useMemo(
-    () => Number(domainCart.reduce((total, item) => total + (item.price * item.years), 0).toFixed(2)),
-    [domainCart]
-  );
   const queryFromUrl = (searchParams.get("query") ?? "").trim();
 
   useEffect(() => {
     try {
-      const stored = window.localStorage.getItem(storageKey);
-
-      if (stored) {
-        setDomainCart(JSON.parse(stored) as DomainCartItem[]);
-      }
+      setDomainCart(readDomainCart(window.localStorage));
     } catch {
       setDomainCart([]);
     } finally {
@@ -92,19 +49,8 @@ export function DomainSearchClient() {
       return;
     }
 
-    window.localStorage.setItem(storageKey, JSON.stringify(domainCart));
+    writeDomainCart(window.localStorage, domainCart);
   }, [domainCart, isHydrated]);
-
-  useEffect(() => {
-    const nextNameParts = splitName(session?.user?.name);
-
-    setRegistrantContact((current) => ({
-      ...current,
-      firstName: current.firstName || nextNameParts.firstName,
-      lastName: current.lastName || nextNameParts.lastName,
-      email: current.email || session?.user?.email || ""
-    }));
-  }, [session?.user?.email, session?.user?.name]);
 
   const performSearch = useCallback((searchValue: string) => {
     setError("");
@@ -187,55 +133,9 @@ export function DomainSearchClient() {
         domain: result.domain,
         years,
         price: result.price,
-        privacyProtection: privacyProtectionDefault
+        privacyProtection: privacyProtectionDefault,
+        addedAt: new Date().toISOString()
       }];
-    });
-  }
-
-  function removeDomainCartItem(domain: string) {
-    setDomainCart((current) => current.filter((item) => item.domain !== domain));
-    setMessage(`${domain} removed from your domain cart.`);
-  }
-
-  function handleCheckout() {
-    setError("");
-    setMessage("");
-
-    if (domainCart.length === 0) {
-      return;
-    }
-
-    if (status !== "authenticated") {
-      router.push(`/customer/sign-in?callback=${encodeURIComponent("/domains")}`);
-      return;
-    }
-
-    startBuy(async () => {
-      const response = await fetch("/api/domains/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          items: domainCart.map((item) => ({
-            domain: item.domain,
-            years: item.years,
-            privacyProtection: item.privacyProtection
-          })),
-          registrantContact,
-          locale
-        })
-      });
-
-      const payload = (await response.json().catch(() => ({}))) as { error?: string; redirectUrl?: string; ok?: boolean };
-
-      if (!response.ok || !payload.ok || !payload.redirectUrl) {
-        setError(payload.error ?? "Unable to start domain checkout right now.");
-        return;
-      }
-
-      setMessage("Redirecting to secure domain checkout...");
-      window.location.href = payload.redirectUrl;
     });
   }
 
@@ -281,6 +181,10 @@ export function DomainSearchClient() {
           <div className="inline-flex items-center rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-200">
             Checkout provider is managed in admin settings
           </div>
+          <button type="button" onClick={() => router.push("/domains/cart")} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-200 dark:hover:bg-white/[0.08]">
+            <ShoppingCart className="h-3.5 w-3.5" />
+            {isHydrated ? `${domainCart.length} in cart` : "Open cart"}
+          </button>
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-[1fr_140px_160px]">
           <label className="space-y-2 text-sm">
@@ -304,7 +208,7 @@ export function DomainSearchClient() {
 
       <section className="mt-8 space-y-4">
         {results.length === 0 ? (
-          <div className="rounded-[28px] border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300">Search for a domain to see availability and cart options.</div>
+          <div className="rounded-[28px] border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300">Search for a domain to see availability and add it to your cart page.</div>
         ) : null}
         {results.map((result) => (
           <div key={result.domain} className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-slate-950/60 dark:shadow-[0_18px_70px_rgba(2,6,23,0.45)]">
@@ -336,79 +240,13 @@ export function DomainSearchClient() {
                     ? "Domain taken"
                     : "Unavailable"}
               </button>
+              <button type="button" onClick={() => router.push("/domains/cart")} className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200 dark:hover:bg-white/[0.08]">
+                <ShoppingCart className="h-4 w-4" />
+                Open cart
+              </button>
             </div>
           </div>
         ))}
-      </section>
-
-      <section className="mt-8 rounded-[32px] border border-slate-200 bg-white p-8 shadow-[0_16px_50px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-slate-950/60 dark:shadow-[0_18px_70px_rgba(2,6,23,0.45)] sm:p-10">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <div className="text-sm uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">Domain cart</div>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">Ready for checkout</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">Add any available domain from the search results, then continue through the admin-managed checkout flow.</p>
-          </div>
-          <div className="rounded-[24px] border border-slate-200 bg-slate-50 px-5 py-4 dark:border-white/10 dark:bg-white/[0.04]">
-            <div className="text-sm text-slate-500 dark:text-slate-400">Cart total</div>
-            <div className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">${cartSubtotal.toFixed(2)}</div>
-          </div>
-        </div>
-
-        <div className="mt-6 space-y-4">
-          {domainCart.length === 0 ? (
-            <div className="rounded-[28px] border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300">
-              Your domain cart is empty. Add an available domain from the search results above.
-            </div>
-          ) : (
-            domainCart.map((item) => (
-              <div key={item.domain} className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/[0.04]">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <div className="text-lg font-semibold text-slate-950 dark:text-white">{item.domain}</div>
-                    <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{item.years} year registration · Privacy protection {item.privacyProtection ? "included" : "disabled"}</div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="text-lg font-semibold text-slate-950 dark:text-white">${(item.price * item.years).toFixed(2)}</div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400">${item.price.toFixed(2)} / year</div>
-                    </div>
-                    <button type="button" onClick={() => removeDomainCartItem(item.domain)} className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-rose-200 hover:text-rose-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:border-rose-400/30 dark:hover:text-rose-200" aria-label={`Remove ${item.domain} from cart`}>
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div className="mt-6 rounded-[28px] border border-slate-200 bg-slate-50 p-6 dark:border-white/10 dark:bg-white/[0.04]">
-          <div className="text-sm uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Registrant contact</div>
-          <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">This contact is used for domain ownership, WHOIS, and live registrar registration.</p>
-          <div className="mt-5 grid gap-3 md:grid-cols-2">
-            <input value={registrantContact.firstName} onChange={(event) => setRegistrantContact((current) => ({ ...current, firstName: event.target.value }))} placeholder="First name" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
-            <input value={registrantContact.lastName} onChange={(event) => setRegistrantContact((current) => ({ ...current, lastName: event.target.value }))} placeholder="Last name" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
-            <input value={registrantContact.organization} onChange={(event) => setRegistrantContact((current) => ({ ...current, organization: event.target.value }))} placeholder="Organization" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
-            <input value={registrantContact.email} onChange={(event) => setRegistrantContact((current) => ({ ...current, email: event.target.value }))} placeholder="Email" type="email" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
-            <input value={registrantContact.phone} onChange={(event) => setRegistrantContact((current) => ({ ...current, phone: event.target.value }))} placeholder="Phone" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
-            <input value={registrantContact.country} onChange={(event) => setRegistrantContact((current) => ({ ...current, country: event.target.value.toUpperCase() }))} placeholder="Country code" maxLength={2} className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm uppercase text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
-            <input value={registrantContact.addressLine1} onChange={(event) => setRegistrantContact((current) => ({ ...current, addressLine1: event.target.value }))} placeholder="Address line 1" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white md:col-span-2" />
-            <input value={registrantContact.addressLine2} onChange={(event) => setRegistrantContact((current) => ({ ...current, addressLine2: event.target.value }))} placeholder="Address line 2" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white md:col-span-2" />
-            <input value={registrantContact.city} onChange={(event) => setRegistrantContact((current) => ({ ...current, city: event.target.value }))} placeholder="City" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
-            <input value={registrantContact.state} onChange={(event) => setRegistrantContact((current) => ({ ...current, state: event.target.value }))} placeholder="State / region" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
-            <input value={registrantContact.postalCode} onChange={(event) => setRegistrantContact((current) => ({ ...current, postalCode: event.target.value }))} placeholder="Postal code" className="h-11 rounded-[18px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 dark:border-white/10 dark:bg-slate-950/40 dark:text-white" />
-          </div>
-        </div>
-
-        <div className="mt-6 flex flex-col gap-4 border-t border-slate-200 pt-6 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-slate-500 dark:text-slate-400">
-            {isHydrated ? `${domainCart.length} domain${domainCart.length === 1 ? "" : "s"} selected for checkout.` : "Loading domain cart..."}
-          </div>
-          <button type="button" onClick={handleCheckout} disabled={!isHydrated || domainCart.length === 0 || isBuying || !domainsEnabled} className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-slate-950 px-6 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50">
-            <ShoppingCart className="h-4 w-4" />
-            {status === "authenticated" ? (isBuying ? "Starting checkout..." : "Checkout domains") : "Sign in to checkout"}
-          </button>
-        </div>
       </section>
     </main>
   );

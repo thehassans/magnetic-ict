@@ -27,6 +27,7 @@ export default async function AdminDomainsPage() {
     getDomainOrders(),
     getManagedDomains()
   ]);
+  const visibleOrders = orders.filter((order) => order.status !== "failed");
 
   return (
     <AdminShell
@@ -34,7 +35,7 @@ export default async function AdminDomainsPage() {
       description="Track checkout orders, managed domains, renewal posture, and registrar state from the admin panel."
       activePath="/admin/domains"
     >
-      <AdminDomainsClient orders={orders} managedDomains={managedDomains} />
+      <AdminDomainsClient orders={visibleOrders} managedDomains={managedDomains} />
     </AdminShell>
   );
 }
