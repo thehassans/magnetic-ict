@@ -8,6 +8,7 @@ export type DomainCartItem = {
 
 export const DOMAIN_CART_STORAGE_KEY = "magneticict-domain-cart-v2";
 export const DOMAIN_CART_LEGACY_STORAGE_KEYS = ["magneticict-domain-cart"] as const;
+export const DOMAIN_CART_UPDATED_EVENT = "magneticict:domain-cart-updated";
 
 function normalizeDomain(value: unknown) {
   return typeof value === "string" ? value.trim().toLowerCase() : "";
@@ -82,4 +83,12 @@ export function readDomainCart(storage: Pick<Storage, "getItem" | "removeItem">)
 
 export function writeDomainCart(storage: Pick<Storage, "setItem">, items: DomainCartItem[]) {
   storage.setItem(DOMAIN_CART_STORAGE_KEY, JSON.stringify(items));
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(DOMAIN_CART_UPDATED_EVENT, {
+      detail: {
+        count: items.length
+      }
+    }));
+  }
 }

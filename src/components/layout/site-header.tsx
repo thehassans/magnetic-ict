@@ -36,6 +36,7 @@ import { BrandLogo } from "@/components/branding/brand-logo";
 import { CartTrigger } from "@/components/commerce/cart-trigger";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Link } from "@/i18n/navigation";
+import { DOMAIN_CART_UPDATED_EVENT, readDomainCart } from "@/lib/domain-cart";
 import { type ServiceMenuKey } from "@/lib/service-menu";
 import { cn } from "@/lib/utils";
 import type { ActiveLanguage } from "@/types/i18n";
@@ -79,6 +80,7 @@ export function SiteHeader({ locale, activeLanguages, visibleServiceMenuItems, s
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [domainCartCount, setDomainCartCount] = useState(0);
   const [isSigningOut, startSignOutTransition] = useTransition();
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
   const t = useTranslations("Navigation");
@@ -114,6 +116,27 @@ export function SiteHeader({ locale, activeLanguages, visibleServiceMenuItems, s
       document.removeEventListener("keydown", handleEscape);
     };
   }, [accountMenuOpen]);
+
+  useEffect(() => {
+    function syncDomainCartCount() {
+      setDomainCartCount(readDomainCart(window.localStorage).length);
+    }
+
+    function handleStorage(event: StorageEvent) {
+      if (!event.key || event.key === "magneticict-domain-cart-v2" || event.key === "magneticict-domain-cart") {
+        syncDomainCartCount();
+      }
+    }
+
+    syncDomainCartCount();
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener(DOMAIN_CART_UPDATED_EVENT, syncDomainCartCount);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener(DOMAIN_CART_UPDATED_EVENT, syncDomainCartCount);
+    };
+  }, []);
 
   function handleSignOut() {
     startSignOutTransition(() => {
@@ -225,6 +248,13 @@ export function SiteHeader({ locale, activeLanguages, visibleServiceMenuItems, s
             <LanguageSwitcher activeLanguages={activeLanguages} />
 
             <ThemeToggle />
+
+            <Link href="/domains/cart" locale={locale} className="relative inline-flex h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-cyan-400/20 dark:hover:bg-white/10">
+              <span>Domain cart</span>
+              <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-cyan-400 px-1 text-[10px] font-bold text-slate-950">
+                {domainCartCount}
+              </span>
+            </Link>
 
             <CartTrigger />
 
@@ -395,6 +425,18 @@ export function SiteHeader({ locale, activeLanguages, visibleServiceMenuItems, s
               <ThemeToggle className="w-full sm:w-auto" />
 
               <LanguageSwitcher activeLanguages={activeLanguages} align="left" className="w-full" />
+
+              <Link
+                href="/domains/cart"
+                locale={locale}
+                onClick={() => setMobileMenuOpen(false)}
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 text-sm font-medium text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
+              >
+                <span>Domain cart</span>
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-cyan-400 px-1 text-[10px] font-bold text-slate-950">
+                  {domainCartCount}
+                </span>
+              </Link>
 
               {sessionUser ? (
                 <>
