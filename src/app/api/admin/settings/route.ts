@@ -79,6 +79,19 @@ const requestSchema = z.discriminatedUnion("section", [
     })
   }),
   z.object({
+    section: z.literal("trustedPartners"),
+    value: z.object({
+      partners: z.array(
+        z.object({
+          id: z.string().min(1),
+          name: z.string().min(1),
+          logoUrl: z.string(),
+          enabled: z.boolean()
+        })
+      )
+    })
+  }),
+  z.object({
     section: z.literal("welcomeEmail"),
     value: z.object({
       enabled: z.boolean(),
@@ -184,6 +197,7 @@ const settingKeyBySection = {
   oauth: "oauth_config",
   gemini: "gemini_api_key",
   socialBot: "social_bot_config",
+  trustedPartners: "trusted_partners_config",
   welcomeEmail: "welcome_email_config",
   domain: "domain_provider_config",
   hosting: "hosting_provider_config"

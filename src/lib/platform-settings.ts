@@ -45,6 +45,17 @@ export type SocialBotSettings = {
   webhookVerifyToken: string;
 };
 
+export type TrustedPartnerSettings = {
+  id: string;
+  name: string;
+  logoUrl: string;
+  enabled: boolean;
+};
+
+export type TrustedPartnersSettings = {
+  partners: TrustedPartnerSettings[];
+};
+
 export type WelcomeEmailSettings = {
   enabled: boolean;
   subject: string;
@@ -61,6 +72,7 @@ export type PlatformSettingsBundle = {
   oauthConfig: OAuthSettings;
   geminiConfig: GeminiSettings;
   socialBotConfig: SocialBotSettings;
+  trustedPartnersConfig: TrustedPartnersSettings;
   welcomeEmailConfig: WelcomeEmailSettings;
   domainProviderConfig: DomainProviderSettings;
   hostingProviderConfig: HostingProviderSettings;
@@ -108,6 +120,47 @@ export const defaultSocialBotConfig: SocialBotSettings = {
   metaAppSecret: "",
   metaConfigId: "",
   webhookVerifyToken: ""
+};
+
+export const defaultTrustedPartnersConfig: TrustedPartnersSettings = {
+  partners: [
+    {
+      id: "cloudflare",
+      name: "Cloudflare",
+      logoUrl: "/partners/cloudflare.svg?v=2026-05-03-aligned",
+      enabled: true
+    },
+    {
+      id: "mastercard",
+      name: "Mastercard",
+      logoUrl: "/partners/mastercard.svg?v=2026-05-03-aligned",
+      enabled: true
+    },
+    {
+      id: "stripe",
+      name: "Stripe",
+      logoUrl: "/partners/stripe.svg?v=2026-05-03-aligned",
+      enabled: true
+    },
+    {
+      id: "aws",
+      name: "AWS",
+      logoUrl: "/partners/aws.svg?v=2026-05-03-aligned",
+      enabled: true
+    },
+    {
+      id: "apple-pay",
+      name: "Apple Pay",
+      logoUrl: "/partners/apple-pay.svg?v=2026-05-03-aligned",
+      enabled: true
+    },
+    {
+      id: "visa",
+      name: "Visa",
+      logoUrl: "/partners/visa.svg?v=2026-05-03-aligned",
+      enabled: true
+    }
+  ]
 };
 
 export const defaultWelcomeEmailConfig: WelcomeEmailSettings = {
@@ -317,6 +370,24 @@ function normalizeHostingControlPanels(value: unknown, fallback: HostingProvider
   return normalized.length > 0 ? normalized : fallback;
 }
 
+function normalizeTrustedPartners(value: unknown, fallback: TrustedPartnersSettings["partners"]) {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  const normalized = value
+    .filter((entry) => isObject(entry))
+    .map((entry, index) => ({
+      id: coerceString(entry.id, fallback[index]?.id ?? `partner-${index + 1}`),
+      name: coerceString(entry.name, fallback[index]?.name ?? "Partner"),
+      logoUrl: coerceString(entry.logoUrl, fallback[index]?.logoUrl ?? ""),
+      enabled: coerceBoolean(entry.enabled, fallback[index]?.enabled ?? true)
+    }))
+    .filter((entry) => entry.id.trim().length > 0 && entry.name.trim().length > 0);
+
+  return normalized.length > 0 ? normalized : fallback;
+}
+
 function normalizeHostingOperatingSystems(value: unknown, fallback: HostingProviderSettings["operatingSystems"]) {
   if (!Array.isArray(value)) {
     return fallback;
@@ -395,6 +466,16 @@ function normalizeOAuthProviderSettings(
     enabled: coerceBoolean(value.enabled, fallback.enabled),
     clientId: coerceString(value.clientId, coerceString(legacyClientId, fallback.clientId)),
     clientSecret: coerceString(value.clientSecret, coerceString(legacyClientSecret, fallback.clientSecret))
+  };
+}
+
+export function normalizeTrustedPartnersConfig(value: unknown): TrustedPartnersSettings {
+  if (!isObject(value)) {
+    return defaultTrustedPartnersConfig;
+  }
+
+  return {
+    partners: normalizeTrustedPartners(value.partners, defaultTrustedPartnersConfig.partners)
   };
 }
 
@@ -584,13 +665,14 @@ async function getSettingValue(key: string) {
 }
 
 export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
-  const [activeLanguages, footerDetails, paymentIntegrations, oauthConfig, geminiConfig, socialBotConfig, welcomeEmailConfig, domainProviderConfig, hostingProviderConfig] = await Promise.all([
+  const [activeLanguages, footerDetails, paymentIntegrations, oauthConfig, geminiConfig, socialBotConfig, trustedPartnersConfig, welcomeEmailConfig, domainProviderConfig, hostingProviderConfig] = await Promise.all([
     getSettingValue("active_languages"),
     getSettingValue("footer_details"),
     getSettingValue("payment_integrations"),
     getSettingValue("oauth_config"),
     getSettingValue("gemini_api_key"),
     getSettingValue("social_bot_config"),
+    getSettingValue("trusted_partners_config"),
     getSettingValue("welcome_email_config"),
     getSettingValue("domain_provider_config"),
     getSettingValue("hosting_provider_config")
@@ -603,6 +685,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     oauthConfig: normalizeOAuthConfig(oauthConfig),
     geminiConfig: normalizeGeminiConfig(geminiConfig),
     socialBotConfig: normalizeSocialBotConfig(socialBotConfig),
+    trustedPartnersConfig: normalizeTrustedPartnersConfig(trustedPartnersConfig),
     welcomeEmailConfig: normalizeWelcomeEmailConfig(welcomeEmailConfig),
     domainProviderConfig: normalizeDomainProviderConfig(domainProviderConfig),
     hostingProviderConfig: normalizeHostingProviderConfig(hostingProviderConfig)
@@ -637,6 +720,23 @@ export function getResolvedOAuthSettings(settings: OAuthSettings): OAuthSettings
 export async function getWelcomeEmailSettings() {
   const value = await getSettingValue("welcome_email_config");
   return normalizeWelcomeEmailConfig(value);
+}
+
+export async function getTrustedPartnersSettings() {
+  const value = await getSettingValue("trusted_partners_config");
+  return normalizeTrustedPartnersConfig(value);
+}
+
+export async function saveTrustedPartnersSettings(value: TrustedPartnersSettings) {
+  if (!hasDatabase) {
+    return;
+  }
+
+  await prisma.setting.upsert({
+    where: { key: "trusted_partners_config" },
+    update: { value },
+    create: { key: "trusted_partners_config", value }
+  });
 }
 
 export async function getDomainProviderSettings() {

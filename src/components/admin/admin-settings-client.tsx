@@ -3,6 +3,7 @@
 import { type ReactNode, useMemo, useState } from "react";
 import { Check, Loader2, Sparkles } from "lucide-react";
 import { HostingConfigEditor } from "@/components/admin/hosting-config-editor";
+import { TrustedPartnersEditor } from "@/components/admin/trusted-partners-editor";
 import type { DomainProviderSettings } from "@/lib/domain-types";
 import type { HostingProviderSettings } from "@/lib/hosting-types";
 import type { ActiveLanguage } from "@/types/i18n";
@@ -12,6 +13,7 @@ import type {
   OAuthSettings,
   PaymentIntegrationsSettings,
   SocialBotSettings,
+  TrustedPartnersSettings,
   WelcomeEmailSettings
 } from "@/lib/platform-settings";
 
@@ -23,6 +25,7 @@ type AdminSettingsClientProps = {
   oauthConfig: OAuthSettings;
   geminiConfig: GeminiSettings;
   socialBotConfig: SocialBotSettings;
+  trustedPartnersConfig: TrustedPartnersSettings;
   welcomeEmailConfig: WelcomeEmailSettings;
   domainProviderConfig: DomainProviderSettings;
   hostingProviderConfig: HostingProviderSettings;
@@ -35,13 +38,14 @@ type ToastState = {
   message: string;
 } | null;
 
-const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "welcomeEmail" | "domain" | "hosting", string> = {
+const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "trustedPartners" | "welcomeEmail" | "domain" | "hosting", string> = {
   languages: "Language",
   footer: "Footer",
   payments: "Payment",
   oauth: "OAuth",
   gemini: "Gemini",
   socialBot: "Social Bot",
+  trustedPartners: "Trusted partners",
   welcomeEmail: "Welcome email",
   domain: "Domain",
   hosting: "Hosting"
@@ -63,6 +67,7 @@ export function AdminSettingsClient({
   oauthConfig,
   geminiConfig,
   socialBotConfig,
+  trustedPartnersConfig,
   welcomeEmailConfig,
   domainProviderConfig,
   hostingProviderConfig,
@@ -75,6 +80,7 @@ export function AdminSettingsClient({
   const [oauthState, setOAuthState] = useState(oauthConfig);
   const [geminiState, setGeminiState] = useState(geminiConfig);
   const [socialBotState, setSocialBotState] = useState(socialBotConfig);
+  const [trustedPartnersState, setTrustedPartnersState] = useState(trustedPartnersConfig);
   const [welcomeEmailState, setWelcomeEmailState] = useState(welcomeEmailConfig);
   const [domainState, setDomainState] = useState(domainProviderConfig);
   const [hostingState, setHostingState] = useState(hostingProviderConfig);
@@ -87,7 +93,7 @@ export function AdminSettingsClient({
   );
   const metaWebhookUrl = useMemo(() => (appBaseUrl ? `${appBaseUrl}/api/social-bot/meta/webhook` : ""), [appBaseUrl]);
 
-  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "welcomeEmail" | "domain" | "hosting", value: unknown) {
+  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "trustedPartners" | "welcomeEmail" | "domain" | "hosting", value: unknown) {
     setLoadingSection(section);
     setToast(null);
 
@@ -238,6 +244,14 @@ export function AdminSettingsClient({
           <Input label="Location label" value={footerState.locationLabel} onChange={(value) => setFooterState((current) => ({ ...current, locationLabel: value }))} />
           <Input label="CTA href" value={footerState.ctaHref} onChange={(value) => setFooterState((current) => ({ ...current, ctaHref: value }))} />
         </div>
+      </SettingsCard>
+
+      <SettingsCard
+        title="Trusted partners"
+        description="Manage the partner logos shown on the landing page. Uploads are converted to WebP and stored through the admin panel."
+        action={<Button label="Save partners" loading={loadingSection === "trustedPartners"} onClick={() => saveSection("trustedPartners", trustedPartnersState)} />}
+      >
+        <TrustedPartnersEditor value={trustedPartnersState} onChange={setTrustedPartnersState} disabled={loadingSection === "trustedPartners"} />
       </SettingsCard>
 
       <SettingsCard

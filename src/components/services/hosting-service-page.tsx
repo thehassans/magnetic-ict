@@ -122,18 +122,6 @@ export function HostingServicePage({ service, hostingProviderConfig }: HostingSe
         </div>
       </section>
 
-      <section className="py-12 sm:py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <HostingConfigurator
-            settings={hostingProviderConfig}
-            basePrice={service.tiers[0]?.price ?? 0}
-            value={hostingSelection}
-            onChange={(selection) => setHostingSelection(selection)}
-            defaultOpen
-          />
-        </div>
-      </section>
-
       <section id="hosting-plans" className="pb-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_28px_90px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-slate-950">
@@ -162,6 +150,15 @@ export function HostingServicePage({ service, hostingProviderConfig }: HostingSe
                     <span className={cn("text-sm", plan.popular ? "text-white/70 dark:text-slate-700" : "text-slate-500 dark:text-slate-400")}>/mo</span>
                   </div>
                   <p className={cn("mt-3 text-sm leading-6", plan.popular ? "text-white/75 dark:text-slate-700" : "text-slate-500 dark:text-slate-400")}>{plan.summary}</p>
+                  <div className="mt-5 border-t border-slate-200 pt-5 dark:border-white/10">
+                    <HostingConfigurator
+                      settings={hostingProviderConfig}
+                      basePrice={plan.price}
+                      value={hostingSelection}
+                      onChange={(selection) => setHostingSelection(selection)}
+                      compact
+                    />
+                  </div>
                 </div>
               ))}
             </div>

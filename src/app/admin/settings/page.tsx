@@ -31,6 +31,7 @@ export default async function AdminSettingsPage() {
         oauthConfig={settings.oauthConfig}
         geminiConfig={settings.geminiConfig}
         socialBotConfig={settings.socialBotConfig}
+        trustedPartnersConfig={settings.trustedPartnersConfig}
         welcomeEmailConfig={settings.welcomeEmailConfig}
         domainProviderConfig={settings.domainProviderConfig}
         hostingProviderConfig={settings.hostingProviderConfig}

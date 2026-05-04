@@ -7,55 +7,59 @@ import { InfiniteMarquee } from "@/components/home/infinite-marquee";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
 import { cn } from "@/lib/utils";
 
-const partnerAssetVersion = "2026-05-03-aligned";
+type TrustedPartner = {
+  id: string;
+  name: string;
+  logoUrl: string;
+  enabled: boolean;
+};
 
-const partners = [
+const defaultPartners: TrustedPartner[] = [
   {
+    id: "cloudflare",
     name: "Cloudflare",
-    src: `/partners/cloudflare.svg?v=${partnerAssetVersion}`,
-    width: 240,
-    height: 84,
-    imageClassName: "h-[4.5rem] max-w-[13rem] sm:h-[4.75rem] sm:max-w-[13.5rem]"
+    logoUrl: "/partners/cloudflare.svg?v=2026-05-03-aligned",
+    enabled: true
   },
   {
+    id: "mastercard",
     name: "Mastercard",
-    src: `/partners/mastercard.svg?v=${partnerAssetVersion}`,
-    width: 180,
-    height: 56,
-    imageClassName: "h-10 max-w-[9.5rem] sm:h-11 sm:max-w-[10rem]"
+    logoUrl: "/partners/mastercard.svg?v=2026-05-03-aligned",
+    enabled: true
   },
   {
+    id: "stripe",
     name: "Stripe",
-    src: `/partners/stripe.svg?v=${partnerAssetVersion}`,
-    width: 180,
-    height: 56,
-    imageClassName: "h-9 max-w-[8.75rem] sm:h-10 sm:max-w-[9.25rem]"
+    logoUrl: "/partners/stripe.svg?v=2026-05-03-aligned",
+    enabled: true
   },
   {
+    id: "aws",
     name: "AWS",
-    src: `/partners/aws.svg?v=${partnerAssetVersion}`,
-    width: 190,
-    height: 60,
-    imageClassName: "h-10 max-w-[9.5rem] sm:h-11 sm:max-w-[10.25rem]"
+    logoUrl: "/partners/aws.svg?v=2026-05-03-aligned",
+    enabled: true
   },
   {
+    id: "apple-pay",
     name: "Apple Pay",
-    src: `/partners/apple-pay.svg?v=${partnerAssetVersion}`,
-    width: 190,
-    height: 56,
-    imageClassName: "h-9 max-w-[9rem] sm:h-10 sm:max-w-[9.5rem]"
+    logoUrl: "/partners/apple-pay.svg?v=2026-05-03-aligned",
+    enabled: true
   },
   {
+    id: "visa",
     name: "Visa",
-    src: `/partners/visa.svg?v=${partnerAssetVersion}`,
-    width: 170,
-    height: 52,
-    imageClassName: "h-8 max-w-[8rem] sm:h-9 sm:max-w-[8.5rem]"
+    logoUrl: "/partners/visa.svg?v=2026-05-03-aligned",
+    enabled: true
   }
-] as const;
+];
 
-export function TrustedPartnersMarquee() {
+type TrustedPartnersMarqueeProps = {
+  partners?: TrustedPartner[];
+};
+
+export function TrustedPartnersMarquee({ partners }: TrustedPartnersMarqueeProps) {
   const t = useTranslations("Landing");
+  const visiblePartners = (partners?.length ? partners : defaultPartners).filter((partner) => partner.enabled);
 
   return (
     <section id="trusted-ecosystem" className="space-y-6 py-4 sm:py-8">
@@ -70,19 +74,19 @@ export function TrustedPartnersMarquee() {
         duration={22}
         className="[mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]"
         itemClassName="shrink-0"
-        items={partners.map(({ name, src, width, height, imageClassName }) => (
+        items={visiblePartners.map((partner) => (
           <motion.div
-            key={name}
+            key={partner.id}
             whileHover={{ y: -4 }}
-            className="flex h-24 w-[15rem] items-center justify-center rounded-[24px] border border-slate-200/90 bg-white/95 px-7 shadow-[0_18px_48px_rgba(15,23,42,0.08)] backdrop-blur-2xl transition hover:border-cyan-200 hover:bg-cyan-50/60 dark:border-white/10 dark:bg-white/95 dark:hover:border-cyan-400/20 dark:hover:bg-cyan-50/90"
+            className="relative flex h-24 w-[15rem] items-center justify-center overflow-hidden rounded-[24px] border border-slate-200/90 bg-white/95 px-7 shadow-[0_18px_48px_rgba(15,23,42,0.08)] backdrop-blur-2xl transition hover:border-cyan-200 hover:bg-cyan-50/60 dark:border-white/10 dark:bg-white/95 dark:hover:border-cyan-400/20 dark:hover:bg-cyan-50/90"
           >
             <Image
-              src={src}
-              alt={name}
-              width={width}
-              height={height}
-              className={cn("w-auto object-contain object-center", imageClassName)}
-              unoptimized
+              src={partner.logoUrl}
+              alt={partner.name}
+              fill
+              sizes="240px"
+              className={cn("object-contain object-center p-3")}
+              unoptimized={partner.logoUrl.toLowerCase().includes(".svg")}
             />
           </motion.div>
         ))}
