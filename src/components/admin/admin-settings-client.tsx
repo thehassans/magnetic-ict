@@ -351,7 +351,7 @@ export function AdminSettingsClient({
 
       <SettingsCard
         title="Magnetic VPS Hosting provider"
-        description="Configure the IONOS-backed reseller and cloud settings used by Magnetic VPS Hosting fulfillment. Manual mode keeps provisioning records internal without calling IONOS. Live mode enables direct API-backed contract and infrastructure orchestration."
+        description="Configure the reseller and cloud settings used by Magnetic VPS Hosting fulfillment. Manual mode keeps provisioning records internal. Live mode enables direct API-backed contract and infrastructure orchestration."
         action={<Button label="Save hosting config" loading={loadingSection === "hosting"} onClick={() => saveSection("hosting", hostingState)} />}
       >
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -387,7 +387,7 @@ export function AdminSettingsClient({
             <span className="font-medium text-slate-950">Manual:</span> store provisioning requests and operator references inside Magnetic only.
           </p>
           <p>
-            <span className="font-medium text-slate-950">Live:</span> call the IONOS reseller API for contracts/admins and the cloud API for data center and server provisioning during fulfillment.
+            <span className="font-medium text-slate-950">Live:</span> call the provider reseller API for contracts/admins and the cloud API for data center and server provisioning during fulfillment.
           </p>
           <p>
             <span className="font-medium text-slate-950">URL template:</span> use placeholders like {"{orderId}"}, {"{email}"}, {"{contractId}"}, {"{adminId}"}, {"{serverId}"}, and {"{datacenterId}"}.

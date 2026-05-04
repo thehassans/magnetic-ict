@@ -23,6 +23,7 @@ type CommerceContextValue = {
   openCart: () => void;
   closeCart: () => void;
   addItem: (item: AddCartItemInput) => void;
+  updateItem: (serviceId: string, tierId: string, item: Partial<CartItem>) => void;
   removeItem: (tierId: string) => void;
   clearCart: () => void;
   openAuthModal: (redirectPath?: string) => void;
@@ -80,6 +81,9 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
           );
           return [...withoutCurrentService, item];
         });
+      },
+      updateItem: (serviceId, tierId, item) => {
+        setItems((current) => current.map((existing) => (existing.serviceId === serviceId && existing.tierId === tierId ? { ...existing, ...item } : existing)));
       },
       removeItem: (tierId) => {
         setItems((current) => current.filter((item) => item.tierId !== tierId));

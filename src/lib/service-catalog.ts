@@ -377,12 +377,12 @@ const allServiceCatalog: CatalogService[] = [
     id: "magneticVpsHosting",
     name: "Magnetic VPS Hosting",
     category: "Cloud Infrastructure",
-    eyebrow: "IONOS-backed compute",
-    tagline: "Launch Magnetic-branded VPS infrastructure on top of IONOS partner and cloud operations with clean provisioning and operator visibility.",
+    eyebrow: "Managed cloud compute",
+    tagline: "Launch Magnetic-branded VPS infrastructure with clean provisioning and operator visibility.",
     description:
-      "Provision premium VPS hosting with Magnetic as the customer-facing brand while using IONOS-backed reseller and cloud workflows behind the scenes for contract creation, infrastructure orchestration, and delivery tracking.",
+      "Provision premium VPS hosting with Magnetic as the customer-facing brand while keeping orchestration, delivery tracking, and admin visibility tightly controlled behind the scenes.",
     imageLabel: "Managed VPS Control Plane",
-    highlights: ["IONOS-backed provisioning", "Magnetic-branded delivery", "Admin-visible fulfillment workflow"],
+    highlights: ["Managed provisioning", "Magnetic-branded delivery", "Admin-visible fulfillment workflow"],
     benefits: [
       "Sell VPS infrastructure directly on your platform without pushing customers into a separate provider UI first.",
       "Keep reseller and cloud provisioning logic organized behind admin-controlled provider settings.",

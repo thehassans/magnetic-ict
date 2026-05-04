@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowRight, Check, Clock3, Cpu, Globe2, HardDrive, Server, Shield, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, Clock3, Cpu, Globe2, HardDrive, Server, Shield, Sparkles } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { HostingConfigurationSummary } from "@/components/commerce/hosting-configuration-summary";
 import { useCommerce } from "@/components/commerce/commerce-provider";
@@ -15,8 +15,8 @@ import { cn } from "@/lib/utils";
 const hostingFeatureCards = [
   {
     icon: Server,
-    title: "IONOS-backed infrastructure",
-    description: "Provision Magnetic-branded VPS capacity on top of your configured partner cloud workflow."
+    title: "Managed cloud infrastructure",
+    description: "Provision Magnetic-branded VPS capacity with a clean operator-first workflow."
   },
   {
     icon: Shield,
@@ -40,8 +40,8 @@ const hostingFeatureCards = [
   },
   {
     icon: HardDrive,
-    title: "Add-ons & domain flow",
-    description: "Bundle add-ons, optional domain registration, and privacy settings into the same purchase journey."
+    title: "Add-ons & provisioning",
+    description: "Bundle add-ons into the same purchase journey for a tighter premium checkout flow."
   }
 ] as const;
 
@@ -129,6 +129,7 @@ export function HostingServicePage({ service, hostingProviderConfig }: HostingSe
             basePrice={service.tiers[0]?.price ?? 0}
             value={hostingSelection}
             onChange={(selection) => setHostingSelection(selection)}
+            defaultOpen
           />
         </div>
       </section>
@@ -197,10 +198,10 @@ export function HostingServicePage({ service, hostingProviderConfig }: HostingSe
             ))}
 
             {[
-              { key: "domain", label: "Domain registration", enabled: true },
-              { key: "privacy", label: "Privacy protection", enabled: true },
               { key: "addons", label: "Optional add-ons", enabled: enabledAddons.length > 0 },
-              { key: "tracking", label: "Provision tracking", enabled: true }
+              { key: "tracking", label: "Provision tracking", enabled: true },
+              { key: "panel-access", label: "Panel access", enabled: enabledControlPanels.length > 0 },
+              { key: "region-status", label: "Region status", enabled: enabledLocations.length > 0 }
             ].map((row, rowIndex) => (
               <div
                 key={row.key}
@@ -212,7 +213,7 @@ export function HostingServicePage({ service, hostingProviderConfig }: HostingSe
                 <div className="p-4 text-sm font-medium text-slate-600 dark:text-slate-300">{row.label}</div>
                 {plans.map((plan) => (
                   <div key={`${plan.id}-${row.key}`} className={cn("flex items-center justify-center p-4", plan.popular ? "bg-slate-950/[0.03] dark:bg-white/[0.04]" : "")}>
-                    {row.enabled ? <Check className="h-4 w-4 text-emerald-500" /> : <X className="h-4 w-4 text-slate-300 dark:text-slate-600" />}
+                    {row.enabled ? <Check className="h-4 w-4 text-emerald-500" /> : null}
                   </div>
                 ))}
               </div>

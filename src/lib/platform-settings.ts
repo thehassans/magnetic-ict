@@ -122,7 +122,7 @@ export const defaultWelcomeEmailConfig: WelcomeEmailSettings = {
 export const defaultDomainProviderConfig: DomainProviderSettings = {
   enabled: true,
   mode: "manual",
-  providerLabel: "IONOS / Registrar Automation",
+  providerLabel: "Registrar automation",
   automationEndpoint: "",
   automationToken: "",
   checkoutProvider: "STRIPE",
@@ -146,10 +146,10 @@ export const defaultDomainProviderConfig: DomainProviderSettings = {
 export const defaultHostingProviderConfig: HostingProviderSettings = {
   enabled: false,
   mode: "manual",
-  resellerBaseUrl: "https://api.ionos.com",
+  resellerBaseUrl: "",
   resellerUsername: "",
   resellerPassword: "",
-  cloudBaseUrl: "https://api.ionos.com",
+  cloudBaseUrl: "",
   cloudToken: "",
   cloudContractNumber: "",
   defaultLocation: "de/fra",

@@ -7,9 +7,16 @@ import { Link } from "@/i18n/navigation";
 import { CheckoutButton } from "@/components/commerce/checkout-button";
 import { HostingConfigurationSummary } from "@/components/commerce/hosting-configuration-summary";
 import { useCommerce } from "@/components/commerce/commerce-provider";
+import { HostingConfigurator } from "@/components/services/hosting-configurator";
+import { createDefaultHostingSelection } from "@/lib/hosting-commerce";
+import type { HostingProviderSettings } from "@/lib/hosting-types";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
+import { serviceCatalog } from "@/lib/service-catalog";
 import { reviews } from "@/lib/reviews";
 import { cn } from "@/lib/utils";
+
+const hostingService = serviceCatalog.find((service) => service.id === "magneticVpsHosting");
+const hostingTierPriceMap = new Map(hostingService?.tiers.map((tier) => [tier.id, tier.price] as const) ?? []);
 
 function CartReviewCard({ review }: { review: typeof reviews[number] }) {
   return (
@@ -33,8 +40,8 @@ function CartReviewCard({ review }: { review: typeof reviews[number] }) {
   );
 }
 
-export function CartPageContent() {
-  const { items, subtotal, removeItem, clearCart } = useCommerce();
+export function CartPageContent({ hostingProviderConfig }: { hostingProviderConfig: HostingProviderSettings }) {
+  const { items, subtotal, removeItem, clearCart, updateItem } = useCommerce();
   const t = useTranslations("Commerce");
   const navigation = useTranslations("Navigation");
 
@@ -117,7 +124,27 @@ export function CartPageContent() {
                     <div>
                       <h3 className="text-lg font-semibold tracking-tight text-slate-950 dark:text-white">{getServiceTitle(navigation, item.serviceId)}</h3>
                       <p className="mt-1 text-[12px] uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">{getLocalizedTierName(t, item.tierId, item.tierId)}</p>
-                      {item.hostingSummary?.length ? <HostingConfigurationSummary lines={item.hostingSummary} tone="subtle" className="mt-4" /> : null}
+                      {item.serviceId === "magneticVpsHosting" ? (
+                        <div className="mt-4 space-y-3">
+                          <HostingConfigurator
+                            settings={hostingProviderConfig}
+                            basePrice={hostingTierPriceMap.get(item.tierId) ?? item.price}
+                            value={item.hostingConfiguration ?? createDefaultHostingSelection(hostingProviderConfig)}
+                            onChange={(selection, summaryLines, totalPrice) => {
+                              updateItem(item.serviceId, item.tierId, {
+                                hostingConfiguration: selection,
+                                hostingSummary: summaryLines,
+                                price: totalPrice
+                              });
+                            }}
+                            compact
+                            defaultOpen={false}
+                          />
+                          {item.hostingSummary?.length ? <HostingConfigurationSummary lines={item.hostingSummary} tone="subtle" /> : null}
+                        </div>
+                      ) : item.hostingSummary?.length ? (
+                        <HostingConfigurationSummary lines={item.hostingSummary} tone="subtle" className="mt-4" />
+                      ) : null}
                     </div>
                   </div>
                   <button
