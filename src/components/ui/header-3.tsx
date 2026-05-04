@@ -103,10 +103,7 @@ export function Header({
   const scrolled = useScroll(10);
   const t = useTranslations("Navigation");
   const signInHref = "/customer/sign-in?callback=/dashboard";
-
-  if (pathname.startsWith(`/${locale}/dashboard`)) {
-    return null;
-  }
+  const hideOnDashboard = pathname.startsWith(`/${locale}/dashboard`);
 
   const productLinks = React.useMemo<LinkItem[]>(() => {
     return visibleServiceMenuItems.map((item) => ({
@@ -196,6 +193,10 @@ export function Header({
 
   function handleSignOut() {
     void signOut({ redirectTo: `/${locale}` });
+  }
+
+  if (hideOnDashboard) {
+    return null;
   }
 
   return (
