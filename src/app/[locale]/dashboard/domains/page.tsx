@@ -17,17 +17,17 @@ export default async function DashboardDomainsPage({ params }: { params: Promise
   const snapshots = await Promise.all(domains.map((domain) => getManagedDomainSnapshot(session.user.id, domain.id)));
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="space-y-6">
       <section className="rounded-[36px] border border-slate-200 bg-white p-8 shadow-[0_16px_50px_rgba(15,23,42,0.05)] sm:p-10">
         <p className="text-sm uppercase tracking-[0.28em] text-slate-500">Domain management</p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">Your domains</h1>
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">Your domains</h1>
         <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">Manage DNS, WHOIS, nameservers, and renewal activity from your signed-in Magnetic ICT dashboard.</p>
         <div className="mt-8 flex flex-wrap gap-4">
           <Link href="/domains" locale={locale} className="inline-flex h-12 items-center justify-center rounded-full bg-slate-950 px-6 text-sm font-semibold text-white transition hover:bg-slate-800">
             Search another domain
           </Link>
-          <Link href="/dashboard" locale={locale} className="inline-flex h-12 items-center justify-center rounded-full border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
-            Back to dashboard
+          <Link href="/dashboard/orders" locale={locale} className="inline-flex h-12 items-center justify-center rounded-full border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
+            Open orders
           </Link>
         </div>
       </section>
@@ -39,6 +39,6 @@ export default async function DashboardDomainsPage({ params }: { params: Promise
           <DomainManagementDashboard initialSnapshots={snapshots} />
         )}
       </section>
-    </main>
+    </div>
   );
 }

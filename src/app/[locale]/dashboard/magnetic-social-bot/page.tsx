@@ -24,7 +24,7 @@ export default async function MagneticSocialBotDashboardPage() {
   const settings = await getPlatformSettings();
 
   return (
-    <main className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
+    <div className="space-y-6">
       <section className="rounded-[36px] border border-violet-100 bg-white/90 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60 sm:p-10">
         <div className="flex flex-wrap items-center gap-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-xs uppercase tracking-[0.28em] text-cyan-700 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-200">
@@ -54,6 +54,6 @@ export default async function MagneticSocialBotDashboardPage() {
         metaAppId={settings.socialBotConfig.metaAppId}
         metaConfigId={settings.socialBotConfig.metaConfigId}
       />
-    </main>
+    </div>
   );
 }

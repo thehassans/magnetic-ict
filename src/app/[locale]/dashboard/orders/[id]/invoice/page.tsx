@@ -54,12 +54,12 @@ export default async function InvoicePage({
 
   if (!hasDatabase) {
     return (
-      <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="space-y-6">
         <section className="rounded-[36px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60 sm:p-10">
           <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl">{t("invoiceTitle")}</h1>
           <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">{t("adminDatabaseRequired")}</p>
         </section>
-      </main>
+      </div>
     );
   }
 
@@ -140,7 +140,7 @@ export default async function InvoicePage({
   };
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="space-y-6">
       <section className="rounded-[36px] border border-violet-100 bg-white/85 p-8 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60 sm:p-10">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div>
@@ -205,7 +205,7 @@ export default async function InvoicePage({
 
         <div className="mt-8 flex flex-wrap gap-4">
           <Link
-            href="/dashboard"
+            href="/dashboard/orders"
             locale={locale}
             className="inline-flex h-12 items-center justify-center rounded-full bg-white px-6 text-sm font-semibold text-slate-950 transition hover:-translate-y-0.5"
           >
@@ -221,6 +221,6 @@ export default async function InvoicePage({
           ) : null}
         </div>
       </section>
-    </main>
+    </div>
   );
 }
