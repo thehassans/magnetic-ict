@@ -1,4 +1,4 @@
-import { Activity, BarChart3, Globe2, Receipt } from "lucide-react";
+import { Bot, Globe2, Receipt } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { Link } from "@/i18n/navigation";
@@ -77,9 +77,46 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   const visibleDomainOrders = domainOrders.filter(
     (order) => order.status !== "failed" && order.status !== "cancelled"
   ).length;
-  const activeServices = visibleOrders.filter((order: DashboardOrder) => order.status === "PAID" || order.status === "FULFILLED").length;
-  const pendingOrders = visibleOrders.filter((order: DashboardOrder) => order.status === "PENDING").length;
   const activeDomains = managedDomains.filter((domain) => domain.status === "active").length;
+
+  const purchasedServices = [
+    ...(visibleOrders.length > 0
+      ? [
+          {
+            key: "orders",
+            title: "Orders & billing",
+            description: `${visibleOrders.length} purchased order${visibleOrders.length === 1 ? "" : "s"}`,
+            href: "/dashboard/orders",
+            actionLabel: "Open orders",
+            Icon: Receipt
+          }
+        ]
+      : []),
+    ...(managedDomains.length > 0 || visibleDomainOrders > 0
+      ? [
+          {
+            key: "domains",
+            title: "Domains",
+            description: `${managedDomains.length} managed domain${managedDomains.length === 1 ? "" : "s"}`,
+            href: "/dashboard/domains",
+            actionLabel: "Manage domains",
+            Icon: Globe2
+          }
+        ]
+      : []),
+    ...(hasMagneticSocialBotAccess
+      ? [
+          {
+            key: "social-bot",
+            title: "Magnetic Social Bot",
+            description: "Open your connected inbox and automation workspace",
+            href: "/dashboard/magnetic-social-bot",
+            actionLabel: "Open workspace",
+            Icon: Bot
+          }
+        ]
+      : [])
+  ];
 
   const getStatusLabel = (status: DashboardOrder["status"]) => {
     switch (status) {
@@ -131,11 +168,11 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   return (
     <div className="space-y-6">
       <section className="rounded-[28px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03] sm:p-6">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">{t("dashboardEyebrow")}</div>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">Workspace</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">Your assigned services, active orders, and purchased domains live here.</p>
+            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">Purchased services</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">A clean view of the services you already bought and can manage from your dashboard.</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link href="/dashboard/orders" locale={locale} className="inline-flex h-10 items-center justify-center rounded-full bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100">
@@ -148,77 +185,50 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-        <div className="rounded-[28px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03] sm:p-6">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">Assigned services</div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <Link href="/dashboard/orders" locale={locale} className="rounded-[22px] border border-slate-200/70 bg-slate-50/80 p-4 transition hover:border-slate-300 hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.05]">
-              <div className="flex items-center justify-between">
-                <Receipt className="h-4 w-4 text-slate-500 dark:text-slate-300" />
-                <span className="text-xs text-slate-400 dark:text-slate-500">Assigned</span>
-              </div>
-              <div className="mt-4 text-base font-semibold text-slate-950 dark:text-white">Billing & orders</div>
-              <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{visibleOrders.length} visible orders</div>
-            </Link>
-            <Link href="/dashboard/domains" locale={locale} className="rounded-[22px] border border-slate-200/70 bg-slate-50/80 p-4 transition hover:border-slate-300 hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.05]">
-              <div className="flex items-center justify-between">
-                <Globe2 className="h-4 w-4 text-slate-500 dark:text-slate-300" />
-                <span className="text-xs text-slate-400 dark:text-slate-500">Assigned</span>
-              </div>
-              <div className="mt-4 text-base font-semibold text-slate-950 dark:text-white">Domains</div>
-              <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{managedDomains.length} managed domains</div>
-            </Link>
-            {hasMagneticSocialBotAccess ? (
-              <Link href="/dashboard/magnetic-social-bot" locale={locale} className="rounded-[22px] border border-slate-200/70 bg-slate-50/80 p-4 transition hover:border-slate-300 hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.05] sm:col-span-2">
-                <div className="flex items-center justify-between">
-                  <Activity className="h-4 w-4 text-slate-500 dark:text-slate-300" />
-                  <span className="text-xs text-slate-400 dark:text-slate-500">Assigned</span>
-                </div>
-                <div className="mt-4 text-base font-semibold text-slate-950 dark:text-white">Magnetic Social Bot</div>
-                <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">Open the inbox, onboarding flow, and automation workspace.</div>
-              </Link>
-            ) : null}
+      <section className="rounded-[28px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03] sm:p-6">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">Purchased services</div>
+        {purchasedServices.length === 0 ? (
+          <div className="mt-4 rounded-[24px] border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-600 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-300">
+            No purchased services are available in this workspace yet.
           </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-[28px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03]">
-          <Activity className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
-          <div className="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">Active services</div>
-          <div className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">{activeServices}</div>
-        </div>
-          <div className="rounded-[28px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03]">
-          <BarChart3 className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
-          <div className="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">Pending orders</div>
-          <div className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">{pendingOrders}</div>
-        </div>
-          <div className="rounded-[28px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03]">
-          <Globe2 className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
-          <div className="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">Managed domains</div>
-          <div className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">{managedDomains.length}</div>
-        </div>
-          <div className="rounded-[28px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03]">
-          <Receipt className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
-          <div className="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">Visible orders</div>
-          <div className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">{visibleOrders.length}</div>
-        </div>
-        </div>
+        ) : (
+          <div className="mt-4 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            {purchasedServices.map(({ key, title, description, href, actionLabel, Icon }) => (
+              <div key={key} className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-5 dark:border-white/10 dark:bg-white/[0.04]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-700 dark:bg-white/[0.08] dark:text-slate-200">
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div className="mt-4 text-lg font-semibold text-slate-950 dark:text-white">{title}</div>
+                <div className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{description}</div>
+                <div className="mt-5">
+                  <Link
+                    href={href}
+                    locale={locale}
+                    className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                  >
+                    {actionLabel}
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+      <section className="grid gap-4 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)]">
         <div className="rounded-[28px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03] sm:p-6">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">Account snapshot</div>
+          <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">Service summary</div>
           <div className="mt-4 space-y-3">
             <div className="flex items-center justify-between rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
-              <span className="text-sm text-slate-500 dark:text-slate-400">Active domains</span>
+              <span className="text-sm text-slate-500 dark:text-slate-400">Purchased services</span>
+              <span className="text-lg font-semibold text-slate-950 dark:text-white">{purchasedServices.length}</span>
+            </div>
+            <div className="flex items-center justify-between rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
+              <span className="text-sm text-slate-500 dark:text-slate-400">Managed domains</span>
               <span className="text-lg font-semibold text-slate-950 dark:text-white">{activeDomains}</span>
             </div>
             <div className="flex items-center justify-between rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
-              <span className="text-sm text-slate-500 dark:text-slate-400">Visible domain orders</span>
-              <span className="text-lg font-semibold text-slate-950 dark:text-white">{visibleDomainOrders}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
-              <span className="text-sm text-slate-500 dark:text-slate-400">Recent service orders</span>
+              <span className="text-sm text-slate-500 dark:text-slate-400">Active orders</span>
               <span className="text-lg font-semibold text-slate-950 dark:text-white">{visibleOrders.length}</span>
             </div>
           </div>
@@ -323,24 +333,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
         )}
       </section>
 
-      {hasMagneticSocialBotAccess ? (
-        <section className="rounded-[28px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03] sm:p-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">Assigned service</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">Magnetic Social Bot</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
-            Open your onboarding wizard, connect channels, upload business documents, and manage the unified inbox.
-          </p>
-          <div className="mt-6">
-            <Link
-              href="/dashboard/magnetic-social-bot"
-              locale={locale}
-              className="inline-flex h-10 items-center justify-center rounded-full bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950"
-            >
-              Open Command Center
-            </Link>
-          </div>
-        </section>
-      ) : null}
     </div>
   );
 }
