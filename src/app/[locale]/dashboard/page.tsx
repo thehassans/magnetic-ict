@@ -1,9 +1,10 @@
-import { Bot, Globe2, Receipt } from "lucide-react";
+import { Bot, Globe2, Receipt, Server } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { Link } from "@/i18n/navigation";
 import { getDomainOrdersForUser } from "@/lib/domain-db";
 import { getManagedDomainsForUser } from "@/lib/domain-management-db";
+import { userHasMagneticVpsAccess } from "@/lib/hosting-access";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
 import { prisma } from "@/lib/prisma";
 import { userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
@@ -37,7 +38,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   const navigation = await getTranslations("Navigation");
   const session = await auth();
 
-  const [orders, domainOrders, managedDomains, hasMagneticSocialBotAccess] = session?.user?.id
+  const [orders, domainOrders, managedDomains, hasMagneticVpsAccess, hasMagneticSocialBotAccess] = session?.user?.id
     ? await Promise.all([
         prisma.order.findMany({
           where: { userId: session.user.id },
@@ -67,9 +68,10 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
         }),
         getDomainOrdersForUser(session.user.id),
         getManagedDomainsForUser(session.user.id),
+        userHasMagneticVpsAccess(session.user.id),
         userHasMagneticSocialBotAccess(session.user.id)
       ])
-    : [[], [], [], false];
+    : [[], [], [], false, false];
 
   const visibleOrders = orders.filter(
     (order: DashboardOrder) => order.status !== "FAILED" && order.status !== "CANCELLED"
@@ -101,6 +103,18 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
             href: "/dashboard/domains",
             actionLabel: "Manage domains",
             Icon: Globe2
+          }
+        ]
+      : []),
+    ...(hasMagneticVpsAccess
+      ? [
+          {
+            key: "hosting",
+            title: "Hosting",
+            description: "Open your VPS workspace and access your hosting control panel",
+            href: "/dashboard/hosting",
+            actionLabel: "Open hosting",
+            Icon: Server
           }
         ]
       : []),

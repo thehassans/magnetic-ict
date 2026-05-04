@@ -4,6 +4,7 @@ import {
   findOneMongoDocument,
   upsertMongoDocument
 } from "@/lib/social-bot-db";
+import type { HostingProvisionAccess } from "@/lib/hosting-types";
 
 export type HostingProvisionStatus =
   | "pending"
@@ -68,22 +69,81 @@ export type HostingProvisionRecord = {
     volumeId: string | null;
     location: string | null;
   };
+  access: HostingProvisionAccess;
 };
 
 export const hostingCollections = {
   provisions: "HostingProvisions"
 } as const;
 
+const defaultHostingProvisionAccess: HostingProvisionAccess = {
+  panel: "none",
+  panelLabel: null,
+  loginUrl: null,
+  username: null,
+  isReady: false,
+  notes: null
+};
+
+function normalizeHostingProvisionAccess(value: Partial<HostingProvisionAccess> | null | undefined): HostingProvisionAccess {
+  return {
+    panel: value?.panel === "plesk" || value?.panel === "cpanel" || value?.panel === "directadmin" || value?.panel === "custom" ? value.panel : defaultHostingProvisionAccess.panel,
+    panelLabel: typeof value?.panelLabel === "string" ? value.panelLabel : defaultHostingProvisionAccess.panelLabel,
+    loginUrl: typeof value?.loginUrl === "string" ? value.loginUrl : defaultHostingProvisionAccess.loginUrl,
+    username: typeof value?.username === "string" ? value.username : defaultHostingProvisionAccess.username,
+    isReady: typeof value?.isReady === "boolean" ? value.isReady : defaultHostingProvisionAccess.isReady,
+    notes: typeof value?.notes === "string" ? value.notes : defaultHostingProvisionAccess.notes
+  };
+}
+
+function normalizeHostingProvisionRecord(record: HostingProvisionRecord | null) {
+  if (!record) {
+    return null;
+  }
+
+  const legacyRecord = record as HostingProvisionRecord & {
+    access?: Partial<HostingProvisionAccess>;
+  };
+
+  return {
+    ...record,
+    access: normalizeHostingProvisionAccess(legacyRecord.access)
+  } satisfies HostingProvisionRecord;
+}
+
 export function createHostingProvisionId() {
   return `hosting_${randomUUID()}`;
 }
 
 export async function getHostingProvisionByOrderId(orderId: string) {
-  return findOneMongoDocument<HostingProvisionRecord>(hostingCollections.provisions, { orderId });
+  return normalizeHostingProvisionRecord(await findOneMongoDocument<HostingProvisionRecord>(hostingCollections.provisions, { orderId }));
 }
 
 export async function getHostingProvisions() {
-  return findMongoDocuments<HostingProvisionRecord>(hostingCollections.provisions, {}, { sort: { updatedAt: -1 }, limit: 200 });
+  const records = await findMongoDocuments<HostingProvisionRecord>(hostingCollections.provisions, {}, { sort: { updatedAt: -1 }, limit: 200 });
+  return records.map((record) => normalizeHostingProvisionRecord(record)).filter((record): record is HostingProvisionRecord => Boolean(record));
+}
+
+export async function getHostingProvisionsForUser(userId: string) {
+  const records = await findMongoDocuments<HostingProvisionRecord>(hostingCollections.provisions, { userId }, { sort: { updatedAt: -1 }, limit: 100 });
+  return records.map((record) => normalizeHostingProvisionRecord(record)).filter((record): record is HostingProvisionRecord => Boolean(record));
+}
+
+export async function updateHostingProvisionAccess(orderId: string, access: HostingProvisionAccess) {
+  const current = await getHostingProvisionByOrderId(orderId);
+
+  if (!current) {
+    return null;
+  }
+
+  const nextRecord: HostingProvisionRecord = {
+    ...current,
+    access: normalizeHostingProvisionAccess(access),
+    updatedAt: new Date().toISOString()
+  };
+
+  await upsertHostingProvision(nextRecord);
+  return nextRecord;
 }
 
 export async function upsertHostingProvision(record: HostingProvisionRecord) {
@@ -107,7 +167,8 @@ export async function upsertHostingProvision(record: HostingProvisionRecord) {
       configuration: record.configuration,
       domain: record.domain,
       reseller: record.reseller,
-      cloud: record.cloud
+      cloud: record.cloud,
+      access: normalizeHostingProvisionAccess(record.access)
     },
     {
       _id: record._id,

@@ -369,7 +369,18 @@ export function AdminSettingsClient({
           <Input label="Cloud contract number" value={hostingState.cloudContractNumber} onChange={(value) => setHostingState((current) => ({ ...current, cloudContractNumber: value }))} />
           <Input label="Default location" value={hostingState.defaultLocation} onChange={(value) => setHostingState((current) => ({ ...current, defaultLocation: value }))} />
           <Input label="Default image alias" value={hostingState.defaultImageAlias} onChange={(value) => setHostingState((current) => ({ ...current, defaultImageAlias: value }))} />
+          <Input label="Customer panel label" value={hostingState.customerPanelLabel} onChange={(value) => setHostingState((current) => ({ ...current, customerPanelLabel: value }))} />
+          <Input label="Customer panel URL template" value={hostingState.customerPanelUrlTemplate} onChange={(value) => setHostingState((current) => ({ ...current, customerPanelUrlTemplate: value }))} />
         </div>
+        <label className="mt-6 block space-y-2 text-sm">
+          <span className="font-semibold text-slate-700">Customer panel help text</span>
+          <textarea
+            value={hostingState.customerPanelHelpText}
+            onChange={(event) => setHostingState((current) => ({ ...current, customerPanelHelpText: event.target.value }))}
+            rows={3}
+            className="w-full rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white"
+          />
+        </label>
         <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
           <div className="font-semibold text-slate-950">Provisioning mode</div>
           <p className="mt-2">
@@ -377,6 +388,9 @@ export function AdminSettingsClient({
           </p>
           <p>
             <span className="font-medium text-slate-950">Live:</span> call the IONOS reseller API for contracts/admins and the cloud API for data center and server provisioning during fulfillment.
+          </p>
+          <p>
+            <span className="font-medium text-slate-950">URL template:</span> use placeholders like {"{orderId}"}, {"{email}"}, {"{contractId}"}, {"{adminId}"}, {"{serverId}"}, and {"{datacenterId}"}.
           </p>
         </div>
         <HostingConfigEditor value={hostingState} onChange={setHostingState} />

@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useMemo, useState, useTransition } from "react";
-import { Bot, ChevronRight, Globe, LayoutDashboard, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Receipt, X } from "lucide-react";
+import { Bot, ChevronRight, Globe, LayoutDashboard, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Receipt, Server, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/branding/brand-logo";
@@ -14,6 +14,7 @@ type CustomerDashboardShellProps = {
   locale: string;
   userName?: string | null;
   userEmail?: string | null;
+  hasMagneticVpsAccess?: boolean;
   hasMagneticSocialBotAccess?: boolean;
 };
 
@@ -29,6 +30,7 @@ export function CustomerDashboardShell({
   locale,
   userName,
   userEmail,
+  hasMagneticVpsAccess = false,
   hasMagneticSocialBotAccess = false
 }: CustomerDashboardShellProps) {
   const pathname = usePathname() ?? "";
@@ -63,6 +65,15 @@ export function CustomerDashboardShell({
       }
     ];
 
+    if (hasMagneticVpsAccess) {
+      items.push({
+        href: "/dashboard/hosting",
+        label: "Hosting",
+        Icon: Server,
+        match: (value) => value.startsWith("/dashboard/hosting")
+      });
+    }
+
     if (hasMagneticSocialBotAccess) {
       items.push({
         href: "/dashboard/magnetic-social-bot",
@@ -73,7 +84,7 @@ export function CustomerDashboardShell({
     }
 
     return items;
-  }, [hasMagneticSocialBotAccess]);
+  }, [hasMagneticSocialBotAccess, hasMagneticVpsAccess]);
 
   const initials = useMemo(() => {
     const source = userName?.trim() || userEmail?.trim() || "M";

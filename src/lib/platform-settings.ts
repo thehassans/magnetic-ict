@@ -156,6 +156,9 @@ export const defaultHostingProviderConfig: HostingProviderSettings = {
   defaultImageAlias: "ubuntu:latest",
   createResellerContracts: true,
   createContractAdmins: false,
+  customerPanelLabel: "Plesk login",
+  customerPanelUrlTemplate: "",
+  customerPanelHelpText: "Use the panel login below to manage websites, mail, databases, and hosting settings.",
   operatingSystems: [
     {
       id: "ubuntu-24-04",
@@ -557,6 +560,9 @@ export function normalizeHostingProviderConfig(value: unknown): HostingProviderS
     defaultImageAlias: coerceString(value.defaultImageAlias, defaultHostingProviderConfig.defaultImageAlias),
     createResellerContracts: coerceBoolean(value.createResellerContracts, defaultHostingProviderConfig.createResellerContracts),
     createContractAdmins: coerceBoolean(value.createContractAdmins, defaultHostingProviderConfig.createContractAdmins),
+    customerPanelLabel: coerceString(value.customerPanelLabel, defaultHostingProviderConfig.customerPanelLabel),
+    customerPanelUrlTemplate: coerceString(value.customerPanelUrlTemplate, defaultHostingProviderConfig.customerPanelUrlTemplate),
+    customerPanelHelpText: coerceString(value.customerPanelHelpText, defaultHostingProviderConfig.customerPanelHelpText),
     operatingSystems: normalizeHostingOperatingSystems(value.operatingSystems, defaultHostingProviderConfig.operatingSystems),
     controlPanels: normalizeHostingControlPanels(value.controlPanels, defaultHostingProviderConfig.controlPanels),
     addons: normalizeHostingAddons(value.addons, defaultHostingProviderConfig.addons),

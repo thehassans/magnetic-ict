@@ -11,6 +11,9 @@ export type HostingProviderSettings = {
   defaultImageAlias: string;
   createResellerContracts: boolean;
   createContractAdmins: boolean;
+  customerPanelLabel: string;
+  customerPanelUrlTemplate: string;
+  customerPanelHelpText: string;
   operatingSystems: HostingOperatingSystemOption[];
   controlPanels: HostingControlPanelOption[];
   addons: HostingAddonOption[];
@@ -92,6 +95,17 @@ export type HostingPlanDefinition = {
   cores: number;
   ramMb: number;
   storageGb: number;
+};
+
+export type HostingAccessPanelType = "none" | "plesk" | "cpanel" | "directadmin" | "custom";
+
+export type HostingProvisionAccess = {
+  panel: HostingAccessPanelType;
+  panelLabel: string | null;
+  loginUrl: string | null;
+  username: string | null;
+  isReady: boolean;
+  notes: string | null;
 };
 
 export type HostingProvisionRequest = {

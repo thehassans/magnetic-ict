@@ -2,7 +2,7 @@ import { getHostingProviderSettings } from "@/lib/platform-settings";
 import { registerHostingProvisionDomainIfNeeded } from "@/lib/domain-provider";
 import { createHostingProvisionId, getHostingProvisionByOrderId, upsertHostingProvision, type HostingProvisionRecord } from "@/lib/hosting-db";
 import { getHostingPlanForTier } from "@/lib/hosting-plans";
-import type { HostingProviderSettings, HostingProvisionRequest } from "@/lib/hosting-types";
+import type { HostingProviderSettings, HostingProvisionAccess, HostingProvisionRequest } from "@/lib/hosting-types";
 
 function normalizeBaseUrl(value: string) {
   return value.replace(/\/$/, "");
@@ -172,9 +172,40 @@ async function attachBootVolume(settings: HostingProviderSettings, datacenterId:
   return payload.id ?? null;
 }
 
+function buildCustomerPanelUrl(settings: HostingProviderSettings, provision: HostingProvisionRecord) {
+  const template = settings.customerPanelUrlTemplate.trim();
+
+  if (!template) {
+    return null;
+  }
+
+  return template
+    .replaceAll("{orderId}", provision.orderId)
+    .replaceAll("{email}", encodeURIComponent(provision.customerEmail))
+    .replaceAll("{contractId}", provision.reseller.contractId ?? "")
+    .replaceAll("{adminId}", provision.reseller.adminId ?? "")
+    .replaceAll("{serverId}", provision.cloud.serverId ?? "")
+    .replaceAll("{datacenterId}", provision.cloud.datacenterId ?? "");
+}
+
+function createProvisionAccess(settings: HostingProviderSettings, request: HostingProvisionRequest, provision: HostingProvisionRecord): HostingProvisionAccess {
+  const controlPanelId = request.configuration.controlPanel?.id ?? "none";
+  const panel = controlPanelId === "plesk" || controlPanelId === "cpanel" || controlPanelId === "directadmin" ? controlPanelId : "none";
+  const loginUrl = buildCustomerPanelUrl(settings, provision);
+
+  return {
+    panel,
+    panelLabel: panel === "none" ? null : (settings.customerPanelLabel.trim() || request.configuration.controlPanel?.name || "Hosting panel"),
+    loginUrl,
+    username: provision.customerEmail,
+    isReady: panel !== "none" && Boolean(loginUrl),
+    notes: settings.customerPanelHelpText.trim() || null
+  };
+}
+
 function createProvisionRecord(request: HostingProvisionRequest, settings: HostingProviderSettings): HostingProvisionRecord {
   const now = new Date().toISOString();
-  return {
+  const provision: HostingProvisionRecord = {
     _id: createHostingProvisionId(),
     orderId: request.orderId,
     userId: request.userId,
@@ -226,8 +257,19 @@ function createProvisionRecord(request: HostingProvisionRequest, settings: Hosti
       serverId: null,
       volumeId: null,
       location: request.configuration.location?.value ?? settings.defaultLocation
+    },
+    access: {
+      panel: "none",
+      panelLabel: null,
+      loginUrl: null,
+      username: null,
+      isReady: false,
+      notes: null
     }
   };
+
+  provision.access = createProvisionAccess(settings, request, provision);
+  return provision;
 }
 
 export async function provisionMagneticVpsHosting(request: HostingProvisionRequest) {
@@ -262,6 +304,7 @@ export async function provisionMagneticVpsHosting(request: HostingProvisionReque
 
   provision.plan.imageAlias = request.configuration.operatingSystem?.imageAlias ?? provision.plan.imageAlias;
   provision.cloud.location = request.configuration.location?.value ?? provision.cloud.location;
+  provision.access = existing?.access?.isReady ? existing.access : createProvisionAccess(settings, request, provision);
 
   provision.updatedAt = new Date().toISOString();
   provision.errorMessage = null;

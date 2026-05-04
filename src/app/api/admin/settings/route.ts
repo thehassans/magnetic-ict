@@ -130,6 +130,9 @@ const requestSchema = z.discriminatedUnion("section", [
       defaultImageAlias: z.string().min(1),
       createResellerContracts: z.boolean(),
       createContractAdmins: z.boolean(),
+      customerPanelLabel: z.string(),
+      customerPanelUrlTemplate: z.string(),
+      customerPanelHelpText: z.string(),
       operatingSystems: z.array(
         z.object({
           id: z.string().min(1),
