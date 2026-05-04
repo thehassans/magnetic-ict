@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { MinimalFooter } from "@/components/ui/minimal-footer";
+import { RouteAwareFooter } from "@/components/layout/route-aware-footer";
 import { getFooterDetailsSettings } from "@/lib/platform-settings";
 
 type SiteFooterProps = {
@@ -12,5 +12,5 @@ export async function SiteFooter({ locale }: SiteFooterProps) {
     getFooterDetailsSettings()
   ]);
 
-  return <MinimalFooter locale={locale} description={t("description")} footerDetails={footerDetails} />;
+  return <RouteAwareFooter locale={locale} description={t("description")} footerDetails={footerDetails} />;
 }

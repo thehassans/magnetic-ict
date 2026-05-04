@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useMemo, useTransition } from "react";
-import { Activity, Bot, ChevronRight, Globe, LayoutDashboard, LogOut, Receipt, Search } from "lucide-react";
+import { Bot, ChevronRight, Globe, LayoutDashboard, LogOut, Receipt } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -84,24 +84,26 @@ export function CustomerDashboardShell({
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-      <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="xl:sticky xl:top-28 xl:h-[calc(100vh-8rem)]">
-          <div className="flex h-full flex-col gap-4 rounded-[32px] border border-slate-200/80 bg-white/88 p-4 shadow-[0_24px_80px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/72 dark:shadow-[0_24px_80px_rgba(2,6,23,0.45)] xl:p-5">
-            <div className="flex items-center justify-between gap-3 rounded-[24px] border border-slate-200/80 bg-slate-50/90 p-3 dark:border-white/10 dark:bg-white/[0.04]">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-950 text-sm font-semibold text-white dark:bg-white dark:text-slate-950">
-                  {initials}
-                </div>
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold text-slate-950 dark:text-white">{userName || "Customer workspace"}</div>
-                  <div className="truncate text-xs text-slate-500 dark:text-slate-400">{userEmail || "Signed in"}</div>
-                </div>
-              </div>
-              <ThemeToggle />
+    <main className="mx-auto max-w-[1600px] px-3 py-3 sm:px-4 lg:px-6 lg:py-4">
+      <div className="grid gap-4 xl:grid-cols-[248px_minmax(0,1fr)]">
+        <aside className="xl:sticky xl:top-4 xl:h-[calc(100vh-2rem)]">
+          <div className="flex h-full flex-col rounded-[28px] border border-slate-200/70 bg-white/82 p-3 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/78 dark:shadow-[0_18px_50px_rgba(2,6,23,0.36)]">
+            <div className="flex items-center justify-between px-1 pb-5 pt-1">
+              <ThemeToggle className="justify-start" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">Workspace</span>
             </div>
 
-            <nav className="space-y-1 rounded-[28px] border border-slate-200/80 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/[0.04]">
+            <div className="flex items-center gap-3 rounded-3xl border border-slate-200/70 bg-slate-50/80 px-3 py-3 dark:border-white/10 dark:bg-white/[0.03]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-sm font-semibold text-white dark:bg-white dark:text-slate-950">
+                  {initials}
+              </div>
+              <div className="min-w-0">
+                <div className="truncate text-sm font-semibold text-slate-950 dark:text-white">{userName || "Customer workspace"}</div>
+                <div className="truncate text-xs text-slate-500 dark:text-slate-400">{userEmail || "Signed in"}</div>
+              </div>
+            </div>
+
+            <nav className="mt-4 space-y-1 rounded-[28px] border border-slate-200/70 bg-slate-50/75 p-2 dark:border-white/10 dark:bg-white/[0.03]">
               {navItems.map(({ href, label, Icon, match }) => {
                 const active = match(normalizedPath);
 
@@ -111,18 +113,20 @@ export function CustomerDashboardShell({
                     href={href}
                     locale={locale}
                     className={cn(
-                      "flex items-center gap-3 rounded-[22px] px-4 py-3 text-sm font-medium transition",
+                      "flex items-center gap-3 rounded-[20px] px-3 py-3 text-sm font-medium transition",
                       active
-                        ? "bg-slate-950 text-white shadow-[0_16px_40px_rgba(15,23,42,0.16)] dark:bg-white dark:text-slate-950"
-                        : "text-slate-600 hover:bg-white hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/[0.06] dark:hover:text-white"
+                        ? "bg-slate-950 text-white shadow-[0_12px_30px_rgba(15,23,42,0.14)] dark:bg-white dark:text-slate-950"
+                        : "text-slate-600 hover:bg-white hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/[0.05] dark:hover:text-white"
                     )}
                   >
-                    <span className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-2xl",
+                    <span
+                      className={cn(
+                        "flex h-9 w-9 items-center justify-center rounded-2xl",
                       active
                         ? "bg-white/10 text-white dark:bg-slate-950/10 dark:text-slate-950"
                         : "bg-white text-slate-700 dark:bg-white/[0.08] dark:text-slate-200"
-                    )}>
+                      )}
+                    >
                       <Icon className="h-4 w-4" />
                     </span>
                     <span className="flex-1">{label}</span>
@@ -132,17 +136,23 @@ export function CustomerDashboardShell({
               })}
             </nav>
 
-            <div className="rounded-[28px] border border-slate-200/80 bg-slate-50/80 p-4 dark:border-white/10 dark:bg-white/[0.04]">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Quick actions</div>
-              <div className="mt-3 space-y-2">
-                <Link href="/domains" locale={locale} className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:text-slate-950 dark:bg-white/[0.06] dark:text-slate-200 dark:hover:text-white">
-                  <Search className="h-4 w-4" />
-                  Search new domains
-                </Link>
-                <Link href="/dashboard" locale={locale} className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:text-slate-950 dark:bg-white/[0.06] dark:text-slate-200 dark:hover:text-white">
-                  <Activity className="h-4 w-4" />
-                  Workspace overview
-                </Link>
+            <div className="mt-4 rounded-[28px] border border-slate-200/70 bg-slate-50/75 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">Access</div>
+              <div className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                <div className="flex items-center justify-between rounded-[18px] bg-white px-3 py-2.5 dark:bg-white/[0.04]">
+                  <span>Billing</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">Assigned</span>
+                </div>
+                <div className="flex items-center justify-between rounded-[18px] bg-white px-3 py-2.5 dark:bg-white/[0.04]">
+                  <span>Domains</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">Assigned</span>
+                </div>
+                {hasMagneticSocialBotAccess ? (
+                  <div className="flex items-center justify-between rounded-[18px] bg-white px-3 py-2.5 dark:bg-white/[0.04]">
+                    <span>Social Bot</span>
+                    <span className="text-xs text-slate-400 dark:text-slate-500">Assigned</span>
+                  </div>
+                ) : null}
               </div>
             </div>
 
@@ -150,7 +160,7 @@ export function CustomerDashboardShell({
               type="button"
               onClick={handleSignOut}
               disabled={isSigningOut}
-              className="mt-auto flex w-full items-center gap-3 rounded-[22px] border border-slate-200/80 bg-white/85 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:bg-white/[0.06] dark:hover:text-white"
+              className="mt-auto flex w-full items-center gap-3 rounded-[22px] border border-slate-200/70 bg-white/85 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:bg-white/[0.06] dark:hover:text-white"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 dark:bg-white/[0.08] dark:text-slate-200">
                 <LogOut className="h-4 w-4" />
@@ -160,7 +170,7 @@ export function CustomerDashboardShell({
           </div>
         </aside>
 
-        <section className="min-w-0 space-y-6">{children}</section>
+        <section className="min-w-0 rounded-[30px] border border-slate-200/70 bg-white/68 p-4 shadow-[0_12px_32px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/48 dark:shadow-[0_12px_32px_rgba(2,6,23,0.24)] sm:p-5 lg:p-6">{children}</section>
       </div>
     </main>
   );

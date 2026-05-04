@@ -4,6 +4,7 @@ import React from "react";
 import { createPortal } from "react-dom";
 import NextLink from "next/link";
 import { signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   Activity,
@@ -98,9 +99,14 @@ export function Header({
   hasMagneticSocialBotAccess = false
 }: HeaderProps) {
   const [open, setOpen] = React.useState(false);
+  const pathname = usePathname() ?? "";
   const scrolled = useScroll(10);
   const t = useTranslations("Navigation");
   const signInHref = "/customer/sign-in?callback=/dashboard";
+
+  if (pathname.startsWith(`/${locale}/dashboard`)) {
+    return null;
+  }
 
   const productLinks = React.useMemo<LinkItem[]>(() => {
     return visibleServiceMenuItems.map((item) => ({

@@ -120,41 +120,41 @@ export default async function DashboardOrdersPage({ params }: { params: Promise<
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[36px] border border-slate-200/80 bg-white/88 p-7 shadow-[0_24px_80px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/72 dark:shadow-[0_24px_80px_rgba(2,6,23,0.45)] sm:p-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      <section className="rounded-[28px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03] sm:p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-500 dark:text-slate-400">Billing workspace</div>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">Your orders</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">Track active invoices, payment states, and service history from your customer panel.</p>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">Assigned service</div>
+            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">Orders</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">Track invoices, payment states, and service history from your workspace.</p>
           </div>
-          <Link href="/dashboard" locale={locale} className="inline-flex h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.08]">
+          <Link href="/dashboard" locale={locale} className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.08]">
             Back to overview
           </Link>
         </div>
       </section>
 
-      <section className="grid gap-5 md:grid-cols-3">
-        <div className="rounded-[30px] border border-slate-200/80 bg-white/88 p-6 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/72">
+      <section className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-[24px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03]">
           <Receipt className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
           <div className="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">Visible orders</div>
           <div className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">{visibleOrders.length}</div>
         </div>
-        <div className="rounded-[30px] border border-slate-200/80 bg-white/88 p-6 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/72">
+        <div className="rounded-[24px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03]">
           <TimerReset className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
           <div className="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">Pending</div>
           <div className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">{pendingOrders}</div>
         </div>
-        <div className="rounded-[30px] border border-slate-200/80 bg-white/88 p-6 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/72">
+        <div className="rounded-[24px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03]">
           <Receipt className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
           <div className="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">Paid or fulfilled</div>
           <div className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">{paidOrders}</div>
         </div>
       </section>
 
-      <section className="rounded-[36px] border border-slate-200/80 bg-white/88 p-7 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/72 sm:p-8">
+      <section className="rounded-[28px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03] sm:p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-500 dark:text-slate-400">Recent activity</div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">Recent activity</div>
             <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">Order history</h2>
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400">{commerce("webhookPendingNote")}</p>
@@ -167,7 +167,7 @@ export default async function DashboardOrdersPage({ params }: { params: Promise<
         ) : (
           <div className="mt-6 space-y-4">
             {visibleOrders.map((order) => (
-              <div key={order.id} className="rounded-[28px] border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/[0.04]">
+              <div key={order.id} className="rounded-[24px] border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/[0.04]">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>
                     <div className="text-lg font-semibold text-slate-950 dark:text-white">
