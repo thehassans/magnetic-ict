@@ -1,68 +1,74 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { Star } from "lucide-react";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
-import { CircularTestimonials } from "@/components/ui/circular-testimonials";
-import { TestimonialsSection } from "@/components/ui/simple-animated-testimonials";
-import { developerTestimonials } from "@/lib/developer-testimonials";
 import { reviews } from "@/lib/reviews";
+import { cn } from "@/lib/utils";
 
 export function LiveReviewsMarquee() {
-  const t = useTranslations("Landing");
-  const testimonials = reviews.map((review) => ({
-    name: review.name,
-    designation: `${t(`reviewRoles.${review.id}`)} · ${review.company}`,
-    quote: t(`reviewContent.${review.id}`),
-    src: review.avatar,
-    company: review.company,
-    rating: review.rating,
-    badgeLabel: "Verified customer"
-  }));
-
   return (
-    <section id="home-reviews" className="space-y-10 py-8 sm:py-12">
-      <ScrollReveal className="space-y-4 text-center">
-        <div className="text-xs uppercase tracking-[0.3em] text-cyan-700 dark:text-cyan-300">{t("reviewsEyebrow")}</div>
-        <h2 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-          {t("reviewsTitle")}
-        </h2>
-        <p className="mx-auto max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
-          {t("reviewsDescription")}
-        </p>
-      </ScrollReveal>
-
-      <div className="space-y-8">
-        <div className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.18),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(167,139,250,0.16),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.96))] px-4 py-6 shadow-[0_28px_90px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(6,182,212,0.16),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.18),transparent_30%),linear-gradient(180deg,rgba(15,23,42,0.92),rgba(2,6,23,0.96))] sm:px-6 sm:py-8 lg:px-10 lg:py-10">
-          <div className="mb-6 space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">Customers</div>
-            <p className="max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
-              Real customer feedback from operators who trust MagneticICT for performance, security, and day-to-day reliability.
+    <section id="home-reviews" className="py-10 sm:py-14">
+      <ScrollReveal>
+        <div className="rounded-[2rem] border border-slate-200 bg-white px-5 py-8 shadow-[0_24px_80px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-slate-950 sm:px-8 sm:py-10 lg:px-10">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="text-[11px] font-medium uppercase tracking-[0.32em] text-slate-400 dark:text-slate-500">Customer reviews</div>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+              Trusted by customers buying hosting and premium infrastructure
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
+              A cleaner, more reference-style testimonial section with direct customer voices, service labels, and premium visual treatment.
             </p>
           </div>
 
-          <CircularTestimonials
-            testimonials={testimonials}
-            autoplay
-            fontSizes={{
-              name: "clamp(1.75rem, 2vw, 2.5rem)",
-              designation: "1rem",
-              quote: "clamp(1rem, 1.4vw, 1.25rem)"
-            }}
-          />
-        </div>
+          <div className="mt-10 grid gap-5 lg:grid-cols-3">
+            {reviews.slice(0, 3).map((review, index) => (
+              <article
+                key={review.id}
+                className={cn(
+                  "rounded-[1.75rem] border p-6 shadow-[0_18px_60px_rgba(15,23,42,0.04)] transition duration-300 hover:-translate-y-1",
+                  index === 1
+                    ? "border-slate-950 bg-slate-950 text-white dark:border-white dark:bg-white dark:text-slate-950"
+                    : "border-slate-200 bg-slate-50/70 text-slate-950 dark:border-white/10 dark:bg-white/[0.03] dark:text-white"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 overflow-hidden rounded-full ring-1 ring-slate-200 dark:ring-white/10">
+                    <img src={review.avatar} alt={review.name} className="h-full w-full object-cover" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className={cn("truncate text-sm font-semibold", index === 1 ? "text-white dark:text-slate-950" : "text-slate-950 dark:text-white")}>{review.name}</div>
+                    <div className={cn("truncate text-[11px] uppercase tracking-[0.18em]", index === 1 ? "text-white/65 dark:text-slate-700" : "text-slate-400 dark:text-slate-500")}>{review.service}</div>
+                  </div>
+                </div>
 
-        <div className="rounded-[2rem] border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.14),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(167,139,250,0.12),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))] px-4 py-6 shadow-[0_28px_90px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.12),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(139,92,246,0.16),transparent_30%),linear-gradient(180deg,rgba(15,23,42,0.92),rgba(2,6,23,0.96))] sm:px-6 sm:py-8">
-          <TestimonialsSection
-            title="Developers across Bangladesh & South Asia"
-            subtitle="Feedback from engineers who value clean architecture, strong delivery quality, and polished customer-facing implementation."
-            testimonials={[...developerTestimonials]}
-            autoRotateInterval={6500}
-            trustedCompanies={["Dhaka", "Chattogram", "Sylhet", "Colombo", "Karachi"]}
-            trustedCompaniesTitle="Regional developer voices"
-            className="py-0"
-          />
+                <div className="mt-5 flex items-center gap-0.5">
+                  {Array.from({ length: 5 }).map((_, starIndex) => (
+                    <Star
+                      key={starIndex}
+                      className={cn(
+                        "h-4 w-4",
+                        starIndex < Math.floor(review.rating)
+                          ? "fill-amber-400 text-amber-400"
+                          : index === 1
+                            ? "fill-white/15 text-white/15 dark:fill-slate-300/30 dark:text-slate-300/30"
+                            : "fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700"
+                      )}
+                    />
+                  ))}
+                </div>
+
+                <p className={cn("mt-4 text-sm leading-7", index === 1 ? "text-white/82 dark:text-slate-700" : "text-slate-600 dark:text-slate-300")}>
+                  “{review.comment}”
+                </p>
+
+                <div className={cn("mt-5 text-[11px] uppercase tracking-[0.22em]", index === 1 ? "text-white/55 dark:text-slate-700" : "text-slate-400 dark:text-slate-500")}>
+                  {review.company}
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
-      </div>
+      </ScrollReveal>
     </section>
   );
 }

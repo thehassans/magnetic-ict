@@ -2,6 +2,7 @@ import { Bot, Instagram, MessageCircle, Sparkles } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
+import { HostingServicePage } from "@/components/services/hosting-service-page";
 import { AiDetectionTool } from "@/components/services/ai-detection-tool";
 import { ImageConversionTool } from "@/components/services/image-conversion-tool";
 import { ServiceTierSelector } from "@/components/services/service-tier-selector";
@@ -37,6 +38,10 @@ export default async function ServiceDetailPage({
   const isMagneticVpsHostingService = service.id === "magneticVpsHosting";
   const isFreeUtilityService = isImageConversionService || isAiDetectionService || isVideoDownloaderService;
   const hostingProviderConfig = isMagneticVpsHostingService ? await getHostingProviderSettings() : null;
+
+  if (isMagneticVpsHostingService && hostingProviderConfig) {
+    return <HostingServicePage service={service} hostingProviderConfig={hostingProviderConfig} />;
+  }
 
   return (
     <main className="mx-auto max-w-7xl space-y-10 px-4 py-10 sm:px-6 lg:px-8">

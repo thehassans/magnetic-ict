@@ -442,7 +442,7 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
                           ))}
                         </div>
                         <p className="mt-3 text-[13px] leading-6 text-slate-700 dark:text-slate-300">
-                          “Magnetic delivered the cleanest hosting onboarding we’ve used — fast, reliable, and genuinely premium.”
+                          “{review.comment}”
                         </p>
                         <div className="mt-4 flex items-center gap-3">
                           <div className="h-8 w-8 overflow-hidden rounded-full ring-1 ring-slate-200 dark:ring-white/10">
@@ -450,7 +450,7 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
                           </div>
                           <div className="text-[12px]">
                             <div className="font-medium text-slate-950 dark:text-white">{review.name}</div>
-                            <div className="text-slate-500 dark:text-slate-400">{review.company}</div>
+                            <div className="text-slate-500 dark:text-slate-400">{review.service} · {review.company}</div>
                           </div>
                         </div>
                       </div>
