@@ -22,7 +22,7 @@ export interface Testimonial {
 export interface TestimonialsSectionProps {
   title?: string;
   subtitle?: string;
-  testimonials?: Testimonial[];
+  testimonials?: ReadonlyArray<Testimonial>;
   autoRotateInterval?: number;
   showVerifiedBadge?: boolean;
   trustedCompanies?: string[];
