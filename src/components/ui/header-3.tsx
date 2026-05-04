@@ -219,33 +219,41 @@ export function Header({
               </NavigationMenuLink>
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="bg-transparent">{t("services")}</NavigationMenuTrigger>
-                <NavigationMenuContent className="rounded-xl border border-slate-200 bg-white/95 p-1 pr-1.5 shadow-[0_24px_80px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/96 dark:shadow-[0_24px_80px_rgba(2,6,23,0.55)]">
-                  <ul className="grid w-[min(92vw,760px)] grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-slate-950/92 dark:shadow-none">
+                <NavigationMenuContent className="bg-background p-1 pr-1.5">
+                  <ul className="bg-popover grid w-[min(92vw,760px)] grid-cols-2 gap-2 rounded-md border p-2 shadow">
                     {productLinks.map((item) => (
                       <li key={item.title}>
                         <ListItem locale={locale} {...item} />
                       </li>
                     ))}
                   </ul>
+                  <div className="p-2">
+                    <p className="text-muted-foreground text-sm">
+                      Discover the full catalog{" "}
+                      <Link href="/services" locale={locale} className="text-foreground font-medium hover:underline">
+                        {t("allServices")}
+                      </Link>
+                    </p>
+                  </div>
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="bg-transparent">Company</NavigationMenuTrigger>
-                <NavigationMenuContent className="rounded-xl border border-slate-200 bg-white/95 p-1 pr-1.5 pb-1.5 shadow-[0_24px_80px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/96 dark:shadow-[0_24px_80px_rgba(2,6,23,0.55)]">
+                <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
                   <div className="grid w-[min(92vw,760px)] grid-cols-2 gap-2">
-                    <ul className="space-y-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-slate-950/92 dark:shadow-none">
+                    <ul className="bg-popover space-y-2 rounded-md border p-2 shadow">
                       {companyLinks.map((item) => (
                         <li key={item.title}>
                           <ListItem locale={locale} {...item} />
                         </li>
                       ))}
                     </ul>
-                    <ul className="space-y-2 rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-950/92">
+                    <ul className="space-y-2 p-3">
                       {companyLinks2.map((item) => (
                         <li key={item.title}>
                           <NavigationMenuLink asChild>
-                            <Link href={item.href} locale={locale} className="flex flex-row items-center gap-x-2 rounded-md p-2 text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-200 dark:hover:bg-white/[0.06] dark:hover:text-white">
-                              <item.icon className="size-4 text-slate-500 dark:text-slate-300" />
+                            <Link href={item.href} locale={locale} className="hover:bg-accent flex flex-row items-center gap-x-2 rounded-md p-2">
+                              <item.icon className="text-foreground size-4" />
                               <span className="font-medium">{item.title}</span>
                             </Link>
                           </NavigationMenuLink>
@@ -413,18 +421,18 @@ function ListItem({
   return (
     <NavigationMenuLink
       className={cn(
-        "flex w-full flex-row gap-x-3 rounded-xl p-3 text-slate-900 transition hover:bg-slate-100 focus:bg-slate-100 focus:outline-none dark:text-white dark:hover:bg-white/[0.06] dark:focus:bg-white/[0.06]",
+        "data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex w-full flex-row gap-x-2 rounded-sm p-2",
         className
       )}
       asChild
     >
       <Link href={href} locale={locale}>
-        <div className="flex aspect-square size-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-          <Icon className="size-5 text-slate-600 dark:text-slate-200" />
+        <div className="bg-background/40 flex aspect-square size-12 items-center justify-center rounded-md border shadow-sm">
+          <Icon className="text-foreground size-5" />
         </div>
         <div className="flex flex-col items-start justify-center">
-          <span className="font-medium text-slate-950 dark:text-white">{title}</span>
-          <span className="text-xs leading-5 text-slate-500 dark:text-slate-400">{description}</span>
+          <span className="font-medium">{title}</span>
+          <span className="text-muted-foreground text-xs">{description}</span>
         </div>
       </Link>
     </NavigationMenuLink>
