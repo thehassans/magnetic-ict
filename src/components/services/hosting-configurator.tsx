@@ -48,33 +48,33 @@ export function HostingConfigurator({ settings, basePrice, value, onChange, defa
         type="button"
         onClick={() => setIsOpen((current) => !current)}
         className={cn(
-          "flex w-full items-center justify-between gap-4 rounded-[1.5rem] border border-slate-200 bg-white px-4 py-4 text-left transition hover:border-slate-300 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.05]",
-          isOpen && "border-slate-300 bg-slate-50 dark:border-white/20 dark:bg-white/[0.05]"
+          "flex w-full items-center justify-between gap-4 rounded-[1.45rem] border border-slate-200 bg-white px-3.5 py-3.5 text-left shadow-[0_10px_30px_rgba(15,23,42,0.03)] transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.05]",
+          isOpen && "border-slate-300 bg-slate-50 shadow-[0_14px_40px_rgba(15,23,42,0.05)] dark:border-white/20 dark:bg-white/[0.05]"
         )}
         aria-expanded={isOpen}
       >
         <div>
-          <div className="text-[11px] font-medium uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">Configure server</div>
-          <div className="mt-1 text-sm text-slate-600 dark:text-slate-300">{activeCount} selections active</div>
+          <div className="text-[10px] font-medium uppercase tracking-[0.34em] text-slate-400 dark:text-slate-500">Configure server</div>
+          <div className="mt-1.5 text-sm text-slate-600 dark:text-slate-300">{activeCount} selections active</div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-2 text-right dark:border-white/10 dark:bg-slate-950/50">
+          <div className="rounded-[1.15rem] border border-slate-200 bg-white px-3.5 py-2 text-right dark:border-white/10 dark:bg-slate-950/50">
             <div className="text-[10px] uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">Total</div>
-            <div className="text-lg font-semibold tracking-tight text-slate-950 dark:text-white">${getHostingConfigurationTotal(basePrice, resolved).toFixed(2)}</div>
+            <div className="text-[15px] font-semibold tracking-tight text-slate-950 dark:text-white">${getHostingConfigurationTotal(basePrice, resolved).toFixed(2)}</div>
           </div>
           <ChevronDown className={cn("h-4 w-4 text-slate-400 transition duration-200 dark:text-slate-500", isOpen && "rotate-180")} />
         </div>
       </button>
 
-      <div className={cn("grid transition-all duration-300 ease-out", isOpen ? "mt-5 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
-        <div className="overflow-hidden">
-          <div className="space-y-6">
+      <div className={cn("overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", isOpen ? "mt-5 max-h-[2400px] opacity-100" : "max-h-0 opacity-0")}>
+        <div className={cn("transform-gpu transition duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", isOpen ? "translate-y-0 scale-100" : "-translate-y-2 scale-[0.985]")}>
+          <div className="space-y-4">
             <section>
-              <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="mb-2.5 flex items-center justify-between gap-3">
                 <div className="text-sm font-medium text-slate-950 dark:text-white">Operating system</div>
-                <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Choose one</div>
+                <div className="text-[10px] uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">Choose one</div>
               </div>
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-4">
                 {operatingSystems.map((operatingSystem) => {
                   const active = resolved.selection.operatingSystemId === operatingSystem.id;
                   return (
@@ -83,7 +83,7 @@ export function HostingConfigurator({ settings, basePrice, value, onChange, defa
                       type="button"
                       onClick={() => updateSelection({ operatingSystemId: operatingSystem.id })}
                       className={cn(
-                        "rounded-2xl border px-4 py-4 text-left transition",
+                        "rounded-[1.35rem] border px-3.5 py-3.5 text-left transition duration-200",
                         active
                           ? "border-slate-950 bg-slate-950 text-white dark:border-cyan-400 dark:bg-cyan-400 dark:text-slate-950"
                           : "border-slate-200 bg-slate-50 hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.06]"
@@ -92,7 +92,7 @@ export function HostingConfigurator({ settings, basePrice, value, onChange, defa
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <div className="text-sm font-semibold">{operatingSystem.name}</div>
-                          <div className={cn("mt-1 text-xs", active ? "text-white/70 dark:text-slate-950/70" : "text-slate-500 dark:text-slate-400")}>{operatingSystem.imageAlias}</div>
+                          <div className={cn("mt-0.5 text-[11px]", active ? "text-white/70 dark:text-slate-950/70" : "text-slate-500 dark:text-slate-400")}>{operatingSystem.imageAlias}</div>
                         </div>
                         {active ? <Check className="h-4 w-4" /> : null}
                       </div>
@@ -103,11 +103,11 @@ export function HostingConfigurator({ settings, basePrice, value, onChange, defa
             </section>
 
             <section>
-              <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="mb-2.5 flex items-center justify-between gap-3">
                 <div className="text-sm font-medium text-slate-950 dark:text-white">Server panel</div>
-                <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Control access</div>
+                <div className="text-[10px] uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">Control access</div>
               </div>
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-4">
                 {controlPanels.map((panel) => {
                   const active = resolved.selection.controlPanelId === panel.id;
                   return (
@@ -116,7 +116,7 @@ export function HostingConfigurator({ settings, basePrice, value, onChange, defa
                       type="button"
                       onClick={() => updateSelection({ controlPanelId: panel.id })}
                       className={cn(
-                        "rounded-2xl border px-4 py-4 text-left transition",
+                        "rounded-[1.35rem] border px-3.5 py-3.5 text-left transition duration-200",
                         active
                           ? "border-slate-950 bg-slate-950 text-white dark:border-cyan-400 dark:bg-cyan-400 dark:text-slate-950"
                           : "border-slate-200 bg-slate-50 hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.06]"
@@ -125,7 +125,7 @@ export function HostingConfigurator({ settings, basePrice, value, onChange, defa
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <div className="text-sm font-semibold">{panel.name}</div>
-                          <div className={cn("mt-1 text-xs", active ? "text-white/70 dark:text-slate-950/70" : "text-slate-500 dark:text-slate-400")}>+${panel.monthlyPrice}/mo</div>
+                          <div className={cn("mt-0.5 text-[11px]", active ? "text-white/70 dark:text-slate-950/70" : "text-slate-500 dark:text-slate-400")}>+${panel.monthlyPrice}/mo</div>
                         </div>
                         {active ? <Check className="h-4 w-4" /> : null}
                       </div>
@@ -136,11 +136,11 @@ export function HostingConfigurator({ settings, basePrice, value, onChange, defa
             </section>
 
             <section>
-              <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="mb-2.5 flex items-center justify-between gap-3">
                 <div className="text-sm font-medium text-slate-950 dark:text-white">Region</div>
-                <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Deployment</div>
+                <div className="text-[10px] uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">Deployment</div>
               </div>
-              <div className="grid gap-3 md:grid-cols-3">
+              <div className="grid gap-2.5 md:grid-cols-3">
                 {locations.map((location) => {
                   const active = resolved.selection.locationId === location.id;
                   return (
@@ -149,7 +149,7 @@ export function HostingConfigurator({ settings, basePrice, value, onChange, defa
                       type="button"
                       onClick={() => updateSelection({ locationId: location.id })}
                       className={cn(
-                        "rounded-2xl border px-4 py-4 text-left transition",
+                        "rounded-[1.35rem] border px-3.5 py-3.5 text-left transition duration-200",
                         active
                           ? "border-cyan-200 bg-cyan-50 dark:border-cyan-400/30 dark:bg-cyan-400/10"
                           : "border-slate-200 bg-slate-50 hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.06]"
@@ -166,11 +166,11 @@ export function HostingConfigurator({ settings, basePrice, value, onChange, defa
             </section>
 
             <section>
-              <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="mb-2.5 flex items-center justify-between gap-3">
                 <div className="text-sm font-medium text-slate-950 dark:text-white">Extras</div>
-                <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Optional</div>
+                <div className="text-[10px] uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">Optional</div>
               </div>
-              <div className="grid gap-3 md:grid-cols-3">
+              <div className="grid gap-2.5 md:grid-cols-3">
                 {addons.map((addon) => {
                   const active = resolved.selection.addonIds.includes(addon.id);
                   return (
@@ -185,7 +185,7 @@ export function HostingConfigurator({ settings, basePrice, value, onChange, defa
                         })
                       }
                       className={cn(
-                        "rounded-2xl border px-4 py-4 text-left transition",
+                        "rounded-[1.35rem] border px-3.5 py-3.5 text-left transition duration-200",
                         active
                           ? "border-violet-200 bg-violet-50 dark:border-violet-400/30 dark:bg-violet-400/10"
                           : "border-slate-200 bg-slate-50 hover:bg-white dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.06]"
@@ -194,7 +194,7 @@ export function HostingConfigurator({ settings, basePrice, value, onChange, defa
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <div className="text-sm font-semibold text-slate-950 dark:text-white">{addon.name}</div>
-                          <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">+${addon.monthlyPrice}/mo</div>
+                          <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">+${addon.monthlyPrice}/mo</div>
                         </div>
                         {active ? <Check className="h-4 w-4 text-violet-600 dark:text-violet-300" /> : null}
                       </div>
@@ -204,7 +204,7 @@ export function HostingConfigurator({ settings, basePrice, value, onChange, defa
               </div>
             </section>
 
-            <div className="flex items-center justify-between rounded-[1.4rem] border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400">
+            <div className="flex items-center justify-between rounded-[1.35rem] border border-slate-200 bg-slate-50 px-3.5 py-3 text-xs text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400">
               <div className="inline-flex items-center gap-2">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 Changes update instantly

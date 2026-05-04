@@ -138,7 +138,7 @@ export function CartPageContent({ hostingProviderConfig }: { hostingProviderConf
                               });
                             }}
                             compact
-                            defaultOpen={false}
+                            defaultOpen
                           />
                           {item.hostingSummary?.length ? <HostingConfigurationSummary lines={item.hostingSummary} tone="subtle" /> : null}
                         </div>
