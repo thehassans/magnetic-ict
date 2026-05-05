@@ -1,4 +1,4 @@
-import { Activity, Briefcase, Bot, BrainCircuit, Database, Download, Globe, ImageIcon, LayoutGrid, Lock, Mail, ScanFace, Search, Server, Shield, ShieldCheck } from "lucide-react";
+import { Activity, Briefcase, Bot, BrainCircuit, Database, Download, Globe, ImageIcon, LayoutGrid, Lock, Mail, Package, ScanFace, Search, Server, Shield, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getServiceTitle } from "@/lib/service-i18n";
@@ -18,6 +18,7 @@ const iconMap = {
   aiDetection: BrainCircuit,
   videoDownloader: Download,
   magneticSocialBot: Bot,
+  magneticCommerce: Package,
   magneticVpsHosting: Server,
   magneticFaceSearch: ScanFace,
   siteLockVpn: Lock,
