@@ -14,11 +14,13 @@ export type ServiceMenuKey =
   | "siteMonitoring"
   | "websiteSecurity"
   | "websiteBackup"
-  | "nordVpn";
+  | "nordVpn"
+  | "magneticCommerce";
 
 export const serviceMenuItems = [
   { key: "imageConversion", id: "image-conversion", href: "/services#image-conversion" },
   { key: "siteMonitoring", id: "site-monitoring", href: "/services#site-monitoring" },
+  { key: "magneticCommerce", id: "magnetic-commerce", href: "/services#magnetic-commerce" },
   { key: "magneticVpsHosting", id: "magnetic-vps-hosting", href: "/services#magnetic-vps-hosting" },
   { key: "aiDetection", id: "ai-detection", href: "/services#ai-detection" },
   { key: "videoDownloader", id: "video-downloader", href: "/services#video-downloader" },

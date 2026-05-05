@@ -657,12 +657,52 @@ const allServiceCatalog: CatalogService[] = [
         features: ["Expanded seat planning", "Operational rollout support", "Security review assistance"]
       }
     ]
+  },
+  {
+    id: "magneticCommerce",
+    name: "Magnetic Commerce",
+    category: "Commerce & Ecommerce Operations",
+    eyebrow: "Commerce operating system",
+    tagline: "Launch a complete commerce and ecommerce management system covering roles, merchandising, fulfillment, finance, and reporting in one Magnetic platform.",
+    description:
+      "Deploy a full Magnetic Commerce experience with role-based dashboards, storefront design controls, product and order operations, warehouse and shipment management, stakeholder finance tracking, and executive reporting designed for modern commerce teams.",
+    imageLabel: "Commerce Management Command Center",
+    highlights: ["Role-based commerce workflows", "Merchandising plus website controls", "Finance, reports, and fulfillment visibility"],
+    benefits: [
+      "Coordinate agents, managers, partners, drivers, dropshippers, investors, confirmers, and customers from one operating model.",
+      "Control products, content, campaigns, coupons, cashback, and website modifications without splitting work across disconnected tools.",
+      "Track orders, warehouses, shipments, earnings, and profit performance with executive-ready visibility."
+    ],
+    tiers: [
+      {
+        id: "magneticCommerce-starter",
+        name: "Starter",
+        price: 399,
+        summary: "Commerce foundation for launching catalog, roles, offers, and order workflows.",
+        features: ["Core dashboard setup", "Product, category, and banner management", "Orders, coupons, and customer operations"]
+      },
+      {
+        id: "magneticCommerce-professional",
+        name: "Professional",
+        price: 899,
+        summary: "Expanded commerce operations with warehouse, finance, and stakeholder workflow coverage.",
+        features: ["Warehouses, shipments, and driver operations", "Agent, manager, and partner finance tracking", "Campaigns, cashback, and reporting workspaces"]
+      },
+      {
+        id: "magneticCommerce-enterprise",
+        name: "Enterprise",
+        price: 1899,
+        summary: "Advanced multi-role commerce operating system with executive reporting and website control.",
+        features: ["Investor and dropshipper earning visibility", "Profit and loss with business reports", "Website modification and rollout advisory"]
+      }
+    ]
   }
 ];
 
 export const liveServiceCatalogKeys = [
   "imageConversion",
   "siteMonitoring",
+  "magneticCommerce",
   "magneticVpsHosting",
   "aiDetection",
   "videoDownloader",

@@ -62,6 +62,7 @@
       "imageConversion": {"title": "Bildkonvertierung", "description": "Ein kostenloser Konverter und Resizer fur JPG-, PNG- und WebP-Downloads."},
       "aiDetection": {"title": "AI Detection", "description": "Laden Sie ein Bild oder Video hoch und prufen Sie mit Premium-Forensiksignalen, ob es KI-generiert wirkt."},
       "videoDownloader": {"title": "Video Downloader", "description": "Fugen Sie einen YouTube-, Instagram- oder Facebook-Link ein und laden Sie MP4 oder MP3 in der gewunschten Qualitat herunter."},
+      "magneticCommerce": {"title": "Magnetic Commerce", "description": "Ein komplettes Commerce- und Ecommerce-Betriebssystem fur Rollen, Merchandising, Fulfillment, Finanzen und Website-Steuerung."},
       "magneticVpsHosting": {"title": "Magnetic VPS Hosting", "description": "IONOS-gestutzte VPS-Infrastruktur mit Magnetic-gebrandetem Checkout, Fulfillment und Admin-Provisioning-Kontrolle."},
       "magneticSocialBot": {"title": "Magnetic Social Bot", "description": "Ein kanalubergreifender KI-Posteingang fur WhatsApp, Instagram und Messenger mit Gemini und unternehmensspezifischem RAG."},
       "magneticFaceSearch": {"title": "Magnetic Face Search", "description": "Eine datenschutzorientierte Roadmap für biometrische Suche mit lizenzierter Datenaufnahme, Vektorsuche und Premium-Upload-zur-Suche-UX."},

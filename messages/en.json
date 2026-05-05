@@ -111,6 +111,10 @@
         "title": "Video Downloader",
         "description": "Paste a YouTube, Instagram, or Facebook link and download MP4 or MP3 in the quality you want."
       },
+      "magneticCommerce": {
+        "title": "Magnetic Commerce",
+        "description": "A complete commerce and ecommerce operating system spanning roles, merchandising, fulfillment, finance, and website control."
+      },
       "magneticVpsHosting": {
         "title": "Magnetic VPS Hosting",
         "description": "IONOS-backed VPS infrastructure with Magnetic-branded checkout, fulfillment, and admin provisioning control."

@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
 import { HostingServicePage } from "@/components/services/hosting-service-page";
+import { MagneticCommerceServicePage } from "@/components/services/magnetic-commerce-service-page";
 import { AiDetectionTool } from "@/components/services/ai-detection-tool";
 import { ImageConversionTool } from "@/components/services/image-conversion-tool";
 import { ServiceTierSelector } from "@/components/services/service-tier-selector";
@@ -35,9 +36,14 @@ export default async function ServiceDetailPage({
   const isAiDetectionService = service.id === "aiDetection";
   const isVideoDownloaderService = service.id === "videoDownloader";
   const isMagneticSocialBotService = service.id === "magneticSocialBot";
+  const isMagneticCommerceService = service.id === "magneticCommerce";
   const isMagneticVpsHostingService = service.id === "magneticVpsHosting";
   const isFreeUtilityService = isImageConversionService || isAiDetectionService || isVideoDownloaderService;
   const hostingProviderConfig = isMagneticVpsHostingService ? await getHostingProviderSettings() : null;
+
+  if (isMagneticCommerceService) {
+    return <MagneticCommerceServicePage service={service} title={title} />;
+  }
 
   if (isMagneticVpsHostingService && hostingProviderConfig) {
     return <HostingServicePage service={service} hostingProviderConfig={hostingProviderConfig} />;
