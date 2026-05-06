@@ -1,4 +1,4 @@
-import { Apple, Play } from "lucide-react";
+import { Apple } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type BrandProps = {
@@ -80,7 +80,7 @@ export function PlayStoreBadge({ className }: BrandProps) {
   return (
     <span className={cn("inline-flex h-11 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 shadow-sm", className)}>
       <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-[#34a853] via-[#4285f4] to-[#ea4335] text-white">
-        <Play className="h-3.5 w-3.5 fill-current" />
+        <span className="ml-0.5 h-0 w-0 border-y-[6px] border-y-transparent border-l-[10px] border-l-white" />
       </span>
       <span className="flex flex-col leading-none">
         <span className="text-[10px] uppercase tracking-[0.22em] text-slate-500">Available on</span>
