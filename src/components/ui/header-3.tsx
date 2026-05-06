@@ -37,15 +37,8 @@ import { CartTrigger } from "@/components/commerce/cart-trigger";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { DropdownNavigation, type DropdownNavigationSubMenuItem } from "@/components/ui/dropdown-navigation";
 import { MenuToggleIcon } from "@/components/ui/menu-toggle-icon";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger
-} from "@/components/ui/navigation-menu";
 import { Link } from "@/i18n/navigation";
 import type { ServiceMenuKey } from "@/lib/service-menu";
 import { cn } from "@/lib/utils";
@@ -92,6 +85,16 @@ const iconMap = {
   websiteBackup: Database,
   nordVpn: Globe
 } satisfies Record<ServiceMenuKey, LucideIcon>;
+
+function chunkDropdownItems(items: DropdownNavigationSubMenuItem[], size: number) {
+  const chunks: DropdownNavigationSubMenuItem[][] = [];
+
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+
+  return chunks;
+}
 
 export function Header({
   locale,
@@ -178,6 +181,86 @@ export function Header({
     return items;
   }, [sessionUser, signInHref, t]);
 
+  const desktopNavItems = React.useMemo(() => {
+    const serviceColumns = chunkDropdownItems(
+      productLinks.map((item) => ({
+        label: item.title,
+        description: item.description,
+        icon: item.icon,
+        href: item.href
+      })),
+      4
+    ).map((items, index) => ({
+      title: index === 0 ? t("services") : `${t("services")} ${index + 1}`,
+      items
+    }));
+
+    const magneticColumns = chunkDropdownItems(
+      magneticProductLinks.map((item) => ({
+        label: item.title,
+        description: item.description,
+        icon: item.icon,
+        href: item.href
+      })),
+      4
+    ).map((items, index) => ({
+      title: index === 0 ? t("magneticServices") : `${t("magneticServices")} ${index + 1}`,
+      items
+    }));
+
+    return [
+      {
+        id: 1,
+        label: t("home"),
+        icon: Grid2x2,
+        link: "/"
+      },
+      ...(serviceColumns.length > 0 ? [{
+        id: 2,
+        label: t("services"),
+        icon: LayersIcon,
+        subMenus: serviceColumns
+      }] : []),
+      ...(magneticColumns.length > 0 ? [{
+        id: 3,
+        label: t("magneticServices"),
+        icon: Package,
+        subMenus: magneticColumns
+      }] : []),
+      {
+        id: 4,
+        label: "Company",
+        icon: Briefcase,
+        subMenus: [
+          {
+            title: "Company",
+            items: companyLinks.map((item) => ({
+              label: item.title,
+              description: item.description,
+              icon: item.icon,
+              href: item.href
+            }))
+          },
+          {
+            title: "Access",
+            items: companyLinks2.map((item) => ({
+              label: item.title,
+              description: item.description,
+              icon: item.icon,
+              href: item.href
+            }))
+          }
+        ]
+      },
+      {
+        id: 5,
+        label: t("support"),
+        icon: HelpCircle,
+        link: "/support"
+      }
+    ];
+  }, [companyLinks, companyLinks2, magneticProductLinks, productLinks, t]);
+
   React.useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
@@ -204,98 +287,12 @@ export function Header({
         "backdrop-blur-sm": scrolled
       })}
     >
-      <nav className="mx-auto flex h-[4.75rem] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-5">
+      <nav className="mx-auto flex h-[4.75rem] w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-4 xl:gap-5">
           <Link href="/" locale={locale} className="rounded-md p-1 transition">
             <BrandLogo className="w-[150px] sm:w-[168px]" priority />
           </Link>
-          <NavigationMenu className="hidden lg:flex">
-            <NavigationMenuList>
-              <NavigationMenuLink className="px-1" asChild>
-                <Link
-                  href="/"
-                  locale={locale}
-                  className="rounded-none border-b border-transparent px-0 py-2 text-sm font-medium text-slate-700 transition hover:bg-transparent hover:text-slate-950 dark:text-slate-200 dark:hover:bg-transparent dark:hover:text-white"
-                >
-                  {t("home")}
-                </Link>
-              </NavigationMenuLink>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 rounded-none border-b border-transparent bg-transparent px-0 text-sm font-medium text-slate-700 hover:bg-transparent hover:text-slate-950 focus:bg-transparent focus:text-slate-950 data-[active]:bg-transparent data-[state=open]:bg-transparent data-[state=open]:text-slate-950 dark:text-slate-200 dark:hover:bg-transparent dark:hover:text-white dark:focus:bg-transparent dark:focus:text-white dark:data-[state=open]:text-white">
-                  {t("services")}
-                </NavigationMenuTrigger>
-                <NavigationMenuContent className="bg-transparent p-0 pt-4 shadow-none">
-                  <div className="w-[min(92vw,32rem)] rounded-[1.75rem] border border-slate-200/70 bg-white/85 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/80">
-                    <ul className="grid gap-1">
-                      {productLinks.map((item) => (
-                        <li key={item.href}>
-                          <ListItem locale={locale} {...item} />
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="px-3 pb-1 pt-3 text-xs font-medium uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">
-                      <Link href="/services" locale={locale} className="transition hover:text-slate-950 dark:hover:text-white">
-                        {t("allServices")}
-                      </Link>
-                    </div>
-                  </div>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 rounded-none border-b border-transparent bg-transparent px-0 text-sm font-medium text-slate-700 hover:bg-transparent hover:text-slate-950 focus:bg-transparent focus:text-slate-950 data-[active]:bg-transparent data-[state=open]:bg-transparent data-[state=open]:text-slate-950 dark:text-slate-200 dark:hover:bg-transparent dark:hover:text-white dark:focus:bg-transparent dark:focus:text-white dark:data-[state=open]:text-white">
-                  {t("magneticServices")}
-                </NavigationMenuTrigger>
-                <NavigationMenuContent className="bg-transparent p-0 pt-4 shadow-none">
-                  <div className="w-[min(92vw,34rem)] rounded-[1.75rem] border border-slate-200/70 bg-white/85 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/80">
-                    <ul className="grid gap-1">
-                      {magneticProductLinks.map((item) => (
-                        <li key={item.href}>
-                          <ListItem locale={locale} {...item} />
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="px-3 pb-1 pt-3 text-xs font-medium uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">
-                      <Link href="/services" locale={locale} className="transition hover:text-slate-950 dark:hover:text-white">
-                        {t("allServices")}
-                      </Link>
-                    </div>
-                  </div>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 rounded-none border-b border-transparent bg-transparent px-0 text-sm font-medium text-slate-700 hover:bg-transparent hover:text-slate-950 focus:bg-transparent focus:text-slate-950 data-[active]:bg-transparent data-[state=open]:bg-transparent data-[state=open]:text-slate-950 dark:text-slate-200 dark:hover:bg-transparent dark:hover:text-white dark:focus:bg-transparent dark:focus:text-white dark:data-[state=open]:text-white">
-                  Company
-                </NavigationMenuTrigger>
-                <NavigationMenuContent className="bg-transparent p-0 pt-4 shadow-none">
-                  <div className="grid w-[min(92vw,46rem)] grid-cols-2 gap-3 rounded-[1.75rem] border border-slate-200/70 bg-white/85 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/80">
-                    <ul className="grid gap-1">
-                      {companyLinks.map((item) => (
-                        <li key={item.title}>
-                          <ListItem locale={locale} {...item} />
-                        </li>
-                      ))}
-                    </ul>
-                    <ul className="space-y-1 px-2 py-1.5">
-                      {companyLinks2.map((item) => (
-                        <li key={item.title}>
-                          <NavigationMenuLink asChild>
-                            <Link
-                              href={item.href}
-                              locale={locale}
-                              className="flex flex-row items-center gap-x-2 rounded-xl px-3 py-3 text-sm font-medium text-slate-700 transition hover:bg-transparent hover:text-slate-950 dark:text-slate-200 dark:hover:bg-transparent dark:hover:text-white"
-                            >
-                              <item.icon className="text-foreground size-4" />
-                              <span>{item.title}</span>
-                            </Link>
-                          </NavigationMenuLink>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
+          <DropdownNavigation navItems={desktopNavItems} locale={locale} className="hidden lg:flex" />
         </div>
         <div className="hidden items-center gap-2 lg:flex">
           <LanguageSwitcher
@@ -339,7 +336,7 @@ export function Header({
       <MobileMenu open={open} className="flex flex-col justify-between gap-5 overflow-y-auto">
         <div className="space-y-5">
           <div className="flex flex-col gap-y-2">
-            <span className="text-sm text-slate-500">Navigation</span>
+            <SectionHeading icon={Grid2x2}>Navigation</SectionHeading>
             <MobileLink locale={locale} href="/" onClick={() => setOpen(false)} icon={Grid2x2}>
               {t("home")}
             </MobileLink>
@@ -352,7 +349,7 @@ export function Header({
           </div>
 
           <div className="space-y-2">
-            <span className="text-sm text-slate-500">Services</span>
+            <SectionHeading icon={LayersIcon}>Services</SectionHeading>
             {productLinks.map((link) => (
               <MobileLink key={link.title} locale={locale} href={link.href} onClick={() => setOpen(false)} icon={link.icon}>
                 {link.title}
@@ -361,7 +358,7 @@ export function Header({
           </div>
 
           <div className="space-y-2">
-            <span className="text-sm text-slate-500">{t("magneticServices")}</span>
+            <SectionHeading icon={Package}>{t("magneticServices")}</SectionHeading>
             {magneticProductLinks.map((link) => (
               <MobileLink key={link.title} locale={locale} href={link.href} onClick={() => setOpen(false)} icon={link.icon}>
                 {link.title}
@@ -370,7 +367,7 @@ export function Header({
           </div>
 
           <div className="space-y-2">
-            <span className="text-sm text-slate-500">Company</span>
+            <SectionHeading icon={Briefcase}>Company</SectionHeading>
             {companyLinks.map((link) => (
               <MobileLink key={link.title} locale={locale} href={link.href} onClick={() => setOpen(false)} icon={link.icon}>
                 {link.title}
@@ -421,6 +418,21 @@ export function Header({
   );
 }
 
+function SectionHeading({
+  icon: Icon,
+  children
+}: {
+  icon: LucideIcon;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="inline-flex items-center gap-2 px-1 text-sm font-medium text-slate-500 dark:text-slate-400">
+      <Icon className="size-4" />
+      <span>{children}</span>
+    </div>
+  );
+}
+
 type MobileMenuProps = React.ComponentProps<"div"> & {
   open: boolean;
 };
@@ -447,35 +459,6 @@ function MobileMenu({ open, children, className, ...props }: MobileMenuProps) {
       </div>
     </div>,
     document.body
-  );
-}
-
-function ListItem({
-  title,
-  description,
-  icon: Icon,
-  className,
-  href,
-  locale
-}: LinkItem & { locale: string; className?: string }) {
-  return (
-    <NavigationMenuLink
-      className={cn(
-        "flex w-full flex-row gap-x-3 rounded-2xl border border-transparent px-3 py-3 transition hover:bg-transparent hover:text-slate-950 focus:bg-transparent focus:text-slate-950 dark:hover:text-white dark:focus:text-white",
-        className
-      )}
-      asChild
-    >
-      <Link href={href} locale={locale}>
-        <div className="flex aspect-square size-10 items-center justify-center rounded-full border border-slate-200/70 text-slate-500 dark:border-white/10 dark:text-slate-300">
-          <Icon className="size-4" />
-        </div>
-        <div className="flex flex-col items-start justify-center">
-          <span className="font-medium text-slate-900 dark:text-white">{title}</span>
-          <span className="text-xs text-slate-500 dark:text-slate-400">{description}</span>
-        </div>
-      </Link>
-    </NavigationMenuLink>
   );
 }
 
