@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   ArrowRight,
   BadgeDollarSign,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
 import { ServiceTierSelector } from "@/components/services/service-tier-selector";
+import { AppStoreBadge, PlayStoreBadge } from "@/components/ui/payment-brand-icons";
 import type { CatalogService } from "@/lib/service-catalog";
 
 const stakeholderPanels = [
@@ -195,6 +197,22 @@ export function MagneticCommerceServicePage({ service, title }: { service: Catal
                 <div>
                   <p className="text-xs uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-200">Magnetic Ecommerce front</p>
                   <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">Desktop front added into the commerce page.</h2>
+                </div>
+                <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-slate-200/70 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-950/70">
+                  <div className="relative aspect-[16/9] w-full">
+                    <Image
+                      src="/services/magnetic-commerce/adminpanel.png"
+                      alt="Magnetic Commerce admin panel desktop preview"
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 42vw"
+                      className="object-cover object-top"
+                      priority
+                    />
+                  </div>
+                </div>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <AppStoreBadge />
+                  <PlayStoreBadge />
                 </div>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   {surfaceCards.map((surface, index) => (

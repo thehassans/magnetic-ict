@@ -1,4 +1,4 @@
-import { Apple } from "lucide-react";
+import { Apple, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type BrandProps = {
@@ -58,6 +58,34 @@ export function ApplePayMark({ className }: BrandProps) {
     <span className={cn("inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 shadow-sm", className)}>
       <Apple className="h-4 w-4 fill-current text-slate-950" />
       <span className="text-sm font-semibold tracking-tight text-slate-950">Pay</span>
+    </span>
+  );
+}
+
+export function AppStoreBadge({ className }: BrandProps) {
+  return (
+    <span className={cn("inline-flex h-11 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 shadow-sm", className)}>
+      <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-slate-950 text-white">
+        <Apple className="h-4 w-4 fill-current" />
+      </span>
+      <span className="flex flex-col leading-none">
+        <span className="text-[10px] uppercase tracking-[0.22em] text-slate-500">Available on</span>
+        <span className="mt-1 text-sm font-semibold tracking-tight text-slate-950">App Store</span>
+      </span>
+    </span>
+  );
+}
+
+export function PlayStoreBadge({ className }: BrandProps) {
+  return (
+    <span className={cn("inline-flex h-11 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 shadow-sm", className)}>
+      <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-[#34a853] via-[#4285f4] to-[#ea4335] text-white">
+        <Play className="h-3.5 w-3.5 fill-current" />
+      </span>
+      <span className="flex flex-col leading-none">
+        <span className="text-[10px] uppercase tracking-[0.22em] text-slate-500">Available on</span>
+        <span className="mt-1 text-sm font-semibold tracking-tight text-slate-950">Play Store</span>
+      </span>
     </span>
   );
 }
