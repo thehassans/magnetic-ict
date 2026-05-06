@@ -41,6 +41,7 @@
   "Navigation": {
     "home": "Inicio",
     "services": "Servicios",
+    "magneticServices": "Servicios Magnetic",
     "support": "Soporte",
     "cart": "Carrito",
     "language": "Idioma",

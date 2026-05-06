@@ -11,12 +11,14 @@ import type { ActiveLanguage } from "@/types/i18n";
 type LanguageSwitcherProps = {
   activeLanguages: ActiveLanguage[];
   className?: string;
+  triggerClassName?: string;
   align?: "left" | "right";
 };
 
 export function LanguageSwitcher({
   activeLanguages,
   className,
+  triggerClassName,
   align = "right"
 }: LanguageSwitcherProps) {
   const [open, setOpen] = useState(false);
@@ -55,7 +57,10 @@ export function LanguageSwitcher({
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-cyan-400/30 dark:hover:bg-white/10"
+        className={cn(
+          "inline-flex h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-cyan-400/30 dark:hover:bg-white/10",
+          triggerClassName
+        )}
       >
         <Languages className="h-4 w-4 text-violet-600 dark:text-cyan-300" />
         <span className="hidden sm:inline">{t("language")}</span>

@@ -107,14 +107,22 @@ export function Header({
   const signInHref = "/customer/sign-in?callback=/dashboard";
   const hideOnDashboard = pathname.startsWith(`/${locale}/dashboard`);
 
-  const productLinks = React.useMemo<LinkItem[]>(() => {
-    return visibleServiceMenuItems.map((item) => ({
+  const mapServiceLink = React.useCallback((item: { key: ServiceMenuKey; id: string; href: string }): LinkItem => {
+    return {
       title: t(`items.${item.key}.title`),
       href: `/services/${item.key}`,
       description: t(`items.${item.key}.description`),
       icon: iconMap[item.key]
-    }));
-  }, [t, visibleServiceMenuItems]);
+    };
+  }, [t]);
+
+  const productLinks = React.useMemo<LinkItem[]>(() => {
+    return visibleServiceMenuItems.filter((item) => !item.key.startsWith("magnetic")).map(mapServiceLink);
+  }, [mapServiceLink, visibleServiceMenuItems]);
+
+  const magneticProductLinks = React.useMemo<LinkItem[]>(() => {
+    return visibleServiceMenuItems.filter((item) => item.key.startsWith("magnetic")).map(mapServiceLink);
+  }, [mapServiceLink, visibleServiceMenuItems]);
 
   const companyLinks = React.useMemo<LinkItem[]>(() => {
     const items: LinkItem[] = [
@@ -151,18 +159,7 @@ export function Header({
   }, [hasMagneticSocialBotAccess, t]);
 
   const companyLinks2 = React.useMemo<LinkItem[]>(() => {
-    const items: LinkItem[] = [
-      {
-        title: "Domain search",
-        href: "/domains",
-        icon: Globe
-      },
-      {
-        title: t("allServices"),
-        href: "/services",
-        icon: Grid2x2
-      }
-    ];
+    const items: LinkItem[] = [{ title: t("allServices"), href: "/services", icon: Grid2x2 }];
 
     if (sessionUser) {
       items.push({
@@ -203,60 +200,92 @@ export function Header({
 
   return (
     <header
-      className={cn("sticky top-0 z-50 w-full border-b border-transparent", {
-        "border-border bg-background/95 supports-[backdrop-filter]:bg-background/70 backdrop-blur-lg": scrolled
+      className={cn("sticky top-0 z-50 w-full bg-transparent", {
+        "backdrop-blur-sm": scrolled
       })}
     >
-      <nav className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <nav className="mx-auto flex h-[4.75rem] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-5">
-          <Link href="/" locale={locale} className="rounded-md p-1 transition hover:bg-accent/70">
+          <Link href="/" locale={locale} className="rounded-md p-1 transition">
             <BrandLogo className="w-[150px] sm:w-[168px]" priority />
           </Link>
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
               <NavigationMenuLink className="px-1" asChild>
-                <Link href="/" locale={locale} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-accent">
+                <Link
+                  href="/"
+                  locale={locale}
+                  className="rounded-none border-b border-transparent px-0 py-2 text-sm font-medium text-slate-700 transition hover:bg-transparent hover:text-slate-950 dark:text-slate-200 dark:hover:bg-transparent dark:hover:text-white"
+                >
                   {t("home")}
                 </Link>
               </NavigationMenuLink>
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="bg-transparent">{t("services")}</NavigationMenuTrigger>
-                <NavigationMenuContent className="bg-background p-1 pr-1.5">
-                  <ul className="bg-popover grid w-[min(92vw,760px)] grid-cols-2 gap-2 rounded-md border p-2 shadow">
-                    {productLinks.map((item) => (
-                      <li key={item.title}>
-                        <ListItem locale={locale} {...item} />
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="p-2">
-                    <p className="text-muted-foreground text-sm">
-                      Discover the full catalog{" "}
-                      <Link href="/services" locale={locale} className="text-foreground font-medium hover:underline">
+                <NavigationMenuTrigger className="h-9 rounded-none border-b border-transparent bg-transparent px-0 text-sm font-medium text-slate-700 hover:bg-transparent hover:text-slate-950 focus:bg-transparent focus:text-slate-950 data-[active]:bg-transparent data-[state=open]:bg-transparent data-[state=open]:text-slate-950 dark:text-slate-200 dark:hover:bg-transparent dark:hover:text-white dark:focus:bg-transparent dark:focus:text-white dark:data-[state=open]:text-white">
+                  {t("services")}
+                </NavigationMenuTrigger>
+                <NavigationMenuContent className="bg-transparent p-0 pt-4 shadow-none">
+                  <div className="w-[min(92vw,32rem)] rounded-[1.75rem] border border-slate-200/70 bg-white/85 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/80">
+                    <ul className="grid gap-1">
+                      {productLinks.map((item) => (
+                        <li key={item.href}>
+                          <ListItem locale={locale} {...item} />
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="px-3 pb-1 pt-3 text-xs font-medium uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">
+                      <Link href="/services" locale={locale} className="transition hover:text-slate-950 dark:hover:text-white">
                         {t("allServices")}
                       </Link>
-                    </p>
+                    </div>
                   </div>
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="bg-transparent">Company</NavigationMenuTrigger>
-                <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
-                  <div className="grid w-[min(92vw,760px)] grid-cols-2 gap-2">
-                    <ul className="bg-popover space-y-2 rounded-md border p-2 shadow">
+                <NavigationMenuTrigger className="h-9 rounded-none border-b border-transparent bg-transparent px-0 text-sm font-medium text-slate-700 hover:bg-transparent hover:text-slate-950 focus:bg-transparent focus:text-slate-950 data-[active]:bg-transparent data-[state=open]:bg-transparent data-[state=open]:text-slate-950 dark:text-slate-200 dark:hover:bg-transparent dark:hover:text-white dark:focus:bg-transparent dark:focus:text-white dark:data-[state=open]:text-white">
+                  {t("magneticServices")}
+                </NavigationMenuTrigger>
+                <NavigationMenuContent className="bg-transparent p-0 pt-4 shadow-none">
+                  <div className="w-[min(92vw,34rem)] rounded-[1.75rem] border border-slate-200/70 bg-white/85 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/80">
+                    <ul className="grid gap-1">
+                      {magneticProductLinks.map((item) => (
+                        <li key={item.href}>
+                          <ListItem locale={locale} {...item} />
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="px-3 pb-1 pt-3 text-xs font-medium uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">
+                      <Link href="/services" locale={locale} className="transition hover:text-slate-950 dark:hover:text-white">
+                        {t("allServices")}
+                      </Link>
+                    </div>
+                  </div>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className="h-9 rounded-none border-b border-transparent bg-transparent px-0 text-sm font-medium text-slate-700 hover:bg-transparent hover:text-slate-950 focus:bg-transparent focus:text-slate-950 data-[active]:bg-transparent data-[state=open]:bg-transparent data-[state=open]:text-slate-950 dark:text-slate-200 dark:hover:bg-transparent dark:hover:text-white dark:focus:bg-transparent dark:focus:text-white dark:data-[state=open]:text-white">
+                  Company
+                </NavigationMenuTrigger>
+                <NavigationMenuContent className="bg-transparent p-0 pt-4 shadow-none">
+                  <div className="grid w-[min(92vw,46rem)] grid-cols-2 gap-3 rounded-[1.75rem] border border-slate-200/70 bg-white/85 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/80">
+                    <ul className="grid gap-1">
                       {companyLinks.map((item) => (
                         <li key={item.title}>
                           <ListItem locale={locale} {...item} />
                         </li>
                       ))}
                     </ul>
-                    <ul className="space-y-2 p-3">
+                    <ul className="space-y-1 px-2 py-1.5">
                       {companyLinks2.map((item) => (
                         <li key={item.title}>
                           <NavigationMenuLink asChild>
-                            <Link href={item.href} locale={locale} className="hover:bg-accent flex flex-row items-center gap-x-2 rounded-md p-2">
+                            <Link
+                              href={item.href}
+                              locale={locale}
+                              className="flex flex-row items-center gap-x-2 rounded-xl px-3 py-3 text-sm font-medium text-slate-700 transition hover:bg-transparent hover:text-slate-950 dark:text-slate-200 dark:hover:bg-transparent dark:hover:text-white"
+                            >
                               <item.icon className="text-foreground size-4" />
-                              <span className="font-medium">{item.title}</span>
+                              <span>{item.title}</span>
                             </Link>
                           </NavigationMenuLink>
                         </li>
@@ -265,34 +294,32 @@ export function Header({
                   </div>
                 </NavigationMenuContent>
               </NavigationMenuItem>
-              <NavigationMenuLink className="px-1" asChild>
-                <Link href="/domains" locale={locale} className="rounded-md px-3 py-2 text-sm font-medium hover:bg-accent">
-                  Domain search
-                </Link>
-              </NavigationMenuLink>
             </NavigationMenuList>
           </NavigationMenu>
         </div>
         <div className="hidden items-center gap-2 lg:flex">
-          <LanguageSwitcher activeLanguages={activeLanguages} />
+          <LanguageSwitcher
+            activeLanguages={activeLanguages}
+            triggerClassName="border-slate-200/60 bg-transparent px-3 text-slate-700 hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:bg-transparent dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white"
+          />
           <ThemeToggle />
-          <CartTrigger />
+          <CartTrigger className="border-slate-200/60 bg-transparent text-slate-700 hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:bg-transparent dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white" />
           {sessionUser?.role === "ADMIN" ? (
-            <NextLink href="/admin/dashboard" className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground">
+            <NextLink href="/admin/dashboard" className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200/70 bg-transparent px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white">
               {t("adminOps")}
             </NextLink>
           ) : null}
           {sessionUser ? (
             <>
-              <Link href="/dashboard" locale={locale} className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+              <Link href="/dashboard" locale={locale} className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200/70 bg-transparent px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white">
                 {t("dashboard")}
               </Link>
-              <Button variant="outline" size="icon" onClick={handleSignOut} aria-label={t("signOut")}>
+              <Button variant="outline" size="icon" onClick={handleSignOut} aria-label={t("signOut")} className="rounded-full border-slate-200/70 bg-transparent text-slate-700 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:bg-transparent dark:text-slate-200 dark:hover:bg-transparent dark:hover:text-white">
                 <LogOut className="size-4" />
               </Button>
             </>
           ) : (
-            <Link href={signInHref} locale={locale} className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+            <Link href={signInHref} locale={locale} className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200/70 bg-transparent px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white">
               {t("signIn")}
             </Link>
           )}
@@ -319,9 +346,6 @@ export function Header({
             <MobileLink locale={locale} href="/services" onClick={() => setOpen(false)} icon={LayersIcon}>
               {t("services")}
             </MobileLink>
-            <MobileLink locale={locale} href="/domains" onClick={() => setOpen(false)} icon={Globe}>
-              Domain search
-            </MobileLink>
             <MobileLink locale={locale} href="/support" onClick={() => setOpen(false)} icon={HelpCircle}>
               {t("support")}
             </MobileLink>
@@ -330,6 +354,15 @@ export function Header({
           <div className="space-y-2">
             <span className="text-sm text-slate-500">Services</span>
             {productLinks.map((link) => (
+              <MobileLink key={link.title} locale={locale} href={link.href} onClick={() => setOpen(false)} icon={link.icon}>
+                {link.title}
+              </MobileLink>
+            ))}
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-sm text-slate-500">{t("magneticServices")}</span>
+            {magneticProductLinks.map((link) => (
               <MobileLink key={link.title} locale={locale} href={link.href} onClick={() => setOpen(false)} icon={link.icon}>
                 {link.title}
               </MobileLink>
@@ -351,29 +384,34 @@ export function Header({
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <LanguageSwitcher activeLanguages={activeLanguages} className="w-full sm:w-auto" align="left" />
-            <ThemeToggle className="rounded-full border border-slate-200 bg-white px-2 py-1 dark:border-white/10 dark:bg-white/5" />
-            <CartTrigger />
+            <LanguageSwitcher
+              activeLanguages={activeLanguages}
+              className="w-full sm:w-auto"
+              align="left"
+              triggerClassName="w-full justify-between border-slate-200/70 bg-transparent text-slate-700 hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:bg-transparent dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white"
+            />
+            <ThemeToggle className="rounded-full px-1 py-1" />
+            <CartTrigger className="border-slate-200/70 bg-transparent text-slate-700 hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:bg-transparent dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white" />
           </div>
         </div>
 
         <div className="flex flex-col gap-2">
           {sessionUser?.role === "ADMIN" ? (
-            <NextLink href="/admin/dashboard" onClick={() => setOpen(false)} className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground">
+            <NextLink href="/admin/dashboard" onClick={() => setOpen(false)} className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200/70 bg-transparent px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white">
               {t("adminOps")}
             </NextLink>
           ) : null}
           {sessionUser ? (
             <>
-              <Link href="/dashboard" locale={locale} onClick={() => setOpen(false)} className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+              <Link href="/dashboard" locale={locale} onClick={() => setOpen(false)} className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200/70 bg-transparent px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white">
                 {t("dashboard")}
               </Link>
-              <Button variant="outline" className="w-full bg-transparent" onClick={handleSignOut}>
+              <Button variant="outline" className="w-full rounded-full border-slate-200/70 bg-transparent text-slate-700 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:bg-transparent dark:text-slate-200 dark:hover:bg-transparent dark:hover:text-white" onClick={handleSignOut}>
                 {t("signOut")}
               </Button>
             </>
           ) : (
-            <Link href={signInHref} locale={locale} onClick={() => setOpen(false)} className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+            <Link href={signInHref} locale={locale} onClick={() => setOpen(false)} className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200/70 bg-transparent px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white">
               {t("signIn")}
             </Link>
           )}
@@ -396,7 +434,7 @@ function MobileMenu({ open, children, className, ...props }: MobileMenuProps) {
     <div
       id="mobile-menu"
       className={cn(
-        "bg-background/95 supports-[backdrop-filter]:bg-background/80 backdrop-blur-lg",
+        "bg-transparent backdrop-blur-lg",
         "fixed inset-x-0 bottom-0 top-16 z-40 flex flex-col overflow-hidden border-y lg:hidden"
       )}
     >
@@ -423,18 +461,18 @@ function ListItem({
   return (
     <NavigationMenuLink
       className={cn(
-        "data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex w-full flex-row gap-x-2 rounded-sm p-2",
+        "flex w-full flex-row gap-x-3 rounded-2xl border border-transparent px-3 py-3 transition hover:bg-transparent hover:text-slate-950 focus:bg-transparent focus:text-slate-950 dark:hover:text-white dark:focus:text-white",
         className
       )}
       asChild
     >
       <Link href={href} locale={locale}>
-        <div className="bg-background/40 flex aspect-square size-12 items-center justify-center rounded-md border shadow-sm">
-          <Icon className="text-foreground size-5" />
+        <div className="flex aspect-square size-10 items-center justify-center rounded-full border border-slate-200/70 text-slate-500 dark:border-white/10 dark:text-slate-300">
+          <Icon className="size-4" />
         </div>
         <div className="flex flex-col items-start justify-center">
-          <span className="font-medium">{title}</span>
-          <span className="text-muted-foreground text-xs">{description}</span>
+          <span className="font-medium text-slate-900 dark:text-white">{title}</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">{description}</span>
         </div>
       </Link>
     </NavigationMenuLink>
@@ -455,7 +493,12 @@ function MobileLink({
   icon: LucideIcon;
 }) {
   return (
-    <Link href={href} locale={locale} onClick={onClick} className="inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white">
+    <Link
+      href={href}
+      locale={locale}
+      onClick={onClick}
+      className="inline-flex items-center gap-3 rounded-xl border border-slate-200/70 bg-transparent px-4 py-3 text-sm font-medium text-slate-900 transition hover:border-slate-300 hover:bg-transparent dark:border-white/10 dark:bg-transparent dark:text-white dark:hover:border-white/20 dark:hover:bg-transparent"
+    >
       <Icon className="size-4 text-slate-500 dark:text-slate-300" />
       {children}
     </Link>
