@@ -13,13 +13,15 @@ type LanguageSwitcherProps = {
   className?: string;
   triggerClassName?: string;
   align?: "left" | "right";
+  minimal?: boolean;
 };
 
 export function LanguageSwitcher({
   activeLanguages,
   className,
   triggerClassName,
-  align = "right"
+  align = "right",
+  minimal = false
 }: LanguageSwitcherProps) {
   const [open, setOpen] = useState(false);
   const locale = useLocale();
@@ -57,15 +59,22 @@ export function LanguageSwitcher({
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
+        aria-label={`${t("language")}: ${currentLanguage?.label ?? locale}`}
         className={cn(
-          "inline-flex h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-cyan-400/30 dark:hover:bg-white/10",
+          minimal
+            ? "inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/70 bg-transparent text-slate-800 transition hover:border-slate-300 hover:bg-transparent dark:border-white/10 dark:bg-transparent dark:text-white dark:hover:border-white/20 dark:hover:bg-transparent"
+            : "inline-flex h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-cyan-400/30 dark:hover:bg-white/10",
           triggerClassName
         )}
       >
         <Languages className="h-4 w-4 text-violet-600 dark:text-cyan-300" />
-        <span className="hidden sm:inline">{t("language")}</span>
-        <span className="max-w-24 truncate text-slate-700 dark:text-slate-200">{currentLanguage?.label}</span>
-        <ChevronDown className={cn("h-4 w-4 text-slate-400 transition", open && "rotate-180")} />
+        {minimal ? null : (
+          <>
+            <span className="hidden sm:inline">{t("language")}</span>
+            <span className="max-w-24 truncate text-slate-700 dark:text-slate-200">{currentLanguage?.label}</span>
+          </>
+        )}
+        <ChevronDown className={cn("h-4 w-4 text-slate-400 transition", open && "rotate-180", minimal && "hidden")} />
       </button>
 
       <AnimatePresence>

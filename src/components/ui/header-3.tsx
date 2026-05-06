@@ -140,12 +140,6 @@ export function Header({
         href: "/#trusted-ecosystem",
         description: "Partners and platforms behind the MagneticICT stack",
         icon: LayersIcon
-      },
-      {
-        title: t("support"),
-        href: "/support",
-        description: "Talk to support for onboarding and operations help",
-        icon: HelpCircle
       }
     ];
 
@@ -209,26 +203,20 @@ export function Header({
     }));
 
     return [
-      {
-        id: 1,
-        label: t("home"),
-        icon: Grid2x2,
-        link: "/"
-      },
       ...(serviceColumns.length > 0 ? [{
-        id: 2,
+        id: 1,
         label: t("services"),
         icon: LayersIcon,
         subMenus: serviceColumns
       }] : []),
       ...(magneticColumns.length > 0 ? [{
-        id: 3,
+        id: 2,
         label: t("magneticServices"),
         icon: Package,
         subMenus: magneticColumns
       }] : []),
       {
-        id: 4,
+        id: 3,
         label: "Company",
         icon: Briefcase,
         subMenus: [
@@ -253,7 +241,7 @@ export function Header({
         ]
       },
       {
-        id: 5,
+        id: 4,
         label: t("support"),
         icon: HelpCircle,
         link: "/support"
@@ -297,6 +285,7 @@ export function Header({
         <div className="hidden items-center gap-2 lg:flex">
           <LanguageSwitcher
             activeLanguages={activeLanguages}
+            minimal
             triggerClassName="border-slate-200/60 bg-transparent px-3 text-slate-700 hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:bg-transparent dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white"
           />
           <ThemeToggle />
