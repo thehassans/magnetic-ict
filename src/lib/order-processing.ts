@@ -1,6 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { syncServiceCatalog } from "@/lib/catalog-sync";
-import { sendOrderStatusEmail } from "@/lib/email";
+import {
+  sendInvoiceGeneratedEmail,
+  sendOrderPlacedEmail,
+  sendOrderProcessingEmail,
+  sendOrderStatusEmail,
+  sendPaymentReceivedEmail
+} from "@/lib/email";
 import { getHostingConfigurationTotal, resolveHostingConfiguration } from "@/lib/hosting-commerce";
 import { createProvisionRequestFromOrder, provisionMagneticVpsHosting } from "@/lib/ionos-hosting";
 import type { HostingConfigurationSelection, ResolvedHostingConfiguration } from "@/lib/hosting-types";
@@ -179,6 +185,60 @@ async function notifyOrders(
   );
 }
 
+async function notifyOrderPlaced(orderIds: string[]) {
+  const orders = await getLifecycleOrders(orderIds);
+
+  await Promise.allSettled(
+    orders.map((order) =>
+      sendOrderPlacedEmail({
+        email: order.user.email,
+        customerName: order.user.name,
+        serviceName: order.serviceNameSnapshot,
+        tierName: order.tierNameSnapshot,
+        amount: order.amount
+      })
+    )
+  );
+}
+
+async function notifyPaidOrderCompanions(orders: LifecycleOrder[]) {
+  await Promise.allSettled(
+    orders.flatMap((order) => {
+      const jobs = [
+        sendPaymentReceivedEmail({
+          email: order.user.email,
+          customerName: order.user.name,
+          amount: order.amount,
+          serviceName: `${order.serviceNameSnapshot} — ${order.tierNameSnapshot}`,
+          invoiceNumber: order.invoiceNumber
+        }),
+        sendOrderProcessingEmail({
+          email: order.user.email,
+          customerName: order.user.name,
+          serviceName: order.serviceNameSnapshot,
+          tierName: order.tierNameSnapshot,
+          amount: order.amount,
+          invoiceNumber: order.invoiceNumber
+        })
+      ];
+
+      if (order.invoiceNumber) {
+        jobs.push(
+          sendInvoiceGeneratedEmail({
+            email: order.user.email,
+            customerName: order.user.name,
+            invoiceNumber: order.invoiceNumber,
+            amount: order.amount,
+            serviceName: `${order.serviceNameSnapshot} — ${order.tierNameSnapshot}`
+          })
+        );
+      }
+
+      return jobs;
+    })
+  );
+}
+
 export async function createPendingOrders({
   userId,
   paymentMethod,
@@ -277,6 +337,8 @@ export async function createPendingOrders({
     )
   });
 
+  await notifyOrderPlaced(createdOrders.map((order) => order.id));
+
   return createdOrders;
 }
 
@@ -338,6 +400,7 @@ export async function markOrdersPaid(orderIds: string[], paymentReference: strin
   });
 
   const paidOrders = await getLifecycleOrders(orderIds);
+  await notifyPaidOrderCompanions(paidOrders);
   await notifyOrders(paidOrders, "PAID");
 }
 

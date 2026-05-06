@@ -65,6 +65,40 @@ export type WelcomeEmailSettings = {
   ctaHref: string;
 };
 
+export type TransactionalEmailSettings = {
+  enabled: boolean;
+  provider: "mailgun";
+  apiBaseUrl: string;
+  apiKey: string;
+  domain: string;
+  fromEmail: string;
+  fromName: string;
+  replyToEmail: string;
+  testRecipient: string;
+};
+
+export const emailNotificationKeys = [
+  "welcomeEmail",
+  "passwordReset",
+  "newsletterSubscription",
+  "orderPlaced",
+  "orderConfirmed",
+  "orderProcessing",
+  "orderCompleted",
+  "orderCancelled",
+  "ticketCreated",
+  "ticketReply",
+  "ticketClosed",
+  "invoiceGenerated",
+  "paymentReceived",
+  "serviceExpiring",
+  "serviceSuspended"
+] as const;
+
+export type EmailNotificationKey = (typeof emailNotificationKeys)[number];
+
+export type EmailNotificationsSettings = Record<EmailNotificationKey, boolean>;
+
 export type PlatformSettingsBundle = {
   activeLanguages: ActiveLanguage[];
   footerDetails: FooterSettings;
@@ -74,6 +108,8 @@ export type PlatformSettingsBundle = {
   socialBotConfig: SocialBotSettings;
   trustedPartnersConfig: TrustedPartnersSettings;
   welcomeEmailConfig: WelcomeEmailSettings;
+  transactionalEmailConfig: TransactionalEmailSettings;
+  emailNotificationsConfig: EmailNotificationsSettings;
   domainProviderConfig: DomainProviderSettings;
   hostingProviderConfig: HostingProviderSettings;
 };
@@ -170,6 +206,36 @@ export const defaultWelcomeEmailConfig: WelcomeEmailSettings = {
   body: "Your account is now ready. Explore your dashboard, browse our services, and reach out anytime if you need help getting started.",
   ctaLabel: "Open your dashboard",
   ctaHref: "/dashboard"
+};
+
+export const defaultTransactionalEmailConfig: TransactionalEmailSettings = {
+  enabled: false,
+  provider: "mailgun",
+  apiBaseUrl: "https://api.mailgun.net",
+  apiKey: "",
+  domain: "",
+  fromEmail: "",
+  fromName: "MagneticICT",
+  replyToEmail: "",
+  testRecipient: ""
+};
+
+export const defaultEmailNotificationsConfig: EmailNotificationsSettings = {
+  welcomeEmail: true,
+  passwordReset: true,
+  newsletterSubscription: true,
+  orderPlaced: true,
+  orderConfirmed: true,
+  orderProcessing: true,
+  orderCompleted: true,
+  orderCancelled: true,
+  ticketCreated: true,
+  ticketReply: true,
+  ticketClosed: true,
+  invoiceGenerated: true,
+  paymentReceived: true,
+  serviceExpiring: true,
+  serviceSuspended: true
 };
 
 export const defaultDomainProviderConfig: DomainProviderSettings = {
@@ -587,6 +653,34 @@ export function normalizeWelcomeEmailConfig(value: unknown): WelcomeEmailSetting
   };
 }
 
+export function normalizeTransactionalEmailConfig(value: unknown): TransactionalEmailSettings {
+  if (!isObject(value)) {
+    return defaultTransactionalEmailConfig;
+  }
+
+  return {
+    enabled: coerceBoolean(value.enabled, defaultTransactionalEmailConfig.enabled),
+    provider: "mailgun",
+    apiBaseUrl: coerceString(value.apiBaseUrl, defaultTransactionalEmailConfig.apiBaseUrl),
+    apiKey: coerceString(value.apiKey, defaultTransactionalEmailConfig.apiKey),
+    domain: coerceString(value.domain, defaultTransactionalEmailConfig.domain),
+    fromEmail: coerceString(value.fromEmail, defaultTransactionalEmailConfig.fromEmail),
+    fromName: coerceString(value.fromName, defaultTransactionalEmailConfig.fromName),
+    replyToEmail: coerceString(value.replyToEmail, defaultTransactionalEmailConfig.replyToEmail),
+    testRecipient: coerceString(value.testRecipient, defaultTransactionalEmailConfig.testRecipient)
+  };
+}
+
+export function normalizeEmailNotificationsConfig(value: unknown): EmailNotificationsSettings {
+  if (!isObject(value)) {
+    return defaultEmailNotificationsConfig;
+  }
+
+  return Object.fromEntries(
+    emailNotificationKeys.map((key) => [key, coerceBoolean(value[key], defaultEmailNotificationsConfig[key])])
+  ) as EmailNotificationsSettings;
+}
+
 export function normalizeDomainProviderConfig(value: unknown): DomainProviderSettings {
   if (!isObject(value)) {
     return defaultDomainProviderConfig;
@@ -665,7 +759,20 @@ async function getSettingValue(key: string) {
 }
 
 export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
-  const [activeLanguages, footerDetails, paymentIntegrations, oauthConfig, geminiConfig, socialBotConfig, trustedPartnersConfig, welcomeEmailConfig, domainProviderConfig, hostingProviderConfig] = await Promise.all([
+  const [
+    activeLanguages,
+    footerDetails,
+    paymentIntegrations,
+    oauthConfig,
+    geminiConfig,
+    socialBotConfig,
+    trustedPartnersConfig,
+    welcomeEmailConfig,
+    transactionalEmailConfig,
+    emailNotificationsConfig,
+    domainProviderConfig,
+    hostingProviderConfig
+  ] = await Promise.all([
     getSettingValue("active_languages"),
     getSettingValue("footer_details"),
     getSettingValue("payment_integrations"),
@@ -674,6 +781,8 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     getSettingValue("social_bot_config"),
     getSettingValue("trusted_partners_config"),
     getSettingValue("welcome_email_config"),
+    getSettingValue("transactional_email_config"),
+    getSettingValue("email_notifications_config"),
     getSettingValue("domain_provider_config"),
     getSettingValue("hosting_provider_config")
   ]);
@@ -687,6 +796,8 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     socialBotConfig: normalizeSocialBotConfig(socialBotConfig),
     trustedPartnersConfig: normalizeTrustedPartnersConfig(trustedPartnersConfig),
     welcomeEmailConfig: normalizeWelcomeEmailConfig(welcomeEmailConfig),
+    transactionalEmailConfig: normalizeTransactionalEmailConfig(transactionalEmailConfig),
+    emailNotificationsConfig: normalizeEmailNotificationsConfig(emailNotificationsConfig),
     domainProviderConfig: normalizeDomainProviderConfig(domainProviderConfig),
     hostingProviderConfig: normalizeHostingProviderConfig(hostingProviderConfig)
   };
@@ -720,6 +831,16 @@ export function getResolvedOAuthSettings(settings: OAuthSettings): OAuthSettings
 export async function getWelcomeEmailSettings() {
   const value = await getSettingValue("welcome_email_config");
   return normalizeWelcomeEmailConfig(value);
+}
+
+export async function getTransactionalEmailSettings() {
+  const value = await getSettingValue("transactional_email_config");
+  return normalizeTransactionalEmailConfig(value);
+}
+
+export async function getEmailNotificationsSettings() {
+  const value = await getSettingValue("email_notifications_config");
+  return normalizeEmailNotificationsConfig(value);
 }
 
 export async function getTrustedPartnersSettings() {

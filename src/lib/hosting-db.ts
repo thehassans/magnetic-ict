@@ -146,6 +146,46 @@ export async function updateHostingProvisionAccess(orderId: string, access: Host
   return nextRecord;
 }
 
+export async function updateHostingProvisionManagement(
+  orderId: string,
+  update: {
+    status: HostingProvisionStatus;
+    errorMessage: string | null;
+    provisionedAt: string | null;
+    reseller: Pick<HostingProvisionRecord["reseller"], "contractId" | "adminId">;
+    cloud: Pick<HostingProvisionRecord["cloud"], "datacenterId" | "serverId" | "volumeId" | "location">;
+  }
+) {
+  const current = await getHostingProvisionByOrderId(orderId);
+
+  if (!current) {
+    return null;
+  }
+
+  const nextRecord: HostingProvisionRecord = {
+    ...current,
+    status: update.status,
+    errorMessage: update.errorMessage,
+    provisionedAt: update.provisionedAt,
+    reseller: {
+      ...current.reseller,
+      contractId: update.reseller.contractId,
+      adminId: update.reseller.adminId
+    },
+    cloud: {
+      ...current.cloud,
+      datacenterId: update.cloud.datacenterId,
+      serverId: update.cloud.serverId,
+      volumeId: update.cloud.volumeId,
+      location: update.cloud.location
+    },
+    updatedAt: new Date().toISOString()
+  };
+
+  await upsertHostingProvision(nextRecord);
+  return nextRecord;
+}
+
 export async function upsertHostingProvision(record: HostingProvisionRecord) {
   await upsertMongoDocument(
     hostingCollections.provisions,

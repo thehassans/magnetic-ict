@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { sendOtpEmail } from "@/lib/email";
+import { sendOtpEmail, sendPasswordResetEmail } from "@/lib/email";
 import { generateOtpCode, hashOtpCode } from "@/lib/otp";
 import { prisma } from "@/lib/prisma";
 
@@ -23,6 +23,10 @@ export async function POST(request: Request) {
     const email = parsed.data.email.toLowerCase();
     const code = generateOtpCode();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+      select: { name: true }
+    });
 
     await prisma.emailOtp.create({
       data: {
@@ -32,7 +36,11 @@ export async function POST(request: Request) {
       }
     });
 
-    await sendOtpEmail({ email, code });
+    if (existingUser) {
+      await sendPasswordResetEmail({ email, code, customerName: existingUser.name });
+    } else {
+      await sendOtpEmail({ email, code });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

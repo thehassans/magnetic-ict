@@ -1,5 +1,6 @@
 import { GithubIcon, Mail, MapPin, Phone } from "lucide-react";
 import { BrandLogo } from "@/components/branding/brand-logo";
+import { NewsletterSignupForm } from "@/components/layout/newsletter-signup-form";
 import { Link } from "@/i18n/navigation";
 
 type MinimalFooterProps = {
@@ -91,6 +92,9 @@ export function MinimalFooter({ locale, description, footerDetails }: MinimalFoo
               <div className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                 <MapPin className="size-4" />
                 <span>{footerDetails.locationLabel}</span>
+              </div>
+              <div className="max-w-sm">
+                <NewsletterSignupForm />
               </div>
             </div>
             <div className="col-span-3 w-full md:col-span-1">

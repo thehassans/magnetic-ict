@@ -1,6 +1,7 @@
 import { AdminSettingsClient } from "@/components/admin/admin-settings-client";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { requireAdmin } from "@/lib/admin";
+import { getEmailLogs } from "@/lib/email-logs";
 import { getPlatformSettings, supportedActiveLanguages } from "@/lib/platform-settings";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
@@ -15,7 +16,7 @@ function getCanonicalAppUrl() {
 export default async function AdminSettingsPage() {
   await requireAdmin("/admin/settings");
 
-  const settings = await getPlatformSettings();
+  const [settings, emailLogs] = await Promise.all([getPlatformSettings(), hasDatabase ? getEmailLogs(80) : Promise.resolve([])]);
 
   return (
     <AdminShell
@@ -33,8 +34,11 @@ export default async function AdminSettingsPage() {
         socialBotConfig={settings.socialBotConfig}
         trustedPartnersConfig={settings.trustedPartnersConfig}
         welcomeEmailConfig={settings.welcomeEmailConfig}
+        transactionalEmailConfig={settings.transactionalEmailConfig}
+        emailNotificationsConfig={settings.emailNotificationsConfig}
         domainProviderConfig={settings.domainProviderConfig}
         hostingProviderConfig={settings.hostingProviderConfig}
+        emailLogs={emailLogs}
         appBaseUrl={getCanonicalAppUrl()}
         canPersist={hasDatabase}
       />

@@ -103,6 +103,40 @@ const requestSchema = z.discriminatedUnion("section", [
     })
   }),
   z.object({
+    section: z.literal("transactionalEmail"),
+    value: z.object({
+      enabled: z.boolean(),
+      provider: z.literal("mailgun"),
+      apiBaseUrl: z.string().min(1),
+      apiKey: z.string(),
+      domain: z.string(),
+      fromEmail: z.string(),
+      fromName: z.string(),
+      replyToEmail: z.string(),
+      testRecipient: z.string()
+    })
+  }),
+  z.object({
+    section: z.literal("emailNotifications"),
+    value: z.object({
+      welcomeEmail: z.boolean(),
+      passwordReset: z.boolean(),
+      newsletterSubscription: z.boolean(),
+      orderPlaced: z.boolean(),
+      orderConfirmed: z.boolean(),
+      orderProcessing: z.boolean(),
+      orderCompleted: z.boolean(),
+      orderCancelled: z.boolean(),
+      ticketCreated: z.boolean(),
+      ticketReply: z.boolean(),
+      ticketClosed: z.boolean(),
+      invoiceGenerated: z.boolean(),
+      paymentReceived: z.boolean(),
+      serviceExpiring: z.boolean(),
+      serviceSuspended: z.boolean()
+    })
+  }),
+  z.object({
     section: z.literal("domain"),
     value: z.object({
       enabled: z.boolean(),
@@ -199,6 +233,8 @@ const settingKeyBySection = {
   socialBot: "social_bot_config",
   trustedPartners: "trusted_partners_config",
   welcomeEmail: "welcome_email_config",
+  transactionalEmail: "transactional_email_config",
+  emailNotifications: "email_notifications_config",
   domain: "domain_provider_config",
   hosting: "hosting_provider_config"
 } as const;

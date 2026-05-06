@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Activity, Bot, Box, Globe, LogOut, Server, Settings2, ShoppingCart, Users } from "lucide-react";
+import { Activity, Bot, Box, Globe, LifeBuoy, LogOut, Mail, Server, Settings2, ShoppingCart, Users } from "lucide-react";
 import { logoutAdmin } from "@/app/admin/actions";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -9,7 +9,7 @@ type AdminShellProps = {
   title: string;
   description: string;
   eyebrow?: string;
-  activePath: "/admin/dashboard" | "/admin/orders" | "/admin/services" | "/admin/users" | "/admin/social-bot" | "/admin/domains" | "/admin/hosting" | "/admin/settings";
+  activePath: "/admin/dashboard" | "/admin/orders" | "/admin/services" | "/admin/users" | "/admin/social-bot" | "/admin/domains" | "/admin/hosting" | "/admin/support" | "/admin/email-logs" | "/admin/settings";
   children: ReactNode;
   actions?: ReactNode;
 };
@@ -20,6 +20,8 @@ const navItems = [
   { href: "/admin/services", label: "Services", Icon: Box },
   { href: "/admin/domains", label: "Domains", Icon: Globe },
   { href: "/admin/hosting", label: "Hosting", Icon: Server },
+  { href: "/admin/support", label: "Support", Icon: LifeBuoy },
+  { href: "/admin/email-logs", label: "Email Logs", Icon: Mail },
   { href: "/admin/users", label: "Users", Icon: Users },
   { href: "/admin/social-bot", label: "Social Bot", Icon: Bot },
   { href: "/admin/settings", label: "Settings", Icon: Settings2 }

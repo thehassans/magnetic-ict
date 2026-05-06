@@ -2,6 +2,7 @@ import { Headphones, LifeBuoy, ShieldCheck } from "lucide-react";
 import NextLink from "next/link";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
+import { SupportTicketForm } from "@/components/support/support-ticket-form";
 import { Link } from "@/i18n/navigation";
 
 export default async function SupportPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -62,6 +63,10 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="mt-8">
+        <SupportTicketForm initialEmail={session?.user?.email ?? ""} initialName={session?.user?.name ?? ""} />
       </section>
     </main>
   );

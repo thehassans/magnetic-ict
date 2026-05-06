@@ -5,14 +5,17 @@ import { Check, Loader2, Sparkles } from "lucide-react";
 import { HostingConfigEditor } from "@/components/admin/hosting-config-editor";
 import { TrustedPartnersEditor } from "@/components/admin/trusted-partners-editor";
 import type { DomainProviderSettings } from "@/lib/domain-types";
+import type { EmailLogRecord } from "@/lib/email-logs";
 import type { HostingProviderSettings } from "@/lib/hosting-types";
 import type { ActiveLanguage } from "@/types/i18n";
 import type {
+  EmailNotificationsSettings,
   FooterSettings,
   GeminiSettings,
   OAuthSettings,
   PaymentIntegrationsSettings,
   SocialBotSettings,
+  TransactionalEmailSettings,
   TrustedPartnersSettings,
   WelcomeEmailSettings
 } from "@/lib/platform-settings";
@@ -27,8 +30,11 @@ type AdminSettingsClientProps = {
   socialBotConfig: SocialBotSettings;
   trustedPartnersConfig: TrustedPartnersSettings;
   welcomeEmailConfig: WelcomeEmailSettings;
+  transactionalEmailConfig: TransactionalEmailSettings;
+  emailNotificationsConfig: EmailNotificationsSettings;
   domainProviderConfig: DomainProviderSettings;
   hostingProviderConfig: HostingProviderSettings;
+  emailLogs: EmailLogRecord[];
   appBaseUrl: string;
   canPersist: boolean;
 };
@@ -38,7 +44,7 @@ type ToastState = {
   message: string;
 } | null;
 
-const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "trustedPartners" | "welcomeEmail" | "domain" | "hosting", string> = {
+const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting", string> = {
   languages: "Language",
   footer: "Footer",
   payments: "Payment",
@@ -47,6 +53,8 @@ const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth"
   socialBot: "Social Bot",
   trustedPartners: "Trusted partners",
   welcomeEmail: "Welcome email",
+  transactionalEmail: "Transactional email",
+  emailNotifications: "Email notification",
   domain: "Domain",
   hosting: "Hosting"
 };
@@ -69,8 +77,11 @@ export function AdminSettingsClient({
   socialBotConfig,
   trustedPartnersConfig,
   welcomeEmailConfig,
+  transactionalEmailConfig,
+  emailNotificationsConfig,
   domainProviderConfig,
   hostingProviderConfig,
+  emailLogs,
   appBaseUrl,
   canPersist
 }: AdminSettingsClientProps) {
@@ -82,6 +93,8 @@ export function AdminSettingsClient({
   const [socialBotState, setSocialBotState] = useState(socialBotConfig);
   const [trustedPartnersState, setTrustedPartnersState] = useState(trustedPartnersConfig);
   const [welcomeEmailState, setWelcomeEmailState] = useState(welcomeEmailConfig);
+  const [transactionalEmailState, setTransactionalEmailState] = useState(transactionalEmailConfig);
+  const [emailNotificationsState, setEmailNotificationsState] = useState(emailNotificationsConfig);
   const [domainState, setDomainState] = useState(domainProviderConfig);
   const [hostingState, setHostingState] = useState(hostingProviderConfig);
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
@@ -93,7 +106,7 @@ export function AdminSettingsClient({
   );
   const metaWebhookUrl = useMemo(() => (appBaseUrl ? `${appBaseUrl}/api/social-bot/meta/webhook` : ""), [appBaseUrl]);
 
-  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "trustedPartners" | "welcomeEmail" | "domain" | "hosting", value: unknown) {
+  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting", value: unknown) {
     setLoadingSection(section);
     setToast(null);
 
@@ -114,6 +127,33 @@ export function AdminSettingsClient({
     }
 
     setToast({ type: "success", message: `${settingsSectionLabel[section]} settings saved.` });
+    setLoadingSection(null);
+  }
+
+  async function handleEmailTest() {
+    setLoadingSection("email-test");
+    setToast(null);
+
+    const response = await fetch("/api/admin/settings/email-test", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        ...transactionalEmailState,
+        recipient: transactionalEmailState.testRecipient
+      })
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
+
+    if (!response.ok) {
+      setToast({ type: "error", message: payload.error ?? "Unable to send the test email right now." });
+      setLoadingSection(null);
+      return;
+    }
+
+    setToast({ type: "success", message: payload.message ?? "Test email sent successfully." });
     setLoadingSection(null);
   }
 
@@ -517,6 +557,90 @@ export function AdminSettingsClient({
           </label>
         </div>
       </SettingsCard>
+
+      <SettingsCard
+        title="Transactional email · Mailgun"
+        description="Configure Mailgun for transactional emails, save the live delivery settings, and send a test email from the admin panel. If Mailgun is not enabled, the platform can still fall back to the existing auth mail transport for legacy flows."
+        action={
+          <div className="flex flex-wrap gap-3">
+            <Button label="Save email config" loading={loadingSection === "transactionalEmail"} onClick={() => saveSection("transactionalEmail", transactionalEmailState)} />
+            <Button label="Test email configuration" loading={loadingSection === "email-test"} onClick={() => void handleEmailTest()} variant="secondary" />
+          </div>
+        }
+      >
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <ToggleCard label="Transactional email enabled" checked={transactionalEmailState.enabled} onChange={(checked) => setTransactionalEmailState((current) => ({ ...current, enabled: checked }))} />
+        </div>
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <Input label="Provider" value={transactionalEmailState.provider} onChange={() => undefined} readOnly />
+          <Input label="Mailgun API base URL" value={transactionalEmailState.apiBaseUrl} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, apiBaseUrl: value }))} />
+          <Input label="Mailgun API key" value={transactionalEmailState.apiKey} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, apiKey: value }))} type="password" />
+          <Input label="Mailgun domain" value={transactionalEmailState.domain} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, domain: value }))} />
+          <Input label="From email" value={transactionalEmailState.fromEmail} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, fromEmail: value }))} />
+          <Input label="From name" value={transactionalEmailState.fromName} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, fromName: value }))} />
+          <Input label="Reply-to email" value={transactionalEmailState.replyToEmail} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, replyToEmail: value }))} />
+          <Input label="Test recipient" value={transactionalEmailState.testRecipient} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, testRecipient: value }))} />
+        </div>
+      </SettingsCard>
+
+      <SettingsCard
+        title="Email notifications"
+        description="Choose which emails are sent automatically. Some events are already wired today, while the rest are saved as live automation policy and will be used as their workflows are connected."
+        action={<Button label="Save email notifications" loading={loadingSection === "emailNotifications"} onClick={() => saveSection("emailNotifications", emailNotificationsState)} />}
+      >
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <ToggleCard label="Welcome Email" checked={emailNotificationsState.welcomeEmail} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, welcomeEmail: checked }))} />
+          <ToggleCard label="Password Reset" checked={emailNotificationsState.passwordReset} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, passwordReset: checked }))} />
+          <ToggleCard label="Newsletter Subscription" checked={emailNotificationsState.newsletterSubscription} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, newsletterSubscription: checked }))} />
+          <ToggleCard label="Order Placed" checked={emailNotificationsState.orderPlaced} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, orderPlaced: checked }))} />
+          <ToggleCard label="Order Confirmed" checked={emailNotificationsState.orderConfirmed} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, orderConfirmed: checked }))} />
+          <ToggleCard label="Order Processing" checked={emailNotificationsState.orderProcessing} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, orderProcessing: checked }))} />
+          <ToggleCard label="Order Completed" checked={emailNotificationsState.orderCompleted} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, orderCompleted: checked }))} />
+          <ToggleCard label="Order Cancelled" checked={emailNotificationsState.orderCancelled} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, orderCancelled: checked }))} />
+          <ToggleCard label="Ticket Created" checked={emailNotificationsState.ticketCreated} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, ticketCreated: checked }))} />
+          <ToggleCard label="Ticket Reply" checked={emailNotificationsState.ticketReply} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, ticketReply: checked }))} />
+          <ToggleCard label="Ticket Closed" checked={emailNotificationsState.ticketClosed} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, ticketClosed: checked }))} />
+          <ToggleCard label="Invoice Generated" checked={emailNotificationsState.invoiceGenerated} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, invoiceGenerated: checked }))} />
+          <ToggleCard label="Payment Received" checked={emailNotificationsState.paymentReceived} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, paymentReceived: checked }))} />
+          <ToggleCard label="Service Expiring" checked={emailNotificationsState.serviceExpiring} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, serviceExpiring: checked }))} />
+          <ToggleCard label="Service Suspended" checked={emailNotificationsState.serviceSuspended} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, serviceSuspended: checked }))} />
+        </div>
+      </SettingsCard>
+
+      <SettingsCard
+        title="Email logs"
+        description="Review recent transactional email activity, including successful sends, skipped notifications, and delivery failures."
+        action={<div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700">{emailLogs.length} recent logs</div>}
+      >
+        {emailLogs.length === 0 ? (
+          <div className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-5 py-6 text-sm text-slate-600">
+            Email activity will appear here once transactional or test emails start sending.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {emailLogs.map((log) => (
+              <div key={log._id} className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-slate-950">{log.subject}</div>
+                    <div className="mt-1 text-sm text-slate-600">To: {log.to}</div>
+                    <div className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
+                      {log.category.replaceAll("_", " ")} · {log.provider} · {log.notificationKey ?? "manual"}
+                    </div>
+                  </div>
+                  <div className={`inline-flex h-9 items-center rounded-full border px-3 text-xs font-semibold uppercase tracking-[0.18em] ${log.status === "sent" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : log.status === "failed" ? "border-rose-200 bg-rose-50 text-rose-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}>
+                    {log.status}
+                  </div>
+                </div>
+                {log.errorMessage ? <div className="mt-3 rounded-[18px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{log.errorMessage}</div> : null}
+                <div className="mt-3 text-xs uppercase tracking-[0.18em] text-slate-400">
+                  {new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(log.createdAt))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </SettingsCard>
     </div>
   );
 }
@@ -575,13 +699,15 @@ function Input({
   value,
   onChange,
   type = "text",
-  icon
+  icon,
+  readOnly = false
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   type?: string;
   icon?: ReactNode;
+  readOnly?: boolean;
 }) {
   return (
     <label className="space-y-2 text-sm">
@@ -592,6 +718,7 @@ function Input({
           type={type}
           value={value}
           onChange={(event) => onChange(event.target.value)}
+          readOnly={readOnly}
           className="w-full bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400"
         />
       </span>
