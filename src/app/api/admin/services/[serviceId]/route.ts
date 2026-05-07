@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
+import { syncServiceCatalog } from "@/lib/catalog-sync";
 import { prisma } from "@/lib/prisma";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
@@ -21,6 +22,20 @@ const requestSchema = z.object({
 
 type EditableTier = z.infer<typeof tierSchema>;
 
+async function findEditableService(serviceId: string) {
+  return prisma.service.findUnique({
+    where: { catalogKey: serviceId },
+    include: {
+      tiers: {
+        select: {
+          id: true,
+          catalogKey: true
+        }
+      }
+    }
+  });
+}
+
 export async function PATCH(request: Request, { params }: { params: Promise<{ serviceId: string }> }) {
   const session = await auth();
 
@@ -40,17 +55,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ se
       return NextResponse.json({ error: "Please provide valid service data." }, { status: 400 });
     }
 
-    const service = await prisma.service.findUnique({
-      where: { catalogKey: serviceId },
-      include: {
-        tiers: {
-          select: {
-            id: true,
-            catalogKey: true
-          }
-        }
-      }
-    });
+    let service = await findEditableService(serviceId);
+
+    if (!service) {
+      await syncServiceCatalog();
+      service = await findEditableService(serviceId);
+    }
 
     if (!service) {
       return NextResponse.json({ error: "Service not found." }, { status: 404 });
@@ -66,7 +76,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ se
       }
     });
 
-    const tierIdByCatalogKey = new Map(service.tiers.map((tier: { id: string; catalogKey: string }) => [tier.catalogKey, tier.id]));
+    let tierIdByCatalogKey = new Map(service.tiers.map((tier: { id: string; catalogKey: string }) => [tier.catalogKey, tier.id]));
+
+    if (parsed.data.tiers.some((tier: EditableTier) => !tierIdByCatalogKey.has(tier.catalogKey))) {
+      await syncServiceCatalog();
+      const refreshedService = await findEditableService(serviceId);
+
+      if (!refreshedService) {
+        return NextResponse.json({ error: "Service not found." }, { status: 404 });
+      }
+
+      service = refreshedService;
+      tierIdByCatalogKey = new Map(service.tiers.map((tier: { id: string; catalogKey: string }) => [tier.catalogKey, tier.id]));
+    }
 
     await prisma.$transaction(
       parsed.data.tiers
