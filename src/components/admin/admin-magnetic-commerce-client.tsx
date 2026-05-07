@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Globe2, Smartphone, Store, Building2, Mail, DollarSign, FileText, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { useMemo, useState } from "react";
 
 type Installation = {
   _id: string;
@@ -12,275 +11,336 @@ type Installation = {
   tierName: string;
   status: "pending_domain_assignment" | "integration_requested" | "active" | "failed";
   errorMessage: string | null;
-  createdAt: string;
   updatedAt: string;
-  activatedAt: string | null;
   assignedDomainId: string | null;
   assignedDomain: string | null;
-  assignedAt: string | null;
   storefrontUrl: string | null;
   adminUrl: string | null;
-  surfaces: {
-    web: boolean;
-    ios: boolean;
-    android: boolean;
+  configuration: {
+    businessName: string;
+    brandColor: string;
+    adminEmail: string;
+    supportEmail: string;
+    currency: string;
+    logoUrl: string;
+    launchNotes: string;
   };
-  businessName: string | null;
-  logoUrl: string | null;
-  primaryColor: string | null;
-  adminEmail: string | null;
-  storeCurrency: string | null;
-  appStatus: "pending" | "deploying" | "live" | "maintenance" | "offline";
-  storefrontStatus: "pending" | "deploying" | "live" | "maintenance" | "offline";
-  notes: string | null;
+  dns: {
+    lastAppliedAt: string | null;
+    autoAppliedAt: string | null;
+    records: Array<{
+      recordId: string | null;
+      type: "A" | "AAAA" | "CNAME" | "MX" | "TXT" | "NS";
+      name: string;
+      value: string;
+      ttl: number;
+      priority: number | null;
+    }>;
+  };
 };
 
 export function AdminMagneticCommerceClient({ installations }: { installations: Installation[] }) {
-  const [filter, setFilter] = useState<"all" | "pending" | "active" | "failed">("all");
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedOrderId, setSelectedOrderId] = useState(installations[0]?.orderId ?? "");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isApplyingDns, setIsApplyingDns] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const filteredInstallations = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
 
-  const filtered = installations.filter((installation) => {
-    if (filter === "all") return true;
-    if (filter === "pending") return installation.status === "pending_domain_assignment" || installation.status === "integration_requested";
-    if (filter === "active") return installation.status === "active";
-    if (filter === "failed") return installation.status === "failed";
-    return true;
-  });
+    return installations.filter((installation) => {
+      const matchesStatus = statusFilter === "all" || installation.status === statusFilter;
+      const searchable = [
+        installation.customerEmail,
+        installation.customerName ?? "",
+        installation.orderId,
+        installation.assignedDomain ?? "",
+        installation.configuration.businessName
+      ].join(" ").toLowerCase();
+      const matchesQuery = normalizedQuery.length === 0 || searchable.includes(normalizedQuery);
 
-  const pendingCount = installations.filter((i) => i.status === "pending_domain_assignment" || i.status === "integration_requested").length;
-  const activeCount = installations.filter((i) => i.status === "active").length;
-  const failedCount = installations.filter((i) => i.status === "failed").length;
+      return matchesStatus && matchesQuery;
+    });
+  }, [installations, query, statusFilter]);
+  const selectedInstallation = useMemo(
+    () => installations.find((installation) => installation.orderId === selectedOrderId) ?? filteredInstallations[0] ?? installations[0] ?? null,
+    [filteredInstallations, installations, selectedOrderId]
+  );
+  const [formState, setFormState] = useState(() => ({
+    status: installations[0]?.status ?? "pending_domain_assignment",
+    errorMessage: installations[0]?.errorMessage ?? "",
+    storefrontUrl: installations[0]?.storefrontUrl ?? "",
+    adminUrl: installations[0]?.adminUrl ?? "",
+    businessName: installations[0]?.configuration.businessName ?? "",
+    brandColor: installations[0]?.configuration.brandColor ?? "",
+    adminEmail: installations[0]?.configuration.adminEmail ?? "",
+    supportEmail: installations[0]?.configuration.supportEmail ?? "",
+    currency: installations[0]?.configuration.currency ?? "USD",
+    logoUrl: installations[0]?.configuration.logoUrl ?? "",
+    launchNotes: installations[0]?.configuration.launchNotes ?? ""
+  }));
 
-  function getStatusBadge(status: Installation["status"]) {
-    switch (status) {
-      case "pending_domain_assignment":
-        return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
-            <Clock className="h-3 w-3" /> Domain assignment pending
-          </span>
-        );
-      case "integration_requested":
-        return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
-            <Clock className="h-3 w-3" /> Integration requested
-          </span>
-        );
-      case "active":
-        return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-            <CheckCircle2 className="h-3 w-3" /> Active
-          </span>
-        );
-      case "failed":
-        return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700">
-            <AlertCircle className="h-3 w-3" /> Failed
-          </span>
-        );
+  function syncSelectedInstallation(nextInstallation: Installation | undefined) {
+    if (!nextInstallation) {
+      return;
     }
+
+    setFormState({
+      status: nextInstallation.status,
+      errorMessage: nextInstallation.errorMessage ?? "",
+      storefrontUrl: nextInstallation.storefrontUrl ?? "",
+      adminUrl: nextInstallation.adminUrl ?? "",
+      businessName: nextInstallation.configuration.businessName,
+      brandColor: nextInstallation.configuration.brandColor,
+      adminEmail: nextInstallation.configuration.adminEmail,
+      supportEmail: nextInstallation.configuration.supportEmail,
+      currency: nextInstallation.configuration.currency,
+      logoUrl: nextInstallation.configuration.logoUrl,
+      launchNotes: nextInstallation.configuration.launchNotes
+    });
   }
+
+  async function saveInstallation() {
+    if (!selectedInstallation) {
+      return;
+    }
+
+    setIsSaving(true);
+    setFeedback(null);
+
+    const response = await fetch(`/api/admin/magnetic-commerce/installations/${selectedInstallation.orderId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        action: "update-management",
+        status: formState.status,
+        errorMessage: formState.errorMessage,
+        storefrontUrl: formState.storefrontUrl,
+        adminUrl: formState.adminUrl,
+        configuration: {
+          businessName: formState.businessName,
+          brandColor: formState.brandColor,
+          adminEmail: formState.adminEmail,
+          supportEmail: formState.supportEmail,
+          currency: formState.currency,
+          logoUrl: formState.logoUrl,
+          launchNotes: formState.launchNotes
+        }
+      })
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as { error?: string };
+
+    if (!response.ok) {
+      setFeedback({ type: "error", message: payload.error ?? "Unable to update Magnetic Commerce right now." });
+      setIsSaving(false);
+      return;
+    }
+
+    setFeedback({ type: "success", message: "Magnetic Commerce installation updated." });
+    setIsSaving(false);
+    window.location.reload();
+  }
+
+  async function applyDns() {
+    if (!selectedInstallation) {
+      return;
+    }
+
+    setIsApplyingDns(true);
+    setFeedback(null);
+
+    const response = await fetch(`/api/admin/magnetic-commerce/installations/${selectedInstallation.orderId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        action: "apply-dns",
+        userId: selectedInstallation.userId
+      })
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as { error?: string };
+
+    if (!response.ok) {
+      setFeedback({ type: "error", message: payload.error ?? "Unable to apply DNS template right now." });
+      setIsApplyingDns(false);
+      return;
+    }
+
+    setFeedback({ type: "success", message: "Magnetic Commerce DNS template applied." });
+    setIsApplyingDns(false);
+    window.location.reload();
+  }
+
+  const stats = useMemo(() => ({
+    total: installations.length,
+    active: installations.filter((installation) => installation.status === "active").length,
+    pending: installations.filter((installation) => installation.status === "integration_requested" || installation.status === "pending_domain_assignment").length,
+    failed: installations.filter((installation) => installation.status === "failed").length
+  }), [installations]);
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 lg:grid-cols-4">
-        <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-          <div className="text-xs font-medium text-slate-500">Total installations</div>
-          <div className="mt-2 text-2xl font-semibold text-slate-950">{installations.length}</div>
-        </div>
-        <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-          <div className="text-xs font-medium text-slate-500">Pending</div>
-          <div className="mt-2 text-2xl font-semibold text-amber-600">{pendingCount}</div>
-        </div>
-        <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-          <div className="text-xs font-medium text-slate-500">Active</div>
-          <div className="mt-2 text-2xl font-semibold text-emerald-600">{activeCount}</div>
-        </div>
-        <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-          <div className="text-xs font-medium text-slate-500">Failed</div>
-          <div className="mt-2 text-2xl font-semibold text-rose-600">{failedCount}</div>
-        </div>
-      </div>
+      <section className="grid gap-4 md:grid-cols-4">
+        <StatCard label="Installations" value={stats.total} />
+        <StatCard label="Active" value={stats.active} />
+        <StatCard label="Pending" value={stats.pending} />
+        <StatCard label="Failed" value={stats.failed} />
+      </section>
 
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => setFilter("all")}
-          className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-            filter === "all" ? "bg-slate-950 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-          }`}
-        >
-          All
-        </button>
-        <button
-          type="button"
-          onClick={() => setFilter("pending")}
-          className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-            filter === "pending" ? "bg-amber-600 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-          }`}
-        >
-          Pending ({pendingCount})
-        </button>
-        <button
-          type="button"
-          onClick={() => setFilter("active")}
-          className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-            filter === "active" ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-          }`}
-        >
-          Active ({activeCount})
-        </button>
-        <button
-          type="button"
-          onClick={() => setFilter("failed")}
-          className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-            filter === "failed" ? "bg-rose-600 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-          }`}
-        >
-          Failed ({failedCount})
-        </button>
-      </div>
-
-      {filtered.length === 0 ? (
-        <div className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-600">
-          No installations found for the selected filter.
+      {feedback ? (
+        <div className={`rounded-[24px] border px-4 py-3 text-sm ${feedback.type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-rose-200 bg-rose-50 text-rose-700"}`}>
+          {feedback.message}
         </div>
-      ) : (
+      ) : null}
+
+      <section className="grid gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
+        <div className="rounded-[32px] border border-slate-200 bg-white p-5 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
+          <div className="grid gap-3">
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by email, order, domain" className="h-11 rounded-[18px] border border-slate-200 bg-slate-50 px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white" />
+            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="h-11 rounded-[18px] border border-slate-200 bg-slate-50 px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white">
+              <option value="all">All statuses</option>
+              <option value="pending_domain_assignment">Pending domain</option>
+              <option value="integration_requested">Integration requested</option>
+              <option value="active">Active</option>
+              <option value="failed">Failed</option>
+            </select>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {filteredInstallations.length === 0 ? (
+              <div className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 p-5 text-sm text-slate-500">No Magnetic Commerce installations match the current filters.</div>
+            ) : filteredInstallations.map((installation) => {
+              const active = installation.orderId === (selectedInstallation?.orderId ?? "");
+
+              return (
+                <button
+                  key={installation._id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedOrderId(installation.orderId);
+                    syncSelectedInstallation(installation);
+                  }}
+                  className={`w-full rounded-[24px] border p-4 text-left transition ${active ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-white"}`}
+                >
+                  <div className="text-sm font-semibold">{installation.configuration.businessName || installation.customerEmail}</div>
+                  <div className={`mt-1 text-xs ${active ? "text-white/70" : "text-slate-500"}`}>{installation.customerEmail}</div>
+                  <div className={`mt-3 text-xs uppercase tracking-[0.22em] ${active ? "text-white/60" : "text-slate-400"}`}>{installation.status.replaceAll("_", " ")}</div>
+                  <div className={`mt-2 text-xs ${active ? "text-white/70" : "text-slate-500"}`}>{installation.assignedDomain ?? "No domain assigned yet"}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="space-y-4">
-          {filtered.map((installation) => (
-            <div key={installation._id} className="rounded-[24px] border border-slate-200 bg-white p-5">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="flex-1 space-y-4">
-                  <div className="flex items-center gap-3">
-                    {getStatusBadge(installation.status)}
-                    <div className="text-xs text-slate-500">Order: {installation.orderId}</div>
-                  </div>
-
-                  <div>
-                    <div className="text-sm text-slate-500">Customer</div>
-                    <div className="mt-1 text-base font-medium text-slate-950">
-                      {installation.customerName || installation.customerEmail}
-                    </div>
-                    <div className="mt-0.5 text-sm text-slate-600">{installation.customerEmail}</div>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <div className="text-sm text-slate-500">Assigned domain</div>
-                      <div className="mt-1 flex items-center gap-2">
-                        <Globe2 className="h-4 w-4 text-slate-400" />
-                        <span className="text-base font-medium text-slate-950">
-                          {installation.assignedDomain || "Not assigned"}
-                        </span>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-slate-500">Tier</div>
-                      <div className="mt-1 text-base font-medium text-slate-950">{installation.tierName}</div>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <div>
-                      <div className="text-sm text-slate-500">Business name</div>
-                      <div className="mt-1 text-base font-medium text-slate-950 flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-slate-400" />
-                        {installation.businessName || "Not set"}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-slate-500">Admin email</div>
-                      <div className="mt-1 text-base font-medium text-slate-950 flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-slate-400" />
-                        {installation.adminEmail || "Not set"}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-slate-500">Currency</div>
-                      <div className="mt-1 text-base font-medium text-slate-950 flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-slate-400" />
-                        {installation.storeCurrency || "USD"}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <div className="text-sm text-slate-500">App status</div>
-                      <div className="mt-1 text-base font-medium text-slate-950">{installation.appStatus}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-slate-500">Storefront status</div>
-                      <div className="mt-1 text-base font-medium text-slate-950">{installation.storefrontStatus}</div>
-                    </div>
-                  </div>
-
-                  {installation.primaryColor ? (
-                    <div>
-                      <div className="text-sm text-slate-500">Primary color</div>
-                      <div className="mt-1 flex items-center gap-2">
-                        <div
-                          className="h-6 w-6 rounded-full border border-slate-200"
-                          style={{ backgroundColor: installation.primaryColor }}
-                        />
-                        <span className="text-base font-medium text-slate-950">{installation.primaryColor}</span>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {installation.logoUrl ? (
-                    <div>
-                      <div className="text-sm text-slate-500">Logo</div>
-                      <div className="mt-1">
-                        <div
-                          className="h-12 w-auto rounded-lg border border-slate-200 bg-cover bg-center"
-                          style={{ backgroundImage: `url(${installation.logoUrl})`, width: "48px" }}
-                        />
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {installation.notes ? (
-                    <div>
-                      <div className="text-sm text-slate-500 flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        Notes
-                      </div>
-                      <div className="mt-1 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">{installation.notes}</div>
-                    </div>
-                  ) : null}
-
-                  {installation.errorMessage ? (
-                    <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
-                      Error: {installation.errorMessage}
-                    </div>
-                  ) : null}
-
-                  <div className="flex flex-wrap gap-3 text-sm text-slate-600">
-                    <div className="flex items-center gap-2">
-                      <Store className="h-4 w-4" />
-                      Web: {installation.surfaces.web ? "Included" : "Not included"}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Smartphone className="h-4 w-4" />
-                      iOS: {installation.surfaces.ios ? "Included" : "Not included"}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Smartphone className="h-4 w-4" />
-                      Android: {installation.surfaces.android ? "Included" : "Not included"}
-                    </div>
-                  </div>
-
-                  <div className="grid gap-2 text-sm text-slate-600">
-                    <div>Storefront: {installation.storefrontUrl || "Pending"}</div>
-                    <div>Admin: {installation.adminUrl || "Pending"}</div>
-                    <div>Created: {new Date(installation.createdAt).toLocaleDateString()}</div>
-                    <div>Updated: {new Date(installation.updatedAt).toLocaleDateString()}</div>
-                  </div>
-                </div>
-              </div>
+          {!selectedInstallation ? (
+            <div className="rounded-[32px] border border-slate-200 bg-white p-8 text-slate-600 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
+              Select a Magnetic Commerce installation to manage it.
             </div>
-          ))}
+          ) : (
+            <>
+              <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div>
+                    <div className="text-sm text-slate-500">Order ID: {selectedInstallation.orderId}</div>
+                    <h2 className="mt-2 text-2xl font-semibold text-slate-950">{selectedInstallation.configuration.businessName || "Magnetic Commerce installation"}</h2>
+                    <p className="mt-2 text-sm text-slate-600">Customer: {selectedInstallation.customerName || selectedInstallation.customerEmail}</p>
+                    <p className="mt-1 text-sm text-slate-600">Assigned domain: {selectedInstallation.assignedDomain ?? "Not assigned yet"}</p>
+                  </div>
+                  <button type="button" onClick={applyDns} disabled={isApplyingDns || !selectedInstallation.assignedDomainId} className="inline-flex h-10 items-center justify-center rounded-full bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
+                    {isApplyingDns ? "Applying DNS..." : "Apply DNS template"}
+                  </button>
+                </div>
+              </section>
+
+              <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <label className="space-y-2 text-sm">
+                    <span className="font-semibold text-slate-700">Status</span>
+                    <select value={formState.status} onChange={(event) => setFormState((current) => ({ ...current, status: event.target.value as Installation["status"] }))} className="h-11 w-full rounded-[18px] border border-slate-200 bg-slate-50 px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white">
+                      <option value="pending_domain_assignment">Pending domain assignment</option>
+                      <option value="integration_requested">Integration requested</option>
+                      <option value="active">Active</option>
+                      <option value="failed">Failed</option>
+                    </select>
+                  </label>
+                  <label className="space-y-2 text-sm">
+                    <span className="font-semibold text-slate-700">Storefront URL</span>
+                    <input value={formState.storefrontUrl} onChange={(event) => setFormState((current) => ({ ...current, storefrontUrl: event.target.value }))} className="h-11 w-full rounded-[18px] border border-slate-200 bg-slate-50 px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white" />
+                  </label>
+                  <label className="space-y-2 text-sm">
+                    <span className="font-semibold text-slate-700">Admin URL</span>
+                    <input value={formState.adminUrl} onChange={(event) => setFormState((current) => ({ ...current, adminUrl: event.target.value }))} className="h-11 w-full rounded-[18px] border border-slate-200 bg-slate-50 px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white" />
+                  </label>
+                  <label className="space-y-2 text-sm md:col-span-2">
+                    <span className="font-semibold text-slate-700">Error or operator notes</span>
+                    <textarea value={formState.errorMessage} onChange={(event) => setFormState((current) => ({ ...current, errorMessage: event.target.value }))} rows={3} className="w-full rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white" />
+                  </label>
+                </div>
+              </section>
+
+              <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Business name" value={formState.businessName} onChange={(value) => setFormState((current) => ({ ...current, businessName: value }))} />
+                  <Field label="Brand color" value={formState.brandColor} onChange={(value) => setFormState((current) => ({ ...current, brandColor: value }))} />
+                  <Field label="Admin email" value={formState.adminEmail} onChange={(value) => setFormState((current) => ({ ...current, adminEmail: value }))} />
+                  <Field label="Support email" value={formState.supportEmail} onChange={(value) => setFormState((current) => ({ ...current, supportEmail: value }))} />
+                  <Field label="Currency" value={formState.currency} onChange={(value) => setFormState((current) => ({ ...current, currency: value.toUpperCase() }))} />
+                  <Field label="Logo URL" value={formState.logoUrl} onChange={(value) => setFormState((current) => ({ ...current, logoUrl: value }))} />
+                  <label className="space-y-2 text-sm md:col-span-2">
+                    <span className="font-semibold text-slate-700">Launch notes</span>
+                    <textarea value={formState.launchNotes} onChange={(event) => setFormState((current) => ({ ...current, launchNotes: event.target.value }))} rows={4} className="w-full rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white" />
+                  </label>
+                </div>
+                <div className="mt-4">
+                  <button type="button" onClick={saveInstallation} disabled={isSaving} className="inline-flex h-11 items-center justify-center rounded-full bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
+                    {isSaving ? "Saving..." : "Save installation"}
+                  </button>
+                </div>
+              </section>
+
+              <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
+                <div className="text-sm font-semibold text-slate-950">Applied DNS records</div>
+                <div className="mt-4 space-y-3">
+                  {selectedInstallation.dns.records.length === 0 ? (
+                    <div className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 p-5 text-sm text-slate-500">No Magnetic Commerce DNS records have been saved yet.</div>
+                  ) : selectedInstallation.dns.records.map((record) => (
+                    <div key={`${record.type}-${record.name}-${record.value}`} className="rounded-[24px] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                      <div className="font-semibold text-slate-950">{record.type} · {record.name}</div>
+                      <div className="mt-1 break-all">{record.value}</div>
+                      <div className="mt-1 text-slate-500">TTL {record.ttl}{record.priority ? ` · Priority ${record.priority}` : ""}</div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </>
+          )}
         </div>
-      )}
+      </section>
     </div>
+  );
+}
+
+function StatCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
+      <div className="text-sm text-slate-500">{label}</div>
+      <div className="mt-2 text-3xl font-semibold text-slate-950">{value}</div>
+    </div>
+  );
+}
+
+function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <label className="space-y-2 text-sm">
+      <span className="font-semibold text-slate-700">{label}</span>
+      <input value={value} onChange={(event) => onChange(event.target.value)} className="h-11 w-full rounded-[18px] border border-slate-200 bg-slate-50 px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white" />
+    </label>
   );
 }

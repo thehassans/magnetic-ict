@@ -12,6 +12,7 @@ import type {
   EmailNotificationsSettings,
   FooterSettings,
   GeminiSettings,
+  MagneticCommerceSettings,
   OAuthSettings,
   PaymentIntegrationsSettings,
   SocialBotSettings,
@@ -28,6 +29,7 @@ type AdminSettingsClientProps = {
   oauthConfig: OAuthSettings;
   geminiConfig: GeminiSettings;
   socialBotConfig: SocialBotSettings;
+  magneticCommerceConfig: MagneticCommerceSettings;
   trustedPartnersConfig: TrustedPartnersSettings;
   welcomeEmailConfig: WelcomeEmailSettings;
   transactionalEmailConfig: TransactionalEmailSettings;
@@ -44,13 +46,14 @@ type ToastState = {
   message: string;
 } | null;
 
-const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting", string> = {
+const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting", string> = {
   languages: "Language",
   footer: "Footer",
   payments: "Payment",
   oauth: "OAuth",
   gemini: "Gemini",
   socialBot: "Social Bot",
+  magneticCommerce: "Magnetic Commerce",
   trustedPartners: "Trusted partners",
   welcomeEmail: "Welcome email",
   transactionalEmail: "Transactional email",
@@ -75,6 +78,7 @@ export function AdminSettingsClient({
   oauthConfig,
   geminiConfig,
   socialBotConfig,
+  magneticCommerceConfig,
   trustedPartnersConfig,
   welcomeEmailConfig,
   transactionalEmailConfig,
@@ -91,6 +95,7 @@ export function AdminSettingsClient({
   const [oauthState, setOAuthState] = useState(oauthConfig);
   const [geminiState, setGeminiState] = useState(geminiConfig);
   const [socialBotState, setSocialBotState] = useState(socialBotConfig);
+  const [magneticCommerceState, setMagneticCommerceState] = useState(magneticCommerceConfig);
   const [trustedPartnersState, setTrustedPartnersState] = useState(trustedPartnersConfig);
   const [welcomeEmailState, setWelcomeEmailState] = useState(welcomeEmailConfig);
   const [transactionalEmailState, setTransactionalEmailState] = useState(transactionalEmailConfig);
@@ -106,7 +111,7 @@ export function AdminSettingsClient({
   );
   const metaWebhookUrl = useMemo(() => (appBaseUrl ? `${appBaseUrl}/api/social-bot/meta/webhook` : ""), [appBaseUrl]);
 
-  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting", value: unknown) {
+  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting", value: unknown) {
     setLoadingSection(section);
     setToast(null);
 
@@ -528,6 +533,33 @@ export function AdminSettingsClient({
               className="min-h-40 w-full rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white"
             />
           </label>
+        </div>
+      </SettingsCard>
+
+      <SettingsCard
+        title="Magnetic Commerce"
+        description="Configure global Magnetic Commerce rollout behavior including automatic DNS records, storefront/admin targets, and default workspace values."
+        action={<Button label="Save Magnetic Commerce config" loading={loadingSection === "magneticCommerce"} onClick={() => saveSection("magneticCommerce", magneticCommerceState)} />}
+      >
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <ToggleCard label="Commerce enabled" checked={magneticCommerceState.enabled} onChange={(checked) => setMagneticCommerceState((current) => ({ ...current, enabled: checked }))} />
+          <ToggleCard label="Live mode" checked={magneticCommerceState.mode === "live"} onChange={(checked) => setMagneticCommerceState((current) => ({ ...current, mode: checked ? "live" : "manual" }))} />
+          <ToggleCard label="Auto-apply DNS" checked={magneticCommerceState.autoApplyDnsOnAssignment} onChange={(checked) => setMagneticCommerceState((current) => ({ ...current, autoApplyDnsOnAssignment: checked }))} />
+        </div>
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <Input label="Storefront root A record" value={magneticCommerceState.storefrontRootARecord} onChange={(value) => setMagneticCommerceState((current) => ({ ...current, storefrontRootARecord: value }))} />
+          <Input label="Storefront www CNAME target" value={magneticCommerceState.storefrontWwwCnameTarget} onChange={(value) => setMagneticCommerceState((current) => ({ ...current, storefrontWwwCnameTarget: value }))} />
+          <Input label="Admin CNAME target" value={magneticCommerceState.adminCnameTarget} onChange={(value) => setMagneticCommerceState((current) => ({ ...current, adminCnameTarget: value }))} />
+          <Input label="Verification TXT name" value={magneticCommerceState.verificationTxtName} onChange={(value) => setMagneticCommerceState((current) => ({ ...current, verificationTxtName: value }))} />
+          <Input label="Verification TXT value" value={magneticCommerceState.verificationTxtValue} onChange={(value) => setMagneticCommerceState((current) => ({ ...current, verificationTxtValue: value }))} />
+          <Input label="Admin path" value={magneticCommerceState.adminPath} onChange={(value) => setMagneticCommerceState((current) => ({ ...current, adminPath: value }))} />
+          <Input label="Default store currency" value={magneticCommerceState.defaultStoreCurrency} onChange={(value) => setMagneticCommerceState((current) => ({ ...current, defaultStoreCurrency: value.toUpperCase() }))} />
+        </div>
+        <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
+          <div className="font-semibold text-slate-950">Template placeholders</div>
+          <p className="mt-2">Use <span className="font-medium text-slate-950">{"{{domain}}"}</span>, <span className="font-medium text-slate-950">{"{{orderId}}"}</span>, and <span className="font-medium text-slate-950">{"{{customerEmail}}"}</span> inside the verification TXT value.</p>
+          <p><span className="font-medium text-slate-950">Manual mode:</span> records are stored inside Magnetic only.</p>
+          <p><span className="font-medium text-slate-950">Live mode:</span> DNS changes use the managed-domain registrar integration when the assigned domain is active.</p>
         </div>
       </SettingsCard>
 

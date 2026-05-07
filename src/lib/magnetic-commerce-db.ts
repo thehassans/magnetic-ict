@@ -7,6 +7,31 @@ export type MagneticCommerceInstallationStatus =
   | "active"
   | "failed";
 
+export type MagneticCommerceInstallationConfig = {
+  businessName: string;
+  brandColor: string;
+  adminEmail: string;
+  supportEmail: string;
+  currency: string;
+  logoUrl: string;
+  launchNotes: string;
+};
+
+export type MagneticCommerceDnsRecordSummary = {
+  recordId: string | null;
+  type: "A" | "AAAA" | "CNAME" | "MX" | "TXT" | "NS";
+  name: string;
+  value: string;
+  ttl: number;
+  priority: number | null;
+};
+
+export type MagneticCommerceDnsState = {
+  lastAppliedAt: string | null;
+  autoAppliedAt: string | null;
+  records: MagneticCommerceDnsRecordSummary[];
+};
+
 export type MagneticCommerceInstallationRecord = {
   _id: string;
   orderId: string;
@@ -31,14 +56,8 @@ export type MagneticCommerceInstallationRecord = {
     ios: boolean;
     android: boolean;
   };
-  businessName: string | null;
-  logoUrl: string | null;
-  primaryColor: string | null;
-  adminEmail: string | null;
-  storeCurrency: string | null;
-  appStatus: "pending" | "deploying" | "live" | "maintenance" | "offline";
-  storefrontStatus: "pending" | "deploying" | "live" | "maintenance" | "offline";
-  notes: string | null;
+  configuration: MagneticCommerceInstallationConfig;
+  dns: MagneticCommerceDnsState;
 };
 
 export const magneticCommerceCollections = {
@@ -58,6 +77,14 @@ export async function getMagneticCommerceInstallationsForUser(userId: string) {
     magneticCommerceCollections.installations,
     { userId },
     { sort: { updatedAt: -1 }, limit: 100 }
+  );
+}
+
+export async function getMagneticCommerceInstallations() {
+  return findMongoDocuments<MagneticCommerceInstallationRecord>(
+    magneticCommerceCollections.installations,
+    {},
+    { sort: { updatedAt: -1 }, limit: 500 }
   );
 }
 
@@ -83,14 +110,8 @@ export async function upsertMagneticCommerceInstallation(record: MagneticCommerc
       storefrontUrl: record.storefrontUrl,
       adminUrl: record.adminUrl,
       surfaces: record.surfaces,
-      businessName: record.businessName,
-      logoUrl: record.logoUrl,
-      primaryColor: record.primaryColor,
-      adminEmail: record.adminEmail,
-      storeCurrency: record.storeCurrency,
-      appStatus: record.appStatus,
-      storefrontStatus: record.storefrontStatus,
-      notes: record.notes
+      configuration: record.configuration,
+      dns: record.dns
     },
     {
       _id: record._id,

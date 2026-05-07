@@ -79,6 +79,21 @@ const requestSchema = z.discriminatedUnion("section", [
     })
   }),
   z.object({
+    section: z.literal("magneticCommerce"),
+    value: z.object({
+      enabled: z.boolean(),
+      mode: z.enum(["manual", "live"]),
+      autoApplyDnsOnAssignment: z.boolean(),
+      storefrontRootARecord: z.string(),
+      storefrontWwwCnameTarget: z.string(),
+      adminCnameTarget: z.string(),
+      verificationTxtName: z.string().min(1),
+      verificationTxtValue: z.string(),
+      adminPath: z.string().min(1),
+      defaultStoreCurrency: z.string().min(3).max(8)
+    })
+  }),
+  z.object({
     section: z.literal("trustedPartners"),
     value: z.object({
       partners: z.array(
@@ -231,6 +246,7 @@ const settingKeyBySection = {
   oauth: "oauth_config",
   gemini: "gemini_api_key",
   socialBot: "social_bot_config",
+  magneticCommerce: "magnetic_commerce_config",
   trustedPartners: "trusted_partners_config",
   welcomeEmail: "welcome_email_config",
   transactionalEmail: "transactional_email_config",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Globe2, Smartphone, Store, Workflow } from "lucide-react";
+import { Globe2, Palette, Smartphone, Store, Workflow } from "lucide-react";
 import { useState, useTransition } from "react";
 
 type DomainOption = {
@@ -25,14 +25,27 @@ type Installation = {
     ios: boolean;
     android: boolean;
   };
-  businessName: string | null;
-  logoUrl: string | null;
-  primaryColor: string | null;
-  adminEmail: string | null;
-  storeCurrency: string | null;
-  appStatus: "pending" | "deploying" | "live" | "maintenance" | "offline";
-  storefrontStatus: "pending" | "deploying" | "live" | "maintenance" | "offline";
-  notes: string | null;
+  configuration: {
+    businessName: string;
+    brandColor: string;
+    adminEmail: string;
+    supportEmail: string;
+    currency: string;
+    logoUrl: string;
+    launchNotes: string;
+  };
+  dns: {
+    lastAppliedAt: string | null;
+    autoAppliedAt: string | null;
+    records: Array<{
+      recordId: string | null;
+      type: "A" | "AAAA" | "CNAME" | "MX" | "TXT" | "NS";
+      name: string;
+      value: string;
+      ttl: number;
+      priority: number | null;
+    }>;
+  };
 };
 
 export function CustomerMagneticCommerceWorkspace({
@@ -48,25 +61,8 @@ export function CustomerMagneticCommerceWorkspace({
   const [selectedDomains, setSelectedDomains] = useState<Record<string, string>>(
     Object.fromEntries(installations.map((installation) => [installation.orderId, installation.assignedDomainId ?? ""]))
   );
-  const [configData, setConfigData] = useState<Record<string, {
-    businessName: string;
-    logoUrl: string;
-    primaryColor: string;
-    adminEmail: string;
-    storeCurrency: string;
-    notes: string;
-  }>>(
-    Object.fromEntries(installations.map((installation) => [
-      installation.orderId,
-      {
-        businessName: installation.businessName ?? "",
-        logoUrl: installation.logoUrl ?? "",
-        primaryColor: installation.primaryColor ?? "",
-        adminEmail: installation.adminEmail ?? "",
-        storeCurrency: installation.storeCurrency ?? "USD",
-        notes: installation.notes ?? ""
-      }
-    ]))
+  const [configurations, setConfigurations] = useState<Record<string, Installation["configuration"]>>(
+    Object.fromEntries(installations.map((installation) => [installation.orderId, installation.configuration]))
   );
 
   function getStatusLabel(status: Installation["status"]) {
@@ -100,10 +96,7 @@ export function CustomerMagneticCommerceWorkspace({
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          domainId,
-          ...configData[orderId]
-        })
+        body: JSON.stringify({ domainId })
       });
 
       const payload = (await response.json().catch(() => ({}))) as { error?: string };
@@ -117,14 +110,69 @@ export function CustomerMagneticCommerceWorkspace({
     });
   }
 
-  function updateConfig(orderId: string, field: keyof typeof configData[string], value: string) {
-    setConfigData((current) => ({
+  function updateConfigurationField(orderId: string, field: keyof Installation["configuration"], value: string) {
+    setConfigurations((current) => ({
       ...current,
       [orderId]: {
-        ...current[orderId],
+        ...(current[orderId] ?? installations.find((installation) => installation.orderId === orderId)?.configuration),
         [field]: value
       }
     }));
+  }
+
+  function saveConfiguration(orderId: string) {
+    const configuration = configurations[orderId];
+
+    if (!configuration) {
+      return;
+    }
+
+    setError("");
+
+    startTransition(async () => {
+      const response = await fetch(`/api/dashboard/magnetic-commerce/installations/${orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          action: "update-config",
+          configuration
+        })
+      });
+
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+
+      if (!response.ok) {
+        setError(payload.error ?? "Unable to save Magnetic Commerce details right now.");
+        return;
+      }
+
+      router.refresh();
+    });
+  }
+
+  function applyDns(orderId: string) {
+    setError("");
+
+    startTransition(async () => {
+      const response = await fetch(`/api/dashboard/magnetic-commerce/installations/${orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ action: "apply-dns" })
+      });
+
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+
+      if (!response.ok) {
+        setError(payload.error ?? "Unable to apply the Magnetic Commerce DNS template right now.");
+        return;
+      }
+
+      router.refresh();
+    });
   }
 
   return (
@@ -202,9 +250,8 @@ export function CustomerMagneticCommerceWorkspace({
                   <div className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
                     <div>1. Purchase Magnetic Commerce</div>
                     <div>2. Choose your managed domain</div>
-                    <div>3. Configure your store</div>
-                    <div>4. Admin completes integration</div>
-                    <div>5. Storefront and panel become active</div>
+                    <div>3. Admin completes integration</div>
+                    <div>4. Storefront and panel become active</div>
                   </div>
                 </div>
 
@@ -223,83 +270,62 @@ export function CustomerMagneticCommerceWorkspace({
                 </div>
               </div>
 
-              <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/[0.04]">
-                <div className="text-sm font-semibold text-slate-950 dark:text-white">Store configuration</div>
-                <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                  <div>
-                    <label className="mb-2 block text-xs font-medium text-slate-600 dark:text-slate-400">
-                      Business name
-                    </label>
-                    <input
-                      type="text"
-                      value={configData[installation.orderId].businessName}
-                      onChange={(event) => updateConfig(installation.orderId, "businessName", event.target.value)}
-                      placeholder="Your business name"
-                      className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
-                    />
+              <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
+                <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/[0.04]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-700 dark:bg-white/[0.08] dark:text-slate-200">
+                    <Palette className="h-4 w-4" />
                   </div>
-                  <div>
-                    <label className="mb-2 block text-xs font-medium text-slate-600 dark:text-slate-400">
-                      Admin email
-                    </label>
-                    <input
-                      type="email"
-                      value={configData[installation.orderId].adminEmail}
-                      onChange={(event) => updateConfig(installation.orderId, "adminEmail", event.target.value)}
-                      placeholder="admin@yourstore.com"
-                      className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
-                    />
+                  <div className="mt-4 text-sm font-semibold text-slate-950 dark:text-white">Store configuration</div>
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    <input value={configurations[installation.orderId]?.businessName ?? ""} onChange={(event) => updateConfigurationField(installation.orderId, "businessName", event.target.value)} placeholder="Business name" className="h-11 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                    <input value={configurations[installation.orderId]?.brandColor ?? ""} onChange={(event) => updateConfigurationField(installation.orderId, "brandColor", event.target.value)} placeholder="#7c3aed" className="h-11 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                    <input value={configurations[installation.orderId]?.adminEmail ?? ""} onChange={(event) => updateConfigurationField(installation.orderId, "adminEmail", event.target.value)} placeholder="Admin email" className="h-11 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                    <input value={configurations[installation.orderId]?.supportEmail ?? ""} onChange={(event) => updateConfigurationField(installation.orderId, "supportEmail", event.target.value)} placeholder="Support email" className="h-11 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                    <input value={configurations[installation.orderId]?.currency ?? ""} onChange={(event) => updateConfigurationField(installation.orderId, "currency", event.target.value.toUpperCase())} placeholder="Currency" className="h-11 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                    <input value={configurations[installation.orderId]?.logoUrl ?? ""} onChange={(event) => updateConfigurationField(installation.orderId, "logoUrl", event.target.value)} placeholder="Logo URL" className="h-11 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                    <textarea value={configurations[installation.orderId]?.launchNotes ?? ""} onChange={(event) => updateConfigurationField(installation.orderId, "launchNotes", event.target.value)} placeholder="Launch notes" rows={4} className="min-h-[120px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white md:col-span-2" />
                   </div>
-                  <div>
-                    <label className="mb-2 block text-xs font-medium text-slate-600 dark:text-slate-400">
-                      Store currency
-                    </label>
-                    <select
-                      value={configData[installation.orderId].storeCurrency}
-                      onChange={(event) => updateConfig(installation.orderId, "storeCurrency", event.target.value)}
-                      className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
+                  <div className="mt-4">
+                    <button
+                      type="button"
+                      onClick={() => saveConfiguration(installation.orderId)}
+                      disabled={isPending}
+                      className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-900 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/5 dark:text-white"
                     >
-                      <option value="USD">USD</option>
-                      <option value="EUR">EUR</option>
-                      <option value="GBP">GBP</option>
-                      <option value="AED">AED</option>
-                      <option value="SAR">SAR</option>
-                    </select>
+                      {isPending ? "Saving..." : "Save store settings"}
+                    </button>
                   </div>
-                  <div>
-                    <label className="mb-2 block text-xs font-medium text-slate-600 dark:text-slate-400">
-                      Primary color
-                    </label>
-                    <input
-                      type="color"
-                      value={configData[installation.orderId].primaryColor}
-                      onChange={(event) => updateConfig(installation.orderId, "primaryColor", event.target.value)}
-                      className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
-                    />
+                </div>
+
+                <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/[0.04]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-700 dark:bg-white/[0.08] dark:text-slate-200">
+                    <Globe2 className="h-4 w-4" />
                   </div>
-                  <div className="lg:col-span-2">
-                    <label className="mb-2 block text-xs font-medium text-slate-600 dark:text-slate-400">
-                      Logo URL
-                    </label>
-                    <input
-                      type="url"
-                      value={configData[installation.orderId].logoUrl}
-                      onChange={(event) => updateConfig(installation.orderId, "logoUrl", event.target.value)}
-                      placeholder="https://your-logo-url.com/logo.png"
-                      className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
-                    />
+                  <div className="mt-4 text-sm font-semibold text-slate-950 dark:text-white">DNS template</div>
+                  <div className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                    <div>Last applied: {installation.dns.lastAppliedAt ?? "Not yet"}</div>
+                    <div>Auto-applied: {installation.dns.autoAppliedAt ?? "No"}</div>
+                    <button
+                      type="button"
+                      onClick={() => applyDns(installation.orderId)}
+                      disabled={isPending || !installation.assignedDomainId}
+                      className="mt-2 inline-flex h-10 items-center justify-center rounded-full bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-slate-950"
+                    >
+                      {isPending ? "Applying..." : "Apply DNS template"}
+                    </button>
                   </div>
-                  <div className="lg:col-span-2">
-                    <label className="mb-2 block text-xs font-medium text-slate-600 dark:text-slate-400">
-                      Notes
-                    </label>
-                    <textarea
-                      value={configData[installation.orderId].notes}
-                      onChange={(event) => updateConfig(installation.orderId, "notes", event.target.value)}
-                      placeholder="Any additional notes for the admin team"
-                      rows={3}
-                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
-                    />
+                  <div className="mt-4 space-y-2 text-xs text-slate-500 dark:text-slate-400">
+                    {installation.dns.records.length === 0 ? (
+                      <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-3 py-3 dark:border-white/10 dark:bg-white/[0.03]">
+                        No Magnetic Commerce DNS records have been saved for this installation yet.
+                      </div>
+                    ) : installation.dns.records.map((record) => (
+                      <div key={`${record.type}-${record.name}-${record.value}`} className="rounded-2xl border border-slate-200 bg-white px-3 py-3 dark:border-white/10 dark:bg-white/[0.03]">
+                        <div className="font-semibold text-slate-700 dark:text-slate-200">{record.type} · {record.name}</div>
+                        <div className="mt-1 break-all">{record.value}</div>
+                        <div className="mt-1">TTL {record.ttl}{record.priority ? ` · Priority ${record.priority}` : ""}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

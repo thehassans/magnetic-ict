@@ -45,6 +45,19 @@ export type SocialBotSettings = {
   webhookVerifyToken: string;
 };
 
+export type MagneticCommerceSettings = {
+  enabled: boolean;
+  mode: "manual" | "live";
+  autoApplyDnsOnAssignment: boolean;
+  storefrontRootARecord: string;
+  storefrontWwwCnameTarget: string;
+  adminCnameTarget: string;
+  verificationTxtName: string;
+  verificationTxtValue: string;
+  adminPath: string;
+  defaultStoreCurrency: string;
+};
+
 export type TrustedPartnerSettings = {
   id: string;
   name: string;
@@ -106,6 +119,7 @@ export type PlatformSettingsBundle = {
   oauthConfig: OAuthSettings;
   geminiConfig: GeminiSettings;
   socialBotConfig: SocialBotSettings;
+  magneticCommerceConfig: MagneticCommerceSettings;
   trustedPartnersConfig: TrustedPartnersSettings;
   welcomeEmailConfig: WelcomeEmailSettings;
   transactionalEmailConfig: TransactionalEmailSettings;
@@ -156,6 +170,19 @@ export const defaultSocialBotConfig: SocialBotSettings = {
   metaAppSecret: "",
   metaConfigId: "",
   webhookVerifyToken: ""
+};
+
+export const defaultMagneticCommerceConfig: MagneticCommerceSettings = {
+  enabled: true,
+  mode: "manual",
+  autoApplyDnsOnAssignment: true,
+  storefrontRootARecord: "",
+  storefrontWwwCnameTarget: "shops.magnetic-ict.com",
+  adminCnameTarget: "commerce-admin.magnetic-ict.com",
+  verificationTxtName: "_magnetic-commerce",
+  verificationTxtValue: "managed-by=magnetic-commerce;domain={{domain}};order={{orderId}}",
+  adminPath: "/admin",
+  defaultStoreCurrency: "USD"
 };
 
 export const defaultTrustedPartnersConfig: TrustedPartnersSettings = {
@@ -638,6 +665,25 @@ export function normalizeSocialBotConfig(value: unknown): SocialBotSettings {
   };
 }
 
+export function normalizeMagneticCommerceConfig(value: unknown): MagneticCommerceSettings {
+  if (!isObject(value)) {
+    return defaultMagneticCommerceConfig;
+  }
+
+  return {
+    enabled: coerceBoolean(value.enabled, defaultMagneticCommerceConfig.enabled),
+    mode: value.mode === "live" ? "live" : defaultMagneticCommerceConfig.mode,
+    autoApplyDnsOnAssignment: coerceBoolean(value.autoApplyDnsOnAssignment, defaultMagneticCommerceConfig.autoApplyDnsOnAssignment),
+    storefrontRootARecord: coerceString(value.storefrontRootARecord, defaultMagneticCommerceConfig.storefrontRootARecord),
+    storefrontWwwCnameTarget: coerceString(value.storefrontWwwCnameTarget, defaultMagneticCommerceConfig.storefrontWwwCnameTarget),
+    adminCnameTarget: coerceString(value.adminCnameTarget, defaultMagneticCommerceConfig.adminCnameTarget),
+    verificationTxtName: coerceString(value.verificationTxtName, defaultMagneticCommerceConfig.verificationTxtName),
+    verificationTxtValue: coerceString(value.verificationTxtValue, defaultMagneticCommerceConfig.verificationTxtValue),
+    adminPath: coerceString(value.adminPath, defaultMagneticCommerceConfig.adminPath),
+    defaultStoreCurrency: coerceString(value.defaultStoreCurrency, defaultMagneticCommerceConfig.defaultStoreCurrency).toUpperCase()
+  };
+}
+
 export function normalizeWelcomeEmailConfig(value: unknown): WelcomeEmailSettings {
   if (!isObject(value)) {
     return defaultWelcomeEmailConfig;
@@ -766,6 +812,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     oauthConfig,
     geminiConfig,
     socialBotConfig,
+    magneticCommerceConfig,
     trustedPartnersConfig,
     welcomeEmailConfig,
     transactionalEmailConfig,
@@ -779,6 +826,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     getSettingValue("oauth_config"),
     getSettingValue("gemini_api_key"),
     getSettingValue("social_bot_config"),
+    getSettingValue("magnetic_commerce_config"),
     getSettingValue("trusted_partners_config"),
     getSettingValue("welcome_email_config"),
     getSettingValue("transactional_email_config"),
@@ -794,6 +842,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     oauthConfig: normalizeOAuthConfig(oauthConfig),
     geminiConfig: normalizeGeminiConfig(geminiConfig),
     socialBotConfig: normalizeSocialBotConfig(socialBotConfig),
+    magneticCommerceConfig: normalizeMagneticCommerceConfig(magneticCommerceConfig),
     trustedPartnersConfig: normalizeTrustedPartnersConfig(trustedPartnersConfig),
     welcomeEmailConfig: normalizeWelcomeEmailConfig(welcomeEmailConfig),
     transactionalEmailConfig: normalizeTransactionalEmailConfig(transactionalEmailConfig),
@@ -868,6 +917,11 @@ export async function getDomainProviderSettings() {
 export async function getHostingProviderSettings() {
   const value = await getSettingValue("hosting_provider_config");
   return normalizeHostingProviderConfig(value);
+}
+
+export async function getMagneticCommerceSettings() {
+  const value = await getSettingValue("magnetic_commerce_config");
+  return normalizeMagneticCommerceConfig(value);
 }
 
 export function getOAuthProviderAvailability(settings: OAuthSettings) {

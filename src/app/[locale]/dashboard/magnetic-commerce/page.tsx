@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { CustomerMagneticCommerceWorkspace } from "@/components/dashboard/customer-magnetic-commerce-workspace";
 import { getManagedDomainsForUser } from "@/lib/domain-management-db";
-import { getMagneticCommerceInstallationsForUser } from "@/lib/magnetic-commerce-db";
 import { syncMagneticCommerceInstallationsForUser, userHasMagneticCommerceAccess } from "@/lib/magnetic-commerce-access";
 
 export const dynamic = "force-dynamic";
@@ -22,10 +21,8 @@ export default async function MagneticCommerceDashboardPage() {
     notFound();
   }
 
-  await syncMagneticCommerceInstallationsForUser(session.user.id);
-
   const [installations, managedDomains] = await Promise.all([
-    getMagneticCommerceInstallationsForUser(session.user.id),
+    syncMagneticCommerceInstallationsForUser(session.user.id),
     getManagedDomainsForUser(session.user.id)
   ]);
 
