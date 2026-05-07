@@ -46,8 +46,14 @@ function buildStorefrontUrl(domain: string | null) {
   return domain ? `https://${domain}` : null;
 }
 
-function buildAdminUrl(domain: string | null, adminPath: string) {
-  return domain ? `https://${domain}${normalizeAdminPath(adminPath)}` : null;
+function buildAdminUrl(adminHost: string, adminPath: string) {
+  const normalizedHost = adminHost.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
+
+  if (!normalizedHost) {
+    return null;
+  }
+
+  return `https://${normalizedHost}${normalizeAdminPath(adminPath)}`;
 }
 
 function buildDefaultConfiguration(order: MagneticCommerceOrder, defaultCurrency: string): MagneticCommerceInstallationConfig {
@@ -398,7 +404,7 @@ export async function assignMagneticCommerceDomain(args: {
     assignedDomain: args.domainName.trim().toLowerCase(),
     assignedAt: now,
     storefrontUrl: buildStorefrontUrl(args.domainName),
-    adminUrl: buildAdminUrl(args.domainName, commerceSettings.adminPath)
+    adminUrl: buildAdminUrl(commerceSettings.adminCnameTarget, commerceSettings.adminPath)
   };
 
   await upsertMagneticCommerceInstallation(nextRecord);
@@ -427,7 +433,7 @@ export async function activateMagneticCommerceInstallation(orderId: string) {
     updatedAt: now,
     activatedAt: installation.assignedDomain ? now : installation.activatedAt,
     storefrontUrl: buildStorefrontUrl(installation.assignedDomain),
-    adminUrl: buildAdminUrl(installation.assignedDomain, commerceSettings.adminPath)
+    adminUrl: buildAdminUrl(commerceSettings.adminCnameTarget, commerceSettings.adminPath)
   };
 
   await upsertMagneticCommerceInstallation(nextRecord);

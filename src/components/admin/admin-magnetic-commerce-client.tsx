@@ -229,7 +229,8 @@ export function AdminMagneticCommerceClient({ installations }: { installations: 
                   className={`w-full rounded-[24px] border p-4 text-left transition ${active ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-white"}`}
                 >
                   <div className="text-sm font-semibold">{installation.configuration.businessName || installation.customerEmail}</div>
-                  <div className={`mt-1 text-xs ${active ? "text-white/70" : "text-slate-500"}`}>{installation.customerEmail}</div>
+                  <div className={`mt-1 text-xs ${active ? "text-white/70" : "text-slate-500"}`}>{installation.customerName || installation.customerEmail}</div>
+                  <div className={`mt-1 text-xs ${active ? "text-white/60" : "text-slate-400"}`}>{installation.customerEmail}</div>
                   <div className={`mt-3 text-xs uppercase tracking-[0.22em] ${active ? "text-white/60" : "text-slate-400"}`}>{installation.status.replaceAll("_", " ")}</div>
                   <div className={`mt-2 text-xs ${active ? "text-white/70" : "text-slate-500"}`}>{installation.assignedDomain ?? "No domain assigned yet"}</div>
                 </button>
@@ -251,11 +252,28 @@ export function AdminMagneticCommerceClient({ installations }: { installations: 
                     <div className="text-sm text-slate-500">Order ID: {selectedInstallation.orderId}</div>
                     <h2 className="mt-2 text-2xl font-semibold text-slate-950">{selectedInstallation.configuration.businessName || "Magnetic Commerce installation"}</h2>
                     <p className="mt-2 text-sm text-slate-600">Customer: {selectedInstallation.customerName || selectedInstallation.customerEmail}</p>
-                    <p className="mt-1 text-sm text-slate-600">Assigned domain: {selectedInstallation.assignedDomain ?? "Not assigned yet"}</p>
+                    <p className="mt-1 text-sm text-slate-600">Customer email: {selectedInstallation.customerEmail}</p>
+                    <p className="mt-1 text-sm text-slate-600">Assigned storefront domain: {selectedInstallation.assignedDomain ?? "Not assigned yet"}</p>
                   </div>
                   <button type="button" onClick={applyDns} disabled={isApplyingDns || !selectedInstallation.assignedDomainId} className="inline-flex h-10 items-center justify-center rounded-full bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
                     {isApplyingDns ? "Applying DNS..." : "Apply DNS template"}
                   </button>
+                </div>
+              </section>
+
+              <section className="grid gap-4 md:grid-cols-2">
+                <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
+                  <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Storefront deployment</div>
+                  <div className="mt-3 text-sm text-slate-600">Customer domain</div>
+                  <div className="mt-1 text-base font-semibold text-slate-950 break-all">{selectedInstallation.assignedDomain ?? "Not assigned yet"}</div>
+                  <div className="mt-4 text-sm text-slate-600">Storefront URL</div>
+                  <div className="mt-1 text-base font-semibold text-slate-950 break-all">{selectedInstallation.storefrontUrl ?? "Pending"}</div>
+                </div>
+                <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
+                  <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Centralized admin</div>
+                  <div className="mt-3 text-sm text-slate-600">Platform admin URL</div>
+                  <div className="mt-1 text-base font-semibold text-slate-950 break-all">{selectedInstallation.adminUrl ?? "Pending"}</div>
+                  <p className="mt-4 text-sm text-slate-600">This installation is operated from Magnetic ICT&apos;s shared commerce admin while the storefront runs on the customer domain.</p>
                 </div>
               </section>
 

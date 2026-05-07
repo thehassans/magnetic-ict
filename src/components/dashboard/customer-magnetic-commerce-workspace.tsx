@@ -198,7 +198,7 @@ export function CustomerMagneticCommerceWorkspace({
                     Magnetic Commerce · {installation.tierName}
                   </h2>
                   <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                    Select the active domain where you want Magnetic Commerce to be integrated. Admin fulfillment will only complete after this assignment is saved.
+                    Select the active domain where your customer storefront should run. Magnetic ICT keeps the commerce operations panel centralized, while your live store launches on your assigned domain.
                   </p>
                 </div>
                 <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
@@ -211,7 +211,7 @@ export function CustomerMagneticCommerceWorkspace({
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-700 dark:bg-white/[0.08] dark:text-slate-200">
                     <Globe2 className="h-4 w-4" />
                   </div>
-                  <div className="mt-4 text-sm font-semibold text-slate-950 dark:text-white">Assigned domain</div>
+                  <div className="mt-4 text-sm font-semibold text-slate-950 dark:text-white">Customer storefront domain</div>
                   <div className="mt-3 space-y-3 text-sm text-slate-600 dark:text-slate-300">
                     <div>{installation.assignedDomain ?? "No domain assigned yet"}</div>
                     <select
@@ -249,9 +249,9 @@ export function CustomerMagneticCommerceWorkspace({
                   <div className="mt-4 text-sm font-semibold text-slate-950 dark:text-white">Integration flow</div>
                   <div className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
                     <div>1. Purchase Magnetic Commerce</div>
-                    <div>2. Choose your managed domain</div>
-                    <div>3. Admin completes integration</div>
-                    <div>4. Storefront and panel become active</div>
+                    <div>2. Choose the customer domain for the storefront</div>
+                    <div>3. Magnetic ICT provisions the shared commerce admin</div>
+                    <div>4. Storefront goes live on your domain and admin stays on Magnetic ICT</div>
                   </div>
                 </div>
 
@@ -264,8 +264,8 @@ export function CustomerMagneticCommerceWorkspace({
                     <div>Web: {installation.surfaces.web ? "Included" : "Not included"}</div>
                     <div>iPhone: {installation.surfaces.ios ? "Included" : "Not included"}</div>
                     <div>Android: {installation.surfaces.android ? "Included" : "Not included"}</div>
-                    <div>Storefront URL: {installation.storefrontUrl ?? "Pending"}</div>
-                    <div>Admin URL: {installation.adminUrl ?? "Pending"}</div>
+                    <div>Customer storefront: {installation.storefrontUrl ?? "Pending"}</div>
+                    <div>Magnetic ICT admin panel: {installation.adminUrl ?? "Pending"}</div>
                   </div>
                 </div>
               </div>

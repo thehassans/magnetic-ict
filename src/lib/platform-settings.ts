@@ -178,10 +178,10 @@ export const defaultMagneticCommerceConfig: MagneticCommerceSettings = {
   autoApplyDnsOnAssignment: true,
   storefrontRootARecord: "",
   storefrontWwwCnameTarget: "shops.magnetic-ict.com",
-  adminCnameTarget: "commerce-admin.magnetic-ict.com",
+  adminCnameTarget: "commerce.magnetic-ict.com",
   verificationTxtName: "_magnetic-commerce",
   verificationTxtValue: "managed-by=magnetic-commerce;domain={{domain}};order={{orderId}}",
-  adminPath: "/admin",
+  adminPath: "/login",
   defaultStoreCurrency: "USD"
 };
 
@@ -670,16 +670,21 @@ export function normalizeMagneticCommerceConfig(value: unknown): MagneticCommerc
     return defaultMagneticCommerceConfig;
   }
 
+  const normalizedAdminTarget = coerceString(value.adminCnameTarget, defaultMagneticCommerceConfig.adminCnameTarget);
+  const normalizedAdminPath = coerceString(value.adminPath, defaultMagneticCommerceConfig.adminPath);
+  const isLegacyAdminTarget = normalizedAdminTarget.trim().toLowerCase() === "commerce-admin.magnetic-ict.com";
+  const isLegacyAdminPath = normalizedAdminPath.trim() === "/admin";
+
   return {
     enabled: coerceBoolean(value.enabled, defaultMagneticCommerceConfig.enabled),
     mode: value.mode === "live" ? "live" : defaultMagneticCommerceConfig.mode,
     autoApplyDnsOnAssignment: coerceBoolean(value.autoApplyDnsOnAssignment, defaultMagneticCommerceConfig.autoApplyDnsOnAssignment),
     storefrontRootARecord: coerceString(value.storefrontRootARecord, defaultMagneticCommerceConfig.storefrontRootARecord),
     storefrontWwwCnameTarget: coerceString(value.storefrontWwwCnameTarget, defaultMagneticCommerceConfig.storefrontWwwCnameTarget),
-    adminCnameTarget: coerceString(value.adminCnameTarget, defaultMagneticCommerceConfig.adminCnameTarget),
+    adminCnameTarget: isLegacyAdminTarget ? defaultMagneticCommerceConfig.adminCnameTarget : normalizedAdminTarget,
     verificationTxtName: coerceString(value.verificationTxtName, defaultMagneticCommerceConfig.verificationTxtName),
     verificationTxtValue: coerceString(value.verificationTxtValue, defaultMagneticCommerceConfig.verificationTxtValue),
-    adminPath: coerceString(value.adminPath, defaultMagneticCommerceConfig.adminPath),
+    adminPath: isLegacyAdminTarget && isLegacyAdminPath ? defaultMagneticCommerceConfig.adminPath : normalizedAdminPath,
     defaultStoreCurrency: coerceString(value.defaultStoreCurrency, defaultMagneticCommerceConfig.defaultStoreCurrency).toUpperCase()
   };
 }
