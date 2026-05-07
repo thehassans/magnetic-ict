@@ -9,6 +9,7 @@ export function AdminServiceEditor({ service, disabled }: { service: ServiceOver
   const [name, setName] = useState(service.name);
   const [description, setDescription] = useState(service.description);
   const [category, setCategory] = useState(service.category);
+  const [imageLabel, setImageLabel] = useState(service.imageLabel);
   const [tiers, setTiers] = useState(service.tiers.map((tier) => ({ catalogKey: tier.id, name: tier.name, price: tier.price })));
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
@@ -28,6 +29,7 @@ export function AdminServiceEditor({ service, disabled }: { service: ServiceOver
           name,
           description,
           category,
+          imageLabel,
           tiers
         })
       });
@@ -51,6 +53,7 @@ export function AdminServiceEditor({ service, disabled }: { service: ServiceOver
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Service name" value={name} onChange={setName} />
         <Field label="Category" value={category} onChange={setCategory} />
+        <Field label="Image label" value={imageLabel} onChange={setImageLabel} />
         <div className="md:col-span-2">
           <label className="space-y-2 text-sm">
             <span className="font-semibold text-slate-700">Description</span>

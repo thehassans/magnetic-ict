@@ -6,11 +6,7 @@ export async function syncServiceCatalog() {
     const persistedService = await prisma.service.upsert({
       where: { catalogKey: service.id },
       update: {
-        name: service.name,
-        description: service.description,
-        image: service.imageLabel,
-        features: service.highlights,
-        category: service.category
+        features: service.highlights
       },
       create: {
         catalogKey: service.id,
@@ -27,8 +23,6 @@ export async function syncServiceCatalog() {
         where: { catalogKey: tier.id },
         update: {
           serviceId: persistedService.id,
-          name: tier.name,
-          price: tier.price,
           features: tier.features
         },
         create: {
