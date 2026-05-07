@@ -19,6 +19,8 @@ const paymentMethods = [
   { id: "APPLE_PAY", titleKey: "paymentApplePay" },
   { id: "GOOGLE_PAY", titleKey: "paymentGooglePay" }
 ] as const;
+const minimumStripeChargeUsd = 0.5;
+const stripeBackedPaymentMethods = new Set<(typeof paymentMethods)[number]["id"]>(["STRIPE", "APPLE_PAY", "GOOGLE_PAY"]);
 
 const trustBadges = [
   { icon: ShieldCheck, label: "256-bit SSL", desc: "Encrypted" },
@@ -82,6 +84,8 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
   const taxes = useMemo(() => Number((subtotal * 0.08).toFixed(2)), [subtotal]);
   const total = useMemo(() => Number((subtotal + taxes).toFixed(2)), [subtotal, taxes]);
   const contactValid = firstName.trim() !== "" && lastName.trim() !== "" && /.+@.+\..+/.test(email.trim());
+  const selectedMethodRequiresMinimum = paymentMethod ? stripeBackedPaymentMethods.has(paymentMethod) : false;
+  const hasStripeMinimumIssue = selectedMethodRequiresMinimum && subtotal < minimumStripeChargeUsd;
 
   function handlePlaceOrder() {
     setError("");
@@ -97,6 +101,10 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
     }
     if (!termsAccepted) {
       setError("Please accept the terms to continue.");
+      return;
+    }
+    if (hasStripeMinimumIssue) {
+      setError("Card, Apple Pay, and Google Pay payments require at least $0.50 USD. Increase your order total or use PayPal.");
       return;
     }
 
@@ -283,6 +291,9 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
                           {id === "STRIPE" ? (
                             <div className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">Card details are collected securely on Stripe Checkout.</div>
                           ) : null}
+                          {stripeBackedPaymentMethods.has(id) && subtotal < minimumStripeChargeUsd ? (
+                            <div className="mt-1.5 text-[11px] text-amber-600 dark:text-amber-300">Requires at least $0.50 subtotal.</div>
+                          ) : null}
                         </div>
                         <div className="shrink-0 opacity-80">{renderPaymentBadge(id)}</div>
                       </button>
@@ -355,7 +366,7 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
                   <button
                     type="button"
                     onClick={handlePlaceOrder}
-                    disabled={isPending || enabledPaymentMethods.length === 0 || !paymentMethod || !contactValid || !termsAccepted}
+                    disabled={isPending || enabledPaymentMethods.length === 0 || !paymentMethod || !contactValid || !termsAccepted || hasStripeMinimumIssue}
                     className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 text-[13px] font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
                   >
                     <Lock className="h-4 w-4" />
@@ -363,6 +374,7 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
                   </button>
                 )}
 
+                {!error && hasStripeMinimumIssue ? <p className="mt-3 text-[12px] text-amber-600 dark:text-amber-300">Your current subtotal is below the $0.50 minimum for card, Apple Pay, and Google Pay. Choose PayPal or add another item.</p> : null}
                 {error ? <p className="mt-3 text-[12px] text-rose-600 dark:text-rose-300">{error}</p> : null}
                 {!error && success ? <p className="mt-3 text-[12px] text-emerald-600 dark:text-emerald-300">{success}</p> : null}
 

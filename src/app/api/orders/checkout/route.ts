@@ -16,6 +16,8 @@ import {
 import { getEnabledPaymentMethodIds, getPaymentIntegrationsSettings } from "@/lib/platform-settings";
 
 const paymentMethodSchema = z.enum(["STRIPE", "PAYPAL", "APPLE_PAY", "GOOGLE_PAY"]);
+const stripeBackedPaymentMethods = new Set<CheckoutPaymentMethod>(["STRIPE", "APPLE_PAY", "GOOGLE_PAY"]);
+const minimumStripeChargeUsd = 0.5;
 
 const checkoutSchema = z.object({
   paymentMethod: paymentMethodSchema,
@@ -86,6 +88,18 @@ export async function POST(request: Request) {
     })) as CreatedOrder[];
 
     const orderIds = orders.map((order: CreatedOrder) => order.id);
+    const totalAmount = orders.reduce(
+      (sum: number, order: CreatedOrder) => sum + order.amount,
+      0
+    );
+
+    if (stripeBackedPaymentMethods.has(payload.paymentMethod as CheckoutPaymentMethod) && totalAmount < minimumStripeChargeUsd) {
+      await markOrdersFailed(orderIds);
+      return NextResponse.json(
+        { error: "Card, Apple Pay, and Google Pay payments require at least $0.50 USD. Increase your order total or use PayPal." },
+        { status: 400 }
+      );
+    }
 
     if (payload.paymentMethod === "PAYPAL") {
       if (!isPayPalConfigured()) {
@@ -97,11 +111,6 @@ export async function POST(request: Request) {
       }
 
       try {
-        const totalAmount = orders.reduce(
-          (sum: number, order: CreatedOrder) => sum + order.amount,
-          0
-        );
-
         const paypalOrder = await createPayPalCheckoutOrder({
           amount: totalAmount,
           orderIds,
