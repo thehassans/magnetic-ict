@@ -9,6 +9,7 @@ import {
 } from "@/lib/email";
 import { getHostingConfigurationTotal, resolveHostingConfiguration } from "@/lib/hosting-commerce";
 import { createProvisionRequestFromOrder, provisionMagneticVpsHosting } from "@/lib/ionos-hosting";
+import { activateMagneticCommerceInstallation, ensureMagneticCommerceInstallationForOrder } from "@/lib/magnetic-commerce-access";
 import type { HostingConfigurationSelection, ResolvedHostingConfiguration } from "@/lib/hosting-types";
 import { isMagneticVpsService } from "@/lib/hosting-plans";
 import { getHostingProviderSettings } from "@/lib/platform-settings";
@@ -400,6 +401,13 @@ export async function markOrdersPaid(orderIds: string[], paymentReference: strin
   });
 
   const paidOrders = await getLifecycleOrders(orderIds);
+
+  await Promise.all(
+    paidOrders
+      .filter((order) => order.serviceTier?.service.catalogKey === "magneticCommerce")
+      .map((order) => ensureMagneticCommerceInstallationForOrder(order.id))
+  );
+
   await notifyPaidOrderCompanions(paidOrders);
   await notifyOrders(paidOrders, "PAID");
 }
@@ -476,6 +484,16 @@ export async function markOrdersFulfilled(orderIds: string[]) {
     const tierCatalogKey = order.serviceTier?.catalogKey;
     const createdMetadata = getCreatedMetadata(order);
 
+    if (serviceCatalogKey === "magneticCommerce") {
+      const installation = await ensureMagneticCommerceInstallationForOrder(order.id);
+
+      if (!installation?.assignedDomain) {
+        throw new Error("Magnetic Commerce must be assigned to an active managed domain before fulfillment.");
+      }
+
+      continue;
+    }
+
     if (!serviceCatalogKey || !tierCatalogKey || !isMagneticVpsService(serviceCatalogKey)) {
       continue;
     }
@@ -512,6 +530,12 @@ export async function markOrdersFulfilled(orderIds: string[]) {
     type: "FULFILLED",
     statusSnapshot: "FULFILLED"
   });
+
+  await Promise.all(
+    fulfilledOrders
+      .filter((order) => order.serviceTier?.service.catalogKey === "magneticCommerce")
+      .map((order) => activateMagneticCommerceInstallation(order.id))
+  );
 
   await notifyOrders(fulfilledOrders, "FULFILLED");
 }

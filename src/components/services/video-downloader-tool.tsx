@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { Download, LoaderCircle, Music4, PlayCircle, RefreshCw, Search, Sparkles } from "lucide-react";
+import { Download, LoaderCircle, Music4, PlayCircle, RefreshCw, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 
+/* ── Types ── */
 type VideoDownloadOption = {
   id: string;
   label: string;
@@ -26,18 +27,58 @@ type VideoInspectionResult = {
   };
 };
 
-function formatDuration(seconds: number | null) {
-  if (!seconds || seconds <= 0) {
-    return "Unknown";
-  }
+type Platform = "youtube" | "instagram" | "facebook" | null;
 
-  const total = Math.round(seconds);
-  const hours = Math.floor(total / 3600);
-  const minutes = Math.floor((total % 3600) / 60);
-  const remainder = total % 60;
-  return hours > 0 ? `${hours}:${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}` : `${minutes}:${String(remainder).padStart(2, "0")}`;
+/* ── Helpers ── */
+function detectPlatform(raw: string): Platform {
+  try {
+    const url = new URL(raw.trim());
+    const host = url.hostname.replace(/^www\./, "");
+    if (host.includes("youtube.com") || host.includes("youtu.be")) return "youtube";
+    if (host.includes("instagram.com")) return "instagram";
+    if (host.includes("facebook.com") || host.includes("fb.com") || host.includes("fb.watch")) return "facebook";
+  } catch {
+    // not a valid URL yet
+  }
+  return null;
 }
 
+function formatDuration(seconds: number | null) {
+  if (!seconds || seconds <= 0) return "—";
+  const total = Math.round(seconds);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  return h > 0
+    ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+    : `${m}:${String(s).padStart(2, "0")}`;
+}
+
+const PLATFORM_META: Record<
+  NonNullable<Platform>,
+  { label: string; color: string; dot: string; icon: string }
+> = {
+  youtube: {
+    label: "YouTube",
+    color: "text-red-500 dark:text-red-400",
+    dot: "bg-red-500",
+    icon: "▶",
+  },
+  instagram: {
+    label: "Instagram",
+    color: "text-fuchsia-500 dark:text-fuchsia-400",
+    dot: "bg-gradient-to-br from-fuchsia-500 to-orange-400",
+    icon: "◉",
+  },
+  facebook: {
+    label: "Facebook",
+    color: "text-blue-500 dark:text-blue-400",
+    dot: "bg-blue-500",
+    icon: "f",
+  },
+};
+
+/* ── Component ── */
 export function VideoDownloaderTool({ compact = false }: { compact?: boolean }) {
   const [url, setUrl] = useState("");
   const [result, setResult] = useState<VideoInspectionResult | null>(null);
@@ -45,298 +86,352 @@ export function VideoDownloaderTool({ compact = false }: { compact?: boolean }) 
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [isInspecting, setIsInspecting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [message, setMessage] = useState(compact ? "Paste a link." : "Paste a YouTube, Instagram, or Facebook link to inspect available downloads.");
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+
+  const detected = detectPlatform(url);
+  const meta = detected ? PLATFORM_META[detected] : null;
 
   const options = useMemo(() => {
-    if (!result) {
-      return [] as VideoDownloadOption[];
-    }
-
+    if (!result) return [] as VideoDownloadOption[];
     return outputType === "mp4" ? result.formats.mp4 : result.formats.mp3;
   }, [outputType, result]);
 
-  const selectedOption = options.find((option) => option.id === selectedOptionId) ?? options[0] ?? null;
+  const selectedOption =
+    options.find((o) => o.id === selectedOptionId) ?? options[0] ?? null;
 
   async function inspect() {
-    if (!url.trim()) {
-      setError("Paste a supported video URL first.");
-      return;
-    }
-
+    if (!url.trim() || !detected) return;
     setIsInspecting(true);
     setError(null);
-    setMessage(compact ? "Inspecting..." : "Inspecting the source, reading available formats, and preparing quality choices.");
-
+    setStatus("Analyzing source…");
     try {
-      const response = await fetch("/api/video-downloader/inspect", {
+      const res = await fetch("/api/video-downloader/inspect", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ url: url.trim() })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: url.trim() }),
       });
-
-      const payload = (await response.json().catch(() => ({}))) as { error?: string; result?: VideoInspectionResult };
-
-      if (!response.ok || !payload.result) {
-        throw new Error(payload.error ?? "Unable to inspect this link right now.");
-      }
-
+      const payload = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        result?: VideoInspectionResult;
+      };
+      if (!res.ok || !payload.result)
+        throw new Error(payload.error ?? "Unable to inspect this link.");
       setResult(payload.result);
       setOutputType("mp4");
-      setSelectedOptionId(payload.result.formats.mp4[0]?.id ?? payload.result.formats.mp3[0]?.id ?? null);
-      setMessage(compact ? "Ready." : "Source analyzed. Choose MP4 or MP3, select a quality, and start the download.");
-    } catch (caughtError) {
-      const nextError = caughtError instanceof Error ? caughtError.message : "Unable to inspect this link right now.";
-      setError(nextError);
-      setMessage(nextError);
+      setSelectedOptionId(
+        payload.result.formats.mp4[0]?.id ??
+          payload.result.formats.mp3[0]?.id ??
+          null
+      );
+      setStatus("Ready — choose a format and download.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Unable to inspect this link.";
+      setError(msg);
+      setStatus(null);
     } finally {
       setIsInspecting(false);
     }
   }
 
   async function startDownload() {
-    if (!result || !selectedOption) {
-      setError("Inspect a link and choose a format first.");
-      return;
-    }
-
+    if (!result || !selectedOption) return;
     setIsDownloading(true);
     setError(null);
-    setMessage(compact ? "Downloading..." : "Preparing your file and streaming the selected quality.");
-
+    setStatus("Preparing file…");
     try {
-      const response = await fetch("/api/video-downloader/download", {
+      const res = await fetch("/api/video-downloader/download", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           url: result.sourceUrl,
           outputType,
           quality: selectedOption.quality,
-          formatId: outputType === "mp4" ? selectedOption.id : undefined
-        })
+          formatId: outputType === "mp4" ? selectedOption.id : undefined,
+        }),
       });
-
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => ({}))) as { error?: string };
-        throw new Error(payload.error ?? "Unable to create this download right now.");
+      if (!res.ok) {
+        const p = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(p.error ?? "Download failed.");
       }
-
-      const blob = await response.blob();
-      const header = response.headers.get("Content-Disposition");
-      const fileNameMatch = header?.match(/filename="?([^\"]+)"?$/i);
-      const downloadName = fileNameMatch?.[1] ?? `${result.title.replace(/[^a-z0-9-_ ]/gi, "").replace(/\s+/g, "-")}.${outputType}`;
-      const downloadUrl = URL.createObjectURL(blob);
+      const blob = await res.blob();
+      const header = res.headers.get("Content-Disposition");
+      const match = header?.match(/filename="?([^"]+)"?$/i);
+      const name =
+        match?.[1] ??
+        `${result.title.replace(/[^a-z0-9-_ ]/gi, "").replace(/\s+/g, "-")}.${outputType}`;
       const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.download = downloadName;
+      link.href = URL.createObjectURL(blob);
+      link.download = name;
       document.body.appendChild(link);
       link.click();
       link.remove();
-      URL.revokeObjectURL(downloadUrl);
-      setMessage(compact ? "Done." : "Download started successfully.");
-    } catch (caughtError) {
-      const nextError = caughtError instanceof Error ? caughtError.message : "Unable to create this download right now.";
-      setError(nextError);
-      setMessage(nextError);
+      setStatus("Download started.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Download failed.";
+      setError(msg);
+      setStatus(null);
     } finally {
       setIsDownloading(false);
     }
   }
 
-  function resetAll() {
+  function reset() {
     setUrl("");
     setResult(null);
     setOutputType("mp4");
     setSelectedOptionId(null);
     setError(null);
-    setMessage(compact ? "Paste a link." : "Paste a YouTube, Instagram, or Facebook link to inspect available downloads.");
+    setStatus(null);
   }
 
   return (
-    <div className={cn("space-y-8", compact && "space-y-5")}>
-      <section className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-        <div className={cn("rounded-[36px] border border-violet-100 bg-white/90 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70", compact ? "p-4 sm:p-5" : "p-6 sm:p-8")}>
-          {!compact ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-xs uppercase tracking-[0.28em] text-cyan-700 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-200">
-                <Sparkles className="h-4 w-4" />
-                Premium downloader
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-2 text-xs uppercase tracking-[0.28em] text-violet-700 dark:border-violet-400/20 dark:bg-violet-400/10 dark:text-violet-200">
-                <PlayCircle className="h-4 w-4" />
-                MP4 and MP3 options
-              </div>
-            </div>
-          ) : null}
-
-          <div className={cn(compact ? "mt-1" : "mt-6", "rounded-[30px] border border-slate-200 bg-slate-50/80 p-5 dark:border-white/10 dark:bg-white/5 sm:p-6")}>
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Paste source link</label>
-              <div className="flex flex-col gap-3 lg:flex-row">
-                <input
-                  value={url}
-                  onChange={(event) => setUrl(event.target.value)}
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  className="h-12 flex-1 rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-cyan-300 dark:border-white/10 dark:bg-slate-950/60 dark:text-white"
-                />
-                <button
-                  type="button"
-                  onClick={inspect}
-                  disabled={isInspecting}
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isInspecting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                  {isInspecting ? "Inspecting" : "Inspect link"}
-                </button>
-              </div>
-              <p className={cn("text-sm", error ? "text-rose-600" : "text-slate-500 dark:text-slate-400")}>{message}</p>
-            </div>
-          </div>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
-              <div className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Platforms</div>
-              <div className="mt-4 text-2xl font-semibold text-slate-950 dark:text-white">3</div>
-              <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">YouTube, Instagram, Facebook</div>
-            </div>
-            <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
-              <div className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Output</div>
-              <div className="mt-4 text-2xl font-semibold text-slate-950 dark:text-white">MP4 / MP3</div>
-              <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">Quality-aware delivery</div>
-            </div>
-            <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
-              <div className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Flow</div>
-              <div className="mt-4 text-2xl font-semibold text-slate-950 dark:text-white">Inspect</div>
-              <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">Preview, pick, download</div>
-            </div>
-          </div>
-        </div>
-
-        <div className={cn("rounded-[36px] border border-violet-100 bg-white/90 shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70", compact ? "p-4 sm:p-5" : "p-6 sm:p-8")}>
-          <div>
-            {!compact ? <div className="text-xs uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">Source preview</div> : null}
-            <h2 className={cn("font-semibold text-slate-950 dark:text-white", compact ? "text-lg" : "mt-3 text-2xl")}>{compact ? "Preview" : result ? result.title : "Inspect a link to preview the source"}</h2>
-          </div>
-
-          <div className="mt-6 overflow-hidden rounded-[30px] border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
-            <div className="relative aspect-video overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.16),transparent_32%),radial-gradient(circle_at_top_right,rgba(6,182,212,0.18),transparent_30%),#eff6ff] dark:bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.22),transparent_32%),radial-gradient(circle_at_top_right,rgba(6,182,212,0.18),transparent_30%),rgba(15,23,42,0.8)]">
-              {result?.thumbnail ? (
-                <Image src={result.thumbnail} alt={result.title} fill className="object-cover" sizes="(max-width: 1280px) 100vw, 40vw" unoptimized />
-              ) : (
-                <div className="flex h-full items-center justify-center">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-violet-500 to-cyan-400 text-2xl font-semibold text-white shadow-glow">VD</div>
-                </div>
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-slate-950/10 to-transparent" />
-              {result ? (
-                <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-                  <div className="text-xs uppercase tracking-[0.24em] text-cyan-100">{result.platform}</div>
-                  <div className="mt-3 text-xl font-semibold sm:text-2xl">{result.title}</div>
-                </div>
-              ) : null}
-            </div>
-            <div className="grid gap-4 p-5 sm:grid-cols-3">
-              <InfoTile label="Duration" value={result ? formatDuration(result.durationSeconds) : "-"} />
-              <InfoTile label="Channel" value={result?.uploader ?? "-"} />
-              <InfoTile label="Formats" value={result ? `${result.formats.mp4.length} video / ${result.formats.mp3.length} audio` : "-"} />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {result ? (
-        <section className="space-y-6">
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setOutputType("mp4");
-                setSelectedOptionId(result.formats.mp4[0]?.id ?? null);
-              }}
+    <div className="mx-auto w-full max-w-2xl space-y-5">
+      {/* ── Input card ── */}
+      <div className="relative rounded-3xl border border-slate-200/70 bg-white/90 p-6 shadow-[0_4px_40px_rgba(0,0,0,0.06)] backdrop-blur-xl dark:border-white/[0.07] dark:bg-white/[0.04] dark:shadow-[0_4px_40px_rgba(0,0,0,0.3)]">
+        {/* Platform pill — shows as user types a valid URL */}
+        <div className="mb-5 flex items-center justify-between">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">
+            Paste link
+          </span>
+          {meta && (
+            <span
               className={cn(
-                "inline-flex h-11 items-center justify-center gap-2 rounded-full border px-5 text-sm font-semibold transition",
-                outputType === "mp4"
-                  ? "border-cyan-300 bg-cyan-50 text-cyan-700 dark:border-cyan-400/30 dark:bg-cyan-400/10 dark:text-cyan-200"
-                  : "border-slate-200 bg-white text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-all",
+                detected === "youtube" &&
+                  "border-red-200 bg-red-50 text-red-600 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-400",
+                detected === "instagram" &&
+                  "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-600 dark:border-fuchsia-400/20 dark:bg-fuchsia-400/10 dark:text-fuchsia-400",
+                detected === "facebook" &&
+                  "border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-400"
               )}
             >
-              <PlayCircle className="h-4 w-4" />
-              MP4 video
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setOutputType("mp3");
-                setSelectedOptionId(result.formats.mp3[0]?.id ?? null);
+              <span className={cn("h-1.5 w-1.5 rounded-full", meta.dot)} />
+              {meta.label} detected
+            </span>
+          )}
+        </div>
+
+        {/* URL input */}
+        <div className="flex gap-3">
+          <div className="relative flex-1">
+            <input
+              value={url}
+              onChange={(e) => {
+                setUrl(e.target.value);
+                if (result) reset();
               }}
-              className={cn(
-                "inline-flex h-11 items-center justify-center gap-2 rounded-full border px-5 text-sm font-semibold transition",
-                outputType === "mp3"
-                  ? "border-cyan-300 bg-cyan-50 text-cyan-700 dark:border-cyan-400/30 dark:bg-cyan-400/10 dark:text-cyan-200"
-                  : "border-slate-200 bg-white text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
-              )}
-            >
-              <Music4 className="h-4 w-4" />
-              MP3 audio
-            </button>
+              onKeyDown={(e) => e.key === "Enter" && detected && !isInspecting && inspect()}
+              placeholder="https://youtube.com/watch?v=…"
+              className="h-12 w-full rounded-2xl border border-slate-200/80 bg-slate-50/60 pl-4 pr-10 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100 dark:border-white/[0.07] dark:bg-white/[0.04] dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-500/40 dark:focus:ring-indigo-500/10"
+            />
+            {url && (
+              <button
+                onClick={reset}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[1fr_auto]">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {options.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => setSelectedOptionId(option.id)}
-                  className={cn(
-                    "rounded-[28px] border px-5 py-5 text-left transition",
-                    selectedOption?.id === option.id
-                      ? "border-cyan-300 bg-cyan-50 text-cyan-800 shadow-[0_16px_40px_rgba(6,182,212,0.12)] dark:border-cyan-400/30 dark:bg-cyan-400/10 dark:text-cyan-100"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-200 dark:hover:bg-white/5"
-                  )}
+          <button
+            onClick={inspect}
+            disabled={!detected || isInspecting}
+            className={cn(
+              "inline-flex h-12 items-center gap-2 rounded-2xl px-5 text-sm font-semibold transition-all",
+              detected && !isInspecting
+                ? "bg-slate-950 text-white shadow-lg shadow-slate-950/10 hover:bg-indigo-600 dark:bg-white dark:text-slate-950 dark:hover:bg-indigo-100"
+                : "cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-white/[0.05] dark:text-slate-600"
+            )}
+          >
+            {isInspecting ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : null}
+            {isInspecting ? "Analyzing" : "Analyze"}
+          </button>
+        </div>
+
+        {/* Status / Error */}
+        {(status || error) && (
+          <p
+            className={cn(
+              "mt-3 text-xs leading-relaxed",
+              error
+                ? "text-rose-500 dark:text-rose-400"
+                : "text-slate-500 dark:text-slate-400"
+            )}
+          >
+            {error ?? status}
+          </p>
+        )}
+
+        {/* Supported platforms hint */}
+        {!detected && !result && (
+          <div className="mt-5 flex items-center gap-4">
+            <span className="text-[11px] text-slate-400 dark:text-slate-500">Supports</span>
+            <div className="flex items-center gap-3">
+              {(["youtube", "instagram", "facebook"] as const).map((p) => (
+                <span
+                  key={p}
+                  className="text-[11px] font-medium capitalize text-slate-500 dark:text-slate-400"
                 >
-                  <div className="text-xs uppercase tracking-[0.22em] opacity-70">{outputType}</div>
-                  <div className="mt-3 text-xl font-semibold">{option.label}</div>
-                  <div className="mt-2 text-sm opacity-80">{option.note}</div>
-                </button>
+                  {PLATFORM_META[p].label}
+                </span>
               ))}
             </div>
+          </div>
+        )}
+      </div>
 
-            <div className="flex flex-col gap-3 lg:min-w-[220px]">
-              <button
-                type="button"
-                onClick={startDownload}
-                disabled={!selectedOption || isDownloading}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-slate-950 px-6 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
+      {/* ── Preview card — only after inspect ── */}
+      {result && (
+        <div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-white/90 shadow-[0_4px_40px_rgba(0,0,0,0.06)] backdrop-blur-xl dark:border-white/[0.07] dark:bg-white/[0.04] dark:shadow-[0_4px_40px_rgba(0,0,0,0.3)]">
+          {/* Thumbnail */}
+          <div className="relative aspect-video w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
+            {result.thumbnail ? (
+              <Image
+                src={result.thumbnail}
+                alt={result.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 672px"
+                unoptimized
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-xl font-bold text-white shadow-xl">
+                  {result.platform[0].toUpperCase()}
+                </div>
+              </div>
+            )}
+            {/* Overlay gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+            {/* Meta overlay */}
+            <div className="absolute inset-x-0 bottom-0 p-5">
+              <span
+                className={cn(
+                  "text-[10px] font-semibold uppercase tracking-[0.28em]",
+                  PLATFORM_META[result.platform].color
+                )}
               >
-                {isDownloading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                {isDownloading ? "Preparing" : "Download now"}
-              </button>
-              <button
-                type="button"
-                onClick={resetAll}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Reset
-              </button>
+                {PLATFORM_META[result.platform].label}
+              </span>
+              <p className="mt-1.5 text-sm font-semibold leading-snug text-white line-clamp-2">
+                {result.title}
+              </p>
             </div>
           </div>
-        </section>
-      ) : null}
-    </div>
-  );
-}
 
-function InfoTile({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 dark:border-white/10 dark:bg-slate-950/50">
-      <div className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{label}</div>
-      <div className="mt-2 text-sm font-semibold text-slate-950 dark:text-white">{value}</div>
+          {/* Meta row */}
+          <div className="grid grid-cols-3 divide-x divide-slate-200/70 border-t border-slate-200/70 dark:divide-white/[0.06] dark:border-white/[0.06]">
+            {[
+              { label: "Duration", value: formatDuration(result.durationSeconds) },
+              { label: "Channel", value: result.uploader ?? "—" },
+              { label: "Formats", value: `${result.formats.mp4.length + result.formats.mp3.length}` },
+            ].map((tile) => (
+              <div key={tile.label} className="px-4 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">
+                  {tile.label}
+                </p>
+                <p className="mt-1.5 truncate text-sm font-semibold text-slate-900 dark:text-white">
+                  {tile.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Format picker — only after inspect ── */}
+      {result && (
+        <div className="rounded-3xl border border-slate-200/70 bg-white/90 p-5 shadow-[0_4px_40px_rgba(0,0,0,0.06)] backdrop-blur-xl dark:border-white/[0.07] dark:bg-white/[0.04] dark:shadow-[0_4px_40px_rgba(0,0,0,0.3)]">
+          {/* MP4 / MP3 toggle */}
+          <div className="mb-4 flex gap-2">
+            {(["mp4", "mp3"] as const).map((type) => (
+              <button
+                key={type}
+                onClick={() => {
+                  setOutputType(type);
+                  setSelectedOptionId(
+                    result.formats[type][0]?.id ?? null
+                  );
+                }}
+                className={cn(
+                  "inline-flex h-9 items-center gap-2 rounded-xl px-4 text-xs font-semibold uppercase tracking-[0.18em] transition-all",
+                  outputType === type
+                    ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                    : "bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-white/[0.06] dark:text-slate-400 dark:hover:bg-white/[0.1]"
+                )}
+              >
+                {type === "mp4" ? (
+                  <PlayCircle className="h-3.5 w-3.5" />
+                ) : (
+                  <Music4 className="h-3.5 w-3.5" />
+                )}
+                {type.toUpperCase()}
+              </button>
+            ))}
+          </div>
+
+          {/* Quality options */}
+          <div className="grid gap-2 sm:grid-cols-2">
+            {options.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => setSelectedOptionId(option.id)}
+                className={cn(
+                  "rounded-2xl border px-4 py-3 text-left transition-all",
+                  selectedOption?.id === option.id
+                    ? "border-indigo-300 bg-indigo-50/80 dark:border-indigo-500/30 dark:bg-indigo-500/10"
+                    : "border-slate-200/70 bg-slate-50/50 hover:border-slate-300 hover:bg-white dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-white/[0.12] dark:hover:bg-white/[0.05]"
+                )}
+              >
+                <p
+                  className={cn(
+                    "text-sm font-semibold",
+                    selectedOption?.id === option.id
+                      ? "text-indigo-700 dark:text-indigo-300"
+                      : "text-slate-800 dark:text-slate-200"
+                  )}
+                >
+                  {option.label}
+                </p>
+                <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
+                  {option.note}
+                </p>
+              </button>
+            ))}
+          </div>
+
+          {/* Action buttons */}
+          <div className="mt-4 flex gap-3">
+            <button
+              onClick={startDownload}
+              disabled={!selectedOption || isDownloading}
+              className={cn(
+                "inline-flex flex-1 items-center justify-center gap-2 rounded-2xl py-3 text-sm font-semibold transition-all",
+                !selectedOption || isDownloading
+                  ? "cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-white/[0.05] dark:text-slate-600"
+                  : "bg-slate-950 text-white shadow-lg shadow-slate-950/10 hover:bg-indigo-600 dark:bg-white dark:text-slate-950 dark:hover:bg-indigo-100"
+              )}
+            >
+              {isDownloading ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              {isDownloading ? "Preparing…" : "Download"}
+            </button>
+            <button
+              onClick={reset}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200/70 bg-slate-50/60 text-slate-500 transition hover:border-slate-300 hover:bg-white hover:text-slate-700 dark:border-white/[0.07] dark:bg-white/[0.03] dark:text-slate-400 dark:hover:border-white/[0.14] dark:hover:bg-white/[0.07] dark:hover:text-slate-200"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

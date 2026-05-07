@@ -49,6 +49,35 @@ export default async function ServiceDetailPage({
     return <HostingServicePage service={service} hostingProviderConfig={hostingProviderConfig} />;
   }
 
+  if (isVideoDownloaderService) {
+    return (
+      <main className="min-h-screen bg-white dark:bg-[#06080f]">
+        {/* Background mesh */}
+        <div className="pointer-events-none fixed inset-0 overflow-hidden">
+          <div className="absolute -top-[30%] left-[20%] h-[60vh] w-[60vh] rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.08),transparent_60%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(99,102,241,0.15),transparent_60%)]" />
+          <div className="absolute top-[20%] right-[10%] h-[40vh] w-[40vh] rounded-full bg-[radial-gradient(circle,rgba(168,85,247,0.06),transparent_60%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(168,85,247,0.12),transparent_60%)]" />
+        </div>
+        <div className="relative mx-auto max-w-3xl px-4 pb-20 pt-14 sm:px-6 sm:pt-20 lg:px-8">
+          {/* Hero text */}
+          <div className="mb-10 text-center">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-slate-50/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-slate-500 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-400">
+              <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+              Free downloader
+            </div>
+            <h1 className="text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl">
+              {title}
+            </h1>
+            <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-slate-500 dark:text-slate-400">
+              Paste any YouTube, Instagram, or Facebook link — we detect the platform instantly and let you pick your quality.
+            </p>
+          </div>
+          {/* The tool itself */}
+          <VideoDownloaderTool />
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto max-w-7xl space-y-10 px-4 py-10 sm:px-6 lg:px-8">
       <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">

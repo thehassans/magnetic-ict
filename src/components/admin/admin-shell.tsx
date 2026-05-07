@@ -9,7 +9,7 @@ type AdminShellProps = {
   title: string;
   description: string;
   eyebrow?: string;
-  activePath: "/admin/dashboard" | "/admin/orders" | "/admin/services" | "/admin/users" | "/admin/social-bot" | "/admin/domains" | "/admin/hosting" | "/admin/support" | "/admin/email-logs" | "/admin/settings";
+  activePath: "/admin/dashboard" | "/admin/orders" | "/admin/services" | "/admin/users" | "/admin/social-bot" | "/admin/domains" | "/admin/hosting" | "/admin/support" | "/admin/email-logs" | "/admin/settings" | "/admin/magnetic-commerce";
   children: ReactNode;
   actions?: ReactNode;
 };
@@ -20,6 +20,7 @@ const navItems = [
   { href: "/admin/services", label: "Services", Icon: Box },
   { href: "/admin/domains", label: "Domains", Icon: Globe },
   { href: "/admin/hosting", label: "Hosting", Icon: Server },
+  { href: "/admin/magnetic-commerce", label: "Commerce", Icon: ShoppingCart },
   { href: "/admin/support", label: "Support", Icon: LifeBuoy },
   { href: "/admin/email-logs", label: "Email Logs", Icon: Mail },
   { href: "/admin/users", label: "Users", Icon: Users },

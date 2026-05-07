@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useMemo, useState, useTransition } from "react";
-import { Bot, ChevronRight, Globe, LayoutDashboard, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Receipt, Server, X } from "lucide-react";
+import { Bot, ChevronRight, Globe, LayoutDashboard, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Receipt, Server, ShoppingCart, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/branding/brand-logo";
@@ -16,6 +16,7 @@ type CustomerDashboardShellProps = {
   userEmail?: string | null;
   hasMagneticVpsAccess?: boolean;
   hasMagneticSocialBotAccess?: boolean;
+  hasMagneticCommerceAccess?: boolean;
 };
 
 type NavItem = {
@@ -31,7 +32,8 @@ export function CustomerDashboardShell({
   userName,
   userEmail,
   hasMagneticVpsAccess = false,
-  hasMagneticSocialBotAccess = false
+  hasMagneticSocialBotAccess = false,
+  hasMagneticCommerceAccess = false
 }: CustomerDashboardShellProps) {
   const pathname = usePathname() ?? "";
   const [isSigningOut, startSignOutTransition] = useTransition();
@@ -74,6 +76,15 @@ export function CustomerDashboardShell({
       });
     }
 
+    if (hasMagneticCommerceAccess) {
+      items.push({
+        href: "/dashboard/magnetic-commerce",
+        label: "Commerce",
+        Icon: ShoppingCart,
+        match: (value) => value.startsWith("/dashboard/magnetic-commerce")
+      });
+    }
+
     if (hasMagneticSocialBotAccess) {
       items.push({
         href: "/dashboard/magnetic-social-bot",
@@ -84,7 +95,7 @@ export function CustomerDashboardShell({
     }
 
     return items;
-  }, [hasMagneticSocialBotAccess, hasMagneticVpsAccess]);
+  }, [hasMagneticCommerceAccess, hasMagneticSocialBotAccess, hasMagneticVpsAccess]);
 
   const initials = useMemo(() => {
     const source = userName?.trim() || userEmail?.trim() || "M";

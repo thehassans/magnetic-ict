@@ -65,6 +65,9 @@ export default async function CheckoutSuccessPage({
   const unlockedMagneticSocialBot = unlockedOrders.some(
     (order) => order.serviceTier.service.catalogKey === "magneticSocialBot"
   );
+  const unlockedMagneticCommerce = unlockedOrders.some(
+    (order) => order.serviceTier.service.catalogKey === "magneticCommerce"
+  );
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
@@ -86,6 +89,15 @@ export default async function CheckoutSuccessPage({
               className="inline-flex h-12 items-center justify-center rounded-full bg-cyan-600 px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-cyan-500"
             >
               Open Magnetic Social Bot
+            </Link>
+          ) : null}
+          {unlockedMagneticCommerce ? (
+            <Link
+              href="/dashboard/magnetic-commerce"
+              locale={locale}
+              className="inline-flex h-12 items-center justify-center rounded-full bg-violet-600 px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-violet-500"
+            >
+              Open Magnetic Commerce
             </Link>
           ) : null}
           <Link

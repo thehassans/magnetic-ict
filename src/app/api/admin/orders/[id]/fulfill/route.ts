@@ -27,6 +27,9 @@ export async function POST(
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Admin order fulfillment failed", error);
-    return NextResponse.json({ error: "Unable to fulfill this order right now." }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unable to fulfill this order right now." },
+      { status: 500 }
+    );
   }
 }

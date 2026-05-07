@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { CustomerDashboardShell } from "@/components/dashboard/customer-dashboard-shell";
 import { userHasMagneticVpsAccess } from "@/lib/hosting-access";
+import { userHasMagneticCommerceAccess } from "@/lib/magnetic-commerce-access";
 import { userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
 
 export default async function DashboardLayout({
@@ -19,9 +20,10 @@ export default async function DashboardLayout({
     notFound();
   }
 
-  const [hasMagneticVpsAccess, hasMagneticSocialBotAccess] = await Promise.all([
+  const [hasMagneticVpsAccess, hasMagneticSocialBotAccess, hasMagneticCommerceAccess] = await Promise.all([
     userHasMagneticVpsAccess(session.user.id).catch(() => false),
-    userHasMagneticSocialBotAccess(session.user.id).catch(() => false)
+    userHasMagneticSocialBotAccess(session.user.id).catch(() => false),
+    userHasMagneticCommerceAccess(session.user.id).catch(() => false)
   ]);
 
   return (
@@ -31,6 +33,7 @@ export default async function DashboardLayout({
       userEmail={session.user.email}
       hasMagneticVpsAccess={hasMagneticVpsAccess}
       hasMagneticSocialBotAccess={hasMagneticSocialBotAccess}
+      hasMagneticCommerceAccess={hasMagneticCommerceAccess}
     >
       {children}
     </CustomerDashboardShell>
