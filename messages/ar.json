@@ -243,7 +243,7 @@
     "orderError": "تعذر انشاء طلبك حاليا. حاول مرة اخرى.",
     "orderSuccess": "تم انشاء طلبك بنجاح.",
     "checkoutSuccessEyebrow": "تم تاكيد الدفع",
-    "checkoutSuccessTitle": "طلبك المميز في الطريق.",
+    "checkoutSuccessTitle": "طلبك في الطريق.",
     "checkoutSuccessDescription": "تم التحقق من الدفع وتمت اضافة طلبك الى مساحتك. يمكنك الان متابعته من اللوحة.",
     "checkoutSuccessPendingDescription": "تلقينا عودتك من مزود الدفع لكن التحقق ما زال معلقا. حدّث الصفحة بعد قليل او راجع اللوحة.",
     "checkoutCancelEyebrow": "تم الغاء الدفع",

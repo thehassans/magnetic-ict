@@ -243,7 +243,7 @@
     "orderError": "No pudimos crear tu pedido ahora mismo. Intentalo de nuevo.",
     "orderSuccess": "Tu pedido se creo correctamente.",
     "checkoutSuccessEyebrow": "Pago confirmado",
-    "checkoutSuccessTitle": "Tu pedido premium esta en camino.",
+    "checkoutSuccessTitle": "Tu pedido esta en camino.",
     "checkoutSuccessDescription": "El pago fue verificado y tu pedido ya se anadio a tu espacio. Ahora puedes seguirlo desde el panel.",
     "checkoutSuccessPendingDescription": "Recibimos tu retorno del proveedor de pago, pero la verificacion sigue pendiente. Actualiza en breve o revisa el panel.",
     "checkoutCancelEyebrow": "Checkout cancelado",

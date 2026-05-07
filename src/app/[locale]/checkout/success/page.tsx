@@ -70,23 +70,23 @@ export default async function CheckoutSuccessPage({
   );
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+    <main className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
       {verified ? <ClearCartOnMount /> : null}
-      <section className="rounded-[36px] border border-violet-100 bg-white/85 p-8 text-center shadow-glow backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60 sm:p-10">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-400/10 text-emerald-300">
-          <CheckCircle2 className="h-8 w-8" />
+      <section className="rounded-[28px] border border-slate-200 bg-white p-8 text-center dark:border-white/10 dark:bg-slate-950 sm:p-10">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
+          <CheckCircle2 className="h-7 w-7" />
         </div>
-        <p className="mt-6 text-sm uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">{t("checkoutSuccessEyebrow")}</p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl">{t("checkoutSuccessTitle")}</h1>
-        <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
+        <p className="mt-5 text-[11px] uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">{t("checkoutSuccessEyebrow")}</p>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">{t("checkoutSuccessTitle")}</h1>
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
           {verified ? t("checkoutSuccessDescription") : t("checkoutSuccessPendingDescription")}
         </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-4">
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
           {unlockedMagneticSocialBot ? (
             <Link
               href="/dashboard/magnetic-social-bot"
               locale={locale}
-              className="inline-flex h-12 items-center justify-center rounded-full bg-cyan-600 px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-cyan-500"
+              className="inline-flex h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
             >
               Open Magnetic Social Bot
             </Link>
@@ -95,7 +95,7 @@ export default async function CheckoutSuccessPage({
             <Link
               href="/dashboard/magnetic-commerce"
               locale={locale}
-              className="inline-flex h-12 items-center justify-center rounded-full bg-violet-600 px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-violet-500"
+              className="inline-flex h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
             >
               Open Magnetic Commerce
             </Link>
@@ -103,16 +103,9 @@ export default async function CheckoutSuccessPage({
           <Link
             href="/dashboard"
             locale={locale}
-            className="inline-flex h-12 items-center justify-center rounded-full bg-slate-950 px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-violet-700"
+            className="inline-flex h-11 items-center justify-center rounded-full bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
           >
             {t("returnToDashboard")}
-          </Link>
-          <Link
-            href="/services"
-            locale={locale}
-            className="inline-flex h-12 items-center justify-center rounded-full border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-900 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
-          >
-            {t("continueExploring")}
           </Link>
         </div>
       </section>

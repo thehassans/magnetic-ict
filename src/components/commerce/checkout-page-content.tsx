@@ -10,7 +10,6 @@ import { HostingConfigurationSummary } from "@/components/commerce/hosting-confi
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { ApplePayMark, GooglePayMark, MastercardMark, PayPalMark, VisaMark } from "@/components/ui/payment-brand-icons";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
-import { CreditCardForm } from "@/components/ui/credit-card-form";
 import { reviews } from "@/lib/reviews";
 import { cn } from "@/lib/utils";
 
@@ -50,7 +49,6 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isPending, startTransition] = useTransition();
-  const [cardValid, setCardValid] = useState(false);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -155,8 +153,6 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
       </main>
     );
   }
-
-  const showCardForm = paymentMethod === "STRIPE";
 
   function renderPaymentBadge(methodId: (typeof paymentMethods)[number]["id"]) {
     switch (methodId) {
@@ -285,30 +281,13 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
                         <div className="flex-1">
                           <div className="text-sm font-medium text-slate-950 dark:text-white">{t(titleKey)}</div>
                           {id === "STRIPE" ? (
-                            <div className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">Visa · Mastercard · Amex</div>
+                            <div className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">Card details are collected securely on Stripe Checkout.</div>
                           ) : null}
                         </div>
                         <div className="shrink-0 opacity-80">{renderPaymentBadge(id)}</div>
                       </button>
                     );
                   })}
-                </div>
-              )}
-
-              {showCardForm && (
-                <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-white/[0.02]">
-                  <CreditCardForm
-                    showSubmit={false}
-                    onChange={(_, validity) => setCardValid(validity.allValid)}
-                    maskMiddle={true}
-                    ring1="#0f172a"
-                    ring2="#334155"
-                    layout="stacked"
-                  />
-                  <div className="mt-4 flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                    <Lock className="h-3 w-3" />
-                    Your card details are secured with 256-bit encryption.
-                  </div>
                 </div>
               )}
             </MinimalSection>
@@ -376,7 +355,7 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
                   <button
                     type="button"
                     onClick={handlePlaceOrder}
-                    disabled={isPending || enabledPaymentMethods.length === 0 || !paymentMethod || (showCardForm && !cardValid) || !contactValid || !termsAccepted}
+                    disabled={isPending || enabledPaymentMethods.length === 0 || !paymentMethod || !contactValid || !termsAccepted}
                     className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 text-[13px] font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
                   >
                     <Lock className="h-4 w-4" />

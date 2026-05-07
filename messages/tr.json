@@ -240,7 +240,7 @@
     "orderError": "Siparisiniz su anda olusturulamadi. Lutfen tekrar deneyin.",
     "orderSuccess": "Siparisiniz basariyla olusturuldu.",
     "checkoutSuccessEyebrow": "Odeme onaylandi",
-    "checkoutSuccessTitle": "Premium siparisiniz yolda.",
+    "checkoutSuccessTitle": "Siparisiniz yolda.",
     "checkoutSuccessDescription": "Odeme dogrulandi ve siparisiniz alana eklendi. Artik panelden takip edebilirsiniz.",
     "checkoutSuccessPendingDescription": "Odeme saglayicisindan donus alindi ancak dogrulama hala bekliyor. Kisa sure sonra yenileyin veya paneli kontrol edin.",
     "checkoutCancelEyebrow": "Checkout iptal edildi",

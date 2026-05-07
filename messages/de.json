@@ -240,7 +240,7 @@
     "orderError": "Ihre Bestellung konnte gerade nicht erstellt werden. Bitte versuchen Sie es erneut.",
     "orderSuccess": "Ihre Bestellung wurde erfolgreich erstellt.",
     "checkoutSuccessEyebrow": "Zahlung bestätigt",
-    "checkoutSuccessTitle": "Ihre Premium-Bestellung ist unterwegs.",
+    "checkoutSuccessTitle": "Ihre Bestellung ist unterwegs.",
     "checkoutSuccessDescription": "Die Zahlung wurde verifiziert und Ihre Bestellung wurde Ihrem Bereich hinzugefügt. Sie können sie jetzt im Dashboard verfolgen.",
     "checkoutSuccessPendingDescription": "Wir haben Ihre Rückleitung vom Zahlungsanbieter erhalten, aber die Verifizierung steht noch aus. Aktualisieren Sie in Kürze oder prüfen Sie das Dashboard.",
     "checkoutCancelEyebrow": "Checkout abgebrochen",

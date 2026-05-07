@@ -267,7 +267,7 @@
     "orderError": "Nous n’avons pas pu créer votre commande pour le moment. Veuillez réessayer.",
     "orderSuccess": "Votre commande a été créée avec succès.",
     "checkoutSuccessEyebrow": "Paiement confirmé",
-    "checkoutSuccessTitle": "Votre commande premium est en route.",
+    "checkoutSuccessTitle": "Votre commande est en route.",
     "checkoutSuccessDescription": "Le paiement a été vérifié et votre commande a été ajoutée à votre espace. Vous pouvez maintenant la suivre depuis le tableau de bord.",
     "checkoutSuccessPendingDescription": "Nous avons reçu votre retour du prestataire de paiement, mais la vérification est encore en attente. Rafraîchissez dans un instant ou consultez le tableau de bord.",
     "checkoutCancelEyebrow": "Checkout annulé",

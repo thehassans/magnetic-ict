@@ -319,7 +319,7 @@
     "orderError": "We couldn’t create your order right now. Please try again.",
     "orderSuccess": "Your order was created successfully.",
     "checkoutSuccessEyebrow": "Payment confirmed",
-    "checkoutSuccessTitle": "Your premium order is on its way.",
+    "checkoutSuccessTitle": "Your order is on its way.",
     "checkoutSuccessDescription": "Payment was verified and your order has been added to your workspace. You can now track it from the dashboard.",
     "checkoutSuccessPendingDescription": "We received your return from the payment provider, but verification is still pending. Refresh shortly or check the dashboard.",
     "checkoutCancelEyebrow": "Checkout cancelled",
