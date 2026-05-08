@@ -314,7 +314,7 @@ export function Header({
           size="icon"
           variant="outline"
           onClick={() => setOpen((value) => !value)}
-          className="lg:hidden"
+          className="lg:hidden border-slate-200/70 bg-transparent text-slate-700 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:bg-transparent dark:text-slate-200 dark:hover:bg-transparent dark:hover:text-white"
           aria-expanded={open}
           aria-controls="mobile-menu"
           aria-label="Toggle menu"
