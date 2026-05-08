@@ -1,6 +1,7 @@
 "use client";
 
 import { Star } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
 import { TestimonialsSection } from "@/components/ui/simple-animated-testimonials";
 import { developerTestimonials } from "@/lib/developer-testimonials";
@@ -155,13 +156,13 @@ export function LiveReviewsMarquee() {
 
           {/* ── CTA ── */}
           <div className="mt-10 flex justify-center px-6">
-            <a
-              href="#"
+            <Link
+              href="/reviews"
               className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_8px_30px_rgba(99,102,241,0.35)] transition hover:shadow-[0_12px_40px_rgba(99,102,241,0.45)] hover:-translate-y-0.5"
             >
               View all 5,218 reviews
               <span aria-hidden="true">→</span>
-            </a>
+            </Link>
           </div>
 
         </div>

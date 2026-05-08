@@ -72,11 +72,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ par
       fileBuffer = sourceBuffer;
       saveExtension = "svg";
     } else {
-      // Raster images (JPG, PNG, WebP, etc.): convert to WebP with a solid WHITE background
-      // alpha:1 = fully opaque white — prevents the "invisible logo on white card" bug
+      // Raster images (JPG, PNG, WebP, etc.): convert to WebP preserving transparency
       fileBuffer = await sharp(sourceBuffer, { failOn: "none" })
-        .flatten({ background: { r: 255, g: 255, b: 255 } })  // flatten transparency onto white
-        .resize({ width: 600, height: 300, fit: "contain", withoutEnlargement: true, background: { r: 255, g: 255, b: 255 } })
+        .resize({ width: 600, height: 300, fit: "contain", withoutEnlargement: true, background: { r: 0, g: 0, b: 0, alpha: 0 } })
         .webp({ quality: 90, effort: 4 })
         .toBuffer();
       saveExtension = "webp";

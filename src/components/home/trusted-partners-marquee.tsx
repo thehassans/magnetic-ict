@@ -76,7 +76,7 @@ export function TrustedPartnersMarquee({ partners }: TrustedPartnersMarqueeProps
           <motion.div
             key={partner.id}
             whileHover={{ y: -4 }}
-            className="relative flex h-24 w-[15rem] items-center justify-center overflow-hidden rounded-[24px] border border-slate-200/90 bg-white/95 px-7 shadow-[0_18px_48px_rgba(15,23,42,0.08)] backdrop-blur-2xl transition hover:border-cyan-200 hover:bg-cyan-50/60 dark:border-white/10 dark:bg-white/95 dark:hover:border-cyan-400/20 dark:hover:bg-cyan-50/90"
+            className="relative flex h-24 w-[15rem] items-center justify-center overflow-hidden rounded-[24px] border border-slate-200/90 bg-white/95 px-7 shadow-[0_18px_48px_rgba(15,23,42,0.08)] backdrop-blur-2xl transition hover:border-cyan-200 hover:bg-cyan-50/60 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-cyan-400/20 dark:hover:bg-white/[0.06]"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
