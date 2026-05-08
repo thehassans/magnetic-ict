@@ -28,7 +28,6 @@ export interface TestimonialsSectionProps {
   trustedCompanies?: string[];
   trustedCompaniesTitle?: string;
   className?: string;
-  theme?: "light" | "dark";
 }
 
 export function TestimonialsSection({
@@ -39,10 +38,8 @@ export function TestimonialsSection({
   showVerifiedBadge = true,
   trustedCompanies = [],
   trustedCompaniesTitle = "Trusted by teams at these companies and more",
-  className,
-  theme = "light"
+  className
 }: TestimonialsSectionProps) {
-  const isDark = theme === "dark";
   const [activeIndex, setActiveIndex] = useState(0);
   const sectionRef = useRef<HTMLElement | null>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
@@ -105,17 +102,17 @@ export function TestimonialsSection({
     <section ref={sectionRef} id="testimonials-alt" className={cn("relative flex justify-center overflow-hidden py-12", className)}>
       <div className="w-full px-4 md:px-6">
         <motion.div initial="hidden" animate={controls} variants={containerVariants} className="mb-8 space-y-4 text-left">
-          <motion.h2 variants={itemVariants} className={cn("text-3xl font-bold tracking-tighter sm:text-4xl", isDark ? "text-white" : "text-slate-950")}>
+          <motion.h2 variants={itemVariants} className={cn("text-3xl font-bold tracking-tighter sm:text-4xl", "text-slate-950 dark:text-white")}>
             {title}
           </motion.h2>
-          <motion.p variants={itemVariants} className={cn("max-w-[700px] md:text-lg/relaxed", isDark ? "text-slate-300" : "text-slate-600")}>
+          <motion.p variants={itemVariants} className={cn("max-w-[700px] md:text-lg/relaxed", "text-slate-600 dark:text-slate-300")}>
             {subtitle}
           </motion.p>
         </motion.div>
 
         <motion.div initial="hidden" animate={controls} variants={containerVariants} className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
           <motion.div variants={itemVariants} className="relative">
-            <div className={cn("absolute -left-3 -top-5 z-10 rounded-full border p-2 shadow-sm", isDark ? "border-cyan-400/20 bg-cyan-400/10 text-cyan-300" : "border-cyan-200 bg-cyan-50 text-cyan-600")}>
+            <div className={cn("absolute -left-3 -top-5 z-10 rounded-full border p-2 shadow-sm", "border-cyan-200 bg-cyan-50 text-cyan-600 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-300")}>
               <Quote className="h-8 w-8" strokeWidth={1.2} />
             </div>
 
@@ -125,22 +122,20 @@ export function TestimonialsSection({
                   key={testimonial.id}
                   className={cn(
                     "absolute inset-0 rounded-[1.75rem] transition-all duration-500",
-                    isDark
-                      ? "border border-white/10 bg-slate-950/80 text-white shadow-[0_24px_80px_rgba(2,6,23,0.5)]"
-                      : "border border-slate-200/80 bg-white/95 text-slate-950 shadow-[0_18px_60px_rgba(15,23,42,0.08)]",
+                    "border border-slate-200/80 bg-white/95 text-slate-950 shadow-[0_18px_60px_rgba(15,23,42,0.08)] dark:border dark:border-white/10 dark:bg-slate-950/80 dark:text-white dark:shadow-[0_24px_80px_rgba(2,6,23,0.5)]",
                     index === activeIndex ? "translate-x-0 opacity-100" : "pointer-events-none translate-x-[80px] opacity-0"
                   )}
                 >
                   <CardContent className="flex h-full flex-col p-6 md:p-8">
                     <div className="mb-4 flex items-start justify-between gap-4">
                       <div className="flex items-center gap-4">
-                        <Avatar className={cn("h-14 w-14 border-2 shadow-sm", isDark ? "border-cyan-400/20" : "border-cyan-100")}>
+                        <Avatar className={cn("h-14 w-14 border-2 shadow-sm", "border-cyan-100 dark:border-cyan-400/20")}>
                           <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
                           <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <h4 className={cn("font-semibold", isDark ? "text-white" : "text-slate-950")}>{testimonial.name}</h4>
-                          <p className={cn("text-sm", isDark ? "text-slate-400" : "text-slate-500")}>
+                          <h4 className={cn("font-semibold", "text-slate-950 dark:text-white")}>{testimonial.name}</h4>
+                          <p className={cn("text-sm", "text-slate-500 dark:text-slate-400")}>
                             {testimonial.role}, {testimonial.company}
                           </p>
                         </div>
@@ -152,11 +147,11 @@ export function TestimonialsSection({
                       </div>
                     </div>
 
-                    <Separator className={cn("my-4", isDark ? "bg-white/10" : "bg-slate-200")} />
+                    <Separator className={cn("my-4", "bg-slate-200 dark:bg-white/10")} />
 
-                    <p className={cn("flex-1 text-base/relaxed italic", isDark ? "text-slate-200" : "text-slate-700")}>&quot;{testimonial.content}&quot;</p>
+                    <p className={cn("flex-1 text-base/relaxed italic", "text-slate-700 dark:text-slate-200")}>&quot;{testimonial.content}&quot;</p>
 
-                    {showVerifiedBadge ? <div className={cn("mt-4 text-right text-xs", isDark ? "text-slate-400" : "text-slate-500")}>Verified Developer</div> : null}
+                    {showVerifiedBadge ? <div className={cn("mt-4 text-right text-xs", "text-slate-500 dark:text-slate-400")}>Verified Developer</div> : null}
                   </CardContent>
                 </Card>
               ))}
@@ -187,11 +182,11 @@ export function TestimonialsSection({
         </motion.div>
 
         {trustedCompanies.length > 0 ? (
-          <motion.div variants={itemVariants} className={cn("mt-10 border-t pt-8", isDark ? "border-white/10" : "border-slate-200")}>
-            <h3 className={cn("mb-6 text-center text-sm font-medium", isDark ? "text-slate-400" : "text-slate-500")}>{trustedCompaniesTitle}</h3>
+          <motion.div variants={itemVariants} className={cn("mt-10 border-t pt-8", "border-slate-200 dark:border-white/10")}>
+            <h3 className={cn("mb-6 text-center text-sm font-medium", "text-slate-500 dark:text-slate-400")}>{trustedCompaniesTitle}</h3>
             <div className="flex flex-wrap justify-center gap-x-8 gap-y-4">
               {trustedCompanies.map((company) => (
-                <div key={company} className={cn("text-base font-semibold", isDark ? "text-slate-500" : "text-slate-400")}>
+                <div key={company} className={cn("text-base font-semibold", "text-slate-400 dark:text-slate-500")}>
                   {company}
                 </div>
               ))}
