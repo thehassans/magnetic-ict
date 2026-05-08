@@ -93,11 +93,19 @@ export function CustomerMagneticCommerceWorkspace({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Only pre-select managed (non-custom) domain IDs in the dropdown
   const [selectedDomains, setSelectedDomains] = useState<Record<string, string>>(
-    Object.fromEntries(installations.map((i) => [i.orderId, i.assignedDomainId ?? ""]))
+    Object.fromEntries(installations.map((i) => [
+      i.orderId,
+      i.assignedDomainId && !i.assignedDomainId.startsWith("custom_") ? i.assignedDomainId : ""
+    ]))
   );
+  // Pre-fill the text input with the currently assigned custom domain (if any)
   const [customDomains, setCustomDomains] = useState<Record<string, string>>(
-    Object.fromEntries(installations.map((i) => [i.orderId, ""]))
+    Object.fromEntries(installations.map((i) => [
+      i.orderId,
+      i.assignedDomainId?.startsWith("custom_") ? (i.assignedDomain ?? "") : ""
+    ]))
   );
   const [configurations, setConfigurations] = useState<Record<string, Installation["configuration"]>>(
     Object.fromEntries(installations.map((i) => [i.orderId, i.configuration]))
@@ -118,16 +126,21 @@ export function CustomerMagneticCommerceWorkspace({
     const customDomain = customDomains[orderId]?.trim();
     if (!domainId && !customDomain) { notify("Select a managed domain or enter a custom domain.", true); return; }
     startTransition(async () => {
-      const body = domainId
-        ? { domainId }
-        : { customDomain };
+      // Custom domain input always takes priority over dropdown selection
+      const body = customDomain
+        ? { customDomain }
+        : { domainId };
       const res = await fetch(`/api/dashboard/magnetic-commerce/installations/${orderId}`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) { notify(data.error ?? "Unable to assign domain.", true); return; }
-      notify("Domain assigned successfully."); router.refresh();
+      // Clear text input after successful assignment so it doesn't re-submit on next save
+      if (customDomain) {
+        setCustomDomains((c) => ({ ...c, [orderId]: "" }));
+      }
+      notify("Domain updated successfully."); router.refresh();
     });
   }
 
