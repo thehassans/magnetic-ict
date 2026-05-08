@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition, type InputHTMLAttributes, type ReactNode } from "react";
-import { ArrowLeft, Award, CheckCircle2, Clock, Lock, Mail, MapPin, RefreshCcw, ShieldCheck, Star, User, Zap } from "lucide-react";
+import { ArrowLeft, Award, CheckCircle2, Clock, Lock, Mail, MapPin, RefreshCcw, ShieldCheck, Star, User, Zap, Sparkles } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { HostingConfigurationSummary } from "@/components/commerce/hosting-configuration-summary";
 import { useCommerce } from "@/components/commerce/commerce-provider";
+import { resolveHostingConfiguration, getHostingConfigurationTotal } from "@/lib/hosting-commerce";
+import type { HostingProviderSettings } from "@/lib/hosting-types";
 import { ApplePayMark, GooglePayMark, MastercardMark, PayPalMark, VisaMark } from "@/components/ui/payment-brand-icons";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
 import { reviews } from "@/lib/reviews";
@@ -36,9 +37,9 @@ type AvailablePaymentMethods = {
   GOOGLE_PAY: boolean;
 };
 
-export function CheckoutPageContent({ availablePaymentMethods }: { availablePaymentMethods: AvailablePaymentMethods }) {
+export function CheckoutPageContent({ availablePaymentMethods, hostingProviderConfig }: { availablePaymentMethods: AvailablePaymentMethods; hostingProviderConfig?: HostingProviderSettings }) {
   const { status, data: session } = useSession();
-  const { items, subtotal, clearCart } = useCommerce();
+  const { items, subtotal, clearCart, updateItem } = useCommerce();
   const locale = useLocale();
   const router = useRouter();
   const t = useTranslations("Commerce");
@@ -314,16 +315,71 @@ export function CheckoutPageContent({ availablePaymentMethods }: { availablePaym
                 </div>
 
                 <div className="mt-5 space-y-4">
-                  {items.map((item) => (
-                    <div key={item.tierId} className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4 last:border-0 last:pb-0 dark:border-white/10">
-                      <div className="min-w-0">
-                        <div className="truncate text-[15px] font-medium text-slate-950 dark:text-white">{getServiceTitle(navigation, item.serviceId)}</div>
-                        <div className="mt-0.5 text-[12px] text-slate-500 dark:text-slate-400">{getLocalizedTierName(t, item.tierId, item.tierId)}</div>
-                        {item.hostingSummary?.length ? <HostingConfigurationSummary lines={item.hostingSummary} tone="subtle" className="mt-3" /> : null}
+                  {items.map((item) => {
+                    const pleskPanel = hostingProviderConfig?.controlPanels.find(p => p.enabled && p.name.toLowerCase().includes("plesk"));
+                    const hasPlesk = item.hostingConfiguration?.controlPanelId === pleskPanel?.id;
+                    const showPleskUpsell = item.serviceId === "magneticVpsHosting" && pleskPanel && !hasPlesk;
+
+                    return (
+                      <div key={item.tierId} className="flex flex-col gap-3 border-b border-slate-100 pb-4 last:border-0 last:pb-0 dark:border-white/10">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <div className="truncate text-[15px] font-medium text-slate-950 dark:text-white">{getServiceTitle(navigation, item.serviceId)}</div>
+                            <div className="mt-0.5 text-[12px] text-slate-500 dark:text-slate-400">{getLocalizedTierName(t, item.tierId, item.tierId)}</div>
+                            {item.hostingSummary?.length ? <HostingConfigurationSummary lines={item.hostingSummary} tone="subtle" className="mt-3" /> : null}
+                          </div>
+                          <div className="shrink-0 text-[15px] font-semibold tabular-nums text-slate-950 dark:text-white">${item.price.toFixed(2)}</div>
+                        </div>
+
+                        {showPleskUpsell && (
+                          <div className="mt-2 rounded-2xl border border-indigo-200/60 bg-gradient-to-r from-indigo-50/80 to-violet-50/80 p-4 dark:border-indigo-400/20 dark:from-indigo-500/10 dark:to-violet-500/10">
+                            <div className="flex items-start justify-between gap-4">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <Sparkles className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
+                                  <span className="text-[13px] font-bold text-slate-950 dark:text-white">Add {pleskPanel.name}?</span>
+                                </div>
+                                <p className="mt-1 text-[12px] leading-relaxed text-slate-600 dark:text-slate-400">
+                                  Deploy a fully managed, premium control panel to manage your VPS visually. +${pleskPanel.monthlyPrice}/mo
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!hostingProviderConfig || !item.hostingConfiguration) return;
+                                  // Base price of the tier without the current hosting config additions
+                                  // Wait, we need the basePrice! 
+                                  // Actually, resolveHostingConfiguration needs the selection.
+                                  const newSelection = { ...item.hostingConfiguration, controlPanelId: pleskPanel.id };
+                                  const newResolved = resolveHostingConfiguration(newSelection, hostingProviderConfig);
+                                  
+                                  // To get base price, we subtract old additions from old price? 
+                                  // Better: use the original tier base price if we can, or approximate it.
+                                  // But wait, getHostingConfigurationTotal computes Total = Base + addons + panel.
+                                  // If we know the old panel price, old addons price...
+                                  const oldResolved = resolveHostingConfiguration(item.hostingConfiguration, hostingProviderConfig);
+                                  const oldAdditions = (oldResolved.controlPanel?.monthlyPrice ?? 0) + 
+                                                       oldResolved.addons.reduce((sum, a) => sum + a.monthlyPrice, 0);
+                                  const basePrice = item.price - oldAdditions;
+
+                                  const newTotal = getHostingConfigurationTotal(basePrice, newResolved);
+
+                                  updateItem(item.serviceId, item.tierId, {
+                                    hostingConfiguration: newResolved.selection,
+                                    hostingSummary: newResolved.summaryLines,
+                                    price: newTotal
+                                  });
+                                }}
+                                className="shrink-0 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white shadow-md transition hover:shadow-lg hover:brightness-110"
+                              >
+                                Add Plesk
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div className="shrink-0 text-[15px] font-semibold tabular-nums text-slate-950 dark:text-white">${item.price.toFixed(2)}</div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="mt-5 space-y-2 border-t border-slate-100 pt-5 text-[13px] dark:border-white/10">
