@@ -409,7 +409,9 @@ export async function assignMagneticCommerceDomain(args: {
 
   await upsertMagneticCommerceInstallation(nextRecord);
 
-  if (commerceSettings.autoApplyDnsOnAssignment) {
+  // Only auto-apply DNS template for managed domains (custom domains lack registry records)
+  const isCustomDomain = args.domainId.startsWith("custom_");
+  if (!isCustomDomain && commerceSettings.autoApplyDnsOnAssignment) {
     return applyMagneticCommerceDnsTemplate({ orderId: args.orderId, userId: args.userId, autoApplied: true });
   }
 
