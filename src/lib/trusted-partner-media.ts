@@ -3,11 +3,6 @@ import path from "node:path";
 
 const trustedPartnerUploadsPrefix = "/partners/";
 
-export function createTrustedPartnerLogoUploadPath(partnerId: string) {
-  // Save as partnerId.webp — consistent, overwrites on re-upload, served from /partners/
-  return `${trustedPartnerUploadsPrefix}${partnerId}.webp`;
-}
-
 export async function saveTrustedPartnerLogoToPublic(relativeImagePath: string, fileBuffer: Buffer) {
   const absoluteImagePath = path.join(process.cwd(), "public", relativeImagePath.replace(/^\//, ""));
   await mkdir(path.dirname(absoluteImagePath), { recursive: true });
@@ -19,8 +14,10 @@ export async function deleteStoredTrustedPartnerLogo(imageUrl: string | null) {
   if (!imageUrl || !imageUrl.startsWith(trustedPartnerUploadsPrefix)) {
     return;
   }
-  // Only delete if it was a previously uploaded WebP (not an original SVG/PNG)
-  if (!imageUrl.endsWith(".webp")) return;
+  // Only delete uploaded files — never delete the original SVGs shipped with the repo
+  const basename = imageUrl.split("/").pop() ?? "";
+  const isOriginalAsset = ["cloudflare.svg", "mastercard.svg", "stripe.svg", "aws.svg", "apple-pay.svg", "visa.svg"].includes(basename);
+  if (isOriginalAsset) return;
 
   const absoluteImagePath = path.join(process.cwd(), "public", imageUrl.replace(/^\//, ""));
   await unlink(absoluteImagePath).catch(() => undefined);

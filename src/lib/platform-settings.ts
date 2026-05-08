@@ -468,13 +468,13 @@ function normalizeTrustedPartners(value: unknown, fallback: TrustedPartnersSetti
     return fallback;
   }
 
-  /** Rewrite legacy /uploads/partners/id-timestamp.webp → /partners/id.webp */
+  /** Rewrite legacy /uploads/partners/id-timestamp.webp → /partners/id.webp (or .svg) */
   function fixLogoUrl(url: string): string {
     if (url.startsWith("/uploads/partners/")) {
-      // Extract the partner id (everything before the first - followed by digits)
       const filename = url.replace("/uploads/partners/", "");
-      const id = filename.replace(/-\d+\.webp$/, "").replace(/\.webp$/, "");
-      return `/partners/${id}.webp`;
+      const ext = filename.endsWith(".svg") ? "svg" : "webp";
+      const id = filename.replace(/-\d+\.(webp|svg)$/, "").replace(/\.(webp|svg)$/, "");
+      return `/partners/${id}.${ext}`;
     }
     return url;
   }

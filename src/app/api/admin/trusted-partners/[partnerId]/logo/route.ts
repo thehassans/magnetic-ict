@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import {
   deleteStoredTrustedPartnerLogo,
-  createTrustedPartnerLogoUploadPath,
   saveTrustedPartnerLogoToPublic
 } from "@/lib/trusted-partner-media";
 import { getTrustedPartnersSettings, saveTrustedPartnersSettings } from "@/lib/platform-settings";
@@ -21,7 +20,10 @@ async function requireAdminSession() {
   }
 
   if (!hasDatabase) {
-    return NextResponse.json({ error: "DATABASE_URL must be configured before editing trusted partners." }, { status: 503 });
+    return NextResponse.json(
+      { error: "DATABASE_URL must be configured before editing trusted partners." },
+      { status: 503 }
+    );
   }
 
   return null;
@@ -29,10 +31,7 @@ async function requireAdminSession() {
 
 export async function POST(request: Request, { params }: { params: Promise<{ partnerId: string }> }) {
   const authError = await requireAdminSession();
-
-  if (authError) {
-    return authError;
-  }
+  if (authError) return authError;
 
   try {
     const [{ partnerId }, formData] = await Promise.all([params, request.formData()]);
@@ -53,29 +52,45 @@ export async function POST(request: Request, { params }: { params: Promise<{ par
     const settings = await getTrustedPartnersSettings();
     let partner = settings.partners.find((entry) => entry.id === partnerId);
 
-    // Allow upload for new custom partners that haven't been saved to DB yet
+    // Allow upload for new custom partners not yet in DB
     if (!partner) {
       if (!partnerId.startsWith("custom-")) {
         return NextResponse.json({ error: "Partner not found." }, { status: 404 });
       }
-      // Auto-create a placeholder record so the upload can proceed
       partner = { id: partnerId, name: "New Partner", logoUrl: "", enabled: true };
       settings.partners.push(partner);
     }
 
     const sourceBuffer = Buffer.from(await imageFile.arrayBuffer());
-    const webpBuffer = await sharp(sourceBuffer, { failOn: "none" })
-      .resize({ width: 1200, height: 500, fit: "contain", withoutEnlargement: true, background: { r: 255, g: 255, b: 255, alpha: 0 } })
-      .webp({ quality: 90, effort: 6 })
-      .toBuffer();
+    const isSvg = imageFile.type === "image/svg+xml";
 
-    const nextLogoUrl = createTrustedPartnerLogoUploadPath(partnerId);
-    await saveTrustedPartnerLogoToPublic(nextLogoUrl, webpBuffer);
+    let fileBuffer: Buffer;
+    let saveExtension: string;
+
+    if (isSvg) {
+      // SVGs: save directly — no sharp processing needed, no librsvg dependency
+      fileBuffer = sourceBuffer;
+      saveExtension = "svg";
+    } else {
+      // Raster images (JPG, PNG, WebP, etc.): convert to WebP with a solid WHITE background
+      // alpha:1 = fully opaque white — prevents the "invisible logo on white card" bug
+      fileBuffer = await sharp(sourceBuffer, { failOn: "none" })
+        .flatten({ background: { r: 255, g: 255, b: 255 } })  // flatten transparency onto white
+        .resize({ width: 600, height: 300, fit: "contain", withoutEnlargement: true, background: { r: 255, g: 255, b: 255 } })
+        .webp({ quality: 90, effort: 4 })
+        .toBuffer();
+      saveExtension = "webp";
+    }
+
+    const nextLogoUrl = `/partners/${partnerId}.${saveExtension}`;
+    await saveTrustedPartnerLogoToPublic(nextLogoUrl, fileBuffer);
     await deleteStoredTrustedPartnerLogo(partner.logoUrl !== nextLogoUrl ? partner.logoUrl : null);
 
     const nextSettings = {
       ...settings,
-      partners: settings.partners.map((entry) => (entry.id === partnerId ? { ...entry, logoUrl: nextLogoUrl } : entry))
+      partners: settings.partners.map((entry) =>
+        entry.id === partnerId ? { ...entry, logoUrl: nextLogoUrl } : entry
+      )
     };
 
     await saveTrustedPartnersSettings(nextSettings);
