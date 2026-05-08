@@ -9,9 +9,10 @@ import {
   updateMagneticCommerceInstallationConfiguration
 } from "@/lib/magnetic-commerce-access";
 
-const payloadSchema = z.object({
-  domainId: z.string().min(1)
-});
+const payloadSchema = z.union([
+  z.object({ domainId: z.string().min(1), customDomain: z.undefined() }),
+  z.object({ customDomain: z.string().min(3).max(253), domainId: z.undefined() })
+]);
 
 const patchSchema = z.discriminatedUnion("action", [
   z.object({
@@ -57,24 +58,47 @@ export async function POST(
       return NextResponse.json({ error: "Magnetic Commerce installation not found." }, { status: 404 });
     }
 
-    const domain = await getManagedDomainById(session.user.id, parsed.data.domainId);
+    // Branch: managed domain vs custom domain
+    if (parsed.data.domainId) {
+      const domain = await getManagedDomainById(session.user.id, parsed.data.domainId);
 
-    if (!domain || domain.status !== "active") {
-      return NextResponse.json({ error: "Select an active managed domain to continue." }, { status: 400 });
+      if (!domain || domain.status !== "active") {
+        return NextResponse.json({ error: "Select an active managed domain to continue." }, { status: 400 });
+      }
+
+      const updated = await assignMagneticCommerceDomain({
+        orderId,
+        userId: session.user.id,
+        domainId: domain._id,
+        domainName: domain.domain
+      });
+
+      if (!updated) {
+        return NextResponse.json({ error: "Unable to assign Magnetic Commerce to that domain." }, { status: 400 });
+      }
+
+      return NextResponse.json({ ok: true, installation: updated });
     }
 
-    const updated = await assignMagneticCommerceDomain({
+    // Custom domain path — assign directly without managed domain lookup
+    const rawDomain = parsed.data.customDomain!.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
+
+    if (!rawDomain || rawDomain.length < 3) {
+      return NextResponse.json({ error: "Enter a valid domain name (e.g. yourdomain.com)." }, { status: 400 });
+    }
+
+    const updatedCustom = await assignMagneticCommerceDomain({
       orderId,
       userId: session.user.id,
-      domainId: domain._id,
-      domainName: domain.domain
+      domainId: `custom_${Date.now()}`,
+      domainName: rawDomain
     });
 
-    if (!updated) {
+    if (!updatedCustom) {
       return NextResponse.json({ error: "Unable to assign Magnetic Commerce to that domain." }, { status: 400 });
     }
 
-    return NextResponse.json({ ok: true, installation: updated });
+    return NextResponse.json({ ok: true, installation: updatedCustom });
   } catch (error) {
     console.error("Magnetic Commerce domain assignment failed", error);
     return NextResponse.json({ error: "Unable to save the selected domain right now." }, { status: 500 });
