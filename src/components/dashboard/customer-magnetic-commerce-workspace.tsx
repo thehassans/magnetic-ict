@@ -409,11 +409,12 @@ export function CustomerMagneticCommerceWorkspace({
         );
       })}
 
-      {domains.length === 0 && (
+      {domains.length === 0 && installations.every((i) => !i.assignedDomain) && (
         <div className="rounded-[24px] border border-dashed border-amber-200 bg-amber-50/60 p-5 text-sm text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-300">
-          You need at least one active managed domain before a storefront can be assigned. Purchase or activate a domain first.
+          No active managed domains found. You can still enter a custom domain directly in the field above, or purchase a domain from the Domains section.
         </div>
       )}
+
     </div>
   );
 }
