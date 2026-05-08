@@ -87,7 +87,20 @@ function sanitizeConfigurationInput(
     supportEmail: typeof input.supportEmail === "string" ? input.supportEmail.trim() : current.supportEmail,
     currency: typeof input.currency === "string" ? input.currency.trim().toUpperCase() : current.currency,
     logoUrl: typeof input.logoUrl === "string" ? input.logoUrl.trim() : current.logoUrl,
-    launchNotes: typeof input.launchNotes === "string" ? input.launchNotes.trim() : current.launchNotes
+    launchNotes: typeof input.launchNotes === "string" ? input.launchNotes.trim() : current.launchNotes,
+    // App store optional fields
+    appName: typeof input.appName === "string" ? input.appName.trim() : current.appName,
+    appTagline: typeof input.appTagline === "string" ? input.appTagline.trim() : current.appTagline,
+    appDescription: typeof input.appDescription === "string" ? input.appDescription.trim() : current.appDescription,
+    appLogoUrl: typeof input.appLogoUrl === "string" ? input.appLogoUrl.trim() : current.appLogoUrl,
+    appSplashColor: typeof input.appSplashColor === "string" ? input.appSplashColor.trim() : current.appSplashColor,
+    appCategory: typeof input.appCategory === "string" ? input.appCategory.trim() : current.appCategory,
+    iosBundleId: typeof input.iosBundleId === "string" ? input.iosBundleId.trim() : current.iosBundleId,
+    iosAppStoreId: typeof input.iosAppStoreId === "string" ? input.iosAppStoreId.trim() : current.iosAppStoreId,
+    iosDeveloperEmail: typeof input.iosDeveloperEmail === "string" ? input.iosDeveloperEmail.trim() : current.iosDeveloperEmail,
+    androidPackageName: typeof input.androidPackageName === "string" ? input.androidPackageName.trim() : current.androidPackageName,
+    androidPlayStoreId: typeof input.androidPlayStoreId === "string" ? input.androidPlayStoreId.trim() : current.androidPlayStoreId,
+    androidDeveloperEmail: typeof input.androidDeveloperEmail === "string" ? input.androidDeveloperEmail.trim() : current.androidDeveloperEmail,
   };
 }
 

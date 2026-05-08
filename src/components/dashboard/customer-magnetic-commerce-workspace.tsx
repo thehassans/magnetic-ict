@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import {
   CheckCircle2, Clock, Globe2, Key, Loader2, Palette,
-  ShoppingCart, Smartphone, Store, Workflow, XCircle, ExternalLink, Copy, Check
+  ShoppingCart, Smartphone, Store, Workflow, XCircle, ExternalLink, Copy, Check,
+  Apple, PlayCircle, Package, Upload, Tag, Mail
 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,19 @@ type Installation = {
     currency: string;
     logoUrl: string;
     launchNotes: string;
+    // App store fields (Enterprise)
+    appName?: string;
+    appTagline?: string;
+    appDescription?: string;
+    appLogoUrl?: string;
+    appSplashColor?: string;
+    appCategory?: string;
+    iosBundleId?: string;
+    iosAppStoreId?: string;
+    iosDeveloperEmail?: string;
+    androidPackageName?: string;
+    androidPlayStoreId?: string;
+    androidDeveloperEmail?: string;
   };
   dns: {
     lastAppliedAt: string | null;
@@ -514,11 +528,178 @@ export function CustomerMagneticCommerceWorkspace({
                   </div>
                 </div>
               </div>
+              {/* ── App Store & Play Store Configuration (Enterprise) ── */}
+              {(inst.surfaces.ios || inst.surfaces.android) ? (
+                <div className="rounded-[24px] border border-violet-200/70 bg-gradient-to-br from-violet-50/60 to-indigo-50/40 p-5 dark:border-violet-400/20 dark:from-violet-500/[0.06] dark:to-indigo-500/[0.06]">
+                  {/* Header */}
+                  <div className="flex items-center gap-2 mb-5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 shadow-sm">
+                      <Smartphone className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.22em] text-violet-700 dark:text-violet-400">Mobile App Configuration</p>
+                      <p className="text-[11px] text-violet-500 dark:text-violet-500">
+                        Enterprise — {[inst.surfaces.ios && "iOS App Store", inst.surfaces.android && "Google Play Store"].filter(Boolean).join(" + ")}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Shared App Info */}
+                  <div className="mb-5 space-y-4">
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">App Identity</p>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {/* App logo preview */}
+                      <div className="md:col-span-2 flex items-center gap-4 rounded-xl border border-violet-200/50 bg-white p-3 dark:border-violet-400/20 dark:bg-white/[0.04]">
+                        {cfg.appLogoUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={cfg.appLogoUrl} alt="App icon" className="h-14 w-14 rounded-2xl object-contain shadow-md" />
+                        ) : (
+                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl shadow-md text-white text-xl font-bold"
+                            style={{ background: cfg.appSplashColor || cfg.brandColor || "#7c3aed" }}>
+                            {(cfg.appName || cfg.businessName || "M")[0]}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-slate-900 dark:text-white">{cfg.appName || cfg.businessName || "Your App"}</p>
+                          <p className="text-xs text-slate-400">{cfg.appTagline || "Tagline will appear here"}</p>
+                          <div className="mt-2 flex gap-1.5">
+                            {inst.surfaces.ios && <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-300"><Apple className="h-2.5 w-2.5" /> App Store</span>}
+                            {inst.surfaces.android && <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-300"><PlayCircle className="h-2.5 w-2.5" /> Play Store</span>}
+                          </div>
+                        </div>
+                      </div>
+
+                      <input type="text" value={cfg.appName ?? ""} placeholder="App name (e.g. MyStore)"
+                        onChange={(e) => updateField(inst.orderId, "appName" as keyof typeof cfg, e.target.value)}
+                        className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                      <input type="text" value={cfg.appTagline ?? ""} placeholder="Short tagline (max 30 chars)"
+                        onChange={(e) => updateField(inst.orderId, "appTagline" as keyof typeof cfg, e.target.value)}
+                        className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                      <input type="url" value={cfg.appLogoUrl ?? ""} placeholder="App icon URL (1024×1024 PNG)"
+                        onChange={(e) => updateField(inst.orderId, "appLogoUrl" as keyof typeof cfg, e.target.value)}
+                        className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                      <input type="text" value={cfg.appSplashColor ?? ""} placeholder="Splash screen color (#hex)"
+                        onChange={(e) => updateField(inst.orderId, "appSplashColor" as keyof typeof cfg, e.target.value)}
+                        className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                      <input type="text" value={cfg.appCategory ?? ""} placeholder="Category (e.g. Shopping)"
+                        onChange={(e) => updateField(inst.orderId, "appCategory" as keyof typeof cfg, e.target.value)}
+                        className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white md:col-span-2" />
+                      <textarea value={cfg.appDescription ?? ""} placeholder="Full app description for store listings (max 4000 chars)…"
+                        rows={3} onChange={(e) => updateField(inst.orderId, "appDescription" as keyof typeof cfg, e.target.value)}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white md:col-span-2" />
+                    </div>
+                  </div>
+
+                  {/* iOS */}
+                  {inst.surfaces.ios && (
+                    <div className="mb-5 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Apple className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">iOS / Apple App Store</p>
+                      </div>
+                      <div className="rounded-xl border border-slate-200/60 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03] space-y-3">
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div>
+                            <label className="block mb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Bundle ID</label>
+                            <input type="text" value={cfg.iosBundleId ?? ""} placeholder="com.yourcompany.app"
+                              onChange={(e) => updateField(inst.orderId, "iosBundleId" as keyof typeof cfg, e.target.value)}
+                              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                          </div>
+                          <div>
+                            <label className="block mb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400">App Store ID (if published)</label>
+                            <input type="text" value={cfg.iosAppStoreId ?? ""} placeholder="1234567890"
+                              onChange={(e) => updateField(inst.orderId, "iosAppStoreId" as keyof typeof cfg, e.target.value)}
+                              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="block mb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Apple Developer Email</label>
+                            <input type="email" value={cfg.iosDeveloperEmail ?? ""} placeholder="developer@yourdomain.com"
+                              onChange={(e) => updateField(inst.orderId, "iosDeveloperEmail" as keyof typeof cfg, e.target.value)}
+                              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-blue-100 bg-blue-50/60 px-3 py-2.5 text-[11px] text-blue-700 dark:border-blue-400/20 dark:bg-blue-400/[0.06] dark:text-blue-300 leading-relaxed">
+                          <strong>What Magnetic ICT does:</strong> We build and submit your branded iOS app to the Apple App Store using these details. You need an active Apple Developer account ($99/year). The app will be submitted under your developer account.
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Android */}
+                  {inst.surfaces.android && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <PlayCircle className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Android / Google Play Store</p>
+                      </div>
+                      <div className="rounded-xl border border-slate-200/60 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03] space-y-3">
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div>
+                            <label className="block mb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Package Name</label>
+                            <input type="text" value={cfg.androidPackageName ?? ""} placeholder="com.yourcompany.app"
+                              onChange={(e) => updateField(inst.orderId, "androidPackageName" as keyof typeof cfg, e.target.value)}
+                              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                          </div>
+                          <div>
+                            <label className="block mb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Play Store ID (if published)</label>
+                            <input type="text" value={cfg.androidPlayStoreId ?? ""} placeholder="com.yourcompany.app"
+                              onChange={(e) => updateField(inst.orderId, "androidPlayStoreId" as keyof typeof cfg, e.target.value)}
+                              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="block mb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Google Play Developer Email</label>
+                            <input type="email" value={cfg.androidDeveloperEmail ?? ""} placeholder="developer@yourdomain.com"
+                              onChange={(e) => updateField(inst.orderId, "androidDeveloperEmail" as keyof typeof cfg, e.target.value)}
+                              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-violet-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-white" />
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-emerald-100 bg-emerald-50/60 px-3 py-2.5 text-[11px] text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/[0.06] dark:text-emerald-300 leading-relaxed">
+                          <strong>What Magnetic ICT does:</strong> We build and publish your branded Android app to Google Play using these details. You need a Google Play Developer account ($25 one-time). The app will be published under your Play Console account.
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Save button */}
+                  <button onClick={() => saveConfiguration(inst.orderId)} disabled={isPending}
+                    className="mt-5 inline-flex h-10 items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:from-violet-700 hover:to-indigo-700 disabled:opacity-60">
+                    {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                    Save app configuration
+                  </button>
+                  <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
+                    Magnetic ICT will use this information to build and submit your branded mobile app. Our team will reach out to your developer email to coordinate the submission process.
+                  </p>
+                </div>
+              ) : (
+                /* Upgrade prompt for non-Enterprise tiers */
+                <div className="rounded-[24px] border border-dashed border-violet-200 bg-violet-50/40 p-5 dark:border-violet-400/20 dark:bg-violet-400/[0.04]">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-100 dark:bg-violet-500/20">
+                      <Smartphone className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-violet-800 dark:text-violet-300">Unlock Mobile Apps — Upgrade to Enterprise</p>
+                      <p className="mt-1 text-[12px] leading-relaxed text-violet-600 dark:text-violet-400">
+                        Enterprise tier includes a branded <strong>iPhone app</strong> on the Apple App Store and a branded <strong>Android app</strong> on Google Play, both connected to your Magnetic Commerce storefront. Contact support to upgrade your plan.
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span className="inline-flex items-center gap-1 rounded-lg border border-violet-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-violet-700 dark:border-violet-400/20 dark:bg-violet-500/10 dark:text-violet-300">
+                          <Apple className="h-3 w-3" /> Apple App Store
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-lg border border-violet-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-violet-700 dark:border-violet-400/20 dark:bg-violet-500/10 dark:text-violet-300">
+                          <PlayCircle className="h-3 w-3" /> Google Play Store
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
             </div>
           </section>
         );
       })}
+
 
 
       {domains.length === 0 && installations.every((i) => !i.assignedDomain) && (

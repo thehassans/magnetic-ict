@@ -15,6 +15,19 @@ export type MagneticCommerceInstallationConfig = {
   currency: string;
   logoUrl: string;
   launchNotes: string;
+  // App store fields (Enterprise tier)
+  appName?: string;
+  appTagline?: string;
+  appDescription?: string;
+  appLogoUrl?: string;
+  appSplashColor?: string;
+  appCategory?: string;
+  iosBundleId?: string;
+  iosAppStoreId?: string;
+  iosDeveloperEmail?: string;
+  androidPackageName?: string;
+  androidPlayStoreId?: string;
+  androidDeveloperEmail?: string;
 };
 
 export type MagneticCommerceDnsRecordSummary = {

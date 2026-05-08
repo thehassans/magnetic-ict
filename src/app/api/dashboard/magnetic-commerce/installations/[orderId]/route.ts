@@ -24,7 +24,20 @@ const patchSchema = z.discriminatedUnion("action", [
       supportEmail: z.string().email(),
       currency: z.string().min(3).max(8),
       logoUrl: z.string(),
-      launchNotes: z.string()
+      launchNotes: z.string(),
+      // App store optional fields
+      appName: z.string().optional(),
+      appTagline: z.string().optional(),
+      appDescription: z.string().optional(),
+      appLogoUrl: z.string().optional(),
+      appSplashColor: z.string().optional(),
+      appCategory: z.string().optional(),
+      iosBundleId: z.string().optional(),
+      iosAppStoreId: z.string().optional(),
+      iosDeveloperEmail: z.string().email().optional().or(z.literal("")),
+      androidPackageName: z.string().optional(),
+      androidPlayStoreId: z.string().optional(),
+      androidDeveloperEmail: z.string().email().optional().or(z.literal("")),
     })
   }),
   z.object({
