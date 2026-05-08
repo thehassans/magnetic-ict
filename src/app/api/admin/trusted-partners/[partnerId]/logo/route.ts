@@ -51,10 +51,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ par
     }
 
     const settings = await getTrustedPartnersSettings();
-    const partner = settings.partners.find((entry) => entry.id === partnerId);
+    let partner = settings.partners.find((entry) => entry.id === partnerId);
 
+    // Allow upload for new custom partners that haven't been saved to DB yet
     if (!partner) {
-      return NextResponse.json({ error: "Partner not found." }, { status: 404 });
+      if (!partnerId.startsWith("custom-")) {
+        return NextResponse.json({ error: "Partner not found." }, { status: 404 });
+      }
+      // Auto-create a placeholder record so the upload can proceed
+      partner = { id: partnerId, name: "New Partner", logoUrl: "", enabled: true };
+      settings.partners.push(partner);
     }
 
     const sourceBuffer = Buffer.from(await imageFile.arrayBuffer());

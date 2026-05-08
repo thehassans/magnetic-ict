@@ -86,7 +86,11 @@ export function TrustedPartnersMarquee({ partners }: TrustedPartnersMarqueeProps
               fill
               sizes="240px"
               className={cn("object-contain object-center p-3")}
-              unoptimized={partner.logoUrl.toLowerCase().includes(".svg")}
+              unoptimized={
+                partner.logoUrl.startsWith("/uploads/") ||
+                partner.logoUrl.startsWith("/partners/") ||
+                partner.logoUrl.toLowerCase().endsWith(".svg")
+              }
             />
           </motion.div>
         ))}
