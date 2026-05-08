@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
 import { HostingServicePage } from "@/components/services/hosting-service-page";
 import { MagneticCommerceServicePage } from "@/components/services/magnetic-commerce-service-page";
+import { MagneticSocialBotServicePage } from "@/components/services/magnetic-social-bot-service-page";
+import { MagneticVpsServicePage } from "@/components/services/magnetic-vps-service-page";
 import { AiDetectionTool } from "@/components/services/ai-detection-tool";
 import { ImageConversionTool } from "@/components/services/image-conversion-tool";
 import { ServiceTierSelector } from "@/components/services/service-tier-selector";
@@ -45,8 +47,12 @@ export default async function ServiceDetailPage({
     return <MagneticCommerceServicePage service={service} title={title} />;
   }
 
-  if (isMagneticVpsHostingService && hostingProviderConfig) {
-    return <HostingServicePage service={service} hostingProviderConfig={hostingProviderConfig} />;
+  if (isMagneticSocialBotService) {
+    return <MagneticSocialBotServicePage service={service} title={title} />;
+  }
+
+  if (isMagneticVpsHostingService) {
+    return <MagneticVpsServicePage service={service} title={title} />;
   }
 
   if (isVideoDownloaderService) {
