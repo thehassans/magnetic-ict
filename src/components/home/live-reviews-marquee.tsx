@@ -172,7 +172,7 @@ export function LiveReviewsMarquee() {
         title="Loved by Developers"
         subtitle="Real feedback from developers and operators across South Asia."
         testimonials={[...developerTestimonials]}
-        theme="light"
+        theme="dark"
       />
 
     </section>

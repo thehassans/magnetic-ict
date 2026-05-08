@@ -122,6 +122,7 @@ export function DropdownNavigation({
                                     <Link
                                       href={item.href}
                                       locale={locale}
+                                      onClick={() => setOpenMenu(null)}
                                       className="group flex items-start gap-3 rounded-[18px] border border-transparent px-3 py-3 transition hover:bg-slate-50 dark:hover:bg-white/5"
                                     >
                                       <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition-colors duration-300 group-hover:border-slate-300 group-hover:bg-slate-100 dark:border-white/10 dark:text-slate-200 dark:group-hover:border-white/20 dark:group-hover:bg-white/10">
