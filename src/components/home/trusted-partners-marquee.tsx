@@ -1,11 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { InfiniteMarquee } from "@/components/home/infinite-marquee";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
-import { cn } from "@/lib/utils";
 
 type TrustedPartner = {
   id: string;
@@ -80,17 +78,12 @@ export function TrustedPartnersMarquee({ partners }: TrustedPartnersMarqueeProps
             whileHover={{ y: -4 }}
             className="relative flex h-24 w-[15rem] items-center justify-center overflow-hidden rounded-[24px] border border-slate-200/90 bg-white/95 px-7 shadow-[0_18px_48px_rgba(15,23,42,0.08)] backdrop-blur-2xl transition hover:border-cyan-200 hover:bg-cyan-50/60 dark:border-white/10 dark:bg-white/95 dark:hover:border-cyan-400/20 dark:hover:bg-cyan-50/90"
           >
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={partner.logoUrl}
               alt={partner.name}
-              fill
-              sizes="240px"
-              className={cn("object-contain object-center p-3")}
-              unoptimized={
-                partner.logoUrl.startsWith("/uploads/") ||
-                partner.logoUrl.startsWith("/partners/") ||
-                partner.logoUrl.toLowerCase().endsWith(".svg")
-              }
+              className="h-full w-full object-contain object-center p-3"
+              style={{ display: "block" }}
             />
           </motion.div>
         ))}

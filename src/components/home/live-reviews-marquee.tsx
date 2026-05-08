@@ -2,6 +2,8 @@
 
 import { Star } from "lucide-react";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
+import { TestimonialsSection } from "@/components/ui/simple-animated-testimonials";
+import { developerTestimonials } from "@/lib/developer-testimonials";
 
 /* ─── Review Data ─── */
 const ROW_A = [
@@ -164,6 +166,15 @@ export function LiveReviewsMarquee() {
 
         </div>
       </ScrollReveal>
+
+      {/* ── Loved by Developers ── */}
+      <TestimonialsSection
+        title="Loved by Developers"
+        subtitle="Real feedback from developers and operators across South Asia."
+        testimonials={[...developerTestimonials]}
+        theme="light"
+      />
+
     </section>
   );
 }
