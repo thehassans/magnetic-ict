@@ -18,11 +18,11 @@ type SuggestedQuestion = {
 };
 
 const SUGGESTED_QUESTIONS: SuggestedQuestion[] = [
-  { label: "What services do you offer?", prompt: "What services does Magnetic ICT offer?" },
-  { label: "How does Magnetic Commerce work?", prompt: "How does Magnetic Commerce work and what features does it include?" },
-  { label: "Pricing & packages", prompt: "What are the pricing packages available?" },
-  { label: "How to get started?", prompt: "How can I get started with Magnetic ICT?" },
-  { label: "Admin panel features", prompt: "What features are available in the Magnetic Commerce admin panel?" },
+  { label: "What services do you offer?", prompt: "What services or products are described in the knowledge base?" },
+  { label: "Pricing & packages", prompt: "What pricing or packages are mentioned in the documents?" },
+  { label: "How to get started?", prompt: "How can someone get started based on the knowledge base?" },
+  { label: "Key features", prompt: "What are the key features or highlights mentioned in the knowledge base?" },
+  { label: "Contact & support", prompt: "What contact or support information is available?" },
 ];
 
 interface AIAssistantInterfaceProps {

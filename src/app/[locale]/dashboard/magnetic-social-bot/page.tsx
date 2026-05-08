@@ -1,14 +1,20 @@
-import { Bot, Instagram, MessageCircle, Sparkles } from "lucide-react";
+import { Bot, BrainCircuit, Instagram, MessageCircle, Sparkles } from "lucide-react";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { CustomerSocialBotWorkspace } from "@/components/dashboard/customer-social-bot-workspace";
 import { userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
 import { getPlatformSettings } from "@/lib/platform-settings";
+import { Link } from "@/i18n/navigation";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function MagneticSocialBotDashboardPage() {
+export default async function MagneticSocialBotDashboardPage({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -26,23 +32,35 @@ export default async function MagneticSocialBotDashboardPage() {
   return (
     <div className="space-y-6">
       <section className="rounded-[28px] border border-slate-200/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.03] sm:p-6">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] uppercase tracking-[0.24em] text-slate-600 dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-300">
-            <Sparkles className="h-4 w-4" />
-            Magnetic Social Bot
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] uppercase tracking-[0.24em] text-slate-600 dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-300">
+              <Sparkles className="h-4 w-4" />
+              Magnetic Social Bot
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] uppercase tracking-[0.24em] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+              <MessageCircle className="h-4 w-4" />
+              WhatsApp
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] uppercase tracking-[0.24em] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+              <Instagram className="h-4 w-4" />
+              Instagram
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] uppercase tracking-[0.24em] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+              <Bot className="h-4 w-4" />
+              Messenger
+            </div>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] uppercase tracking-[0.24em] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-            <MessageCircle className="h-4 w-4" />
-            WhatsApp
-          </div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] uppercase tracking-[0.24em] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-            <Instagram className="h-4 w-4" />
-            Instagram
-          </div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] uppercase tracking-[0.24em] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-            <Bot className="h-4 w-4" />
-            Messenger
-          </div>
+
+          {/* Ask Magnetic CTA */}
+          <Link
+            href="/dashboard/magnetic-social-bot/ask"
+            locale={locale}
+            className="inline-flex items-center gap-2.5 rounded-2xl border border-indigo-200/70 bg-gradient-to-r from-indigo-50 to-violet-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 shadow-sm transition hover:border-indigo-300 hover:from-indigo-100 hover:to-violet-100 dark:border-indigo-400/20 dark:from-indigo-500/10 dark:to-violet-500/10 dark:text-indigo-300 dark:hover:border-indigo-400/40"
+          >
+            <BrainCircuit className="h-4 w-4" />
+            Ask Magnetic
+          </Link>
         </div>
         <h1 className="mt-4 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">Social Bot workspace</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
