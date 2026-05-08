@@ -122,7 +122,7 @@ export default function PrivacyPage() {
               Privacy Policy
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-500 dark:text-slate-400">
-              We believe privacy is a right, not a feature. Here's exactly what data we collect, why we collect it, and how we keep it safe.
+              We believe privacy is a right, not a feature. Here&apos;s exactly what data we collect, why we collect it, and how we keep it safe.
             </p>
             <div className="mt-6 flex items-center gap-2 text-sm text-slate-400 dark:text-slate-500">
               <Clock className="h-4 w-4" />
