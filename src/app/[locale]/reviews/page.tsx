@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Star, ShieldCheck, Zap, Globe2 } from "lucide-react";
+import { Star, ShieldCheck, Zap } from "lucide-react";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
 import { reviews } from "@/lib/reviews";
 import { developerTestimonials } from "@/lib/developer-testimonials";
@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils";
 export default function ReviewsPage() {
   // Combine and randomize reviews, keeping only 4 and 5 stars
   const allReviews = useMemo(() => {
-    const combined = [
+    type ReviewType = { id: string; name: string; rating: number; avatar: string; company?: string; service?: string; comment: string; };
+    const combined: ReviewType[] = [
       ...reviews,
       ...developerTestimonials.map(t => ({
         id: t.id.toString(),
@@ -21,7 +22,7 @@ export default function ReviewsPage() {
         service: t.role,
         comment: t.content
       }))
-    ] as any[];
+    ];
     
     // Filter for 4 and 5 stars, then shuffle
     const filtered = combined.filter(r => r.rating >= 4);
@@ -92,7 +93,7 @@ export default function ReviewsPage() {
                       ))}
                     </div>
                     <p className="text-[15px] leading-relaxed text-slate-600 dark:text-slate-300">
-                      "{review.comment}"
+                      &quot;{review.comment}&quot;
                     </p>
                   </div>
                   <div className="mt-8 flex items-center gap-4">
