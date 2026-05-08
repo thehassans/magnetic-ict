@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useMemo, useState, useTransition } from "react";
-import { Bot, ChevronRight, Globe, LayoutDashboard, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Receipt, Server, ShoppingCart, X } from "lucide-react";
+import { Bot, BrainCircuit, ChevronRight, Globe, LayoutDashboard, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Receipt, Server, ShoppingCart, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/branding/brand-logo";
@@ -90,7 +90,13 @@ export function CustomerDashboardShell({
         href: "/dashboard/magnetic-social-bot",
         label: "Social Bot",
         Icon: Bot,
-        match: (value) => value.startsWith("/dashboard/magnetic-social-bot")
+        match: (value) => value === "/dashboard/magnetic-social-bot" || value.startsWith("/dashboard/magnetic-social-bot/") && !value.startsWith("/dashboard/magnetic-social-bot/ask")
+      });
+      items.push({
+        href: "/dashboard/magnetic-social-bot/ask",
+        label: "Ask Magnetic",
+        Icon: BrainCircuit,
+        match: (value) => value.startsWith("/dashboard/magnetic-social-bot/ask")
       });
     }
 
