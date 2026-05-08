@@ -468,12 +468,23 @@ function normalizeTrustedPartners(value: unknown, fallback: TrustedPartnersSetti
     return fallback;
   }
 
+  /** Rewrite legacy /uploads/partners/id-timestamp.webp → /partners/id.webp */
+  function fixLogoUrl(url: string): string {
+    if (url.startsWith("/uploads/partners/")) {
+      // Extract the partner id (everything before the first - followed by digits)
+      const filename = url.replace("/uploads/partners/", "");
+      const id = filename.replace(/-\d+\.webp$/, "").replace(/\.webp$/, "");
+      return `/partners/${id}.webp`;
+    }
+    return url;
+  }
+
   const normalized = value
     .filter((entry) => isObject(entry))
     .map((entry, index) => ({
       id: coerceString(entry.id, fallback[index]?.id ?? `partner-${index + 1}`),
       name: coerceString(entry.name, fallback[index]?.name ?? "Partner"),
-      logoUrl: coerceString(entry.logoUrl, fallback[index]?.logoUrl ?? ""),
+      logoUrl: fixLogoUrl(coerceString(entry.logoUrl, fallback[index]?.logoUrl ?? "")),
       enabled: coerceBoolean(entry.enabled, fallback[index]?.enabled ?? true)
     }))
     .filter((entry) => entry.id.trim().length > 0 && entry.name.trim().length > 0);
