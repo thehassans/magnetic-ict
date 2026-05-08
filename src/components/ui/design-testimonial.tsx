@@ -12,9 +12,9 @@ const testimonials = [
     company: "Magnetic Commerce",
   },
   {
-    quote: "The bot handles 80% of our customer inquiries automatically. Pure magic.",
-    author: "Aisha Nasser",
-    role: "Customer Success Lead",
+    quote: "The AI automation handles our entire customer support flow. Absolutely game-changing.",
+    author: "Hassan Sarwar",
+    role: "CTO",
     company: "Magnetic Social Bot",
   },
   {
