@@ -23,6 +23,7 @@ import {
   LogOut,
   LucideIcon,
   Mail,
+  MessageCircle,
   Package,
   ScanFace,
   Search,
@@ -242,6 +243,12 @@ export function Header({
       },
       {
         id: 4,
+        label: "Ask Magnetic",
+        icon: MessageCircle,
+        link: "/ask-magnetic"
+      },
+      {
+        id: 5,
         label: t("support"),
         icon: HelpCircle,
         link: "/support"
@@ -331,6 +338,9 @@ export function Header({
             </MobileLink>
             <MobileLink locale={locale} href="/services" onClick={() => setOpen(false)} icon={LayersIcon}>
               {t("services")}
+            </MobileLink>
+            <MobileLink locale={locale} href="/ask-magnetic" onClick={() => setOpen(false)} icon={MessageCircle}>
+              Ask Magnetic
             </MobileLink>
             <MobileLink locale={locale} href="/support" onClick={() => setOpen(false)} icon={HelpCircle}>
               {t("support")}

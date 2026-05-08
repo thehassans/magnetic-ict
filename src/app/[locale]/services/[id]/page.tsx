@@ -78,6 +78,54 @@ export default async function ServiceDetailPage({
     );
   }
 
+  if (isAiDetectionService) {
+    return (
+      <main className="min-h-screen bg-white dark:bg-[#06080f]">
+        <div className="pointer-events-none fixed inset-0 overflow-hidden">
+          <div className="absolute left-[20%] top-0 h-[50vh] w-[50vh] -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(139,92,246,0.08),transparent_60%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(139,92,246,0.15),transparent_60%)]" />
+          <div className="absolute right-[5%] top-[40%] h-[40vh] w-[40vh] rounded-full bg-[radial-gradient(circle,rgba(6,182,212,0.06),transparent_60%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(6,182,212,0.12),transparent_60%)]" />
+        </div>
+        <div className="relative mx-auto max-w-3xl px-4 pb-20 pt-14 sm:px-6 sm:pt-20 lg:px-8">
+          <div className="mb-10 text-center">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-slate-50/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-slate-500 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-400">
+              <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+              Free forensic scan
+            </div>
+            <h1 className="text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl">{title}</h1>
+            <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-slate-500 dark:text-slate-400">
+              Upload any image or video — our forensic engine analyzes authenticity signals and gives you a clear verdict.
+            </p>
+          </div>
+          <AiDetectionTool />
+        </div>
+      </main>
+    );
+  }
+
+  if (isImageConversionService) {
+    return (
+      <main className="min-h-screen bg-white dark:bg-[#06080f]">
+        <div className="pointer-events-none fixed inset-0 overflow-hidden">
+          <div className="absolute left-[10%] top-0 h-[50vh] w-[50vh] -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(16,185,129,0.07),transparent_60%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(16,185,129,0.13),transparent_60%)]" />
+          <div className="absolute right-[15%] top-[30%] h-[40vh] w-[40vh] rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.06),transparent_60%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(99,102,241,0.12),transparent_60%)]" />
+        </div>
+        <div className="relative mx-auto max-w-3xl px-4 pb-20 pt-14 sm:px-6 sm:pt-20 lg:px-8">
+          <div className="mb-10 text-center">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-slate-50/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-slate-500 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-400">
+              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+              Free converter
+            </div>
+            <h1 className="text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl">{title}</h1>
+            <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-slate-500 dark:text-slate-400">
+              Upload an image, choose your output format and resize options — get a converted file instantly, free.
+            </p>
+          </div>
+          <ImageConversionTool />
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto max-w-7xl space-y-10 px-4 py-10 sm:px-6 lg:px-8">
       <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
