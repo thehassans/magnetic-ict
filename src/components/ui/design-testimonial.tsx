@@ -7,8 +7,8 @@ import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from
 const testimonials = [
   {
     quote: "Transformed our entire e-commerce operations. The admin panel is incredibly powerful.",
-    author: "Khalid Al-Rashid",
-    role: "Head of Operations",
+    author: "Ahmed Wasim",
+    role: "CEO & Founder",
     company: "Magnetic Commerce",
   },
   {
@@ -19,7 +19,7 @@ const testimonials = [
   },
   {
     quote: "Blazing fast servers with zero downtime. Best hosting decision we ever made.",
-    author: "Omar Farooq",
+    author: "Hassan Sarwar",
     role: "CTO",
     company: "Magnetic VPS",
   },

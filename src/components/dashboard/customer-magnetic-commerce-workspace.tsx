@@ -82,6 +82,9 @@ export function CustomerMagneticCommerceWorkspace({
   const [selectedDomains, setSelectedDomains] = useState<Record<string, string>>(
     Object.fromEntries(installations.map((i) => [i.orderId, i.assignedDomainId ?? ""]))
   );
+  const [customDomains, setCustomDomains] = useState<Record<string, string>>(
+    Object.fromEntries(installations.map((i) => [i.orderId, ""]))
+  );
   const [configurations, setConfigurations] = useState<Record<string, Installation["configuration"]>>(
     Object.fromEntries(installations.map((i) => [i.orderId, i.configuration]))
   );
@@ -98,11 +101,15 @@ export function CustomerMagneticCommerceWorkspace({
 
   function assignDomain(orderId: string) {
     const domainId = selectedDomains[orderId];
-    if (!domainId) { notify("Select a domain first.", true); return; }
+    const customDomain = customDomains[orderId]?.trim();
+    if (!domainId && !customDomain) { notify("Select a managed domain or enter a custom domain.", true); return; }
     startTransition(async () => {
+      const body = domainId
+        ? { domainId }
+        : { customDomain };
       const res = await fetch(`/api/dashboard/magnetic-commerce/installations/${orderId}`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domainId }),
+        body: JSON.stringify(body),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) { notify(data.error ?? "Unable to assign domain.", true); return; }
@@ -223,9 +230,29 @@ export function CustomerMagneticCommerceWorkspace({
                       onChange={(e) => setSelectedDomains((c) => ({ ...c, [inst.orderId]: e.target.value }))}
                       className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
                     >
-                      <option value="">Select active domain</option>
+                      <option value="">Select managed domain</option>
                       {domains.map((d) => <option key={d.id} value={d.id}>{d.domain}</option>)}
                     </select>
+
+                    {/* OR divider */}
+                    <div className="flex items-center gap-2">
+                      <div className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
+                      <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">or</span>
+                      <div className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
+                    </div>
+
+                    {/* Custom domain input */}
+                    <div className="space-y-1">
+                      <input
+                        type="text"
+                        value={customDomains[inst.orderId] ?? ""}
+                        onChange={(e) => setCustomDomains((c) => ({ ...c, [inst.orderId]: e.target.value }))}
+                        placeholder="yourdomain.com"
+                        className="h-10 w-full rounded-xl border border-dashed border-indigo-300/60 bg-indigo-50/40 px-3 text-sm outline-none transition focus:border-indigo-400 focus:bg-white dark:border-indigo-400/30 dark:bg-indigo-500/10 dark:text-white dark:placeholder:text-slate-500"
+                      />
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500">Type a domain you own but haven&apos;t added to managed domains yet</p>
+                    </div>
+
                     <button onClick={() => assignDomain(inst.orderId)} disabled={isPending}
                       className="inline-flex h-9 w-full items-center justify-center rounded-xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-indigo-600 disabled:opacity-60 dark:bg-white dark:text-slate-950 dark:hover:bg-indigo-100">
                       {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : inst.assignedDomain ? "Update domain" : "Assign domain"}
