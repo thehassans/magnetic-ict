@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowRight, Check, Clock3, Cpu, Globe2, HardDrive, Server, Shield, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Clock3, Cpu, Globe2, HardDrive, Lock, Server, Shield, ShieldCheck, Sparkles, Zap, Database, Network } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { HostingConfigurationSummary } from "@/components/commerce/hosting-configuration-summary";
 import { useCommerce } from "@/components/commerce/commerce-provider";
@@ -11,340 +11,307 @@ import { getHostingPlanForTier } from "@/lib/hosting-plans";
 import type { HostingProviderSettings } from "@/lib/hosting-types";
 import type { CatalogService } from "@/lib/service-catalog";
 import { cn } from "@/lib/utils";
+import { ScrollReveal } from "@/components/home/scroll-reveal";
 
-const hostingFeatureCards = [
-  {
-    icon: Server,
-    title: "Managed cloud infrastructure",
-    description: "Provision Magnetic-branded VPS capacity with a clean operator-first workflow."
-  },
-  {
-    icon: Shield,
-    title: "Control panel ready",
-    description: "Offer panel-enabled delivery flows with Plesk or other enabled control-panel options."
-  },
-  {
-    icon: Clock3,
-    title: "Operational visibility",
-    description: "Track provisioning progress, customer access readiness, and admin-managed fulfillment in one place."
-  },
-  {
-    icon: Globe2,
-    title: "Regional deployment",
-    description: "Choose from the enabled infrastructure regions configured in your hosting provider settings."
-  },
-  {
-    icon: Cpu,
-    title: "Flexible OS images",
-    description: "Launch with the operating system templates already enabled in your infrastructure configuration."
-  },
-  {
-    icon: HardDrive,
-    title: "Add-ons & provisioning",
-    description: "Bundle add-ons into the same purchase journey for a tighter premium checkout flow."
-  }
+const featureCards = [
+  { icon: Server, title: "Managed cloud infra", desc: "Provision Magnetic-branded VPS capacity with a clean operator-first workflow.", accent: "from-indigo-500 to-violet-500" },
+  { icon: Shield, title: "Control panel ready", desc: "Panel-enabled delivery flows with cPanel, Plesk, or DirectAdmin from day one.", accent: "from-cyan-500 to-sky-500" },
+  { icon: Clock3, title: "Operational visibility", desc: "Track provisioning, customer access readiness, and admin fulfillment in one place.", accent: "from-emerald-500 to-teal-500" },
+  { icon: Globe2, title: "Regional deployment", desc: "Choose from enabled infrastructure regions configured in your hosting provider settings.", accent: "from-amber-500 to-orange-500" },
+  { icon: Cpu, title: "Flexible OS images", desc: "Launch with Ubuntu, Debian, AlmaLinux, Rocky Linux, or Windows Server templates.", accent: "from-violet-500 to-fuchsia-500" },
+  { icon: HardDrive, title: "Add-ons & provisioning", desc: "Bundle managed backups, monitoring, and DDoS protection into one premium checkout.", accent: "from-rose-500 to-pink-500" },
 ] as const;
 
-type HostingServicePageProps = {
-  service: CatalogService;
-  hostingProviderConfig: HostingProviderSettings;
-};
+const trustBadges = [
+  { icon: ShieldCheck, label: "DDoS protection", sub: "Always-on" },
+  { icon: Zap, label: "< 60s deploy", sub: "Instant provisioning" },
+  { icon: Lock, label: "99.9% SLA", sub: "Guaranteed uptime" },
+  { icon: Globe2, label: "4 regions", sub: "Global infrastructure" },
+] as const;
 
-export function HostingServicePage({ service, hostingProviderConfig }: HostingServicePageProps) {
+type Props = { service: CatalogService; hostingProviderConfig: HostingProviderSettings };
+
+export function HostingServicePage({ service, hostingProviderConfig }: Props) {
   const { addItem, openCart } = useCommerce();
   const router = useRouter();
   const [hostingSelection, setHostingSelection] = useState(createDefaultHostingSelection(hostingProviderConfig));
 
-  const resolvedHostingConfiguration = useMemo(
+  const enabledOS = hostingProviderConfig.operatingSystems.filter((x) => x.enabled);
+  const enabledPanels = hostingProviderConfig.controlPanels.filter((x) => x.enabled);
+  const enabledLocations = hostingProviderConfig.locations.filter((x) => x.enabled);
+  const enabledAddons = hostingProviderConfig.addons.filter((x) => x.enabled);
+
+  const plans = useMemo(() => service.tiers.map((tier) => {
+    const tp = getHostingPlanForTier(tier.id);
+    return {
+      ...tier,
+      cpu: tp ? `${tp.cores} vCPU` : tier.features[0] ?? "Included",
+      ram: tp ? `${Math.round(tp.ramMb / 1024)} GB RAM` : tier.features[1] ?? "Included",
+      storage: tp ? `${tp.storageGb} GB SSD` : tier.features[2] ?? "Included",
+      bandwidth: tier.features[3] ?? "Unmetered",
+      popular: tier.name === "Professional",
+    };
+  }), [service.tiers]);
+
+  const [selectedTierId, setSelectedTierId] = useState(plans.find(p => p.popular)?.id ?? plans[0]?.id);
+  const selectedPlan = plans.find(p => p.id === selectedTierId)!;
+
+  const resolved = useMemo(
     () => resolveHostingConfiguration(hostingSelection, hostingProviderConfig),
     [hostingSelection, hostingProviderConfig]
   );
 
-  const enabledOperatingSystems = hostingProviderConfig.operatingSystems.filter((item) => item.enabled);
-  const enabledControlPanels = hostingProviderConfig.controlPanels.filter((item) => item.enabled);
-  const enabledLocations = hostingProviderConfig.locations.filter((item) => item.enabled);
-  const enabledAddons = hostingProviderConfig.addons.filter((item) => item.enabled);
+  const finalPrice = getHostingConfigurationTotal(selectedPlan.price, resolved);
 
-  const plans = service.tiers.map((tier) => {
-    const tierPlan = getHostingPlanForTier(tier.id);
-    const totalPrice = getHostingConfigurationTotal(tier.price, resolvedHostingConfiguration);
-
-    return {
-      ...tier,
-      totalPrice,
-      cpu: tierPlan ? `${tierPlan.cores} vCPU` : tier.features[0] ?? "Included",
-      ram: tierPlan ? `${Math.round(tierPlan.ramMb / 1024)} GB RAM` : tier.features[1] ?? "Included",
-      storage: tierPlan ? `${tierPlan.storageGb} GB SSD` : tier.features[2] ?? "Included",
-      popular: tier.name === "Professional"
-    };
-  });
-
-  const comparisonGridStyle = {
-    gridTemplateColumns: `minmax(16rem,1.15fr) repeat(${plans.length}, minmax(18rem,1fr))`
-  };
-
-  function handleAddToCart(tierId: string, price: number) {
-    addItem({
-      serviceId: service.id,
-      tierId,
-      price,
-      hostingConfiguration: resolvedHostingConfiguration.selection,
-      hostingSummary: resolvedHostingConfiguration.summaryLines
-    });
+  function handleAdd() {
+    addItem({ serviceId: service.id, tierId: selectedPlan.id, price: finalPrice, hostingConfiguration: resolved.selection, hostingSummary: resolved.summaryLines });
     router.push("/cart");
   }
 
   return (
-    <main className="bg-white dark:bg-slate-950">
-      <section className="relative overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_top,rgba(148,163,184,0.12),transparent_42%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] py-20 dark:border-white/10 dark:bg-[radial-gradient(circle_at_top,rgba(148,163,184,0.12),transparent_42%),linear-gradient(180deg,#020617_0%,#020617_100%)]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.26em] text-slate-600 shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300">
-              <Sparkles className="h-3.5 w-3.5" />
-              {service.eyebrow}
+    <main className="bg-white dark:bg-[#06080f]">
+      {/* ── HERO ── */}
+      <section className="relative overflow-hidden border-b border-slate-200/40 py-24 dark:border-white/[0.06] sm:py-32">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-[15%] -top-[30%] h-[90vh] w-[90vh] rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.14),transparent_60%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(99,102,241,0.2),transparent_60%)]" />
+          <div className="absolute -right-[10%] top-[5%] h-[70vh] w-[70vh] rounded-full bg-[radial-gradient(circle,rgba(6,182,212,0.1),transparent_60%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(6,182,212,0.18),transparent_60%)]" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <div className="mx-auto max-w-4xl text-center">
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-indigo-200/60 bg-gradient-to-r from-indigo-50 to-violet-50 px-5 py-2 text-xs font-bold uppercase tracking-[0.3em] text-indigo-700 dark:border-indigo-400/20 dark:from-indigo-500/10 dark:to-violet-500/10 dark:text-indigo-300">
+                <Sparkles className="h-3.5 w-3.5" /> {service.eyebrow}
+              </div>
+              <h1 className="mt-7 text-5xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-6xl lg:text-7xl lg:leading-[1.05]">
+                Lightning-fast{" "}
+                <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-500 bg-clip-text text-transparent dark:from-indigo-400 dark:via-violet-400 dark:to-cyan-300">
+                  VPS hosting
+                </span>
+              </h1>
+              <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-500 dark:text-slate-400">
+                {service.description}
+              </p>
+
+              <div className="mt-10 flex flex-wrap justify-center gap-3">
+                {[
+                  { v: `${enabledLocations.length || 1}`, l: "Regions" },
+                  { v: `${enabledOS.length || 1}+`, l: "OS images" },
+                  { v: `${enabledPanels.length || 1}`, l: "Panels" },
+                  { v: `${enabledAddons.length || 0}+`, l: "Add-ons" },
+                ].map((s) => (
+                  <div key={s.l} className="rounded-2xl border border-slate-200/70 bg-white/80 px-6 py-4 text-center shadow-sm backdrop-blur-md dark:border-white/[0.08] dark:bg-white/[0.03]">
+                    <div className="text-2xl font-bold text-slate-950 dark:text-white">{s.v}</div>
+                    <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500">{s.l}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 flex flex-wrap justify-center gap-4">
+                {trustBadges.map((b) => (
+                  <div key={b.label} className="inline-flex items-center gap-2.5 rounded-full border border-slate-200/70 bg-white/80 px-4 py-2 backdrop-blur-md dark:border-white/[0.08] dark:bg-white/[0.03]">
+                    <b.icon className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{b.label}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500">{b.sub}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-10 flex flex-wrap justify-center gap-3">
+                <button onClick={() => document.getElementById("build-server")?.scrollIntoView({ behavior: "smooth" })}
+                  className="group inline-flex h-12 items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-7 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition hover:shadow-xl hover:shadow-indigo-500/30">
+                  Deploy server <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </button>
+              </div>
             </div>
-            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl">
-              Lightning-fast <span className="text-slate-500 dark:text-slate-300">web hosting</span>
-            </h1>
-            <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
-              {service.description}
-            </p>
-            <div className="mt-10 flex flex-wrap justify-center gap-8">
-              {[
-                { value: `${enabledLocations.length || 1}`, label: "Regions" },
-                { value: `${enabledOperatingSystems.length || 1}+`, label: "OS images" },
-                { value: `${enabledControlPanels.length || 1}`, label: "Panels" },
-                { value: `${enabledAddons.length || 0}+`, label: "Add-ons" }
-              ].map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <div className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{stat.value}</div>
-                  <div className="mt-1 text-[11px] uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
-      <section id="hosting-plans" className="pb-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-500 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300">
-                <Sparkles className="h-3.5 w-3.5" />
-                Tailored VPS stack
-              </div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">Compare plans, then fine-tune every server detail.</h2>
-              <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
-                The table keeps the overview crisp while the configurator lets every tier feel bespoke, premium, and instantly priced.
+      {/* ── BUILD SERVER ── */}
+      <section id="build-server" className="relative py-24 sm:py-32">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.06),transparent_50%)] dark:bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.1),transparent_50%)]" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          
+          <ScrollReveal>
+            <div className="text-center mb-16">
+              <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400">
+                <Cpu className="h-3.5 w-3.5" /> Provisioning Flow
+              </p>
+              <h2 className="mt-4 text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl">
+                Build your server.
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-500 dark:text-slate-400">
+                Select your base capacity tier, then personalize the software stack and infrastructure add-ons.
               </p>
             </div>
-            <div className="inline-flex items-center gap-2 self-start rounded-full border border-slate-200/80 bg-white/85 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.22em] text-slate-500 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-400 lg:self-auto">
-              <Shield className="h-3.5 w-3.5 text-emerald-500" />
-              Live pricing as you configure
-            </div>
-          </div>
+          </ScrollReveal>
 
-          <div className="overflow-hidden rounded-[2.35rem] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))] shadow-[0_32px_100px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.05),transparent_32%),linear-gradient(180deg,rgba(15,23,42,0.86),rgba(2,6,23,0.96))] dark:shadow-[0_32px_100px_rgba(2,6,23,0.5)]">
-            <div className="border-b border-slate-200/80 px-6 py-5 dark:border-white/10 sm:px-8">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="grid gap-12 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_440px] items-start">
+            
+            {/* Left Col - Steps */}
+            <div className="space-y-12">
+              
+              {/* Step 1 */}
+              <ScrollReveal delay={0.05}>
                 <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Hosting overview</div>
-                  <div className="mt-2 text-lg font-semibold text-slate-950 dark:text-white">Ultra-premium server plan comparison</div>
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 dark:bg-indigo-500 dark:shadow-indigo-500/20">1</div>
+                    <h3 className="text-2xl font-bold text-slate-950 dark:text-white">Choose base capacity</h3>
+                  </div>
+                  
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {plans.map((plan) => {
+                      const active = selectedTierId === plan.id;
+                      return (
+                        <button key={plan.id} onClick={() => setSelectedTierId(plan.id)}
+                          className={cn("relative overflow-hidden rounded-3xl border p-6 text-left transition-all duration-300",
+                            active 
+                              ? "border-indigo-400/50 bg-gradient-to-br from-indigo-50 to-white shadow-[0_8px_32px_rgba(99,102,241,0.12)] ring-1 ring-indigo-400/20 dark:border-indigo-400/40 dark:from-indigo-400/10 dark:to-transparent dark:shadow-[0_8px_32px_rgba(99,102,241,0.15)] dark:ring-indigo-400/10"
+                              : "border-slate-200/60 bg-white shadow-sm hover:border-slate-300 hover:shadow-md dark:border-white/[0.08] dark:bg-white/[0.02] dark:hover:border-white/[0.15] dark:hover:bg-white/[0.05]"
+                          )}>
+                          {plan.popular && (
+                            <div className="absolute right-0 top-0 rounded-bl-2xl rounded-tr-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white shadow-md">
+                              Popular
+                            </div>
+                          )}
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <div className={cn("text-lg font-bold", active ? "text-indigo-950 dark:text-white" : "text-slate-900 dark:text-white")}>{plan.name}</div>
+                              <div className="mt-1 flex items-baseline gap-1">
+                                <span className={cn("text-2xl font-bold", active ? "text-indigo-600 dark:text-indigo-300" : "text-slate-900 dark:text-white")}>${plan.price.toFixed(2)}</span>
+                                <span className={cn("text-xs font-medium", active ? "text-indigo-600/70 dark:text-indigo-300/70" : "text-slate-500 dark:text-slate-400")}>/mo</span>
+                              </div>
+                            </div>
+                            <div className={cn("flex h-6 w-6 items-center justify-center rounded-full border transition-all", active ? "border-indigo-600 bg-indigo-600 text-white dark:border-indigo-400 dark:bg-indigo-400 dark:text-slate-950" : "border-slate-300 text-transparent dark:border-white/20")}>
+                              <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                            </div>
+                          </div>
+
+                          <div className="mt-6 space-y-3">
+                            <div className="flex items-center gap-3">
+                              <Cpu className={cn("h-4 w-4", active ? "text-indigo-500 dark:text-indigo-400" : "text-slate-400")} />
+                              <span className={cn("text-sm font-medium", active ? "text-slate-900 dark:text-slate-200" : "text-slate-600 dark:text-slate-300")}>{plan.cpu}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Database className={cn("h-4 w-4", active ? "text-indigo-500 dark:text-indigo-400" : "text-slate-400")} />
+                              <span className={cn("text-sm font-medium", active ? "text-slate-900 dark:text-slate-200" : "text-slate-600 dark:text-slate-300")}>{plan.ram}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <HardDrive className={cn("h-4 w-4", active ? "text-indigo-500 dark:text-indigo-400" : "text-slate-400")} />
+                              <span className={cn("text-sm font-medium", active ? "text-slate-900 dark:text-slate-200" : "text-slate-600 dark:text-slate-300")}>{plan.storage}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Network className={cn("h-4 w-4", active ? "text-indigo-500 dark:text-indigo-400" : "text-slate-400")} />
+                              <span className={cn("text-sm font-medium", active ? "text-slate-900 dark:text-slate-200" : "text-slate-600 dark:text-slate-300")}>{plan.bandwidth}</span>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="text-sm text-slate-500 dark:text-slate-400">Scroll horizontally on smaller screens to compare every plan in full.</div>
-              </div>
+              </ScrollReveal>
+
+              {/* Step 2 */}
+              <ScrollReveal delay={0.1}>
+                <div>
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 dark:bg-indigo-500 dark:shadow-indigo-500/20">2</div>
+                    <h3 className="text-2xl font-bold text-slate-950 dark:text-white">Configure stack</h3>
+                  </div>
+                  
+                  <HostingConfigurator
+                    settings={hostingProviderConfig}
+                    basePrice={selectedPlan.price}
+                    value={hostingSelection}
+                    onChange={(sel) => setHostingSelection(sel)}
+                    defaultOpen
+                    tone="light"
+                  />
+                </div>
+              </ScrollReveal>
             </div>
 
-            <div className="overflow-x-auto">
-              <div className="min-w-[70rem]">
-                <div className="grid border-b border-slate-200/80 dark:border-white/10" style={comparisonGridStyle}>
-                  <div className="bg-slate-50/80 p-6 dark:bg-white/[0.03] sm:p-8">
-                    <Server className="mb-3 h-6 w-6 text-slate-500 dark:text-slate-300" />
-                    <div className="text-lg font-semibold text-slate-950 dark:text-white">Compare plans</div>
-                    <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500 dark:text-slate-400">Choose the Magnetic VPS tier that matches your capacity, then open the configurator to personalize the stack.</p>
-                  </div>
-                  {plans.map((plan) => (
-                    <div
-                      key={plan.id}
-                      className={cn(
-                        "relative border-l border-slate-200/80 p-6 text-center dark:border-white/10 sm:p-8",
-                        plan.popular
-                          ? "bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.14),transparent_36%),linear-gradient(180deg,#020617,#0f172a)] text-white dark:bg-[radial-gradient(circle_at_top,rgba(15,23,42,0.16),transparent_36%),linear-gradient(180deg,#ffffff,#f8fafc)] dark:text-slate-950"
-                          : "bg-white/70 dark:bg-transparent"
-                      )}
-                    >
-                      {plan.popular ? (
-                        <div className="absolute left-1/2 top-0 -translate-x-1/2 rounded-b-xl bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-950 shadow-sm dark:bg-slate-950 dark:text-white">
-                          Popular
-                        </div>
-                      ) : null}
-                      <div className={cn("text-[10px] font-semibold uppercase tracking-[0.28em]", plan.popular ? "text-white/55 dark:text-slate-500" : "text-slate-400 dark:text-slate-500")}>Magnetic VPS</div>
-                      <h3 className={cn("mt-3 text-xl font-semibold", plan.popular ? "text-white dark:text-slate-950" : "text-slate-950 dark:text-white")}>{plan.name}</h3>
-                      <div className="mt-4 flex items-baseline justify-center gap-1">
-                        <span className={cn("text-4xl font-semibold tracking-tight", plan.popular ? "text-white dark:text-slate-950" : "text-slate-950 dark:text-white")}>${plan.totalPrice.toFixed(2)}</span>
-                        <span className={cn("text-sm", plan.popular ? "text-white/70 dark:text-slate-700" : "text-slate-500 dark:text-slate-400")}>/mo</span>
-                      </div>
-                      <p className={cn("mt-3 text-sm leading-6", plan.popular ? "text-white/75 dark:text-slate-700" : "text-slate-500 dark:text-slate-400")}>{plan.summary}</p>
-                      <div className={cn("mt-6 border-t pt-6", plan.popular ? "border-white/10 dark:border-slate-200" : "border-slate-200 dark:border-white/10")}>
-                        <HostingConfigurator
-                          settings={hostingProviderConfig}
-                          basePrice={plan.price}
-                          value={hostingSelection}
-                          onChange={(selection) => setHostingSelection(selection)}
-                          compact
-                          tone={plan.popular ? "inverse" : "light"}
-                        />
-                      </div>
+            {/* Right Col - Summary Sticky */}
+            <ScrollReveal delay={0.15}>
+              <div className="sticky top-8 space-y-6">
+                <div className="rounded-[2rem] border border-slate-200/70 bg-white/60 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/[0.08] dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.6),rgba(2,6,23,0.8))] dark:shadow-[0_24px_80px_rgba(2,6,23,0.6)] sm:p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 text-white shadow-md">
+                      <Server className="h-5 w-5" />
                     </div>
-                  ))}
-                </div>
+                    <div>
+                      <div className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Order Summary</div>
+                      <div className="text-base font-bold text-slate-950 dark:text-white">Magnetic VPS • {selectedPlan.name}</div>
+                    </div>
+                  </div>
 
-                {[
-                  { key: "cpu", label: "Compute", getValue: (plan: (typeof plans)[number]) => plan.cpu },
-                  { key: "ram", label: "Memory", getValue: (plan: (typeof plans)[number]) => plan.ram },
-                  { key: "storage", label: "Storage", getValue: (plan: (typeof plans)[number]) => plan.storage },
-                  { key: "os", label: "Operating systems", getValue: () => `${enabledOperatingSystems.length || 1} options` },
-                  { key: "panel", label: "Server panel", getValue: () => enabledControlPanels[0]?.name ?? "None" },
-                  { key: "region", label: "Deployment region", getValue: () => enabledLocations[0]?.name ?? "Configured" }
-                ].map((row, rowIndex) => (
-                  <div
-                    key={row.key}
-                    className={cn(
-                      "grid border-b border-slate-200/70 dark:border-white/10",
-                      rowIndex % 2 === 0 ? "bg-slate-50/65 dark:bg-white/[0.02]" : "bg-white/40 dark:bg-transparent"
-                    )}
-                    style={comparisonGridStyle}
-                  >
-                    <div className="px-6 py-4 text-sm font-medium text-slate-600 dark:text-slate-300 sm:px-8">{row.label}</div>
-                    {plans.map((plan) => (
-                      <div
-                        key={`${plan.id}-${row.key}`}
-                        className={cn(
-                          "flex items-center justify-center border-l border-slate-200/70 px-6 py-4 text-center text-sm dark:border-white/10",
-                          plan.popular ? "bg-slate-950/[0.03] dark:bg-white/[0.7]" : "",
-                          plan.popular ? "text-slate-950 dark:text-slate-950" : "text-slate-950 dark:text-white"
-                        )}
-                      >
-                        {row.getValue(plan)}
+                  <div className="space-y-4 border-b border-slate-200/60 pb-6 dark:border-white/[0.08]">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-600 dark:text-slate-400">Base capacity ({selectedPlan.name})</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">${selectedPlan.price.toFixed(2)}</span>
+                    </div>
+                    
+                    {resolved.summaryLines.map((line, i) => (
+                      <div key={i} className="flex items-start gap-2 text-[13px] text-slate-500 dark:text-slate-400">
+                        <Check className="h-4 w-4 shrink-0 text-emerald-500" />
+                        <span>{line}</span>
                       </div>
                     ))}
                   </div>
-                ))}
 
-                {[
-                  { key: "addons", label: "Optional add-ons", enabled: enabledAddons.length > 0 },
-                  { key: "tracking", label: "Provision tracking", enabled: true },
-                  { key: "panel-access", label: "Panel access", enabled: enabledControlPanels.length > 0 },
-                  { key: "region-status", label: "Region status", enabled: enabledLocations.length > 0 }
-                ].map((row, rowIndex) => (
-                  <div
-                    key={row.key}
-                    className={cn(
-                      "grid border-b border-slate-200/70 dark:border-white/10",
-                      rowIndex % 2 === 0 ? "bg-slate-50/65 dark:bg-white/[0.02]" : "bg-white/40 dark:bg-transparent"
-                    )}
-                    style={comparisonGridStyle}
-                  >
-                    <div className="px-6 py-4 text-sm font-medium text-slate-600 dark:text-slate-300 sm:px-8">{row.label}</div>
-                    {plans.map((plan) => (
-                      <div
-                        key={`${plan.id}-${row.key}`}
-                        className={cn(
-                          "flex items-center justify-center border-l border-slate-200/70 px-6 py-4 dark:border-white/10",
-                          plan.popular ? "bg-slate-950/[0.03] dark:bg-white/[0.7]" : ""
-                        )}
-                      >
-                        {row.enabled ? <Check className="h-4 w-4 text-emerald-500" /> : null}
-                      </div>
-                    ))}
-                  </div>
-                ))}
-
-                <div className="grid bg-slate-50/80 dark:bg-white/[0.03]" style={comparisonGridStyle}>
-                  <div className="p-6 sm:p-8" />
-                  {plans.map((plan) => (
-                    <div key={`${plan.id}-action`} className={cn("border-l border-slate-200/70 p-6 dark:border-white/10 sm:p-8", plan.popular ? "bg-slate-950/[0.03] dark:bg-white/[0.7]" : "")}>
-                      <button
-                        type="button"
-                        onClick={() => handleAddToCart(plan.id, plan.totalPrice)}
-                        className={cn(
-                          "inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl text-sm font-semibold transition",
-                          plan.popular
-                            ? "bg-white text-slate-950 shadow-[0_18px_40px_rgba(255,255,255,0.16)] hover:bg-slate-100 dark:bg-slate-950 dark:text-white dark:hover:bg-slate-800"
-                            : "border border-slate-200 bg-white text-slate-950 shadow-sm hover:-translate-y-0.5 hover:bg-slate-50 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:hover:bg-white/[0.04]"
-                        )}
-                      >
-                        Get started
-                        <ArrowRight className="h-4 w-4" />
-                      </button>
+                  <div className="pt-6">
+                    <div className="flex items-end justify-between">
+                      <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">Total monthly</span>
+                      <span className="text-4xl font-bold tracking-tight text-slate-950 dark:text-white">${finalPrice.toFixed(2)}</span>
                     </div>
-                  ))}
+                    
+                    <button onClick={handleAdd}
+                      className="group mt-8 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 px-8 text-base font-bold text-white shadow-[0_8px_30px_rgba(99,102,241,0.3)] transition-all hover:shadow-[0_12px_40px_rgba(99,102,241,0.4)] hover:brightness-110">
+                      Deploy server <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                    </button>
+
+                    <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+                      <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> Secure</span>
+                      <span className="inline-flex items-center gap-1.5"><Lock className="h-3.5 w-3.5" /> 45-day refund</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </ScrollReveal>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-[11px] uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">
-            <span className="inline-flex items-center gap-2"><Shield className="h-3.5 w-3.5 text-emerald-500" /> Secure provisioning</span>
-            <span className="inline-flex items-center gap-2"><Clock3 className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" /> Admin-visible delivery</span>
-            <span className="inline-flex items-center gap-2"><Server className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" /> Panel-ready setup</span>
           </div>
         </div>
       </section>
 
-      <section className="border-y border-slate-200 bg-slate-50 py-20 dark:border-white/10 dark:bg-white/[0.02]">
+      {/* ── FEATURES ── */}
+      <section className="border-t border-slate-200/40 bg-gradient-to-b from-slate-50/80 to-white py-24 dark:border-white/[0.06] dark:from-white/[0.02] dark:to-transparent sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-12 text-center">
-            <h2 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">Everything you need to launch</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
-              Exact hosting-page structure inspired by your reference repo, adapted to Magnetic&apos;s real VPS provisioning flow.
+          <div className="text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400">Infrastructure features</p>
+            <h2 className="mt-4 text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl">Everything you need to launch</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-500 dark:text-slate-400">
+              Magnetic VPS is built for operators who demand infrastructure that just works — from provisioning to panel to production.
             </p>
           </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {hostingFeatureCards.map((feature) => (
-              <article key={feature.title} className="rounded-[1.75rem] border border-slate-200 bg-white p-7 shadow-[0_18px_60px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-slate-950">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-200">
-                  <feature.icon className="h-5 w-5" />
-                </div>
-                <h3 className="mt-5 text-lg font-semibold text-slate-950 dark:text-white">{feature.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{feature.description}</p>
-              </article>
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {featureCards.map((f, i) => (
+              <ScrollReveal key={f.title} delay={i * 0.05}>
+                <article className="group h-full rounded-3xl border border-slate-200/60 bg-white p-7 shadow-sm transition-all hover:border-transparent hover:shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-white/[0.03] dark:hover:bg-white/[0.05] dark:hover:shadow-[0_20px_60px_rgba(2,6,23,0.5)]">
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${f.accent} text-white shadow-lg`}>
+                    <f.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-5 text-lg font-bold text-slate-950 dark:text-white">{f.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-slate-500 dark:text-slate-400">{f.desc}</p>
+                </article>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-20">
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <div className="rounded-[2rem] border border-slate-200 bg-white px-6 py-12 shadow-[0_24px_80px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-slate-950 sm:px-10">
-            <h2 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">Need help choosing the right plan?</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
-              Review your current configuration, compare the tiers, and move directly into the Magnetic cart when you&apos;re ready.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <button
-                type="button"
-                onClick={() => document.getElementById("hosting-plans")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                className="inline-flex h-12 items-center justify-center rounded-xl bg-slate-950 px-6 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
-              >
-                Compare plans
-              </button>
-              <button
-                type="button"
-                onClick={() => openCart()}
-                className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-950 transition hover:bg-slate-50 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:hover:bg-white/[0.04]"
-              >
-                Open cart
-              </button>
-            </div>
-            <div className="mt-8">
-              <HostingConfigurationSummary lines={resolvedHostingConfiguration.summaryLines} tone="subtle" />
-            </div>
-          </div>
-        </div>
-      </section>
     </main>
   );
 }
