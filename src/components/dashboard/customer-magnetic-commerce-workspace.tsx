@@ -404,10 +404,122 @@ export function CustomerMagneticCommerceWorkspace({
                   {inst.errorMessage}
                 </div>
               )}
+
+              {/* ── Domain Configuration & Integration Guide ── */}
+              <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/[0.03]">
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-slate-600 shadow-sm dark:bg-white/[0.08] dark:text-slate-300">
+                    <Globe2 className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-600 dark:text-slate-300">Domain Configuration & Integration Guide</p>
+                    <p className="text-[11px] text-slate-400">Point your domain to Magnetic Commerce in 4 steps</p>
+                  </div>
+                </div>
+
+                <div className="grid gap-5 lg:grid-cols-2">
+                  {/* Left: Setup Steps */}
+                  <div className="space-y-3">
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Setup Steps</p>
+                    {[
+                      {
+                        step: "1",
+                        title: "Purchase Magnetic Commerce",
+                        desc: "You've completed this step.",
+                        done: true,
+                      },
+                      {
+                        step: "2",
+                        title: "Assign your storefront domain",
+                        desc: inst.assignedDomain
+                          ? `Assigned to ${inst.assignedDomain}`
+                          : "Enter your domain in the Storefront Domain card above.",
+                        done: !!inst.assignedDomain,
+                      },
+                      {
+                        step: "3",
+                        title: "Point DNS to Magnetic Commerce",
+                        desc: `Add a CNAME record: www → shops.magnetic-ict.com and an A record for @ to our IP. Then click Apply DNS Template above.`,
+                        done: inst.dns.lastAppliedAt !== null,
+                      },
+                      {
+                        step: "4",
+                        title: "Verify & go live",
+                        desc: inst.status === "active"
+                          ? "Your storefront is live!"
+                          : "Magnetic ICT team will verify and activate your storefront (usually within 24h).",
+                        done: inst.status === "active",
+                      },
+                    ].map(({ step, title, desc, done }) => (
+                      <div key={step} className={cn(
+                        "flex items-start gap-3 rounded-xl border px-4 py-3",
+                        done
+                          ? "border-emerald-200/70 bg-emerald-50/60 dark:border-emerald-400/20 dark:bg-emerald-400/[0.06]"
+                          : "border-slate-200/70 bg-white dark:border-white/10 dark:bg-white/[0.03]"
+                      )}>
+                        <span className={cn(
+                          "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold",
+                          done ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300"
+                        )}>
+                          {done ? "✓" : step}
+                        </span>
+                        <div>
+                          <p className={cn("text-sm font-semibold", done ? "text-emerald-700 dark:text-emerald-400" : "text-slate-800 dark:text-slate-200")}>{title}</p>
+                          <p className="mt-0.5 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">{desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Right: DNS Records */}
+                  <div className="space-y-3">
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Required DNS Records</p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                      Add these records at your domain registrar (e.g. Cloudflare, GoDaddy, Namecheap). Changes propagate within 24–48 hours.
+                    </p>
+
+                    {[
+                      { type: "CNAME", name: "www", value: "shops.magnetic-ict.com", ttl: "Auto", note: "Storefront" },
+                      { type: "CNAME", name: "admin", value: "commerce.magnetic-ict.com", ttl: "Auto", note: "Admin panel" },
+                      { type: "TXT", name: "_magnetic-commerce", value: `managed-by=magnetic-commerce;domain=${inst.assignedDomain ?? "yourdomain.com"};order=${inst.orderId}`, ttl: "3600", note: "Verification" },
+                    ].map((r) => (
+                      <div key={r.type + r.name} className="rounded-xl border border-slate-200/70 bg-white p-3 dark:border-white/10 dark:bg-white/[0.04]">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="rounded-md bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300">{r.type}</span>
+                          <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-200">{r.name}</span>
+                          <span className="ml-auto text-[10px] text-slate-400">{r.note}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="min-w-0 flex-1 break-all font-mono text-[11px] text-slate-500 dark:text-slate-400">{r.value}</span>
+                          <CopyButton value={r.value} />
+                        </div>
+                        <div className="mt-1 text-[10px] text-slate-400">TTL: {r.ttl}</div>
+                      </div>
+                    ))}
+
+                    {/* Domain status summary */}
+                    <div className={cn(
+                      "rounded-xl border px-4 py-3 text-xs",
+                      inst.status === "active"
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300"
+                        : inst.assignedDomain
+                        ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-300"
+                        : "border-slate-200 bg-white text-slate-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-400"
+                    )}>
+                      {inst.status === "active" && "✓ Your storefront is live and DNS is verified."}
+                      {inst.status === "integration_requested" && `Domain ${inst.assignedDomain} assigned. Magnetic ICT team is reviewing your integration request.`}
+                      {inst.status === "pending_domain_assignment" && "Assign a domain above to begin the integration process."}
+                      {inst.status === "failed" && "Integration failed. Check the error above and contact support."}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </section>
         );
       })}
+
 
       {domains.length === 0 && installations.every((i) => !i.assignedDomain) && (
         <div className="rounded-[24px] border border-dashed border-amber-200 bg-amber-50/60 p-5 text-sm text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-300">

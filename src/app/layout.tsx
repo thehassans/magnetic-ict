@@ -4,7 +4,15 @@ import "@/app/globals.css";
 
 export const metadata: Metadata = {
   title: "MagneticICT",
-  description: "Magnetic digital services platform"
+  description: "Magnetic digital services platform",
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+    ],
+    apple: [
+      { url: "/favicon.png", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
