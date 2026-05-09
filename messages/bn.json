@@ -6,7 +6,7 @@
     "headlineAccent": "Magnetic digital tools",
     "headlineEnd": "designed to convert.",
     "title": "Magnetic digital tools, engineered for global scale.",
-    "description": "Modern digital tools for growth, trust, and speed.",
+    "description": "প্রবৃদ্ধি, বিশ্বাস এবং গতির জন্য ডিজাইন করা আধুনিক ডিজিটাল পরিষেবা।",
     "primaryCta": "Explore tools",
     "secondaryCta": "Open dashboard",
     "secondaryCtaSignedIn": "Open your dashboard",
@@ -63,23 +63,23 @@
       "jamesPatel": "We needed a partner who understood growth, infra, and security together. MagneticICT delivered exactly that, with serious attention to detail."
     },
     "lovedByDevelopers": "ডেভেলপারদের পছন্দের",
-    "lovedByDevelopersDesc": "Real feedback from developers and operators across South Asia.",
+    "lovedByDevelopersDesc": "দক্ষিণ এশিয়া জুড়ে ডেভেলপার এবং অপারেটরদের কাছ থেকে আসল প্রতিক্রিয়া।",
     "viewAllReviews": "সব ৫,২১৮টি রিভিউ দেখুন",
-    "globalServiceNetwork": "Magnetic ICT global tool network",
-    "globalDigitalServices": "Global Digital Tools",
-    "liveServices": "Live tools",
-    "prioritySupport": "Priority support",
-    "opsUptimeTarget": "Ops uptime target",
-    "domainSearch": "Domain search",
-    "checkDomainInstantly": "Check your domain instantly",
-    "domainSearchDescription": "Search domain availability directly from the homepage and continue into the full checkout flow.",
-    "searchDomainButton": "Search domain",
+    "globalServiceNetwork": "ম্যাগনেটিক আইসিটি গ্লোবাল টুল নেটওয়ার্ক",
+    "globalDigitalServices": "গ্লোবাল ডিজিটাল টুলস",
+    "liveServices": "লাইভ সরঞ্জাম",
+    "prioritySupport": "অগ্রাধিকার সহায়তা",
+    "opsUptimeTarget": "অপস আপটাইম লক্ষ্য",
+    "domainSearch": "ডোমেইন অনুসন্ধান",
+    "checkDomainInstantly": "আপনার ডোমেইন তাৎক্ষণিকভাবে পরীক্ষা করুন",
+    "domainSearchDescription": "সরাসরি হোমপেজ থেকে ডোমেইন প্রাপ্যতা অনুসন্ধান করুন এবং সম্পূর্ণ চেকআউট ফ্লোতে এগিয়ে যান।",
+    "searchDomainButton": "ডোমেইন অনুসন্ধান করুন",
     "verifiedDeveloper": "Verified Developer"
   },
   "Navigation": {
     "home": "Home",
     "services": "সরঞ্জাম",
-    "magneticServices": "Magnetic সরঞ্জাম",
+    "magneticServices": "Magnetics Services",
     "support": "Support",
     "cart": "Cart",
     "language": "Language",
@@ -91,7 +91,7 @@
     "signOut": "Sign out",
     "allServices": "সমস্ত সরঞ্জাম",
     "servicesMenuEyebrow": "সরঞ্জাম ক্যাটালগ",
-    "servicesMenuTitle": "Magnetic ডিজিটাল অবকাঠামো এবং বৃদ্ধি সরঞ্জাম",
+    "servicesMenuTitle": "ম্যাগনেটিক ডিজিটাল অবকাঠামো এবং বৃদ্ধি সরঞ্জাম",
     "items": {
       "ssl": {
         "title": "SSL Certificates",
@@ -375,37 +375,37 @@
     "featureDnsDesc": "Propagates in minutes"
   },
   "Testimonials": {
-    "dev0": "MagneticICT feels like working with senior engineers who understand delivery pressure in South Asia. The handoff quality, architecture, and speed all made our release cycle much smoother.",
-    "dev1": "The UI quality is genuinely premium. We were able to move from rough requirements to polished production flows without losing responsiveness, accessibility, or design consistency.",
-    "dev2": "What impressed me most was the engineering discipline. Deployment, payment integration, and admin operations were handled with the kind of structure I expect from experienced product teams.",
-    "dev3": "For fast-moving regional teams, clarity matters. MagneticICT delivered strong product thinking, reliable implementation, and a far better customer-facing experience than we had before.",
-    "dev4": "Security, operational visibility, and clean admin tooling were all treated as first-class concerns. That saved us real time and reduced a lot of manual support work after launch."
+    "dev0": "ম্যাগনেটিক আইসিটি-র সাথে কাজ করা এমন মনে হয় যেন সিনিয়র ইঞ্জিনিয়ারদের সাথে কাজ করছি যারা দক্ষিণ এশিয়ায় ডেলিভারি চাপ বোঝেন।",
+    "dev1": "ইউআই কোয়ালিটি সত্যিই প্রিমিয়াম। আমরা ডিজাইন কনসিস্টেন্সি না হারিয়ে পালিশড প্রোডাকশনে যেতে পেরেছি।",
+    "dev2": "ইঞ্জিনিয়ারিং ডিসিপ্লিন আমাকে সবচেয়ে বেশি মুগ্ধ করেছে। পেমেন্ট ইন্টিগ্রেশন এবং অ্যাডমিন অপারেশন খুব সুন্দরভাবে পরিচালনা করা হয়েছে।",
+    "dev3": "দ্রুত চলমান আঞ্চলিক টিমের জন্য স্পষ্টতা গুরুত্বপূর্ণ। ম্যাগনেটিক আইসিটি শক্তিশালী প্রোডাক্ট চিন্তাভাবনা এবং নির্ভরযোগ্য বাস্তবায়ন প্রদান করেছে।",
+    "dev4": "নিরাপত্তা এবং ক্লিন অ্যাডমিন টুলিংকে ফার্স্ট-ক্লাস কনসার্ন হিসেবে বিবেচনা করা হয়েছে। এটি আমাদের অনেক সময় বাঁচিয়েছে।"
   },
   "Reviews": {
-    "rowA": {
-      "0": "Migrated from another host and the difference is night and day. Absolutely incredible.",
-      "1": "The cloud servers are blazing fast. Perfect for our growing business needs.",
-      "2": "Simple setup and great performance. My blog loads instantly. Love it!",
-      "3": "We host 50+ client sites here. Never had any issues. Premium quality tool.",
-      "4": "Incredible speed and reliability. Our campaigns run smoothly every time.",
-      "5": "Seamless integration with our workflow. Highly recommended to everyone!",
-      "6": "Enterprise-grade security and performance. Best investment we have made.",
-      "7": "Onboarding was smooth and the support team is exceptional. 10 out of 10.",
-      "8": "The uptime is stellar. Our SLA has never been breached since switching.",
-      "9": "Affordable pricing for the level of quality they deliver. Outstanding."
-    },
-    "rowB": {
-      "0": "API documentation is superb. Had my integration running in under an hour.",
-      "1": "Our Ramadan campaign handled record traffic without a single hiccup.",
-      "2": "Switched three businesses over. Every single one performs better now.",
-      "3": "My audience has grown 3x since my site started loading this fast.",
-      "4": "Server response times are consistently under 50ms. Phenomenal.",
-      "5": "The dashboard gives full visibility into everything. Great UX.",
-      "6": "Magnetic Commerce doubled my conversion rate. I can't believe the difference.",
-      "7": "Our brand identity is perfectly reflected across every channel. Superb.",
-      "8": "The analytics suite is powerful. Real-time insights changed how we operate.",
-      "9": "My media site handles thousands of concurrent listeners without breaking a sweat."
-    },
+    "rowA": [
+      "অন্য হোস্ট থেকে স্থানান্তরিত হয়েছি এবং পার্থক্যটি রাত-দিনের মতো। সত্যিই অবিশ্বাস্য।",
+      "ক্লাউড সার্ভারগুলো অত্যন্ত দ্রুত। আমাদের ক্রমবর্ধমান ব্যবসার প্রয়োজনের জন্য নিখুঁত।",
+      "সহজ সেটআপ এবং দুর্দান্ত পারফরম্যান্স। আমার ব্লগ তাৎক্ষণিকভাবে লোড হয়। চমৎকার!",
+      "আমরা এখানে ৫০টিরও বেশি ক্লায়েন্ট সাইট হোস্ট করি। কখনও কোনও সমস্যা হয়নি। প্রিমিয়াম মানের পরিষেবা।",
+      "অবিশ্বাস্য গতি এবং নির্ভরযোগ্যতা। আমাদের ক্যাম্পেইনগুলো প্রতিবার মসৃণভাবে চলে।",
+      "আমাদের ওয়ার্কফ্লোর সাথে নিরবচ্ছিন্ন ইন্টিগ্রেশন। সবার জন্য অত্যন্ত প্রস্তাবিত!",
+      "এন্টারপ্রাইজ-গ্রেড নিরাপত্তা এবং পারফরম্যান্স। আমাদের করা সেরা বিনিয়োগ।",
+      "অনবোর্ডিং মসৃণ ছিল এবং সাপোর্ট টিম অসাধারণ। ১০ এর মধ্যে ১০।",
+      "আপটাইম চমৎকার। সুইচ করার পর থেকে আমাদের এসএলএ কখনও লঙ্ঘিত হয়নি।",
+      "তারা যে মানের গুণমান সরবরাহ করে তার জন্য সাশ্রয়ী মূল্য। অসাধারণ।"
+    ],
+    "rowB": [
+      "এপিআই ডকুমেন্টেশন চমৎকার। এক ঘণ্টারও কম সময়ে আমার ইন্টিগ্রেশন সম্পন্ন হয়েছে।",
+      "আমাদের রমজান ক্যাম্পেইন কোনো সমস্যা ছাড়াই রেকর্ড ট্রাফিক সামলেছে।",
+      "তিনটি ব্যবসা এখানে সরিয়ে এনেছি। প্রতিটির পারফরম্যান্স এখন অনেক ভালো।",
+      "আমার সাইট লোডিং স্পিড বাড়ার পর থেকে আমার দর্শক ৩ গুণ বেড়েছে।",
+      "সার্ভার রেসপন্স টাইম সব সময় ৫০ মিলিসেকেন্ডের নিচে। অসাধারণ।",
+      "ড্যাশবোর্ড সবকিছুতে পূর্ণ দৃশ্যমানতা দেয়। দারুণ ইউএক্স।",
+      "ম্যাগনেটিক কমার্স আমার কনভার্সন রেট দ্বিগুণ করেছে। আমি পার্থক্য বিশ্বাস করতে পারছি না।",
+      "আমাদের ব্র্যান্ডের পরিচয় প্রতিটি চ্যানেলে নিখুঁতভাবে প্রতিফলিত হয়। চমৎকার।",
+      "অ্যানালিটিক্স স্যুটটি শক্তিশালী। রিয়েল-টাইম অন্তর্দৃষ্টি আমাদের পরিচালনার পদ্ধতি বদলে দিয়েছে।",
+      "আমার মিডিয়া সাইট হাজার হাজার সমসাময়িক শ্রোতাকে কোনো সমস্যা ছাড়াই সামলিয়ে নেয়।"
+    ],
     "rolesA": {
       "0": "eCommerce Owner",
       "1": "Startup Founder",
@@ -443,11 +443,11 @@
     "protectedDelivery": "Protected delivery"
   },
   "FeaturedTestimonials": {
-    "item0_quote": "Transformed our entire e-commerce operations. The admin panel is incredibly powerful.",
-    "item1_quote": "The AI automation handles our entire customer support flow. Absolutely game-changing.",
-    "item2_quote": "Blazing fast servers with zero downtime. Best hosting decision we ever made.",
-    "item0_role": "CEO & Founder",
-    "item1_role": "CTO",
-    "item2_role": "CTO"
+    "item0_quote": "আমাদের পুরো ই-কমার্স অপারেশনকে রূপান্তরিত করেছে। অ্যাডমিন প্যানেলটি অবিশ্বাস্যভাবে শক্তিশালী।",
+    "item1_quote": "এআই অটোমেশন আমাদের পুরো কাস্টমার সাপোর্ট ফ্লো পরিচালনা করে। সম্পূর্ণ গেম-চেঞ্জিং।",
+    "item2_quote": "শূন্য ডাউনটাইম সহ অত্যন্ত দ্রুত সার্ভার। আমাদের করা সেরা হোস্টিং সিদ্ধান্ত।",
+    "item0_role": "সিইও এবং প্রতিষ্ঠাতা",
+    "item1_role": "সিটিও",
+    "item2_role": "সিটিও"
   }
 }
