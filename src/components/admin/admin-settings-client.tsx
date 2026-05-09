@@ -4,6 +4,7 @@ import { type ReactNode, useMemo, useState } from "react";
 import { Check, Loader2, Sparkles } from "lucide-react";
 import { HostingConfigEditor } from "@/components/admin/hosting-config-editor";
 import { TrustedPartnersEditor } from "@/components/admin/trusted-partners-editor";
+import { DomainTldEditor } from "@/components/admin/domain-tld-editor";
 import type { DomainProviderSettings } from "@/lib/domain-types";
 import type { EmailLogRecord } from "@/lib/email-logs";
 import type { HostingProviderSettings } from "@/lib/hosting-types";
@@ -384,11 +385,7 @@ export function AdminSettingsClient({
           <Input label="Search markup flat" value={String(domainState.priceMarkupFlat)} onChange={(value) => setDomainState((current) => ({ ...current, priceMarkupFlat: Number(value) || 0 }))} type="number" />
           <Input label="Renewal markup %" value={String(domainState.renewalMarkupPercent)} onChange={(value) => setDomainState((current) => ({ ...current, renewalMarkupPercent: Number(value) || 0 }))} type="number" />
           <Input label="Renewal markup flat" value={String(domainState.renewalMarkupFlat)} onChange={(value) => setDomainState((current) => ({ ...current, renewalMarkupFlat: Number(value) || 0 }))} type="number" />
-          <Input label=".com yearly price" value={String(domainState.comPrice)} onChange={(value) => setDomainState((current) => ({ ...current, comPrice: Number(value) || 0 }))} type="number" />
-          <Input label=".net yearly price" value={String(domainState.netPrice)} onChange={(value) => setDomainState((current) => ({ ...current, netPrice: Number(value) || 0 }))} type="number" />
-          <Input label=".org yearly price" value={String(domainState.orgPrice)} onChange={(value) => setDomainState((current) => ({ ...current, orgPrice: Number(value) || 0 }))} type="number" />
-          <Input label=".io yearly price" value={String(domainState.ioPrice)} onChange={(value) => setDomainState((current) => ({ ...current, ioPrice: Number(value) || 0 }))} type="number" />
-          <Input label="Fallback yearly price" value={String(domainState.defaultPrice)} onChange={(value) => setDomainState((current) => ({ ...current, defaultPrice: Number(value) || 0 }))} type="number" />
+          
         </div>
         <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <ToggleCard label="Privacy by default" checked={domainState.includePrivacyProtectionByDefault} onChange={(checked) => setDomainState((current) => ({ ...current, includePrivacyProtectionByDefault: checked }))} />
@@ -406,6 +403,7 @@ export function AdminSettingsClient({
             className="w-full rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white"
           />
         </label>
+        <DomainTldEditor tlds={domainState.tlds || []} onChange={(tlds) => setDomainState(current => ({ ...current, tlds }))} />
       </SettingsCard>
 
       <SettingsCard

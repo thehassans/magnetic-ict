@@ -1,0 +1,1634 @@
+[
+  {
+    "tld": "academy",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "ae",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "agency",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "ai",
+    "registerPrice": 79.99,
+    "renewPrice": 99.99,
+    "transferPrice": 79.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "apartments",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "app",
+    "registerPrice": 14.99,
+    "renewPrice": 16.99,
+    "transferPrice": 14.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "art",
+    "registerPrice": 14.99,
+    "renewPrice": 16.99,
+    "transferPrice": 14.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "at",
+    "registerPrice": 14.99,
+    "renewPrice": 16.99,
+    "transferPrice": 14.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "au",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "band",
+    "registerPrice": 24.99,
+    "renewPrice": 29.99,
+    "transferPrice": 24.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "bar",
+    "registerPrice": 69.99,
+    "renewPrice": 79.99,
+    "transferPrice": 69.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "bargains",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "bd",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "be",
+    "registerPrice": 9.99,
+    "renewPrice": 11.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "beer",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "best",
+    "registerPrice": 99.99,
+    "renewPrice": 109.99,
+    "transferPrice": 99.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "bet",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "bio",
+    "registerPrice": 59.99,
+    "renewPrice": 69.99,
+    "transferPrice": 59.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "bitcoin",
+    "registerPrice": 39.99,
+    "renewPrice": 44.99,
+    "transferPrice": 39.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "biz",
+    "registerPrice": 12.99,
+    "renewPrice": 16.99,
+    "transferPrice": 12.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "blog",
+    "registerPrice": 24.99,
+    "renewPrice": 29.99,
+    "transferPrice": 24.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "boutique",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "br",
+    "registerPrice": 39.99,
+    "renewPrice": 44.99,
+    "transferPrice": 39.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "business",
+    "registerPrice": 9.99,
+    "renewPrice": 12.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "buy",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "ca",
+    "registerPrice": 14.99,
+    "renewPrice": 16.99,
+    "transferPrice": 14.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "cafe",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "capital",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "casino",
+    "registerPrice": 149.99,
+    "renewPrice": 159.99,
+    "transferPrice": 149.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "cc",
+    "registerPrice": 9.99,
+    "renewPrice": 12.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "center",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "ch",
+    "registerPrice": 14.99,
+    "renewPrice": 16.99,
+    "transferPrice": 14.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "charity",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "church",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "city",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "click",
+    "registerPrice": 9.99,
+    "renewPrice": 12.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "cloud",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "club",
+    "registerPrice": 14.99,
+    "renewPrice": 16.99,
+    "transferPrice": 14.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "cn",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "co",
+    "registerPrice": 24.99,
+    "renewPrice": 29.99,
+    "transferPrice": 24.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "codes",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "coffee",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "com",
+    "registerPrice": 9.99,
+    "renewPrice": 12.99,
+    "transferPrice": 9.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "community",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "company",
+    "registerPrice": 9.99,
+    "renewPrice": 12.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "computer",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "consulting",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "cool",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "courses",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "cruise",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "crypto",
+    "registerPrice": 39.99,
+    "renewPrice": 44.99,
+    "transferPrice": 39.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "dao",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "de",
+    "registerPrice": 9.99,
+    "renewPrice": 11.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "deals",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "design",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "dev",
+    "registerPrice": 14.99,
+    "renewPrice": 16.99,
+    "transferPrice": 14.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "digital",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "discount",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "dk",
+    "registerPrice": 14.99,
+    "renewPrice": 16.99,
+    "transferPrice": 14.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "earth",
+    "registerPrice": 24.99,
+    "renewPrice": 29.99,
+    "transferPrice": 24.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "education",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "engineering",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "enterprises",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "es",
+    "registerPrice": 11.99,
+    "renewPrice": 13.99,
+    "transferPrice": 11.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "estate",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "eu",
+    "registerPrice": 9.99,
+    "renewPrice": 11.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "events",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "exchange",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "family",
+    "registerPrice": 24.99,
+    "renewPrice": 29.99,
+    "transferPrice": 24.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "fi",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "film",
+    "registerPrice": 89.99,
+    "renewPrice": 99.99,
+    "transferPrice": 89.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "finance",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "fitness",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "flights",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "fm",
+    "registerPrice": 99.99,
+    "renewPrice": 109.99,
+    "transferPrice": 99.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "foundation",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "fr",
+    "registerPrice": 11.99,
+    "renewPrice": 13.99,
+    "transferPrice": 11.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "fun",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "fund",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "gallery",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "game",
+    "registerPrice": 39.99,
+    "renewPrice": 44.99,
+    "transferPrice": 39.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "games",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "global",
+    "registerPrice": 59.99,
+    "renewPrice": 69.99,
+    "transferPrice": 59.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "group",
+    "registerPrice": 14.99,
+    "renewPrice": 19.99,
+    "transferPrice": 14.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "health",
+    "registerPrice": 69.99,
+    "renewPrice": 79.99,
+    "transferPrice": 69.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "healthcare",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "hk",
+    "registerPrice": 34.99,
+    "renewPrice": 39.99,
+    "transferPrice": 34.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "holdings",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "holiday",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "homes",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "host",
+    "registerPrice": 79.99,
+    "renewPrice": 89.99,
+    "transferPrice": 79.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "hosting",
+    "registerPrice": 349.99,
+    "renewPrice": 399.99,
+    "transferPrice": 349.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "hotel",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "house",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "icu",
+    "registerPrice": 4.99,
+    "renewPrice": 9.99,
+    "transferPrice": 4.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "id",
+    "registerPrice": 34.99,
+    "renewPrice": 39.99,
+    "transferPrice": 34.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "il",
+    "registerPrice": 34.99,
+    "renewPrice": 39.99,
+    "transferPrice": 34.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "in",
+    "registerPrice": 9.99,
+    "renewPrice": 12.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "industries",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "info",
+    "registerPrice": 11.99,
+    "renewPrice": 16.99,
+    "transferPrice": 11.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "institute",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "international",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "investments",
+    "registerPrice": 99.99,
+    "renewPrice": 109.99,
+    "transferPrice": 99.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "io",
+    "registerPrice": 39.99,
+    "renewPrice": 49.99,
+    "transferPrice": 39.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "it",
+    "registerPrice": 14.99,
+    "renewPrice": 16.99,
+    "transferPrice": 14.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "jp",
+    "registerPrice": 39.99,
+    "renewPrice": 44.99,
+    "transferPrice": 39.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "kitchen",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "kr",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "land",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "life",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "link",
+    "registerPrice": 9.99,
+    "renewPrice": 12.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "live",
+    "registerPrice": 24.99,
+    "renewPrice": 29.99,
+    "transferPrice": 24.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "lol",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "management",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "market",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "me",
+    "registerPrice": 14.99,
+    "renewPrice": 19.99,
+    "transferPrice": 14.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "media",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "mobi",
+    "registerPrice": 14.99,
+    "renewPrice": 19.99,
+    "transferPrice": 14.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "money",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "music",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "mx",
+    "registerPrice": 34.99,
+    "renewPrice": 39.99,
+    "transferPrice": 34.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "my",
+    "registerPrice": 34.99,
+    "renewPrice": 39.99,
+    "transferPrice": 34.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "name",
+    "registerPrice": 9.99,
+    "renewPrice": 12.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "net",
+    "registerPrice": 12.99,
+    "renewPrice": 14.99,
+    "transferPrice": 12.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "network",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "news",
+    "registerPrice": 24.99,
+    "renewPrice": 29.99,
+    "transferPrice": 24.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "nft",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "nl",
+    "registerPrice": 9.99,
+    "renewPrice": 11.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "no",
+    "registerPrice": 24.99,
+    "renewPrice": 29.99,
+    "transferPrice": 24.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "nz",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "one",
+    "registerPrice": 9.99,
+    "renewPrice": 14.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "online",
+    "registerPrice": 29.99,
+    "renewPrice": 39.99,
+    "transferPrice": 29.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "org",
+    "registerPrice": 11.99,
+    "renewPrice": 14.99,
+    "transferPrice": 11.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "organic",
+    "registerPrice": 69.99,
+    "renewPrice": 79.99,
+    "transferPrice": 69.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "partners",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "ph",
+    "registerPrice": 59.99,
+    "renewPrice": 64.99,
+    "transferPrice": 59.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "photo",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "photography",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "photos",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "pictures",
+    "registerPrice": 9.99,
+    "renewPrice": 12.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "pizza",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "pk",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "pl",
+    "registerPrice": 14.99,
+    "renewPrice": 16.99,
+    "transferPrice": 14.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "place",
+    "registerPrice": 14.99,
+    "renewPrice": 16.99,
+    "transferPrice": 14.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "plus",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "poker",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "press",
+    "registerPrice": 69.99,
+    "renewPrice": 79.99,
+    "transferPrice": 69.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "pro",
+    "registerPrice": 14.99,
+    "renewPrice": 19.99,
+    "transferPrice": 14.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "properties",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "property",
+    "registerPrice": 149.99,
+    "renewPrice": 159.99,
+    "transferPrice": 149.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "pub",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "realestate",
+    "registerPrice": 99.99,
+    "renewPrice": 109.99,
+    "transferPrice": 99.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "recipes",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "rentals",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "restaurant",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "rocks",
+    "registerPrice": 14.99,
+    "renewPrice": 16.99,
+    "transferPrice": 14.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "ru",
+    "registerPrice": 14.99,
+    "renewPrice": 16.99,
+    "transferPrice": 14.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "sa",
+    "registerPrice": 99.99,
+    "renewPrice": 109.99,
+    "transferPrice": 99.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "sale",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "school",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "se",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "services",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "sg",
+    "registerPrice": 34.99,
+    "renewPrice": 39.99,
+    "transferPrice": 34.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "shop",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "shopping",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "site",
+    "registerPrice": 24.99,
+    "renewPrice": 29.99,
+    "transferPrice": 24.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "social",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "software",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "solutions",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "space",
+    "registerPrice": 9.99,
+    "renewPrice": 24.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "store",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "studio",
+    "registerPrice": 24.99,
+    "renewPrice": 29.99,
+    "transferPrice": 24.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "systems",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "team",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "tech",
+    "registerPrice": 39.99,
+    "renewPrice": 49.99,
+    "transferPrice": 39.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "technology",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "tel",
+    "registerPrice": 12.99,
+    "renewPrice": 14.99,
+    "transferPrice": 12.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "th",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "tickets",
+    "registerPrice": 449.99,
+    "renewPrice": 499.99,
+    "transferPrice": 449.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "today",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "token",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "top",
+    "registerPrice": 4.99,
+    "renewPrice": 9.99,
+    "transferPrice": 4.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "tours",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "training",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "travel",
+    "registerPrice": 99.99,
+    "renewPrice": 109.99,
+    "transferPrice": 99.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "tv",
+    "registerPrice": 34.99,
+    "renewPrice": 39.99,
+    "transferPrice": 34.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "tw",
+    "registerPrice": 34.99,
+    "renewPrice": 39.99,
+    "transferPrice": 34.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "uk",
+    "registerPrice": 8.99,
+    "renewPrice": 9.99,
+    "transferPrice": 8.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "university",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "us",
+    "registerPrice": 9.99,
+    "renewPrice": 11.99,
+    "transferPrice": 9.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "vacations",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "ventures",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "video",
+    "registerPrice": 24.99,
+    "renewPrice": 29.99,
+    "transferPrice": 24.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "vn",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "wallet",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "web",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "website",
+    "registerPrice": 19.99,
+    "renewPrice": 24.99,
+    "transferPrice": 19.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "wine",
+    "registerPrice": 49.99,
+    "renewPrice": 54.99,
+    "transferPrice": 49.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "world",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "ws",
+    "registerPrice": 24.99,
+    "renewPrice": 29.99,
+    "transferPrice": 24.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "xyz",
+    "registerPrice": 9.99,
+    "renewPrice": 12.99,
+    "transferPrice": 9.99,
+    "isPopular": true,
+    "status": "Active"
+  },
+  {
+    "tld": "yoga",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "za",
+    "registerPrice": 24.99,
+    "renewPrice": 29.99,
+    "transferPrice": 24.99,
+    "isPopular": false,
+    "status": "Active"
+  },
+  {
+    "tld": "zone",
+    "registerPrice": 29.99,
+    "renewPrice": 34.99,
+    "transferPrice": 29.99,
+    "isPopular": false,
+    "status": "Active"
+  }
+]

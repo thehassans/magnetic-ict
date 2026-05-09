@@ -170,11 +170,14 @@ const requestSchema = z.discriminatedUnion("section", [
       renewalMarkupPercent: z.number().min(0).max(1000),
       renewalMarkupFlat: z.number().min(0).max(100000),
       defaultNameservers: z.array(z.string().min(1)).min(1).max(8),
-      comPrice: z.number().nonnegative(),
-      netPrice: z.number().nonnegative(),
-      orgPrice: z.number().nonnegative(),
-      ioPrice: z.number().nonnegative(),
-      defaultPrice: z.number().nonnegative()
+      tlds: z.array(z.object({
+        tld: z.string().min(1),
+        registerPrice: z.number().nonnegative(),
+        renewPrice: z.number().nonnegative(),
+        transferPrice: z.number().nonnegative(),
+        isPopular: z.boolean(),
+        status: z.enum(["Active", "Inactive"])
+      }))
     })
   }),
   z.object({

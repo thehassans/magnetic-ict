@@ -7,6 +7,8 @@ export async function GET(request: Request) {
   const query = searchParams.get("query") ?? "";
   const settings = await getDomainProviderSettings();
 
+  const popularTlds = settings.tlds.filter(t => t.isPopular && t.status === "Active").map(t => "." + t.tld);
+
   if (!query.trim()) {
     return NextResponse.json({
       results: [],
@@ -14,7 +16,8 @@ export async function GET(request: Request) {
       domainsEnabled: settings.enabled,
       providerLabel: settings.providerLabel,
       includePrivacyProtectionByDefault: settings.includePrivacyProtectionByDefault,
-      checkoutProvider: settings.checkoutProvider
+      checkoutProvider: settings.checkoutProvider,
+      popularTlds
     });
   }
 
@@ -26,7 +29,8 @@ export async function GET(request: Request) {
       domainsEnabled: settings.enabled,
       providerLabel: settings.providerLabel,
       includePrivacyProtectionByDefault: settings.includePrivacyProtectionByDefault,
-      checkoutProvider: settings.checkoutProvider
+      checkoutProvider: settings.checkoutProvider,
+      popularTlds
     });
   } catch (error) {
     console.error("Domain search failed", error);

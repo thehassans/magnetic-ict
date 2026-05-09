@@ -129,19 +129,11 @@ export async function checkIonosDomainAvailability(domain: string): Promise<Doma
 
 function resolveFallbackBasePrice(domain: string, settings: Awaited<ReturnType<typeof getDomainProviderSettings>>) {
   const tld = domain.split(".").at(-1)?.toLowerCase();
-
-  switch (tld) {
-    case "com":
-      return settings.comPrice;
-    case "net":
-      return settings.netPrice;
-    case "org":
-      return settings.orgPrice;
-    case "io":
-      return settings.ioPrice;
-    default:
-      return settings.defaultPrice;
+  const found = settings.tlds.find((t) => t.tld === tld);
+  if (found && found.status === "Active") {
+    return found.registerPrice;
   }
+  return 19.99;
 }
 
 export async function registerIonosDomain(args: {

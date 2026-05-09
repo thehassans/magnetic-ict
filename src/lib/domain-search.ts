@@ -2,8 +2,6 @@ import type { DomainSearchResult } from "@/lib/domain-types";
 import { applyDomainMarkup, checkIonosDomainAvailability, isIonosDomainApiAvailable } from "@/lib/ionos-domain";
 import { getDomainProviderSettings } from "@/lib/platform-settings";
 
-const suggestedTlds = ["com", "net", "org", "io"] as const;
-
 function normalizeQuery(value: string) {
   return value.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
 }
@@ -19,19 +17,11 @@ function extractTld(domain: string) {
 
 function resolvePrice(domain: string, settings: Awaited<ReturnType<typeof getDomainProviderSettings>>) {
   const tld = extractTld(domain);
-
-  switch (tld) {
-    case "com":
-      return settings.comPrice;
-    case "net":
-      return settings.netPrice;
-    case "org":
-      return settings.orgPrice;
-    case "io":
-      return settings.ioPrice;
-    default:
-      return settings.defaultPrice;
+  const found = settings.tlds.find((t) => t.tld === tld);
+  if (found && found.status === "Active") {
+    return found.registerPrice;
   }
+  return 19.99; // fallback
 }
 
 async function checkDomain(domain: string): Promise<DomainSearchResult["status"]> {
@@ -63,6 +53,9 @@ export async function searchDomains(query: string) {
   if (!normalized) {
     return [] as DomainSearchResult[];
   }
+
+  const popularTlds = settings.tlds.filter(t => t.isPopular && t.status === "Active").map(t => t.tld);
+  const suggestedTlds = popularTlds.length > 0 ? popularTlds : ["com", "net", "org", "io"];
 
   const candidates = normalized.includes(".")
     ? [normalized]

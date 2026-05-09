@@ -26,9 +26,10 @@ type SearchResponse = {
   domainsEnabled: boolean;
   providerLabel: string;
   includePrivacyProtectionByDefault: boolean;
+  popularTlds?: string[];
 };
 
-const POPULAR_TLDS = [".com", ".net", ".io", ".co", ".ai", ".app", ".dev"];
+const DEFAULT_POPULAR_TLDS = [".com", ".net", ".io", ".co", ".ai", ".app", ".dev"];
 
 const FEATURES = [
   { icon: Shield, title: "WHOIS Privacy", desc: "Keep personal info protected" },
@@ -54,8 +55,17 @@ export function DomainSearchClient() {
   const [isHydrated, setIsHydrated] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [popularTlds, setPopularTlds] = useState<string[]>(DEFAULT_POPULAR_TLDS);
+
   const cartDomains = useMemo(() => new Set(domainCart.map((item) => item.domain)), [domainCart]);
   const queryFromUrl = (searchParams.get("query") ?? "").trim();
+
+  useEffect(() => {
+    // Initial fetch to get popular TLDs and settings even if query is empty
+    if (!queryFromUrl) {
+      void performSearch("");
+    }
+  }, []);
 
   useEffect(() => {
     try {
@@ -87,6 +97,9 @@ export function DomainSearchClient() {
       setDomainsEnabled(payload.domainsEnabled !== false);
       setProviderLabel(payload.providerLabel ?? "");
       setPrivacyProtectionDefault(payload.includePrivacyProtectionByDefault !== false);
+      if (payload.popularTlds) {
+        setPopularTlds(payload.popularTlds);
+      }
       if (payload.domainsEnabled === false) {
         setMessage("Domain registrations are currently disabled.");
       } else {
@@ -220,7 +233,7 @@ export function DomainSearchClient() {
 
             {/* Popular TLDs */}
             <div className="mt-4 flex flex-wrap justify-center gap-2">
-              {POPULAR_TLDS.map((tld) => (
+              {popularTlds.slice(0, 7).map((tld) => (
                 <button
                   key={tld}
                   type="button"

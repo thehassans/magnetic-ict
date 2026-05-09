@@ -1,5 +1,14 @@
 export type DomainPaymentMethod = "STRIPE" | "PAYPAL";
 
+export type DomainTld = {
+  tld: string;
+  registerPrice: number;
+  renewPrice: number;
+  transferPrice: number;
+  isPopular: boolean;
+  status: "Active" | "Inactive";
+};
+
 export type DomainProviderSettings = {
   enabled: boolean;
   mode: "manual" | "live";
@@ -17,11 +26,7 @@ export type DomainProviderSettings = {
   renewalMarkupPercent: number;
   renewalMarkupFlat: number;
   defaultNameservers: string[];
-  comPrice: number;
-  netPrice: number;
-  orgPrice: number;
-  ioPrice: number;
-  defaultPrice: number;
+  tlds: DomainTld[];
 };
 
 export type DomainAvailabilityStatus = "available" | "taken" | "unknown";
