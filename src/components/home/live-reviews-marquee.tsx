@@ -128,28 +128,28 @@ export function LiveReviewsMarquee() {
                       <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
                     ))}
                   </span>
-                  <span className="text-slate-500 dark:text-slate-400">5,000+ Verified Reviews</span>
+                  <span className="text-slate-500 dark:text-slate-400">{t("verifiedReviews")}</span>
                 </div>
               </div>
 
               <h2 className="mt-5 text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl">
-                Loved by{" "}
+                {t("lovedBy")}{" "}
                 <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent dark:from-violet-400 dark:to-indigo-400">
                   50,000+
                 </span>{" "}
-                Customers
+                {t("customers")}
               </h2>
               <p className="mt-4 text-base text-slate-500 dark:text-slate-400">
-                Businesses, creators, and developers across the globe trust Magnetic ICT every day.
+                {t("lovedByDevelopersDesc")}
               </p>
 
               {/* Stats row */}
               <div className="mt-8 flex flex-wrap justify-center gap-6 sm:gap-10">
                 {[
-                  { value: "5,218", label: "Total Reviews" },
-                  { value: "4.9★", label: "Average Rating" },
-                  { value: "99.9%", label: "Uptime SLA" },
-                  { value: "50K+", label: "Active Customers" },
+                  { value: "5,218", label: t("totalReviews") },
+                  { value: "4.9★", label: t("averageRating") },
+                  { value: "99.9%", label: t("uptimeSla") },
+                  { value: "50K+", label: t("activeCustomers") },
                 ].map(({ value, label }) => (
                   <div key={label} className="text-center">
                     <div className="text-2xl font-extrabold tracking-tight text-slate-950 dark:text-white sm:text-3xl">{value}</div>

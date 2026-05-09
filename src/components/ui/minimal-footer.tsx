@@ -122,7 +122,7 @@ export function MinimalFooter({ locale, description, footerDetails }: MinimalFoo
             </div>
           </div>
           <div className="border-t border-slate-200 px-6 py-4 text-center text-sm text-slate-500 dark:border-white/10 dark:text-slate-400 md:px-8">
-            © Magnetic ICT. All rights reserved {year}
+            {tFooter("rights", { year })}
           </div>
         </div>
       </div>

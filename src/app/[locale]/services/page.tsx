@@ -29,8 +29,9 @@ const iconMap = {
 } satisfies Record<ServiceMenuKey, typeof ShieldCheck>;
 
 export default async function ServicesPage() {
-  const [t, navigation, services] = await Promise.all([
+  const [tPages, tServices, navigation, services] = await Promise.all([
     getTranslations("Pages"),
+    getTranslations("Services"),
     getTranslations("Navigation"),
     getVisibleServiceCatalogWithOverrides()
   ]);
@@ -40,9 +41,9 @@ export default async function ServicesPage() {
   return (
     <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <section className="border-b border-slate-200 pb-8 dark:border-white/10 sm:pb-10">
-        <p className="text-sm uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">{t("servicesEyebrow")}</p>
+        <p className="text-sm uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">{tPages("servicesEyebrow")}</p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl">
-          {t("servicesTitle")}
+          {tPages("servicesTitle")}
         </h1>
       </section>
 
@@ -57,7 +58,7 @@ export default async function ServicesPage() {
 
           const title = service.overrides.title ? service.name : getServiceTitle(navigation, service.id);
           const fromPrice = Math.min(...service.tiers.map((tier) => tier.price));
-          const priceLabel = fromPrice === 0 ? "Free" : `From $${fromPrice}`;
+          const priceLabel = fromPrice === 0 ? tServices("free") : `${tServices("from")} $${fromPrice}`;
 
           return (
             <Link

@@ -49,7 +49,14 @@
     "checkDomainInstantly": "تحقق من نطاقك فوراً",
     "domainSearchDescription": "ابحث عن توفر النطاق مباشرة من الصفحة الرئيسية وتابع إلى عملية الدفع الكاملة.",
     "searchDomainButton": "البحث عن النطاق",
-    "verifiedDeveloper": "مطور تم التحقق منه"
+    "verifiedDeveloper": "مطور تم التحقق منه",
+    "verifiedReviews": "5,000+ مراجعة موثقة",
+    "lovedBy": "محبوب من قبل",
+    "customers": "العملاء",
+    "totalReviews": "إجمالي المراجعات",
+    "averageRating": "متوسط التقييم",
+    "uptimeSla": "اتفاقية مستوى الخدمة للوقت",
+    "activeCustomers": "العملاء النشطون"
   },
   "Navigation": {
     "home": "الرئيسية",
@@ -136,7 +143,15 @@
         "title": "NordVPN",
         "description": "حلول اتصال امنة للفرق والمؤسسين والعمليات الموزعة."
       }
-    }
+    },
+    "company": "الشركة",
+    "customerStories": "قصص العملاء",
+    "customerStoriesDesc": "تعرف على كيفية وصف المشغلين لتجربة التسليم الخاصة بهم",
+    "trustedEcosystem": "النظام البيئي الموثوق به",
+    "trustedEcosystemDesc": "الشركاء والمنصات خلف مجموعة MagneticICT",
+    "access": "الوصول",
+    "domainCart": "عربة الدومينات",
+    "magneticSocialBotDesc": "افتح مساحة عمل Magnetic Social Bot الخاصة بك"
   },
   "Footer": {
     "ctaEyebrow": "دعم مميز",
@@ -148,7 +163,7 @@
     "description": "أدوات تقنية Magnetic المعتمدة على الذكاء الاصطناعي للعلامات الطموحة التي تريد السرعة والمرونة وتجربة عميل مميزة.",
     "platform": "المنصة",
     "company": "الشركة",
-    "rights": "© 2026 MagneticICT. جميع الحقوق محفوظة."
+    "rights": "© {year} MagneticICT. جميع الحقوق محفوظة."
   },
   "Pages": {
     "servicesEyebrow": "عالم الأدوات",
@@ -421,5 +436,18 @@
     "item0_role": "الرئيس التنفيذي والمؤسس",
     "item1_role": "مدير تكنولوجيا المعلومات",
     "item2_role": "مدير تكنولوجيا المعلومات"
+  },
+  "Newsletter": {
+    "title": "النشرة الإخبارية",
+    "description": "احصل على تحديثات دورية للمنتجات والخدمات والعمليات من MagneticICT.",
+    "placeholder": "أدخل بريدك الإلكتروني",
+    "submitting": "جاري الاشتراك...",
+    "submit": "اشترك",
+    "success": "تم الاشتراك بنجاح.",
+    "error": "تعذر الاشتراك في الوقت الحالي."
+  },
+  "Services": {
+    "free": "مجاني",
+    "from": "تبدأ من"
   }
 }

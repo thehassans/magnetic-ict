@@ -74,7 +74,14 @@
     "checkDomainInstantly": "Alan adınızı anında kontrol edin",
     "domainSearchDescription": "Alan adı uygunluğunu doğrudan ana sayfadan arayın ve tam ödeme akışına devam edin.",
     "searchDomainButton": "Alan adı ara",
-    "verifiedDeveloper": "Verified Developer"
+    "verifiedDeveloper": "Verified Developer",
+    "verifiedReviews": "5,000+ Verified Reviews",
+    "lovedBy": "Loved by",
+    "customers": "Customers",
+    "totalReviews": "Total Reviews",
+    "averageRating": "Average Rating",
+    "uptimeSla": "Uptime SLA",
+    "activeCustomers": "Active Customers"
   },
   "Navigation": {
     "home": "Ana sayfa",
@@ -161,7 +168,15 @@
         "title": "NordVPN",
         "description": "Ekipler, kurucular ve daginik operasyonlar icin guvenli baglanti cozumleri."
       }
-    }
+    },
+    "company": "Company",
+    "customerStories": "Customer stories",
+    "customerStoriesDesc": "See how operators describe their delivery experience",
+    "trustedEcosystem": "Trusted ecosystem",
+    "trustedEcosystemDesc": "Partners and platforms behind the MagneticICT stack",
+    "access": "Access",
+    "domainCart": "Domain cart",
+    "magneticSocialBotDesc": "Open your Magnetic Social Bot workspace"
   },
   "Footer": {
     "ctaEyebrow": "Premium destek",
@@ -173,7 +188,7 @@
     "description": "Hiz, dayaniklilik ve dikkat cekici musteri deneyimi isteyen iddiali markalar icin yapay zeka odakli Magnetic BT hizmetleri.",
     "platform": "Platform",
     "company": "Sirket",
-    "rights": "© 2026 MagneticICT. Tum haklari saklidir."
+    "rights": "© {year} MagneticICT. All rights reserved."
   },
   "Pages": {
     "servicesEyebrow": "Araç evreni",
@@ -449,5 +464,18 @@
     "item0_role": "CEO & Founder",
     "item1_role": "CTO",
     "item2_role": "CTO"
+  },
+  "Newsletter": {
+    "title": "Newsletter",
+    "description": "Get occasional product, service, and operations updates from MagneticICT.",
+    "placeholder": "Enter your email",
+    "submitting": "Subscribing...",
+    "submit": "Subscribe",
+    "success": "Subscribed successfully.",
+    "error": "Unable to subscribe right now."
+  },
+  "Services": {
+    "free": "Free",
+    "from": "From"
   }
 }

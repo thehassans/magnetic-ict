@@ -74,7 +74,14 @@
     "checkDomainInstantly": "Compruebe su dominio al instante",
     "domainSearchDescription": "Busque la disponibilidad del dominio directamente desde la página de inicio y continúe con el flujo de pago completo.",
     "searchDomainButton": "Buscar dominio",
-    "verifiedDeveloper": "Verified Developer"
+    "verifiedDeveloper": "Verified Developer",
+    "verifiedReviews": "5,000+ Verified Reviews",
+    "lovedBy": "Loved by",
+    "customers": "Customers",
+    "totalReviews": "Total Reviews",
+    "averageRating": "Average Rating",
+    "uptimeSla": "Uptime SLA",
+    "activeCustomers": "Active Customers"
   },
   "Navigation": {
     "home": "Inicio",
@@ -161,7 +168,15 @@
         "title": "NordVPN",
         "description": "Conectividad segura para equipos, fundadores y operaciones distribuidas."
       }
-    }
+    },
+    "company": "Company",
+    "customerStories": "Customer stories",
+    "customerStoriesDesc": "See how operators describe their delivery experience",
+    "trustedEcosystem": "Trusted ecosystem",
+    "trustedEcosystemDesc": "Partners and platforms behind the MagneticICT stack",
+    "access": "Access",
+    "domainCart": "Domain cart",
+    "magneticSocialBotDesc": "Open your Magnetic Social Bot workspace"
   },
   "Footer": {
     "ctaEyebrow": "Soporte premium",
@@ -173,7 +188,7 @@
     "description": "Servicios IT Magnetic impulsados por IA para marcas ambiciosas que exigen velocidad, resiliencia y una experiencia destacada.",
     "platform": "Plataforma",
     "company": "Empresa",
-    "rights": "© 2026 MagneticICT. Todos los derechos reservados."
+    "rights": "© {year} MagneticICT. All rights reserved."
   },
   "Pages": {
     "servicesEyebrow": "Universo de herramientas",
@@ -449,5 +464,18 @@
     "item0_role": "CEO & Founder",
     "item1_role": "CTO",
     "item2_role": "CTO"
+  },
+  "Newsletter": {
+    "title": "Newsletter",
+    "description": "Get occasional product, service, and operations updates from MagneticICT.",
+    "placeholder": "Enter your email",
+    "submitting": "Subscribing...",
+    "submit": "Subscribe",
+    "success": "Subscribed successfully.",
+    "error": "Unable to subscribe right now."
+  },
+  "Services": {
+    "free": "Free",
+    "from": "From"
   }
 }

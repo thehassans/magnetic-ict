@@ -74,7 +74,14 @@
     "checkDomainInstantly": "আপনার ডোমেইন তাৎক্ষণিকভাবে পরীক্ষা করুন",
     "domainSearchDescription": "সরাসরি হোমপেজ থেকে ডোমেইন প্রাপ্যতা অনুসন্ধান করুন এবং সম্পূর্ণ চেকআউট ফ্লোতে এগিয়ে যান।",
     "searchDomainButton": "ডোমেইন অনুসন্ধান করুন",
-    "verifiedDeveloper": "Verified Developer"
+    "verifiedDeveloper": "Verified Developer",
+    "verifiedReviews": "৫,০০০+ যাচাইকৃত রিভিউ",
+    "lovedBy": "পছন্দের",
+    "customers": "গ্রাহকদের",
+    "totalReviews": "মোট রিভিউ",
+    "averageRating": "গড় রেটিং",
+    "uptimeSla": "আপটাইম এসএলএ",
+    "activeCustomers": "সক্রিয় গ্রাহক"
   },
   "Navigation": {
     "home": "Home",
@@ -161,7 +168,15 @@
         "title": "NordVPN",
         "description": "Secure connectivity solutions for teams, founders, and distributed operations."
       }
-    }
+    },
+    "company": "কোম্পানি",
+    "customerStories": "গ্রাহক গল্প",
+    "customerStoriesDesc": "অপারেটররা তাদের ডেলিভারি অভিজ্ঞতা কীভাবে বর্ণনা করে তা দেখুন",
+    "trustedEcosystem": "বিশ্বস্ত ইকোসিস্টেম",
+    "trustedEcosystemDesc": "ম্যাগনেটিক আইসিটি স্ট্যাকের পিছনে থাকা পার্টনার এবং প্ল্যাটফর্ম",
+    "access": "অ্যাক্সেস",
+    "domainCart": "ডোমেইন কার্ট",
+    "magneticSocialBotDesc": "আপনার ম্যাগনেটিক সোশ্যাল বট ওয়ার্কস্পেস খুলুন"
   },
   "Footer": {
     "ctaEyebrow": "White-glove support",
@@ -173,7 +188,7 @@
     "description": "Magnetic AI-led IT tools for ambitious brands that demand speed, resilience, and remarkable customer experience.",
     "platform": "Platform",
     "company": "Company",
-    "rights": "© 2026 MagneticICT. All rights reserved."
+    "rights": "© {year} ম্যাগনেটিক আইসিটি। সর্বস্বত্ব সংরক্ষিত।"
   },
   "Pages": {
     "servicesEyebrow": "সরঞ্জাম মহাবিশ্ব",
@@ -449,5 +464,18 @@
     "item0_role": "সিইও এবং প্রতিষ্ঠাতা",
     "item1_role": "সিটিও",
     "item2_role": "সিটিও"
+  },
+  "Newsletter": {
+    "title": "নিউজলেটার",
+    "description": "ম্যাগনেটিক আইসিটি থেকে মাঝে মাঝে প্রোডাক্ট, পরিষেবা এবং অপারেশনাল আপডেট পান।",
+    "placeholder": "আপনার ইমেল লিখুন",
+    "submitting": "সাবস্ক্রাইব করা হচ্ছে...",
+    "submit": "সাবস্ক্রাইব করুন",
+    "success": "সফলভাবে সাবস্ক্রাইব করা হয়েছে।",
+    "error": "এই মুহূর্তে সাবস্ক্রাইব করা সম্ভব নয়।"
+  },
+  "Services": {
+    "free": "ফ্রি",
+    "from": "থেকে"
   }
 }

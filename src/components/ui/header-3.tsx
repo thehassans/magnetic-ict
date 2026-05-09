@@ -130,15 +130,15 @@ export function Header({
   const companyLinks = React.useMemo<LinkItem[]>(() => {
     const items: LinkItem[] = [
       {
-        title: "Customer stories",
+        title: t("customerStories"),
         href: "/#home-reviews",
-        description: "See how operators describe their delivery experience",
+        description: t("customerStoriesDesc"),
         icon: Star
       },
       {
-        title: "Trusted ecosystem",
+        title: t("trustedEcosystem"),
         href: "/#trusted-ecosystem",
-        description: "Partners and platforms behind the MagneticICT stack",
+        description: t("trustedEcosystemDesc"),
         icon: LayersIcon
       }
     ];
@@ -147,7 +147,7 @@ export function Header({
       items.push({
         title: t("dashboard"),
         href: "/dashboard/magnetic-social-bot",
-        description: "Open your Magnetic Social Bot workspace",
+        description: t("magneticSocialBotDesc"),
         icon: Bot
       });
     }
@@ -217,11 +217,11 @@ export function Header({
       }] : []),
       {
         id: 3,
-        label: "Company",
+        label: t("company"),
         icon: Briefcase,
         subMenus: [
           {
-            title: "Company",
+            title: t("company"),
             items: companyLinks.map((item) => ({
               label: item.title,
               description: item.description,
@@ -230,7 +230,7 @@ export function Header({
             }))
           },
           {
-            title: "Access",
+            title: t("access"),
             items: companyLinks2.map((item) => ({
               label: item.title,
               description: item.description,
@@ -297,6 +297,9 @@ export function Header({
           ) : null}
           {sessionUser ? (
             <>
+              <Link href="/domains/cart" locale={locale} className="relative inline-flex h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-cyan-400/20 dark:hover:bg-white/10">
+                <span>{t("domainCart")}</span>
+              </Link>
               <Link href="/dashboard" locale={locale} className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200/70 bg-transparent px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white">
                 {t("dashboard")}
               </Link>
@@ -356,7 +359,7 @@ export function Header({
           </div>
 
           <div className="space-y-2">
-            <SectionHeading icon={Briefcase}>Company</SectionHeading>
+            <SectionHeading icon={Briefcase}>{t("company")}</SectionHeading>
             {companyLinks.map((link) => (
               <MobileLink key={link.title} locale={locale} href={link.href} onClick={() => setOpen(false)} icon={link.icon}>
                 {link.title}
