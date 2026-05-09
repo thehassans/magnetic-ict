@@ -1,6 +1,7 @@
 import { GithubIcon, Mail, MapPin, Phone } from "lucide-react";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { NewsletterSignupForm } from "@/components/layout/newsletter-signup-form";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 type MinimalFooterProps = {
@@ -15,34 +16,36 @@ type MinimalFooterProps = {
 };
 
 export function MinimalFooter({ locale, description, footerDetails }: MinimalFooterProps) {
+  const t = useTranslations("Navigation");
+  const tFooter = useTranslations("Footer");
   const year = new Date().getFullYear();
 
   const company = [
     {
-      title: "Support",
+      title: t("support"),
       href: "/support"
     },
     {
-      title: "Dashboard",
+      title: t("dashboard"),
       href: "/dashboard"
     },
     {
-      title: "Services",
+      title: t("services"),
       href: "/services"
     }
   ];
 
   const resources = [
     {
-      title: "Home",
+      title: t("home"),
       href: "/"
     },
     {
-      title: "Cart",
+      title: t("cart"),
       href: "/cart"
     },
     {
-      title: "Contact support",
+      title: tFooter("ctaButton"),
       href: footerDetails.ctaHref
     }
   ];
@@ -98,7 +101,7 @@ export function MinimalFooter({ locale, description, footerDetails }: MinimalFoo
               </div>
             </div>
             <div className="col-span-3 w-full md:col-span-1">
-              <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Resources</span>
+              <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">{tFooter("platform")}</span>
               <div className="flex flex-col gap-2">
                 {resources.map(({ href, title }) => (
                   <Link key={title} className="w-max py-1 text-sm text-slate-700 duration-200 hover:underline dark:text-slate-300" href={href} locale={locale}>
@@ -108,7 +111,7 @@ export function MinimalFooter({ locale, description, footerDetails }: MinimalFoo
               </div>
             </div>
             <div className="col-span-3 w-full md:col-span-1">
-              <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Company</span>
+              <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">{tFooter("company")}</span>
               <div className="flex flex-col gap-2">
                 {company.map(({ href, title }) => (
                   <Link key={title} className="w-max py-1 text-sm text-slate-700 duration-200 hover:underline dark:text-slate-300" href={href} locale={locale}>

@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion"
+import { useTranslations } from "next-intl"
 
 const testimonials = [
   {
@@ -26,7 +27,15 @@ const testimonials = [
 ]
 
 export function Testimonial() {
+  const t = useTranslations("FeaturedTestimonials")
   const [activeIndex, setActiveIndex] = useState(0)
+  
+  const translatedTestimonials = testimonials.map((item, index) => ({
+    ...item,
+    quote: t(`item${index}_quote`) || item.quote,
+    role: t(`item${index}_role`) || item.role,
+  }))
+
   const containerRef = useRef<HTMLDivElement>(null)
 
   const mouseX = useMotionValue(0)
@@ -49,8 +58,8 @@ export function Testimonial() {
     }
   }
 
-  const goNext = () => setActiveIndex((prev) => (prev + 1) % testimonials.length)
-  const goPrev = () => setActiveIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+  const goNext = () => setActiveIndex((prev) => (prev + 1) % translatedTestimonials.length)
+  const goPrev = () => setActiveIndex((prev) => (prev - 1 + translatedTestimonials.length) % translatedTestimonials.length)
 
   useEffect(() => {
     const timer = setInterval(goNext, 6000)
@@ -58,7 +67,7 @@ export function Testimonial() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const current = testimonials[activeIndex]
+  const current = translatedTestimonials[activeIndex]
 
   return (
     <div

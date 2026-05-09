@@ -1,6 +1,7 @@
 "use client";
 
 import { Star } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
 import { TestimonialsSection } from "@/components/ui/simple-animated-testimonials";
@@ -84,6 +85,21 @@ function MarqueeRow({ items, reverse = false }: { items: typeof ROW_A; reverse?:
 
 /* ─── Main export ─── */
 export function LiveReviewsMarquee() {
+  const t = useTranslations("Landing");
+  const tTestimonials = useTranslations("Testimonials");
+  const tReviews = useTranslations("Reviews");
+
+  const translatedRowA = ROW_A.map((item, i) => ({
+    ...item,
+    comment: tReviews(`rowA.${i}`) || item.comment,
+    role: tReviews(`rolesA.${i}`) || item.role
+  }));
+
+  const translatedRowB = ROW_B.map((item, i) => ({
+    ...item,
+    comment: tReviews(`rowB.${i}`) || item.comment,
+    role: tReviews(`rolesB.${i}`) || item.role
+  }));
   return (
     <section id="home-reviews" className="py-10 sm:py-16">
       <style>{`
@@ -146,12 +162,12 @@ export function LiveReviewsMarquee() {
 
           {/* ── Row 1: right → left ── */}
           <div className="mt-12">
-            <MarqueeRow items={ROW_A} reverse={false} />
+            <MarqueeRow items={translatedRowA} reverse={false} />
           </div>
 
           {/* ── Row 2: left → right ── */}
           <div className="mt-4">
-            <MarqueeRow items={ROW_B} reverse={true} />
+            <MarqueeRow items={translatedRowB} reverse={true} />
           </div>
 
           {/* ── CTA ── */}
@@ -160,7 +176,7 @@ export function LiveReviewsMarquee() {
               href="/reviews"
               className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_8px_30px_rgba(99,102,241,0.35)] transition hover:shadow-[0_12px_40px_rgba(99,102,241,0.45)] hover:-translate-y-0.5"
             >
-              View all 5,218 reviews
+              {t("viewAllReviews")}
               <span aria-hidden="true">→</span>
             </Link>
           </div>
@@ -170,9 +186,12 @@ export function LiveReviewsMarquee() {
 
       {/* ── Loved by Developers ── */}
       <TestimonialsSection
-        title="Loved by Developers"
-        subtitle="Real feedback from developers and operators across South Asia."
-        testimonials={[...developerTestimonials]}
+        title={t("lovedByDevelopers")}
+        subtitle={t("lovedByDevelopersDesc")}
+        testimonials={developerTestimonials.map((testimonial, i) => ({
+          ...testimonial,
+          content: tTestimonials(`dev${i}`) || testimonial.content
+        }))}
       />
 
     </section>

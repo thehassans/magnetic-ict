@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Quote, Star } from "lucide-react";
 import { motion, useAnimation, useInView } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,6 +41,7 @@ export function TestimonialsSection({
   trustedCompaniesTitle = "Trusted by teams at these companies and more",
   className
 }: TestimonialsSectionProps) {
+  const t = useTranslations("Landing");
   const [activeIndex, setActiveIndex] = useState(0);
   const sectionRef = useRef<HTMLElement | null>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
@@ -151,7 +153,7 @@ export function TestimonialsSection({
 
                     <p className={cn("flex-1 text-base/relaxed italic", "text-slate-700 dark:text-slate-200")}>&quot;{testimonial.content}&quot;</p>
 
-                    {showVerifiedBadge ? <div className={cn("mt-4 text-right text-xs", "text-slate-500 dark:text-slate-400")}>Verified Developer</div> : null}
+                    {showVerifiedBadge ? <div className={cn("mt-4 text-right text-xs", "text-slate-500 dark:text-slate-400")}>{t("verifiedDeveloper")}</div> : null}
                   </CardContent>
                 </Card>
               ))}

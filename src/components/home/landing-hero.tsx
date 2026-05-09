@@ -22,7 +22,7 @@ export function LandingHero({ locale }: LandingHeroProps) {
           <ScrollReveal>
             <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-slate-200/80 bg-white/85 px-3 py-1 text-xs text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
               <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Magnetic ICT global service network
+              {t("globalServiceNetwork")}
             </div>
           </ScrollReveal>
 
@@ -32,7 +32,7 @@ export function LandingHero({ locale }: LandingHeroProps) {
                 Magnetic ICT
                 <br />
                 <span className="bg-gradient-to-r from-violet-700 via-indigo-600 to-sky-500 bg-clip-text text-transparent dark:from-violet-400 dark:via-indigo-300 dark:to-cyan-300">
-                  Global Digital Services
+                  {t("globalDigitalServices")}
                 </span>
               </h1>
               <p className="max-w-xl text-base leading-7 text-slate-700 sm:text-lg dark:text-slate-300">
@@ -49,11 +49,11 @@ export function LandingHero({ locale }: LandingHeroProps) {
 
           <ScrollReveal delay={0.15}>
             <div className="flex items-center gap-6">
-              <HeroStat value={String(serviceCatalog.length)} label="Live services" />
+              <HeroStat value={String(serviceCatalog.length)} label={t("liveServices")} />
               <div className="h-8 w-px bg-slate-200 dark:bg-white/10" />
-              <HeroStat value="24/7" label="Priority support" />
+              <HeroStat value="24/7" label={t("prioritySupport")} />
               <div className="h-8 w-px bg-slate-200 dark:bg-white/10" />
-              <HeroStat value="99.9%" label="Ops uptime target" />
+              <HeroStat value="99.9%" label={t("opsUptimeTarget")} />
             </div>
           </ScrollReveal>
         </div>

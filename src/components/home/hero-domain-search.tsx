@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Search, Sparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
 type HeroDomainSearchProps = {
@@ -11,6 +12,7 @@ type HeroDomainSearchProps = {
 const tldSuggestions = [".com", ".net", ".org", ".com.bd"] as const;
 
 export function HeroDomainSearch({ locale }: HeroDomainSearchProps) {
+  const t = useTranslations("Landing");
   const [query, setQuery] = useState("");
   const normalizedQuery = useMemo(() => query.trim(), [query]);
 
@@ -38,11 +40,11 @@ export function HeroDomainSearch({ locale }: HeroDomainSearchProps) {
     <div className="rounded-[28px] border border-slate-200/80 bg-white/92 p-4 shadow-[0_16px_50px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/5 sm:p-5">
       <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-700 dark:text-cyan-300">
         <Sparkles className="h-3.5 w-3.5" />
-        Domain search
+        {t("domainSearch")}
       </div>
-      <h2 className="mt-3 text-lg font-semibold text-slate-950 dark:text-white sm:text-xl">Check your domain instantly</h2>
+      <h2 className="mt-3 text-lg font-semibold text-slate-950 dark:text-white sm:text-xl">{t("checkDomainInstantly")}</h2>
       <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-        Search domain availability directly from the homepage and continue into the full checkout flow.
+        {t("domainSearchDescription")}
       </p>
 
       <form onSubmit={handleSubmit} className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
@@ -57,7 +59,7 @@ export function HeroDomainSearch({ locale }: HeroDomainSearchProps) {
           />
         </label>
         <Button type="submit" className="h-12 rounded-full px-6" disabled={normalizedQuery.length === 0}>
-          Search domain
+          {t("searchDomainButton")}
         </Button>
       </form>
 

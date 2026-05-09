@@ -67,13 +67,13 @@ export default async function ServiceDetailPage({
           <div className="mb-10 text-center">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-slate-50/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-slate-500 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-400">
               <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
-              Free downloader
+              {t("freeDownloader")}
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl">
               {title}
             </h1>
             <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-slate-500 dark:text-slate-400">
-              Paste any YouTube, Instagram, or Facebook link — we detect the platform instantly and let you pick your quality.
+              {t("downloaderDescription")}
             </p>
           </div>
           {/* The tool itself */}
@@ -94,11 +94,11 @@ export default async function ServiceDetailPage({
           <div className="mb-10 text-center">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-slate-50/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-slate-500 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-400">
               <Sparkles className="h-3.5 w-3.5 text-violet-400" />
-              Free forensic scan
+              {t("freeForensicScan")}
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl">{title}</h1>
             <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-slate-500 dark:text-slate-400">
-              Upload any image or video — our forensic engine analyzes authenticity signals and gives you a clear verdict.
+              {t("aiDetectionDescription")}
             </p>
           </div>
           <AiDetectionTool />

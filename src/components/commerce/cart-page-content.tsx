@@ -43,10 +43,11 @@ function CartReviewCard({ review }: { review: typeof reviews[number] }) {
 export function CartPageContent({ hostingProviderConfig }: { hostingProviderConfig: HostingProviderSettings }) {
   const { items, subtotal, removeItem, clearCart, updateItem } = useCommerce();
   const t = useTranslations("Commerce");
+  const tCart = useTranslations("Cart");
   const navigation = useTranslations("Navigation");
 
   const featuredReviews = useMemo(() => reviews.slice(0, 3), []);
-  const itemCountLabel = `${items.length} ${items.length === 1 ? "item" : "items"}`;
+  const itemCountLabel = `${items.length} ${items.length === 1 ? t("cartItemSingular") : t("cartItemPlural")}`;
 
   if (items.length === 0) {
     return (
@@ -56,23 +57,23 @@ export function CartPageContent({ hostingProviderConfig }: { hostingProviderConf
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-slate-200 text-slate-700 dark:border-white/10 dark:text-slate-200">
               <ShoppingBag className="h-7 w-7" />
             </div>
-            <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Magnetic cart</p>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">Your cart is empty</h1>
+            <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">{t("magneticCart")}</p>
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">{tCart("emptyTitle")}</h1>
             <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
-              Start with Magnetic VPS Hosting to experience the premium hosting, cart, and checkout flow from your reference repo.
+              {tCart("emptyDescription")}
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link
                 href="/hosting"
                 className="inline-flex h-12 items-center justify-center rounded-xl bg-slate-950 px-6 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
               >
-                Browse hosting plans
+                {tCart("browseHosting")}
               </Link>
               <Link
                 href="/services"
                 className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-950 transition hover:bg-slate-50 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:hover:bg-white/[0.04]"
               >
-                Browse all services
+                {tCart("browseTools")}
               </Link>
             </div>
           </section>
@@ -87,16 +88,16 @@ export function CartPageContent({ hostingProviderConfig }: { hostingProviderConf
         <header className="rounded-[2rem] border border-slate-200 bg-white px-6 py-8 shadow-[0_24px_80px_rgba(15,23,42,0.04)] dark:border-white/10 dark:bg-slate-950 sm:px-8 sm:py-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <div className="text-[11px] font-medium uppercase tracking-[0.32em] text-slate-400 dark:text-slate-500">Magnetic cart</div>
-              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">Shopping cart</h1>
+              <div className="text-[11px] font-medium uppercase tracking-[0.32em] text-slate-400 dark:text-slate-500">{t("magneticCart")}</div>
+              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">{tCart("shoppingCart")}</h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
-                Review your selected services, compare configuration details, and continue into the premium checkout flow.
+                {tCart("cartDescription")}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">
-              <span className="inline-flex items-center gap-2"><Lock className="h-3.5 w-3.5" /> SSL secure</span>
-              <span className="inline-flex items-center gap-2"><Clock3 className="h-3.5 w-3.5" /> Instant access</span>
-              <span className="inline-flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5" /> Protected delivery</span>
+              <span className="inline-flex items-center gap-2"><Lock className="h-3.5 w-3.5" /> {tCart("sslSecure")}</span>
+              <span className="inline-flex items-center gap-2"><Clock3 className="h-3.5 w-3.5" /> {tCart("instantAccess")}</span>
+              <span className="inline-flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5" /> {tCart("protectedDelivery")}</span>
             </div>
           </div>
         </header>
