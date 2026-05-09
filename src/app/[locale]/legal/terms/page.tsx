@@ -1,6 +1,6 @@
 import { FileText, ShieldCheck, Scale, Gavel, AlertTriangle, Globe, Mail, Clock, ChevronRight } from "lucide-react";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 export const metadata = {
   title: "Terms of Service — Magnetic ICT",

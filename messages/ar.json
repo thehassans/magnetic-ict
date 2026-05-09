@@ -55,26 +55,74 @@
     "servicesMenuEyebrow": "كتالوج الخدمات",
     "servicesMenuTitle": "حلول Magnetic للبنية الرقمية والنمو",
     "items": {
-      "ssl": {"title": "شهادات SSL", "description": "تشفير بمستوى مؤسسي واشارات ثقة للشركات الحديثة."},
-      "websiteBuilder": {"title": "منشئ المواقع", "description": "اطلق تجارب ويب مميزة ومتجاوبة دون ابطاء التسليم."},
-      "emailServices": {"title": "خدمات البريد", "description": "ادوات موثوقة للبريد التجاري والمعاملاتي مع تسليم امن."},
-      "professionalEmail": {"title": "البريد الاحترافي والتطبيقات", "description": "حزم تواصل تحمل علامتك للفرق سريعة الحركة."},
-      "seoTools": {"title": "ادوات SEO", "description": "ظهور وتحليلات وذكاء ترتيب للعلامات سريعة النمو."},
-      "imageConversion": {"title": "تحويل الصور", "description": "اداة مجانية لتحويل وتغيير حجم صور JPG وPNG وWebP."},
-      "aiDetection": {"title": "AI Detection", "description": "ارفع صورة او فيديو وتحقق مما اذا كان يبدو مولدا بالذكاء الاصطناعي باستخدام اشارات تحليلية مميزة."},
-      "videoDownloader": {"title": "Video Downloader", "description": "الصق رابط YouTube او Instagram او Facebook وقم بالتنزيل بصيغة MP4 او MP3 بالجودة التي تريدها."},
-      "magneticCommerce": {"title": "Magnetic Commerce", "description": "منصة تجارة وتجاره إلكترونية متكاملة تغطي الادوار والتسويق والتنفيذ والتمويل والتحكم بالموقع."},
-      "magneticVpsHosting": {"title": "Magnetic VPS Hosting", "description": "بنية VPS مدعومة من IONOS مع تجربة شراء وتسليم وتحكم اداري بعلامة Magnetic."},
+      "ssl": {
+        "title": "شهادات SSL",
+        "description": "تشفير بمستوى مؤسسي واشارات ثقة للشركات الحديثة."
+      },
+      "websiteBuilder": {
+        "title": "منشئ المواقع",
+        "description": "اطلق تجارب ويب مميزة ومتجاوبة دون ابطاء التسليم."
+      },
+      "emailServices": {
+        "title": "خدمات البريد",
+        "description": "ادوات موثوقة للبريد التجاري والمعاملاتي مع تسليم امن."
+      },
+      "professionalEmail": {
+        "title": "البريد الاحترافي والتطبيقات",
+        "description": "حزم تواصل تحمل علامتك للفرق سريعة الحركة."
+      },
+      "seoTools": {
+        "title": "ادوات SEO",
+        "description": "ظهور وتحليلات وذكاء ترتيب للعلامات سريعة النمو."
+      },
+      "imageConversion": {
+        "title": "تحويل الصور",
+        "description": "اداة مجانية لتحويل وتغيير حجم صور JPG وPNG وWebP."
+      },
+      "aiDetection": {
+        "title": "AI Detection",
+        "description": "ارفع صورة او فيديو وتحقق مما اذا كان يبدو مولدا بالذكاء الاصطناعي باستخدام اشارات تحليلية مميزة."
+      },
+      "videoDownloader": {
+        "title": "Video Downloader",
+        "description": "الصق رابط YouTube او Instagram او Facebook وقم بالتنزيل بصيغة MP4 او MP3 بالجودة التي تريدها."
+      },
+      "magneticCommerce": {
+        "title": "Magnetic Commerce",
+        "description": "منصة تجارة وتجاره إلكترونية متكاملة تغطي الادوار والتسويق والتنفيذ والتمويل والتحكم بالموقع."
+      },
+      "magneticVpsHosting": {
+        "title": "Magnetic VPS Hosting",
+        "description": "بنية VPS مدعومة من IONOS مع تجربة شراء وتسليم وتحكم اداري بعلامة Magnetic."
+      },
       "magneticSocialBot": {
         "title": "Magnetic Social Bot",
         "description": "صندوق رسائل متعدد القنوات لواتساب وانستغرام ومسنجر مع Gemini ومعرفة النشاط التجاري."
       },
-      "magneticFaceSearch": {"title": "Magnetic Face Search", "description": "خارطة طريق بحث بيومتري تراعي الخصوصية مع ادخال بيانات مرخصة وبحث متجهي وتجربة رفع مميزة للبحث."},
-      "siteLockVpn": {"title": "SiteLock VPN", "description": "احم جلسات التصفح والعمل عن بعد بخصوصية مُدارة."},
-      "siteMonitoring": {"title": "مراقبة الموقع والخادم", "description": "متابعة استباقية للتوفر وتنبيه فوري للحوادث في الانظمة الحرجة."},
-      "websiteSecurity": {"title": "امان الموقع", "description": "منع التهديدات وطبقات حماية لاستمرارية الاعمال."},
-      "websiteBackup": {"title": "نسخ احتياطي للموقع", "description": "استعادة سريعة وتعافٍ موثوق لاصولك الرقمية."},
-      "nordVpn": {"title": "NordVPN", "description": "حلول اتصال امنة للفرق والمؤسسين والعمليات الموزعة."}
+      "magneticFaceSearch": {
+        "title": "Magnetic Face Search",
+        "description": "خارطة طريق بحث بيومتري تراعي الخصوصية مع ادخال بيانات مرخصة وبحث متجهي وتجربة رفع مميزة للبحث."
+      },
+      "siteLockVpn": {
+        "title": "SiteLock VPN",
+        "description": "احم جلسات التصفح والعمل عن بعد بخصوصية مُدارة."
+      },
+      "siteMonitoring": {
+        "title": "مراقبة الموقع والخادم",
+        "description": "متابعة استباقية للتوفر وتنبيه فوري للحوادث في الانظمة الحرجة."
+      },
+      "websiteSecurity": {
+        "title": "امان الموقع",
+        "description": "منع التهديدات وطبقات حماية لاستمرارية الاعمال."
+      },
+      "websiteBackup": {
+        "title": "نسخ احتياطي للموقع",
+        "description": "استعادة سريعة وتعافٍ موثوق لاصولك الرقمية."
+      },
+      "nordVpn": {
+        "title": "NordVPN",
+        "description": "حلول اتصال امنة للفرق والمؤسسين والعمليات الموزعة."
+      }
     }
   },
   "Footer": {
@@ -262,5 +310,22 @@
     "statusFulfilled": "مكتمل",
     "paymentUnknown": "غير معروف",
     "paymentManual": "يدوي"
+  },
+  "Domains": {
+    "heroEyebrow": "Domain Registration",
+    "heroTitle": "Find your perfect domain name",
+    "heroDescription": "Search across hundreds of extensions. Instant availability checking powered by {providerLabel}.",
+    "searchPlaceholder": "yourname.com or just yourname",
+    "searchButton": "Search",
+    "searchingButton": "Searching...",
+    "statusAvailable": "Available",
+    "statusTaken": "Taken",
+    "statusUnknown": "Unknown",
+    "featurePrivacyTitle": "WHOIS Privacy",
+    "featurePrivacyDesc": "Keep personal info protected",
+    "featureSslTitle": "SSL Ready",
+    "featureSslDesc": "Free SSL with every domain",
+    "featureDnsTitle": "Instant DNS",
+    "featureDnsDesc": "Propagates in minutes"
   }
 }

@@ -55,10 +55,22 @@
     "servicesMenuEyebrow": "Catalogue de services",
     "servicesMenuTitle": "Solutions Magnetic d’infrastructure numérique et de croissance",
     "items": {
-      "ssl": {"title": "Certificats SSL", "description": "Chiffrement de niveau entreprise et signaux de confiance pour les entreprises modernes."},
-      "websiteBuilder": {"title": "Créateur de site web", "description": "Lancez des expériences web premium et responsives sans ralentir la livraison."},
-      "emailServices": {"title": "Services e-mail", "description": "Outils fiables pour les e-mails transactionnels et professionnels avec livraison sécurisée."},
-      "professionalEmail": {"title": "E-mail professionnel & apps", "description": "Suites de communication de marque pour des équipes qui avancent à vitesse exécutive."},
+      "ssl": {
+        "title": "Certificats SSL",
+        "description": "Chiffrement de niveau entreprise et signaux de confiance pour les entreprises modernes."
+      },
+      "websiteBuilder": {
+        "title": "Créateur de site web",
+        "description": "Lancez des expériences web premium et responsives sans ralentir la livraison."
+      },
+      "emailServices": {
+        "title": "Services e-mail",
+        "description": "Outils fiables pour les e-mails transactionnels et professionnels avec livraison sécurisée."
+      },
+      "professionalEmail": {
+        "title": "E-mail professionnel & apps",
+        "description": "Suites de communication de marque pour des équipes qui avancent à vitesse exécutive."
+      },
       "seoTools": {
         "title": "Outils SEO",
         "description": "Visibilité, analytique et intelligence de classement pour les marques en croissance."
@@ -95,10 +107,22 @@
         "title": "SiteLock VPN",
         "description": "Sécurisez la navigation et le travail à distance avec une confidentialité gérée."
       },
-      "siteMonitoring": {"title": "Surveillance site & serveur", "description": "Suivi proactif de disponibilité et alerte instantanée sur les incidents des systèmes critiques."},
-      "websiteSecurity": {"title": "Sécurité du site web", "description": "Prévention des menaces et couches de protection conçues pour la continuité d’activité."},
-      "websiteBackup": {"title": "Sauvegarde du site web", "description": "Restauration rapide et reprise résiliente pour vos actifs numériques."},
-      "nordVpn": {"title": "NordVPN", "description": "Solutions de connectivité sécurisée pour équipes, fondateurs et opérations distribuées."}
+      "siteMonitoring": {
+        "title": "Surveillance site & serveur",
+        "description": "Suivi proactif de disponibilité et alerte instantanée sur les incidents des systèmes critiques."
+      },
+      "websiteSecurity": {
+        "title": "Sécurité du site web",
+        "description": "Prévention des menaces et couches de protection conçues pour la continuité d’activité."
+      },
+      "websiteBackup": {
+        "title": "Sauvegarde du site web",
+        "description": "Restauration rapide et reprise résiliente pour vos actifs numériques."
+      },
+      "nordVpn": {
+        "title": "NordVPN",
+        "description": "Solutions de connectivité sécurisée pour équipes, fondateurs et opérations distribuées."
+      }
     }
   },
   "Footer": {
@@ -286,5 +310,22 @@
     "statusFulfilled": "Livrée",
     "paymentUnknown": "Inconnu",
     "paymentManual": "Manuel"
+  },
+  "Domains": {
+    "heroEyebrow": "Domain Registration",
+    "heroTitle": "Find your perfect domain name",
+    "heroDescription": "Search across hundreds of extensions. Instant availability checking powered by {providerLabel}.",
+    "searchPlaceholder": "yourname.com or just yourname",
+    "searchButton": "Search",
+    "searchingButton": "Searching...",
+    "statusAvailable": "Available",
+    "statusTaken": "Taken",
+    "statusUnknown": "Unknown",
+    "featurePrivacyTitle": "WHOIS Privacy",
+    "featurePrivacyDesc": "Keep personal info protected",
+    "featureSslTitle": "SSL Ready",
+    "featureSslDesc": "Free SSL with every domain",
+    "featureDnsTitle": "Instant DNS",
+    "featureDnsDesc": "Propagates in minutes"
   }
 }

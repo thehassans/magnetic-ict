@@ -1,6 +1,6 @@
 import { Eye, Lock, Server, Share2, Shield, UserCheck, Bell, ChevronRight, Clock, Mail } from "lucide-react";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 export const metadata = {
   title: "Privacy Policy — Magnetic ICT",

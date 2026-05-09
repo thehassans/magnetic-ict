@@ -55,23 +55,74 @@
     "servicesMenuEyebrow": "Servicekatalog",
     "servicesMenuTitle": "Magnetic Lösungen für digitale Infrastruktur und Wachstum",
     "items": {
-      "ssl": {"title": "SSL-Zertifikate", "description": "Enterprise-Verschlüsselung und Vertrauenssignale für moderne Unternehmen."},
-      "websiteBuilder": {"title": "Website Builder", "description": "Starten Sie hochwertige responsive Web-Erlebnisse ohne langsamere Auslieferung."},
-      "emailServices": {"title": "E-Mail-Services", "description": "Zuverlässige Tools für transaktionale und geschäftliche E-Mails mit sicherer Zustellung."},
-      "professionalEmail": {"title": "Professionelle E-Mail & Apps", "description": "Gebrandete Kommunikations-Suiten für Teams mit hohem Tempo."},
-      "seoTools": {"title": "SEO-Tools", "description": "Sichtbarkeit, Analysen und Ranking-Intelligenz für wachstumsstarke Marken."},
-      "imageConversion": {"title": "Bildkonvertierung", "description": "Ein kostenloser Konverter und Resizer fur JPG-, PNG- und WebP-Downloads."},
-      "aiDetection": {"title": "AI Detection", "description": "Laden Sie ein Bild oder Video hoch und prufen Sie mit Premium-Forensiksignalen, ob es KI-generiert wirkt."},
-      "videoDownloader": {"title": "Video Downloader", "description": "Fugen Sie einen YouTube-, Instagram- oder Facebook-Link ein und laden Sie MP4 oder MP3 in der gewunschten Qualitat herunter."},
-      "magneticCommerce": {"title": "Magnetic Commerce", "description": "Ein komplettes Commerce- und Ecommerce-Betriebssystem fur Rollen, Merchandising, Fulfillment, Finanzen und Website-Steuerung."},
-      "magneticVpsHosting": {"title": "Magnetic VPS Hosting", "description": "IONOS-gestutzte VPS-Infrastruktur mit Magnetic-gebrandetem Checkout, Fulfillment und Admin-Provisioning-Kontrolle."},
-      "magneticSocialBot": {"title": "Magnetic Social Bot", "description": "Ein kanalubergreifender KI-Posteingang fur WhatsApp, Instagram und Messenger mit Gemini und unternehmensspezifischem RAG."},
-      "magneticFaceSearch": {"title": "Magnetic Face Search", "description": "Eine datenschutzorientierte Roadmap für biometrische Suche mit lizenzierter Datenaufnahme, Vektorsuche und Premium-Upload-zur-Suche-UX."},
-      "siteLockVpn": {"title": "SiteLock VPN", "description": "Sichern Sie Browsing-Sitzungen und Remote-Arbeit mit verwaltetem Datenschutz."},
-      "siteMonitoring": {"title": "Site- & Server-Monitoring", "description": "Proaktives Uptime-Tracking und sofortige Vorfallerkennung für kritische Systeme."},
-      "websiteSecurity": {"title": "Website-Sicherheit", "description": "Bedrohungsschutz und Schutzebenen für Geschäftskontinuität."},
-      "websiteBackup": {"title": "Website-Backup", "description": "Schnelle Wiederherstellung und resiliente Recovery für Ihre digitalen Assets."},
-      "nordVpn": {"title": "NordVPN", "description": "Sichere Konnektivitätslösungen für Teams, Gründer und verteilte Abläufe."}
+      "ssl": {
+        "title": "SSL-Zertifikate",
+        "description": "Enterprise-Verschlüsselung und Vertrauenssignale für moderne Unternehmen."
+      },
+      "websiteBuilder": {
+        "title": "Website Builder",
+        "description": "Starten Sie hochwertige responsive Web-Erlebnisse ohne langsamere Auslieferung."
+      },
+      "emailServices": {
+        "title": "E-Mail-Services",
+        "description": "Zuverlässige Tools für transaktionale und geschäftliche E-Mails mit sicherer Zustellung."
+      },
+      "professionalEmail": {
+        "title": "Professionelle E-Mail & Apps",
+        "description": "Gebrandete Kommunikations-Suiten für Teams mit hohem Tempo."
+      },
+      "seoTools": {
+        "title": "SEO-Tools",
+        "description": "Sichtbarkeit, Analysen und Ranking-Intelligenz für wachstumsstarke Marken."
+      },
+      "imageConversion": {
+        "title": "Bildkonvertierung",
+        "description": "Ein kostenloser Konverter und Resizer fur JPG-, PNG- und WebP-Downloads."
+      },
+      "aiDetection": {
+        "title": "AI Detection",
+        "description": "Laden Sie ein Bild oder Video hoch und prufen Sie mit Premium-Forensiksignalen, ob es KI-generiert wirkt."
+      },
+      "videoDownloader": {
+        "title": "Video Downloader",
+        "description": "Fugen Sie einen YouTube-, Instagram- oder Facebook-Link ein und laden Sie MP4 oder MP3 in der gewunschten Qualitat herunter."
+      },
+      "magneticCommerce": {
+        "title": "Magnetic Commerce",
+        "description": "Ein komplettes Commerce- und Ecommerce-Betriebssystem fur Rollen, Merchandising, Fulfillment, Finanzen und Website-Steuerung."
+      },
+      "magneticVpsHosting": {
+        "title": "Magnetic VPS Hosting",
+        "description": "IONOS-gestutzte VPS-Infrastruktur mit Magnetic-gebrandetem Checkout, Fulfillment und Admin-Provisioning-Kontrolle."
+      },
+      "magneticSocialBot": {
+        "title": "Magnetic Social Bot",
+        "description": "Ein kanalubergreifender KI-Posteingang fur WhatsApp, Instagram und Messenger mit Gemini und unternehmensspezifischem RAG."
+      },
+      "magneticFaceSearch": {
+        "title": "Magnetic Face Search",
+        "description": "Eine datenschutzorientierte Roadmap für biometrische Suche mit lizenzierter Datenaufnahme, Vektorsuche und Premium-Upload-zur-Suche-UX."
+      },
+      "siteLockVpn": {
+        "title": "SiteLock VPN",
+        "description": "Sichern Sie Browsing-Sitzungen und Remote-Arbeit mit verwaltetem Datenschutz."
+      },
+      "siteMonitoring": {
+        "title": "Site- & Server-Monitoring",
+        "description": "Proaktives Uptime-Tracking und sofortige Vorfallerkennung für kritische Systeme."
+      },
+      "websiteSecurity": {
+        "title": "Website-Sicherheit",
+        "description": "Bedrohungsschutz und Schutzebenen für Geschäftskontinuität."
+      },
+      "websiteBackup": {
+        "title": "Website-Backup",
+        "description": "Schnelle Wiederherstellung und resiliente Recovery für Ihre digitalen Assets."
+      },
+      "nordVpn": {
+        "title": "NordVPN",
+        "description": "Sichere Konnektivitätslösungen für Teams, Gründer und verteilte Abläufe."
+      }
     }
   },
   "Footer": {
@@ -259,5 +310,22 @@
     "statusFulfilled": "Erfüllt",
     "paymentUnknown": "Unbekannt",
     "paymentManual": "Manuell"
+  },
+  "Domains": {
+    "heroEyebrow": "Domain Registration",
+    "heroTitle": "Find your perfect domain name",
+    "heroDescription": "Search across hundreds of extensions. Instant availability checking powered by {providerLabel}.",
+    "searchPlaceholder": "yourname.com or just yourname",
+    "searchButton": "Search",
+    "searchingButton": "Searching...",
+    "statusAvailable": "Available",
+    "statusTaken": "Taken",
+    "statusUnknown": "Unknown",
+    "featurePrivacyTitle": "WHOIS Privacy",
+    "featurePrivacyDesc": "Keep personal info protected",
+    "featureSslTitle": "SSL Ready",
+    "featureSslDesc": "Free SSL with every domain",
+    "featureDnsTitle": "Instant DNS",
+    "featureDnsDesc": "Propagates in minutes"
   }
 }

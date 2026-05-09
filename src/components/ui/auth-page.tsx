@@ -1,7 +1,7 @@
 "use client";
 
 import type { FormEvent, ReactNode } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { AppleIcon, AtSignIcon, ChevronLeftIcon, GithubIcon } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -188,13 +188,13 @@ export function AuthPage({
 
           <p className="pt-4 text-sm text-slate-600 dark:text-slate-400">
             By clicking continue, you agree to {footerBrandText}&apos;s{" "}
-            <a href={footerTermsHref} className="underline underline-offset-4 hover:text-slate-950 dark:hover:text-white">
+            <Link href={footerTermsHref} className="underline underline-offset-4 hover:text-slate-950 dark:hover:text-white">
               Terms of Service
-            </a>{" "}
+            </Link>{" "}
             and{" "}
-            <a href={footerPrivacyHref} className="underline underline-offset-4 hover:text-slate-950 dark:hover:text-white">
+            <Link href={footerPrivacyHref} className="underline underline-offset-4 hover:text-slate-950 dark:hover:text-white">
               Privacy Policy
-            </a>
+            </Link>
             .
           </p>
         </div>

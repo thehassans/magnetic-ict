@@ -268,8 +268,8 @@ export function CustomerSignInClient({ providerAvailability }: { providerAvailab
         pending={isPending}
         error={error}
         info={info || (status === "authenticated" ? t("customerAuthOpenWorkspace") : "")}
-        footerTermsHref="#"
-        footerPrivacyHref="#"
+        footerTermsHref="/legal/terms"
+        footerPrivacyHref="/legal/privacy"
         footerBrandText="Magnetic ICT"
       />
     </>

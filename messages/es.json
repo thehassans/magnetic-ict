@@ -55,26 +55,74 @@
     "servicesMenuEyebrow": "Catalogo de servicios",
     "servicesMenuTitle": "Soluciones Magnetic de infraestructura digital y crecimiento",
     "items": {
-      "ssl": {"title": "Certificados SSL", "description": "Cifrado de nivel empresarial y senales de confianza para negocios modernos."},
-      "websiteBuilder": {"title": "Creador de sitios web", "description": "Lanza experiencias web premium y responsive sin frenar la entrega."},
-      "emailServices": {"title": "Servicios de correo", "description": "Herramientas fiables para correos transaccionales y empresariales con entrega segura."},
-      "professionalEmail": {"title": "Correo profesional y apps", "description": "Suites de comunicacion con marca para equipos que se mueven rapido."},
-      "seoTools": {"title": "Herramientas SEO", "description": "Visibilidad, analitica e inteligencia de posicionamiento para marcas en crecimiento."},
-      "imageConversion": {"title": "Conversion de imagenes", "description": "Un conversor y redimensionador gratuito para descargas JPG, PNG y WebP."},
-      "aiDetection": {"title": "AI Detection", "description": "Sube una imagen o video y revisa si parece generado por IA con senales forenses premium."},
-      "videoDownloader": {"title": "Video Downloader", "description": "Pega un enlace de YouTube, Instagram o Facebook y descarga MP4 o MP3 con la calidad que quieras."},
-      "magneticCommerce": {"title": "Magnetic Commerce", "description": "Un sistema operativo completo de comercio y ecommerce para roles, merchandising, fulfillment, finanzas y control del sitio web."},
-      "magneticVpsHosting": {"title": "Magnetic VPS Hosting", "description": "Infraestructura VPS respaldada por IONOS con checkout, fulfillment y control administrativo bajo la marca Magnetic."},
+      "ssl": {
+        "title": "Certificados SSL",
+        "description": "Cifrado de nivel empresarial y senales de confianza para negocios modernos."
+      },
+      "websiteBuilder": {
+        "title": "Creador de sitios web",
+        "description": "Lanza experiencias web premium y responsive sin frenar la entrega."
+      },
+      "emailServices": {
+        "title": "Servicios de correo",
+        "description": "Herramientas fiables para correos transaccionales y empresariales con entrega segura."
+      },
+      "professionalEmail": {
+        "title": "Correo profesional y apps",
+        "description": "Suites de comunicacion con marca para equipos que se mueven rapido."
+      },
+      "seoTools": {
+        "title": "Herramientas SEO",
+        "description": "Visibilidad, analitica e inteligencia de posicionamiento para marcas en crecimiento."
+      },
+      "imageConversion": {
+        "title": "Conversion de imagenes",
+        "description": "Un conversor y redimensionador gratuito para descargas JPG, PNG y WebP."
+      },
+      "aiDetection": {
+        "title": "AI Detection",
+        "description": "Sube una imagen o video y revisa si parece generado por IA con senales forenses premium."
+      },
+      "videoDownloader": {
+        "title": "Video Downloader",
+        "description": "Pega un enlace de YouTube, Instagram o Facebook y descarga MP4 o MP3 con la calidad que quieras."
+      },
+      "magneticCommerce": {
+        "title": "Magnetic Commerce",
+        "description": "Un sistema operativo completo de comercio y ecommerce para roles, merchandising, fulfillment, finanzas y control del sitio web."
+      },
+      "magneticVpsHosting": {
+        "title": "Magnetic VPS Hosting",
+        "description": "Infraestructura VPS respaldada por IONOS con checkout, fulfillment y control administrativo bajo la marca Magnetic."
+      },
       "magneticSocialBot": {
         "title": "Magnetic Social Bot",
         "description": "Una bandeja IA multicanal para WhatsApp, Instagram y Messenger con Gemini y RAG empresarial."
       },
-      "magneticFaceSearch": {"title": "Magnetic Face Search", "description": "Una hoja de ruta de busqueda biometrica centrada en la privacidad, con ingesta con licencia, busqueda vectorial y una experiencia premium de carga para buscar."},
-      "siteLockVpn": {"title": "SiteLock VPN", "description": "Protege sesiones de navegacion y trabajo remoto con privacidad gestionada."},
-      "siteMonitoring": {"title": "Monitoreo de sitio y servidor", "description": "Seguimiento proactivo de disponibilidad y alertas instantaneas para sistemas criticos."},
-      "websiteSecurity": {"title": "Seguridad web", "description": "Prevencion de amenazas y capas de proteccion para la continuidad del negocio."},
-      "websiteBackup": {"title": "Respaldo web", "description": "Recuperacion rapida y restauracion resiliente para tus activos digitales."},
-      "nordVpn": {"title": "NordVPN", "description": "Conectividad segura para equipos, fundadores y operaciones distribuidas."}
+      "magneticFaceSearch": {
+        "title": "Magnetic Face Search",
+        "description": "Una hoja de ruta de busqueda biometrica centrada en la privacidad, con ingesta con licencia, busqueda vectorial y una experiencia premium de carga para buscar."
+      },
+      "siteLockVpn": {
+        "title": "SiteLock VPN",
+        "description": "Protege sesiones de navegacion y trabajo remoto con privacidad gestionada."
+      },
+      "siteMonitoring": {
+        "title": "Monitoreo de sitio y servidor",
+        "description": "Seguimiento proactivo de disponibilidad y alertas instantaneas para sistemas criticos."
+      },
+      "websiteSecurity": {
+        "title": "Seguridad web",
+        "description": "Prevencion de amenazas y capas de proteccion para la continuidad del negocio."
+      },
+      "websiteBackup": {
+        "title": "Respaldo web",
+        "description": "Recuperacion rapida y restauracion resiliente para tus activos digitales."
+      },
+      "nordVpn": {
+        "title": "NordVPN",
+        "description": "Conectividad segura para equipos, fundadores y operaciones distribuidas."
+      }
     }
   },
   "Footer": {
@@ -262,5 +310,22 @@
     "statusFulfilled": "Completado",
     "paymentUnknown": "Desconocido",
     "paymentManual": "Manual"
+  },
+  "Domains": {
+    "heroEyebrow": "Domain Registration",
+    "heroTitle": "Find your perfect domain name",
+    "heroDescription": "Search across hundreds of extensions. Instant availability checking powered by {providerLabel}.",
+    "searchPlaceholder": "yourname.com or just yourname",
+    "searchButton": "Search",
+    "searchingButton": "Searching...",
+    "statusAvailable": "Available",
+    "statusTaken": "Taken",
+    "statusUnknown": "Unknown",
+    "featurePrivacyTitle": "WHOIS Privacy",
+    "featurePrivacyDesc": "Keep personal info protected",
+    "featureSslTitle": "SSL Ready",
+    "featureSslDesc": "Free SSL with every domain",
+    "featureDnsTitle": "Instant DNS",
+    "featureDnsDesc": "Propagates in minutes"
   }
 }

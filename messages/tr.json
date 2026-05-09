@@ -55,23 +55,74 @@
     "servicesMenuEyebrow": "Hizmet katalogu",
     "servicesMenuTitle": "Magnetic dijital altyapi ve buyume cozumleri",
     "items": {
-      "ssl": {"title": "SSL Sertifikalari", "description": "Modern isletmeler icin kurumsal duzey sifreleme ve guven sinyalleri."},
-      "websiteBuilder": {"title": "Web Sitesi Olusturucu", "description": "Teslimati yavaslatmadan premium ve duyarlı web deneyimleri yayinlayin."},
-      "emailServices": {"title": "E-posta Hizmetleri", "description": "Guvenli teslimatla is ve islemsel e-posta icin guvenilir araclar."},
-      "professionalEmail": {"title": "Profesyonel E-posta ve Uygulamalar", "description": "Hizli hareket eden ekipler icin markali iletisim paketleri."},
-      "seoTools": {"title": "SEO Araclari", "description": "Hizla buyuyen markalar icin gorunurluk, analiz ve siralama zekasi."},
-      "imageConversion": {"title": "Gorsel Donusum", "description": "JPG, PNG ve WebP indirmeleri icin ucretsiz gorsel donusturucu ve boyutlandirici."},
-      "aiDetection": {"title": "AI Detection", "description": "Bir gorsel veya video yukleyin ve premium adli sinyallerle yapay zeka uretimi gibi gorunup gorunmedigini inceleyin."},
-      "videoDownloader": {"title": "Video Downloader", "description": "Bir YouTube, Instagram veya Facebook baglantisi yapistirin ve istediginiz kalitede MP4 ya da MP3 indirin."},
-      "magneticCommerce": {"title": "Magnetic Commerce", "description": "Roller, merchandising, fulfillment, finans ve web sitesi kontrolunu kapsayan tam kapsamli bir commerce ve ecommerce isletim sistemi."},
-      "magneticVpsHosting": {"title": "Magnetic VPS Hosting", "description": "IONOS destekli VPS altyapisi; Magnetic markali odeme, fulfillment ve yonetici saglama kontrolu ile."},
-      "magneticSocialBot": {"title": "Magnetic Social Bot", "description": "WhatsApp, Instagram ve Messenger icin Gemini ve isletme RAG verisiyle cok kanalli bir AI gelen kutusu."},
-      "magneticFaceSearch": {"title": "Magnetic Face Search", "description": "Lisansli veri alimi, vektor arama ve premium yukle-ara deneyimi iceren gizlilik odakli bir biyometrik arama yol haritasi."},
-      "siteLockVpn": {"title": "SiteLock VPN", "description": "Yonetilen gizlilik ile gezinme oturumlarini ve uzaktan calismayi koruyun."},
-      "siteMonitoring": {"title": "Site ve Sunucu Izleme", "description": "Kritik sistemler icin proaktif erisilebilirlik takibi ve anlik olay farkindaligi."},
-      "websiteSecurity": {"title": "Web Sitesi Guvenligi", "description": "Is surekliligi icin tehdit onleme ve koruma katmanlari."},
-      "websiteBackup": {"title": "Web Sitesi Yedekleme", "description": "Dijital varliklariniz icin hizli geri yukleme ve dayanikli kurtarma."},
-      "nordVpn": {"title": "NordVPN", "description": "Ekipler, kurucular ve daginik operasyonlar icin guvenli baglanti cozumleri."}
+      "ssl": {
+        "title": "SSL Sertifikalari",
+        "description": "Modern isletmeler icin kurumsal duzey sifreleme ve guven sinyalleri."
+      },
+      "websiteBuilder": {
+        "title": "Web Sitesi Olusturucu",
+        "description": "Teslimati yavaslatmadan premium ve duyarlı web deneyimleri yayinlayin."
+      },
+      "emailServices": {
+        "title": "E-posta Hizmetleri",
+        "description": "Guvenli teslimatla is ve islemsel e-posta icin guvenilir araclar."
+      },
+      "professionalEmail": {
+        "title": "Profesyonel E-posta ve Uygulamalar",
+        "description": "Hizli hareket eden ekipler icin markali iletisim paketleri."
+      },
+      "seoTools": {
+        "title": "SEO Araclari",
+        "description": "Hizla buyuyen markalar icin gorunurluk, analiz ve siralama zekasi."
+      },
+      "imageConversion": {
+        "title": "Gorsel Donusum",
+        "description": "JPG, PNG ve WebP indirmeleri icin ucretsiz gorsel donusturucu ve boyutlandirici."
+      },
+      "aiDetection": {
+        "title": "AI Detection",
+        "description": "Bir gorsel veya video yukleyin ve premium adli sinyallerle yapay zeka uretimi gibi gorunup gorunmedigini inceleyin."
+      },
+      "videoDownloader": {
+        "title": "Video Downloader",
+        "description": "Bir YouTube, Instagram veya Facebook baglantisi yapistirin ve istediginiz kalitede MP4 ya da MP3 indirin."
+      },
+      "magneticCommerce": {
+        "title": "Magnetic Commerce",
+        "description": "Roller, merchandising, fulfillment, finans ve web sitesi kontrolunu kapsayan tam kapsamli bir commerce ve ecommerce isletim sistemi."
+      },
+      "magneticVpsHosting": {
+        "title": "Magnetic VPS Hosting",
+        "description": "IONOS destekli VPS altyapisi; Magnetic markali odeme, fulfillment ve yonetici saglama kontrolu ile."
+      },
+      "magneticSocialBot": {
+        "title": "Magnetic Social Bot",
+        "description": "WhatsApp, Instagram ve Messenger icin Gemini ve isletme RAG verisiyle cok kanalli bir AI gelen kutusu."
+      },
+      "magneticFaceSearch": {
+        "title": "Magnetic Face Search",
+        "description": "Lisansli veri alimi, vektor arama ve premium yukle-ara deneyimi iceren gizlilik odakli bir biyometrik arama yol haritasi."
+      },
+      "siteLockVpn": {
+        "title": "SiteLock VPN",
+        "description": "Yonetilen gizlilik ile gezinme oturumlarini ve uzaktan calismayi koruyun."
+      },
+      "siteMonitoring": {
+        "title": "Site ve Sunucu Izleme",
+        "description": "Kritik sistemler icin proaktif erisilebilirlik takibi ve anlik olay farkindaligi."
+      },
+      "websiteSecurity": {
+        "title": "Web Sitesi Guvenligi",
+        "description": "Is surekliligi icin tehdit onleme ve koruma katmanlari."
+      },
+      "websiteBackup": {
+        "title": "Web Sitesi Yedekleme",
+        "description": "Dijital varliklariniz icin hizli geri yukleme ve dayanikli kurtarma."
+      },
+      "nordVpn": {
+        "title": "NordVPN",
+        "description": "Ekipler, kurucular ve daginik operasyonlar icin guvenli baglanti cozumleri."
+      }
     }
   },
   "Footer": {
@@ -259,5 +310,22 @@
     "statusFulfilled": "Tamamlandi",
     "paymentUnknown": "Bilinmiyor",
     "paymentManual": "Manuel"
+  },
+  "Domains": {
+    "heroEyebrow": "Domain Registration",
+    "heroTitle": "Find your perfect domain name",
+    "heroDescription": "Search across hundreds of extensions. Instant availability checking powered by {providerLabel}.",
+    "searchPlaceholder": "yourname.com or just yourname",
+    "searchButton": "Search",
+    "searchingButton": "Searching...",
+    "statusAvailable": "Available",
+    "statusTaken": "Taken",
+    "statusUnknown": "Unknown",
+    "featurePrivacyTitle": "WHOIS Privacy",
+    "featurePrivacyDesc": "Keep personal info protected",
+    "featureSslTitle": "SSL Ready",
+    "featureSslDesc": "Free SSL with every domain",
+    "featureDnsTitle": "Instant DNS",
+    "featureDnsDesc": "Propagates in minutes"
   }
 }

@@ -2,7 +2,6 @@ import { Bot, Instagram, MessageCircle, Sparkles } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
-import { HostingServicePage } from "@/components/services/hosting-service-page";
 import { MagneticCommerceServicePage } from "@/components/services/magnetic-commerce-service-page";
 import { MagneticSocialBotServicePage } from "@/components/services/magnetic-social-bot-service-page";
 import { MagneticVpsServicePage } from "@/components/services/magnetic-vps-service-page";
