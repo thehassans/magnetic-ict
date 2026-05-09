@@ -36,12 +36,50 @@
       "ethanWalker": "Lo que mas me impresiono fue el equilibrio entre velocidad y disciplina. Nada se sintio apresurado, pero todo avanzo rapido.",
       "charlotteKim": "La experiencia de landing, la claridad del servicio y la respuesta del soporte se sienten claramente Magnetic. Genera confianza antes de cualquier llamada.",
       "jamesPatel": "Necesitabamos un socio que entendiera crecimiento, infraestructura y seguridad en conjunto. MagneticICT entrego exactamente eso con gran atencion al detalle."
-    }
+    },
+    "badge": "Mongo-ready Magnetic foundation",
+    "title": "Magnetic digital tools, engineered for global scale.",
+    "secondaryCta": "Open dashboard",
+    "localeLabel": "Active locale",
+    "signedInLabel": "Signed in",
+    "activeLanguagesLabel": "Languages from settings",
+    "guest": "Guest",
+    "localeDescription": "Language switching is already wired through admin-configurable active languages and instant locale routing.",
+    "identityDescription": "Authentication, OTP sign-in groundwork, and premium account access are already connected for the next phases.",
+    "statResponseValue": "24/7",
+    "statResponseLabel": "Priority delivery & support",
+    "statLanguagesLabel": "Live locales enabled",
+    "statAutomationValue": "AI+Ops",
+    "statAutomationLabel": "Automation-led tool layer",
+    "proofHighlight": "Trusted by ambitious operators.",
+    "proofText": "Clear offers. Fast trust. High-conviction tool presentation.",
+    "floatingAiCard": "Gemini-ready AI orchestration",
+    "floatingSecurityCard": "Secure-by-default tool operations",
+    "panelDescription": "Built to feel like a top-tier SaaS product while supporting real infrastructure, security, payment, and support operations behind the scenes.",
+    "panelMetricTwoTitle": "AI-enhanced delivery systems",
+    "panelMetricTwoDescription": "Operational readiness for AI workflows, automation, secure authentication, and future admin-driven orchestration.",
+    "panelMetricThreeTitle": "Enterprise-grade tool confidence",
+    "panelMetricThreeDescription": "Uptime visibility, backup readiness, support flows, and secure payment expansion prepared phase by phase.",
+    "partnersDescription": "A Magnetic tool experience backed by the platforms customers already recognize and trust.",
+    "reviewsDescription": "Real operators trust MagneticICT to elevate performance, security, reliability, and growth across the digital customer journey.",
+    "lovedByDevelopers": "Amado por los desarrolladores",
+    "lovedByDevelopersDesc": "Real feedback from developers and operators across South Asia.",
+    "viewAllReviews": "Ver las 5.218 reseñas",
+    "globalServiceNetwork": "Magnetic ICT global tool network",
+    "globalDigitalServices": "Global Digital Tools",
+    "liveServices": "Live tools",
+    "prioritySupport": "Priority support",
+    "opsUptimeTarget": "Ops uptime target",
+    "domainSearch": "Domain search",
+    "checkDomainInstantly": "Check your domain instantly",
+    "domainSearchDescription": "Search domain availability directly from the homepage and continue into the full checkout flow.",
+    "searchDomainButton": "Search domain",
+    "verifiedDeveloper": "Verified Developer"
   },
   "Navigation": {
     "home": "Inicio",
-    "services": "Servicios",
-    "magneticServices": "Servicios Magnetic",
+    "services": "Herramientas",
+    "magneticServices": "Herramientas de Magnetic",
     "support": "Soporte",
     "cart": "Carrito",
     "language": "Idioma",
@@ -51,9 +89,9 @@
     "profile": "Perfil",
     "memberships": "Membresias",
     "signOut": "Cerrar sesion",
-    "allServices": "Todos los servicios",
-    "servicesMenuEyebrow": "Catalogo de servicios",
-    "servicesMenuTitle": "Soluciones Magnetic de infraestructura digital y crecimiento",
+    "allServices": "Todas las herramientas",
+    "servicesMenuEyebrow": "Catálogo de herramientas",
+    "servicesMenuTitle": "Infraestructura digital y herramientas de crecimiento de Magnetic",
     "items": {
       "ssl": {
         "title": "Certificados SSL",
@@ -138,8 +176,8 @@
     "rights": "© 2026 MagneticICT. Todos los derechos reservados."
   },
   "Pages": {
-    "servicesEyebrow": "Universo de servicios",
-    "servicesTitle": "Servicios curados de infraestructura, seguridad y crecimiento.",
+    "servicesEyebrow": "Universo de herramientas",
+    "servicesTitle": "Herramientas seleccionadas de infraestructura, seguridad y crecimiento.",
     "servicesDescription": "Explora un catalogo disenado para ayudar a las empresas a asegurar, optimizar y escalar sus operaciones digitales.",
     "supportEyebrow": "Soporte prioritario",
     "supportTitle": "Soporte premium para cada momento digital critico.",
@@ -221,7 +259,15 @@
     "visualDescription": "Una capa premium de entrega pensada para inspirar confianza y convertir con claridad.",
     "pricingEyebrow": "Acceso por niveles",
     "pricingTitle": "Elige el nivel de servicio que mejor encaje con tu etapa de crecimiento.",
-    "pricingDescription": "Cada servicio esta estructurado en niveles premium para que puedas empezar de forma ligera, crecer con confianza y escalar cuando lo necesites."
+    "pricingDescription": "Cada servicio esta estructurado en niveles premium para que puedas empezar de forma ligera, crecer con confianza y escalar cuando lo necesites.",
+    "metricOneTitle": "Primary advantage",
+    "metricTwoTitle": "Operational edge",
+    "metricThreeTitle": "Premium signal",
+    "freeDownloader": "Free downloader",
+    "downloaderDescription": "Paste any YouTube, Instagram, or Facebook link — we detect the platform instantly and let you pick your quality.",
+    "freeForensicScan": "Free forensic scan",
+    "forensicScanDescription": "Scan any URL for suspicious redirects, malware signals, and security risks before you visit.",
+    "aiDetectionDescription": "Upload any image or video — our forensic engine analyzes authenticity signals and gives you a clear verdict."
   },
   "Commerce": {
     "addToCart": "Anadir al carrito",
@@ -327,5 +373,81 @@
     "featureSslDesc": "Free SSL with every domain",
     "featureDnsTitle": "Instant DNS",
     "featureDnsDesc": "Propagates in minutes"
+  },
+  "Testimonials": {
+    "dev0": "MagneticICT feels like working with senior engineers who understand delivery pressure in South Asia. The handoff quality, architecture, and speed all made our release cycle much smoother.",
+    "dev1": "The UI quality is genuinely premium. We were able to move from rough requirements to polished production flows without losing responsiveness, accessibility, or design consistency.",
+    "dev2": "What impressed me most was the engineering discipline. Deployment, payment integration, and admin operations were handled with the kind of structure I expect from experienced product teams.",
+    "dev3": "For fast-moving regional teams, clarity matters. MagneticICT delivered strong product thinking, reliable implementation, and a far better customer-facing experience than we had before.",
+    "dev4": "Security, operational visibility, and clean admin tooling were all treated as first-class concerns. That saved us real time and reduced a lot of manual support work after launch."
+  },
+  "Reviews": {
+    "rowA": {
+      "0": "Migrated from another host and the difference is night and day. Absolutely incredible.",
+      "1": "The cloud servers are blazing fast. Perfect for our growing business needs.",
+      "2": "Simple setup and great performance. My blog loads instantly. Love it!",
+      "3": "We host 50+ client sites here. Never had any issues. Premium quality tool.",
+      "4": "Incredible speed and reliability. Our campaigns run smoothly every time.",
+      "5": "Seamless integration with our workflow. Highly recommended to everyone!",
+      "6": "Enterprise-grade security and performance. Best investment we have made.",
+      "7": "Onboarding was smooth and the support team is exceptional. 10 out of 10.",
+      "8": "The uptime is stellar. Our SLA has never been breached since switching.",
+      "9": "Affordable pricing for the level of quality they deliver. Outstanding."
+    },
+    "rowB": {
+      "0": "API documentation is superb. Had my integration running in under an hour.",
+      "1": "Our Ramadan campaign handled record traffic without a single hiccup.",
+      "2": "Switched three businesses over. Every single one performs better now.",
+      "3": "My audience has grown 3x since my site started loading this fast.",
+      "4": "Server response times are consistently under 50ms. Phenomenal.",
+      "5": "The dashboard gives full visibility into everything. Great UX.",
+      "6": "Magnetic Commerce doubled my conversion rate. I can't believe the difference.",
+      "7": "Our brand identity is perfectly reflected across every channel. Superb.",
+      "8": "The analytics suite is powerful. Real-time insights changed how we operate.",
+      "9": "My media site handles thousands of concurrent listeners without breaking a sweat."
+    },
+    "rolesA": {
+      "0": "eCommerce Owner",
+      "1": "Startup Founder",
+      "2": "Blogger",
+      "3": "Agency Director",
+      "4": "Marketing Manager",
+      "5": "Product Manager",
+      "6": "CTO",
+      "7": "SaaS Founder",
+      "8": "Dev Lead",
+      "9": "Freelancer"
+    },
+    "rolesB": {
+      "0": "Full Stack Dev",
+      "1": "E-Commerce Head",
+      "2": "Startup CEO",
+      "3": "Content Creator",
+      "4": "Backend Engineer",
+      "5": "Project Manager",
+      "6": "Dropshipper",
+      "7": "Brand Manager",
+      "8": "Data Analyst",
+      "9": "Podcast Host"
+    }
+  },
+  "Cart": {
+    "emptyTitle": "Tu carrito está vacío",
+    "emptyDescription": "Start with Magnetic VPS Hosting to experience the premium hosting, cart, and checkout flow.",
+    "browseHosting": "Browse hosting plans",
+    "browseTools": "Browse all tools",
+    "shoppingCart": "Carrito de compras",
+    "cartDescription": "Review your selected tools, compare configuration details, and continue into the premium checkout flow.",
+    "sslSecure": "SSL secure",
+    "instantAccess": "Instant access",
+    "protectedDelivery": "Protected delivery"
+  },
+  "FeaturedTestimonials": {
+    "item0_quote": "Transformed our entire e-commerce operations. The admin panel is incredibly powerful.",
+    "item1_quote": "The AI automation handles our entire customer support flow. Absolutely game-changing.",
+    "item2_quote": "Blazing fast servers with zero downtime. Best hosting decision we ever made.",
+    "item0_role": "CEO & Founder",
+    "item1_role": "CTO",
+    "item2_role": "CTO"
   }
 }
