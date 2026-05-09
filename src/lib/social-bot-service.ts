@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   createSocialBotId,
+  deleteMongoDocuments,
   getSocialBotChunks,
   getSocialBotDocuments,
   getSocialBotIntegrations,
@@ -248,6 +249,22 @@ export async function addKnowledgeDocument({
   }
 
   return getSocialBotDocuments(userId);
+}
+
+export async function deleteKnowledgeDocument(userId: string, documentId: string) {
+  await deleteMongoDocuments(socialBotCollections.chunks, { userId, documentId });
+  await deleteMongoDocuments(socialBotCollections.documents, { _id: documentId, userId });
+
+  const remaining = await getSocialBotDocuments(userId);
+  const hasReady = remaining.some((document) => document.status === "READY");
+
+  await upsertMongoDocument(
+    socialBotCollections.profiles,
+    { userId },
+    { knowledgeBaseReady: hasReady, updatedAt: new Date().toISOString() }
+  );
+
+  return remaining;
 }
 
 async function saveThread(thread: SocialBotThread) {

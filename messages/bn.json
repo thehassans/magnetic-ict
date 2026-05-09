@@ -86,8 +86,8 @@
   "Navigation": {
     "home": "Home",
     "services": "সরঞ্জাম",
-    "magneticServices": "Magnetics Services",
-    "support": "Support",
+    "magneticServices": "ম্যাগনেটিক পরিষেবা",
+    "support": "সহায়তা",
     "cart": "Cart",
     "language": "Language",
     "signIn": "Sign in",
@@ -99,46 +99,49 @@
     "allServices": "সমস্ত সরঞ্জাম",
     "servicesMenuEyebrow": "সরঞ্জাম ক্যাটালগ",
     "servicesMenuTitle": "ম্যাগনেটিক ডিজিটাল অবকাঠামো এবং বৃদ্ধি সরঞ্জাম",
+    "navigation": "নেভিগেশন",
+    "company": "কোম্পানি",
+    "access": "অ্যাক্সেস",
     "items": {
       "ssl": {
-        "title": "SSL Certificates",
-        "description": "Enterprise-grade encryption and trust signals for modern businesses."
+        "title": "SSL সার্টিফিকেট",
+        "description": "আধুনিক ব্যবসার জন্য এন্টারপ্রাইজ-গ্রেড এনক্রিপশন এবং ট্রাস্ট সিগন্যাল।"
       },
       "websiteBuilder": {
-        "title": "Website Builder",
-        "description": "Launch premium, responsive web experiences without slowing down delivery."
+        "title": "ওয়েবসাইট বিল্ডার",
+        "description": "ডেলিভারি ধীর না করে প্রিমিয়াম, রেসপন্সিভ ওয়েব অভিজ্ঞতা চালু করুন।"
       },
       "emailServices": {
-        "title": "E-mail Tools",
-        "description": "Reliable transactional and business email tooling with secure delivery."
+        "title": "ইমেইল টুলস",
+        "description": "নিরাপদ ডেলিভারি সহ নির্ভরযোগ্য ট্রানজ্যাকশন এবং বিজনেস ইমেইল টুলিং।"
       },
       "professionalEmail": {
-        "title": "Professional Email & Apps",
-        "description": "Branded communication suites for teams that move at executive speed."
+        "title": "প্রফেশনাল ইমেইল ও অ্যাপস",
+        "description": "নির্বাহী গতিতে চলা টিমের জন্য ব্র্যান্ডেড কমিউনিকেশন স্যুট।"
       },
       "seoTools": {
-        "title": "SEO Tools",
-        "description": "Visibility, analytics, and ranking intelligence for high-growth brands."
+        "title": "এসইও টুলস",
+        "description": "উচ্চ-বৃদ্ধির ব্র্যান্ডের জন্য দৃশ্যমানতা, বিশ্লেষণ এবং র‍্যাঙ্কিং ইন্টেলিজেন্স।"
       },
       "imageConversion": {
-        "title": "Image Conversion",
-        "description": "A free image converter and resizer for JPG, PNG, and WebP downloads."
+        "title": "ইমেজ কনভারশন",
+        "description": "JPG, PNG এবং WebP ডাউনলোডের জন্য একটি ফ্রি ইমেজ কনভার্টার এবং রিসাইজার।"
       },
       "aiDetection": {
-        "title": "AI Detection",
-        "description": "Upload an image or video and review whether it appears AI-generated using premium forensic signals."
+        "title": "এআই ডিটেকশন",
+        "description": "একটি ছবি বা ভিডিও আপলোড করুন এবং প্রিমিয়াম ফরেনসিক সিগন্যাল ব্যবহার করে এটি এআই-জেনারেটেড কিনা তা পরীক্ষা করুন।"
       },
       "videoDownloader": {
-        "title": "Video Downloader",
-        "description": "Paste a YouTube, Instagram, or Facebook link and download MP4 or MP3 in the quality you want."
+        "title": "ভিডিও ডাউনলোডার",
+        "description": "একটি ইউটিউব, ইনস্টাগ্রাম বা ফেসবুক লিঙ্ক পেস্ট করুন এবং আপনার পছন্দের কোয়ালিটিতে MP4 বা MP3 ডাউনলোড করুন।"
       },
       "magneticCommerce": {
-        "title": "Magnetic Commerce",
-        "description": "A complete commerce and ecommerce operating system spanning roles, merchandising, fulfillment, finance, and website control."
+        "title": "ম্যাগনেটিক কমার্স",
+        "description": "ভূমিকা, মার্চেন্ডাইজিং, পূর্ণতা, অর্থায়ন এবং ওয়েবসাইট নিয়ন্ত্রণ বিস্তৃত একটি সম্পূর্ণ কমার্স এবং ইকমার্স অপারেটিং সিস্টেম।"
       },
       "magneticVpsHosting": {
-        "title": "Magnetic VPS Hosting",
-        "description": "IONOS-backed VPS infrastructure with Magnetic-branded checkout, fulfillment, and admin provisioning control."
+        "title": "ম্যাগনেটিক ভিপিএস হোস্টিং",
+        "description": "ম্যাগনেটিক-ব্র্যান্ডের চেকআউট, পূর্ণতা এবং অ্যাডমিন প্রভিশনিং কন্ট্রোল সহ IONOS-ব্যাকড VPS অবকাঠামো।"
       },
       "magneticSocialBot": {
         "title": "Magnetic Social Bot",
@@ -186,9 +189,11 @@
     "contact": "Contact",
     "title": "MagneticICT",
     "description": "Magnetic AI-led IT tools for ambitious brands that demand speed, resilience, and remarkable customer experience.",
-    "platform": "Platform",
-    "company": "Company",
-    "rights": "© {year} ম্যাগনেটিক আইসিটি। সর্বস্বত্ব সংরক্ষিত।"
+    "platform": "প্ল্যাটফর্ম",
+    "company": "কোম্পানি",
+    "rights": "© {year} ম্যাগনেটিক আইসিটি। সর্বস্বত্ব সংরক্ষিত।",
+    "support": "সহায়তা",
+    "dashboard": "ড্যাশবোর্ড"
   },
   "Pages": {
     "servicesEyebrow": "সরঞ্জাম মহাবিশ্ব",
@@ -477,5 +482,30 @@
   "Services": {
     "free": "ফ্রি",
     "from": "থেকে"
+  },
+  "MagneticCommerce": {
+    "eyebrow": "কমার্স অপারেটিং সিস্টেম",
+    "headline": "ম্যাগনেটিক কমার্স",
+    "description": "ক্লিন কমার্স ফ্রন্ট, আলাদা স্টেকহোল্ডার প্যানেল এবং সংযুক্ত ওয়েবসাইট + আইফোন + অ্যান্ড্রয়েড অভিজ্ঞতা।",
+    "openDemo": "লাইভ ডেমো দেখুন",
+    "viewRollout": "রোলআউট প্যাকেজ দেখুন",
+    "panels": "প্যানেল",
+    "surfaces": "সারফেস",
+    "coverage": "কভারেজ",
+    "mode": "মোড",
+    "commandCenterHeadline": "আপনার সম্পূর্ণ ব্যবসায়িক কমান্ড সেন্টার।",
+    "commandCenterSubline": "১২টি মডিউল, সম্পূর্ণ আর্থিক স্বচ্ছতা, মাল্টি-রোল ম্যানেজমেন্ট এবং রিয়েল-টাইম অপারেশন — সবই একটি প্যানেল থেকে।",
+    "modules": {
+      "dashboard": "ড্যাশবোর্ড",
+      "orders": "অর্ডার",
+      "product": "প্রোডাক্ট",
+      "amountOffice": "অ্যামাউন্ট অফিস",
+      "inbox": "ইনবক্স",
+      "create": "তৈরি করুন",
+      "commerce": "কমার্স",
+      "webDesigner": "ওয়েব ডিজাইনার",
+      "insights": "ইনসাইটস",
+      "support": "সহায়তা"
+    }
   }
 }

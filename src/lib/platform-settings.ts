@@ -58,6 +58,16 @@ export type MagneticCommerceSettings = {
   defaultStoreCurrency: string;
 };
 
+export type AboutSettings = {
+  headline: string;
+  eyebrow: string;
+  parentCompany: string;
+  parentCompanyDescription: string;
+  missionStatement: string;
+  founderNote: string;
+  values: Array<{ title: string; description: string }>;
+};
+
 export type TrustedPartnerSettings = {
   id: string;
   name: string;
@@ -126,6 +136,7 @@ export type PlatformSettingsBundle = {
   emailNotificationsConfig: EmailNotificationsSettings;
   domainProviderConfig: DomainProviderSettings;
   hostingProviderConfig: HostingProviderSettings;
+  aboutConfig: AboutSettings;
 };
 
 export const defaultFooterDetails: FooterSettings = {
@@ -170,6 +181,21 @@ export const defaultSocialBotConfig: SocialBotSettings = {
   metaAppSecret: "",
   metaConfigId: "",
   webhookVerifyToken: ""
+};
+
+export const defaultAboutConfig: AboutSettings = {
+  eyebrow: "Our story",
+  headline: "Built at the intersection of technology and infrastructure",
+  parentCompany: "Magnetic Infratech Ltd",
+  parentCompanyDescription: "Magnetic ICT is the technology sister branch of Magnetic Infratech Ltd — a group with deep roots in trading, construction, infrastructure, and property development. While Magnetic Infratech shapes the physical world, Magnetic ICT powers the digital layer: cloud tools, AI infrastructure, security, and growth systems for ambitious businesses worldwide.",
+  missionStatement: "Our mission is to make enterprise-grade digital infrastructure accessible to every business — regardless of size, industry, or geography.",
+  founderNote: "We started Magnetic ICT because we saw a gap: most digital tools were either too expensive, too complex, or too fragile for the businesses that needed them most. Magnetic changes that.",
+  values: [
+    { title: "Infrastructure-first thinking", description: "We engineer for reliability, resilience, and scale from the ground up — never as an afterthought." },
+    { title: "White-glove delivery", description: "Premium support, transparent communication, and senior-level technical output on every engagement." },
+    { title: "AI-led innovation", description: "From social automation to biometric search, we embed intelligent systems into everything we build." },
+    { title: "Global reach, local care", description: "Operations across South Asia, the UK, and beyond — with teams that understand your market." }
+  ]
 };
 
 export const defaultMagneticCommerceConfig: MagneticCommerceSettings = {
@@ -2445,6 +2471,37 @@ async function getSettingValue(key: string) {
   return setting?.value ?? null;
 }
 
+export function normalizeAboutConfig(value: unknown): AboutSettings {
+  if (!value || typeof value !== "object") {
+    return defaultAboutConfig;
+  }
+
+  const v = value as Record<string, unknown>;
+
+  const rawValues = Array.isArray(v.values) ? v.values : defaultAboutConfig.values;
+  const values = rawValues
+    .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
+    .map((item) => ({
+      title: typeof item.title === "string" ? item.title : "",
+      description: typeof item.description === "string" ? item.description : ""
+    }));
+
+  return {
+    eyebrow: typeof v.eyebrow === "string" ? v.eyebrow : defaultAboutConfig.eyebrow,
+    headline: typeof v.headline === "string" ? v.headline : defaultAboutConfig.headline,
+    parentCompany: typeof v.parentCompany === "string" ? v.parentCompany : defaultAboutConfig.parentCompany,
+    parentCompanyDescription: typeof v.parentCompanyDescription === "string" ? v.parentCompanyDescription : defaultAboutConfig.parentCompanyDescription,
+    missionStatement: typeof v.missionStatement === "string" ? v.missionStatement : defaultAboutConfig.missionStatement,
+    founderNote: typeof v.founderNote === "string" ? v.founderNote : defaultAboutConfig.founderNote,
+    values: values.length > 0 ? values : defaultAboutConfig.values
+  };
+}
+
+export async function getAboutSettings(): Promise<AboutSettings> {
+  const value = await getSettingValue("about_config");
+  return normalizeAboutConfig(value);
+}
+
 export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
   const [
     activeLanguages,
@@ -2459,7 +2516,8 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     transactionalEmailConfig,
     emailNotificationsConfig,
     domainProviderConfig,
-    hostingProviderConfig
+    hostingProviderConfig,
+    aboutConfig
   ] = await Promise.all([
     getSettingValue("active_languages"),
     getSettingValue("footer_details"),
@@ -2473,7 +2531,8 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     getSettingValue("transactional_email_config"),
     getSettingValue("email_notifications_config"),
     getSettingValue("domain_provider_config"),
-    getSettingValue("hosting_provider_config")
+    getSettingValue("hosting_provider_config"),
+    getSettingValue("about_config")
   ]);
 
   return {
@@ -2489,7 +2548,8 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     transactionalEmailConfig: normalizeTransactionalEmailConfig(transactionalEmailConfig),
     emailNotificationsConfig: normalizeEmailNotificationsConfig(emailNotificationsConfig),
     domainProviderConfig: normalizeDomainProviderConfig(domainProviderConfig),
-    hostingProviderConfig: normalizeHostingProviderConfig(hostingProviderConfig)
+    hostingProviderConfig: normalizeHostingProviderConfig(hostingProviderConfig),
+    aboutConfig: normalizeAboutConfig(aboutConfig)
   };
 }
 

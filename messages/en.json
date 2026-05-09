@@ -88,6 +88,7 @@
     "services": "Tools",
     "magneticServices": "Magnetics Services",
     "support": "Support",
+    "about": "About",
     "cart": "Cart",
     "language": "Language",
     "signIn": "Sign in",
@@ -99,6 +100,9 @@
     "allServices": "All tools",
     "servicesMenuEyebrow": "Tool catalog",
     "servicesMenuTitle": "Magnetic digital infrastructure & growth tools",
+    "navigation": "Navigation",
+    "company": "Company",
+    "access": "Access",
     "items": {
       "ssl": {
         "title": "SSL Certificates",
@@ -169,14 +173,14 @@
         "description": "Secure connectivity solutions for teams, founders, and distributed operations."
       }
     },
-    "company": "Company",
     "customerStories": "Customer stories",
     "customerStoriesDesc": "See how operators describe their delivery experience",
     "trustedEcosystem": "Trusted ecosystem",
     "trustedEcosystemDesc": "Partners and platforms behind the MagneticICT stack",
-    "access": "Access",
     "domainCart": "Domain cart",
-    "magneticSocialBotDesc": "Open your Magnetic Social Bot workspace"
+    "magneticSocialBotDesc": "Open your Magnetic Social Bot workspace",
+    "magneticDomains": "Magnetic Domains",
+    "magneticDomainsDesc": "Search and register domains across hundreds of extensions with instant availability checking."
   },
   "Footer": {
     "ctaEyebrow": "White-glove support",
@@ -477,5 +481,30 @@
   "Services": {
     "free": "Free",
     "from": "From"
+  },
+  "MagneticCommerce": {
+    "eyebrow": "Commerce Operating System",
+    "headline": "Magnetic Commerce",
+    "description": "Clean commerce front, separate stakeholder panels, and connected website + iPhone + Android experiences.",
+    "openDemo": "Open live demo",
+    "viewRollout": "View rollout packages",
+    "panels": "Panels",
+    "surfaces": "Surfaces",
+    "coverage": "Coverage",
+    "mode": "Mode",
+    "commandCenterHeadline": "Your complete business command center.",
+    "commandCenterSubline": "12 modules, full financial visibility, multi-role management, and real-time operations — all from one panel.",
+    "modules": {
+      "dashboard": "Dashboard",
+      "orders": "Orders",
+      "product": "Product",
+      "amountOffice": "Amount Office",
+      "inbox": "Inbox",
+      "create": "Create",
+      "commerce": "Commerce",
+      "webDesigner": "Web Designer",
+      "insights": "Insights",
+      "support": "Support"
+    }
   }
 }

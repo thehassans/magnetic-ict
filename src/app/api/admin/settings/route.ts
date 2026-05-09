@@ -181,6 +181,18 @@ const requestSchema = z.discriminatedUnion("section", [
     })
   }),
   z.object({
+    section: z.literal("about"),
+    value: z.object({
+      eyebrow: z.string().min(1),
+      headline: z.string().min(1),
+      parentCompany: z.string().min(1),
+      parentCompanyDescription: z.string().min(1),
+      missionStatement: z.string().min(1),
+      founderNote: z.string().min(1),
+      values: z.array(z.object({ title: z.string().min(1), description: z.string().min(1) }))
+    })
+  }),
+  z.object({
     section: z.literal("hosting"),
     value: z.object({
       enabled: z.boolean(),
@@ -255,7 +267,8 @@ const settingKeyBySection = {
   transactionalEmail: "transactional_email_config",
   emailNotifications: "email_notifications_config",
   domain: "domain_provider_config",
-  hosting: "hosting_provider_config"
+  hosting: "hosting_provider_config",
+  about: "about_config"
 } as const;
 
 export async function PATCH(request: Request) {

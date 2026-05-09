@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminSocialBotTarget } from "@/lib/admin-social-bot";
-import { addKnowledgeDocument } from "@/lib/social-bot-service";
+import { addKnowledgeDocument, deleteKnowledgeDocument } from "@/lib/social-bot-service";
 import { extractTextFromUploadedFile } from "@/lib/social-bot-rag";
 
 export const runtime = "nodejs";
@@ -34,6 +34,30 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unable to process these documents." },
+      { status: 400 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  const target = await requireAdminSocialBotTarget(request);
+
+  if (target.response || !target.userId) {
+    return target.response as NextResponse;
+  }
+
+  try {
+    const { documentId } = (await request.json()) as { documentId?: string };
+
+    if (!documentId) {
+      return NextResponse.json({ error: "documentId is required." }, { status: 400 });
+    }
+
+    const remaining = await deleteKnowledgeDocument(target.userId, documentId);
+    return NextResponse.json({ ok: true, documents: remaining });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unable to delete document." },
       { status: 400 }
     );
   }

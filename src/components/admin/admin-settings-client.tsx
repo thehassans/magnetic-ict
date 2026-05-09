@@ -10,6 +10,7 @@ import type { EmailLogRecord } from "@/lib/email-logs";
 import type { HostingProviderSettings } from "@/lib/hosting-types";
 import type { ActiveLanguage } from "@/types/i18n";
 import type {
+  AboutSettings,
   EmailNotificationsSettings,
   FooterSettings,
   GeminiSettings,
@@ -37,6 +38,7 @@ type AdminSettingsClientProps = {
   emailNotificationsConfig: EmailNotificationsSettings;
   domainProviderConfig: DomainProviderSettings;
   hostingProviderConfig: HostingProviderSettings;
+  aboutConfig: AboutSettings;
   emailLogs: EmailLogRecord[];
   appBaseUrl: string;
   canPersist: boolean;
@@ -47,7 +49,7 @@ type ToastState = {
   message: string;
 } | null;
 
-const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting", string> = {
+const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting" | "about", string> = {
   languages: "Language",
   footer: "Footer",
   payments: "Payment",
@@ -60,7 +62,8 @@ const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth"
   transactionalEmail: "Transactional email",
   emailNotifications: "Email notification",
   domain: "Domain",
-  hosting: "Hosting"
+  hosting: "Hosting",
+  about: "About page"
 };
 
 function createVerifyToken() {
@@ -86,6 +89,7 @@ export function AdminSettingsClient({
   emailNotificationsConfig,
   domainProviderConfig,
   hostingProviderConfig,
+  aboutConfig,
   emailLogs,
   appBaseUrl,
   canPersist
@@ -103,6 +107,7 @@ export function AdminSettingsClient({
   const [emailNotificationsState, setEmailNotificationsState] = useState(emailNotificationsConfig);
   const [domainState, setDomainState] = useState(domainProviderConfig);
   const [hostingState, setHostingState] = useState(hostingProviderConfig);
+  const [aboutState, setAboutState] = useState(aboutConfig);
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState>(null);
 
@@ -112,7 +117,7 @@ export function AdminSettingsClient({
   );
   const metaWebhookUrl = useMemo(() => (appBaseUrl ? `${appBaseUrl}/api/social-bot/meta/webhook` : ""), [appBaseUrl]);
 
-  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting", value: unknown) {
+  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting" | "about", value: unknown) {
     setLoadingSection(section);
     setToast(null);
 
@@ -232,6 +237,79 @@ export function AdminSettingsClient({
           DATABASE_URL is not configured, so these forms are preview-only locally.
         </div>
       ) : null}
+
+      <SettingsCard
+        title="About page"
+        description="Edit the content shown on the public /about page. Changes take effect immediately on the next page load."
+        action={<Button label="Save about page" loading={loadingSection === "about"} onClick={() => saveSection("about", aboutState)} />}
+      >
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Input label="Eyebrow" value={aboutState.eyebrow} onChange={(value) => setAboutState((current) => ({ ...current, eyebrow: value }))} />
+          <Input label="Headline" value={aboutState.headline} onChange={(value) => setAboutState((current) => ({ ...current, headline: value }))} />
+          <Input label="Parent company name" value={aboutState.parentCompany} onChange={(value) => setAboutState((current) => ({ ...current, parentCompany: value }))} />
+        </div>
+        <div className="mt-4 space-y-4">
+          <label className="block space-y-2 text-sm">
+            <span className="font-semibold text-slate-700">Parent company description</span>
+            <textarea
+              value={aboutState.parentCompanyDescription}
+              onChange={(event) => setAboutState((current) => ({ ...current, parentCompanyDescription: event.target.value }))}
+              rows={4}
+              className="w-full rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white"
+            />
+          </label>
+          <label className="block space-y-2 text-sm">
+            <span className="font-semibold text-slate-700">Mission statement</span>
+            <textarea
+              value={aboutState.missionStatement}
+              onChange={(event) => setAboutState((current) => ({ ...current, missionStatement: event.target.value }))}
+              rows={3}
+              className="w-full rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white"
+            />
+          </label>
+          <label className="block space-y-2 text-sm">
+            <span className="font-semibold text-slate-700">Founder note</span>
+            <textarea
+              value={aboutState.founderNote}
+              onChange={(event) => setAboutState((current) => ({ ...current, founderNote: event.target.value }))}
+              rows={3}
+              className="w-full rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white"
+            />
+          </label>
+        </div>
+        <div className="mt-6">
+          <div className="mb-3 text-sm font-semibold text-slate-700">Values</div>
+          <div className="space-y-3">
+            {aboutState.values.map((val, index) => (
+              <div key={index} className="grid gap-3 rounded-[22px] border border-slate-200 bg-slate-50 p-4 lg:grid-cols-2">
+                <Input
+                  label={`Value ${index + 1} title`}
+                  value={val.title}
+                  onChange={(newTitle) => setAboutState((current) => ({
+                    ...current,
+                    values: current.values.map((v, i) => i === index ? { ...v, title: newTitle } : v)
+                  }))}
+                />
+                <Input
+                  label={`Value ${index + 1} description`}
+                  value={val.description}
+                  onChange={(newDesc) => setAboutState((current) => ({
+                    ...current,
+                    values: current.values.map((v, i) => i === index ? { ...v, description: newDesc } : v)
+                  }))}
+                />
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setAboutState((current) => ({ ...current, values: [...current.values, { title: "", description: "" }] }))}
+            className="mt-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          >
+            + Add value
+          </button>
+        </div>
+      </SettingsCard>
 
       <SettingsCard
         title="Language & localization"

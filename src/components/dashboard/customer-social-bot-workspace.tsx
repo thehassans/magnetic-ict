@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useCallback, useEffect, useState } from "react";
-import { Bot, CheckCircle2, Instagram, Loader2, MessageCircle, Send, Sparkles, Upload, Wand2, Webhook } from "lucide-react";
+import { Bot, CheckCircle2, Instagram, Loader2, MessageCircle, RefreshCw, Send, Sparkles, Trash2, Upload, Wand2, Webhook } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner-1";
 import { cn } from "@/lib/utils";
 import type { SocialBotIntegration, SocialBotMessage, SocialBotThread, SocialBotWorkspace, SocialChannel } from "@/lib/social-bot-types";
@@ -226,6 +226,43 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId }: Customer
       await loadWorkspace();
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Unable to upload documents.");
+    } finally {
+      setIsUploadingDocs(false);
+    }
+  }
+
+  async function deleteDocument(documentId: string) {
+    setError(null);
+
+    try {
+      const response = await fetch("/api/social-bot/documents", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ documentId })
+      });
+
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Unable to delete document.");
+      }
+
+      setToast("Document removed.");
+      await loadWorkspace();
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : "Unable to delete document.");
+    }
+  }
+
+  async function retrainDocument(documentId: string, fileName: string) {
+    setError(null);
+    setIsUploadingDocs(true);
+
+    try {
+      await deleteDocument(documentId);
+      setToast(`Retrain "${fileName}" by re-uploading the file below.`);
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : "Unable to prepare retrain.");
     } finally {
       setIsUploadingDocs(false);
     }
@@ -628,6 +665,26 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId }: Customer
                 <span>{document.status} · {document.chunkCount} chunks</span>
               </div>
               <div className="mt-3 text-slate-600 dark:text-slate-300">{document.textPreview || "No preview available."}</div>
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => void retrainDocument(document._id, document.fileName)}
+                  disabled={document.status === "PROCESSING"}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700 transition hover:bg-violet-100 disabled:opacity-50 dark:border-violet-400/20 dark:bg-violet-400/10 dark:text-violet-300"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  Retrain
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void deleteDocument(document._id)}
+                  disabled={document.status === "PROCESSING"}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-300"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>

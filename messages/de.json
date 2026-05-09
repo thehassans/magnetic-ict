@@ -477,5 +477,30 @@
   "Services": {
     "free": "Free",
     "from": "From"
+  },
+  "MagneticCommerce": {
+    "eyebrow": "Commerce Operating System",
+    "headline": "Magnetic Commerce",
+    "description": "Clean commerce front, separate stakeholder panels, and connected website + iPhone + Android experiences.",
+    "openDemo": "Open live demo",
+    "viewRollout": "View rollout packages",
+    "panels": "Panels",
+    "surfaces": "Surfaces",
+    "coverage": "Coverage",
+    "mode": "Mode",
+    "commandCenterHeadline": "Your complete business command center.",
+    "commandCenterSubline": "12 modules, full financial visibility, multi-role management, and real-time operations — all from one panel.",
+    "modules": {
+      "dashboard": "Dashboard",
+      "orders": "Orders",
+      "product": "Product",
+      "amountOffice": "Amount Office",
+      "inbox": "Inbox",
+      "create": "Create",
+      "commerce": "Commerce",
+      "webDesigner": "Web Designer",
+      "insights": "Insights",
+      "support": "Support"
+    }
   }
 }

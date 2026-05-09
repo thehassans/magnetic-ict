@@ -213,7 +213,18 @@ export function Header({
         id: 2,
         label: t("magneticServices"),
         icon: Package,
-        subMenus: magneticColumns
+        subMenus: [
+          ...magneticColumns,
+          {
+            title: t("magneticDomains"),
+            items: [{
+              label: t("magneticDomains"),
+              description: t("magneticDomainsDesc"),
+              icon: Globe,
+              href: "/domains"
+            }]
+          }
+        ]
       }] : []),
       {
         id: 3,
@@ -245,6 +256,12 @@ export function Header({
         label: t("support"),
         icon: HelpCircle,
         link: "/support"
+      },
+      {
+        id: 5,
+        label: t("about"),
+        icon: Star,
+        link: "/about"
       }
     ];
   }, [companyLinks, companyLinks2, magneticProductLinks, productLinks, t]);
@@ -297,9 +314,6 @@ export function Header({
           ) : null}
           {sessionUser ? (
             <>
-              <Link href="/domains/cart" locale={locale} className="relative inline-flex h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-cyan-400/20 dark:hover:bg-white/10">
-                <span>{t("domainCart")}</span>
-              </Link>
               <Link href="/dashboard" locale={locale} className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200/70 bg-transparent px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white">
                 {t("dashboard")}
               </Link>
@@ -328,7 +342,7 @@ export function Header({
       <MobileMenu open={open} className="flex flex-col justify-between gap-5 overflow-y-auto">
         <div className="space-y-5">
           <div className="flex flex-col gap-y-2">
-            <SectionHeading icon={Grid2x2}>Navigation</SectionHeading>
+            <SectionHeading icon={Grid2x2}>{t("navigation")}</SectionHeading>
             <MobileLink locale={locale} href="/" onClick={() => setOpen(false)} icon={Grid2x2}>
               {t("home")}
             </MobileLink>
@@ -338,10 +352,13 @@ export function Header({
             <MobileLink locale={locale} href="/support" onClick={() => setOpen(false)} icon={HelpCircle}>
               {t("support")}
             </MobileLink>
+            <MobileLink locale={locale} href="/about" onClick={() => setOpen(false)} icon={Star}>
+              {t("about")}
+            </MobileLink>
           </div>
 
           <div className="space-y-2">
-            <SectionHeading icon={LayersIcon}>Services</SectionHeading>
+            <SectionHeading icon={LayersIcon}>{t("services")}</SectionHeading>
             {productLinks.map((link) => (
               <MobileLink key={link.title} locale={locale} href={link.href} onClick={() => setOpen(false)} icon={link.icon}>
                 {link.title}
@@ -356,6 +373,9 @@ export function Header({
                 {link.title}
               </MobileLink>
             ))}
+            <MobileLink locale={locale} href="/domains" onClick={() => setOpen(false)} icon={Globe}>
+              {t("magneticDomains")}
+            </MobileLink>
           </div>
 
           <div className="space-y-2">

@@ -449,5 +449,30 @@
   "Services": {
     "free": "مجاني",
     "from": "تبدأ من"
+  },
+  "MagneticCommerce": {
+    "eyebrow": "نظام تشغيل التجارة",
+    "headline": "Magnetic Commerce",
+    "description": "واجهة تجارة نظيفة، لوحات منفصلة لأصحاب المصلحة، وتجارب متصلة للموقع + آيفون + أندرويد.",
+    "openDemo": "افتح العرض المباشر",
+    "viewRollout": "عرض حزم الإطلاق",
+    "panels": "لوحات",
+    "surfaces": "واجهات",
+    "coverage": "تغطية",
+    "mode": "وضع",
+    "commandCenterHeadline": "مركز قيادة أعمالك الكامل.",
+    "commandCenterSubline": "12 وحدة، رؤية مالية كاملة، إدارة أدوار متعددة، وعمليات فورية - كل ذلك من لوحة واحدة.",
+    "modules": {
+      "dashboard": "لوحة التحكم",
+      "orders": "الطلبات",
+      "product": "المنتج",
+      "amountOffice": "مكتب المبالغ",
+      "inbox": "البريد الوارد",
+      "create": "إنشاء",
+      "commerce": "التجارة",
+      "webDesigner": "مصمم الويب",
+      "insights": "رؤى",
+      "support": "الدعم"
+    }
   }
 }
