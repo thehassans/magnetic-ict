@@ -16,6 +16,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { type DomainCartItem, readDomainCart, writeDomainCart } from "@/lib/domain-cart";
 import type { DomainSearchResult } from "@/lib/domain-types";
@@ -39,6 +40,7 @@ const FEATURES = [
 ];
 
 export function DomainSearchClient() {
+  const t = useTranslations("Domains");
   const router = useRouter();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
@@ -175,19 +177,16 @@ export function DomainSearchClient() {
           <div className="flex justify-center">
             <div className="inline-flex items-center gap-2.5 rounded-full border border-indigo-200/60 bg-gradient-to-r from-indigo-50 to-violet-50 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] text-indigo-700 dark:border-indigo-400/20 dark:from-indigo-500/10 dark:to-violet-500/10 dark:text-indigo-300">
               <Sparkles className="h-3.5 w-3.5" />
-              Domain Registration
+              {t("heroEyebrow")}
             </div>
           </div>
 
           {/* Title */}
           <h1 className="mt-6 text-center text-5xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-6xl lg:text-7xl">
-            Find your perfect{" "}
-            <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-500 bg-clip-text text-transparent dark:from-indigo-400 dark:via-violet-400 dark:to-cyan-300">
-              domain name
-            </span>
+            {t("heroTitle")}
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-center text-lg text-slate-500 dark:text-slate-400">
-            Search across hundreds of extensions. Instant availability checking powered by {providerLabel || "our domain registry partners"}.
+            {t("heroDescription").replace("{providerLabel}", providerLabel || "our domain registry partners")}
           </p>
 
           {/* Search Bar */}
@@ -201,7 +200,7 @@ export function DomainSearchClient() {
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
                   className="w-full bg-transparent py-3 text-base text-slate-950 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-slate-500"
-                  placeholder="yourname.com or just yourname"
+                  placeholder={t("searchPlaceholder")}
                   autoFocus
                 />
               </div>
@@ -226,7 +225,7 @@ export function DomainSearchClient() {
                   ) : (
                     <ArrowRight className="h-4 w-4" />
                   )}
-                  <span className="hidden sm:inline">{isSearching ? "Searching..." : "Search"}</span>
+                  <span className="hidden sm:inline">{isSearching ? t("searchingButton") : t("searchButton")}</span>
                 </button>
               </div>
             </div>
