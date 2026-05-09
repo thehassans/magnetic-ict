@@ -69,7 +69,7 @@ export function TrustedPartnersMarquee({ partners }: TrustedPartnersMarqueeProps
       </ScrollReveal>
 
       <InfiniteMarquee
-        duration={22}
+        duration={45}
         className="[mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]"
         itemClassName="shrink-0"
         items={visiblePartners.map((partner) => (

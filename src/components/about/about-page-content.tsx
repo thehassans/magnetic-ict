@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Building2, Globe, Lightbulb, Shield, Sparkles, Zap } from "lucide-react";
+import { ArrowRight, Building2, Globe, Lightbulb, Shield, Sparkles, Star, Zap } from "lucide-react";
 import Link from "next/link";
 import type { AboutSettings } from "@/lib/platform-settings";
 
@@ -93,6 +93,39 @@ export function AboutPageContent({ about }: AboutPageContentProps) {
             <h3 className="text-xl font-semibold tracking-tight text-slate-950 dark:text-white">A founder&apos;s note</h3>
             <p className="mt-4 text-base leading-8 text-slate-600 dark:text-slate-300">{about.founderNote}</p>
           </motion.div>
+        </section>
+
+        {/* Leadership */}
+        <section className="mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="mb-8 text-center"
+          >
+            <div className="text-xs font-semibold uppercase tracking-[0.3em] text-violet-700 dark:text-violet-300">Leadership</div>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">The team behind Magnetic</h2>
+          </motion.div>
+          <div className="grid gap-6 sm:grid-cols-2">
+            {[
+              { title: "Founder & CEO", detail: "Visionary leadership and strategic direction. Responsible for product, growth, and the long-term infrastructure roadmap.", icon: Star },
+              { title: "CTO", detail: "Technical architecture, engineering delivery, and AI systems. Oversees all platform, security, and cloud infrastructure decisions.", icon: Zap }
+            ].map(({ title, detail, icon: Icon }, index) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.34 + index * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="rounded-[32px] border border-slate-200 bg-white/90 p-8 shadow-[0_16px_50px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70"
+              >
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-100 to-indigo-100 text-violet-700 dark:from-violet-400/20 dark:to-indigo-400/10 dark:text-violet-300">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-700 dark:text-cyan-300">{title}</div>
+                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{detail}</p>
+              </motion.div>
+            ))}
+          </div>
         </section>
 
         {/* Values grid */}

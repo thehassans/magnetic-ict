@@ -33,7 +33,6 @@ import {
   UserRound
 } from "lucide-react";
 import { BrandLogo } from "@/components/branding/brand-logo";
-import { CartTrigger } from "@/components/commerce/cart-trigger";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -306,7 +305,6 @@ export function Header({
             triggerClassName="border-slate-200/60 bg-transparent px-3 text-slate-700 hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:bg-transparent dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white"
           />
           <ThemeToggle />
-          <CartTrigger className="border-slate-200/60 bg-transparent text-slate-700 hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:bg-transparent dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white" />
           {sessionUser?.role === "ADMIN" ? (
             <NextLink href="/admin/dashboard" className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200/70 bg-transparent px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white">
               {t("adminOps")}
@@ -400,7 +398,6 @@ export function Header({
               triggerClassName="w-full justify-between border-slate-200/70 bg-transparent text-slate-700 hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:bg-transparent dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white"
             />
             <ThemeToggle className="rounded-full px-1 py-1" />
-            <CartTrigger className="border-slate-200/70 bg-transparent text-slate-700 hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:bg-transparent dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white" />
           </div>
         </div>
 
