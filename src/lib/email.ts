@@ -9,7 +9,7 @@ import {
 
 const resend = process.env.AUTH_RESEND_KEY ? new Resend(process.env.AUTH_RESEND_KEY) : null;
 
-type EmailProvider = "mailgun" | "resend" | "none";
+type EmailProvider = "mailgun" | "brevo" | "resend" | "none";
 
 type TransactionalMessage = {
   to: string;
@@ -298,10 +298,20 @@ function getMailgunApiUrl(settings: TransactionalEmailSettings) {
 function hasMailgunConfig(settings: TransactionalEmailSettings) {
   return Boolean(
     settings.enabled
+      && settings.activeProvider === "mailgun"
       && settings.apiBaseUrl.trim()
       && settings.apiKey.trim()
       && settings.domain.trim()
       && settings.fromEmail.trim()
+  );
+}
+
+function hasBrevoConfig(settings: TransactionalEmailSettings) {
+  return Boolean(
+    settings.enabled
+      && settings.activeProvider === "brevo"
+      && settings.brevo?.apiKey?.trim()
+      && settings.brevo?.fromEmail?.trim()
   );
 }
 
@@ -312,6 +322,10 @@ function hasResendFallback() {
 async function resolveEmailProvider(settings: TransactionalEmailSettings): Promise<EmailProvider> {
   if (hasMailgunConfig(settings)) {
     return "mailgun";
+  }
+
+  if (hasBrevoConfig(settings)) {
+    return "brevo";
   }
 
   if (hasResendFallback()) {
@@ -376,6 +390,39 @@ async function sendViaMailgun(settings: TransactionalEmailSettings, message: Tra
   }
 }
 
+async function sendViaBrevo(settings: TransactionalEmailSettings, message: TransactionalMessage) {
+  const brevo = settings.brevo;
+  const from = `${brevo.fromName?.trim() || "MagneticICT"} <${brevo.fromEmail.trim()}>`;
+  const replyTo = message.replyTo?.trim() || brevo.replyToEmail?.trim();
+
+  const payload: Record<string, unknown> = {
+    sender: { name: brevo.fromName?.trim() || "MagneticICT", email: brevo.fromEmail.trim() },
+    to: [{ email: message.to }],
+    subject: message.subject,
+    htmlContent: message.html,
+    ...(replyTo ? { replyTo: { email: replyTo } } : {}),
+    ...(message.tags?.length ? { tags: message.tags } : {})
+  };
+
+  void from;
+
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": brevo.apiKey.trim(),
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const responseBody = (await response.json().catch(() => null)) as { message?: string; code?: string } | null;
+
+  if (!response.ok) {
+    throw new Error(responseBody?.message || `Brevo request failed with status ${response.status}.`);
+  }
+}
+
 async function sendViaResend(message: TransactionalMessage) {
   if (!resend) {
     throw new Error("Fallback Resend client is unavailable.");
@@ -424,6 +471,8 @@ async function sendConfiguredEmail(
   try {
     if (provider === "mailgun") {
       await sendViaMailgun(settings.transactionalEmailConfig, message);
+    } else if (provider === "brevo") {
+      await sendViaBrevo(settings.transactionalEmailConfig, message);
     } else {
       await sendViaResend(message);
     }
@@ -702,6 +751,7 @@ export async function sendMailgunTestEmail(args?: Partial<TransactionalEmailSett
   const effectiveConfig: TransactionalEmailSettings = {
     ...settings.transactionalEmailConfig,
     ...args,
+    activeProvider: "mailgun",
     provider: "mailgun"
   };
   const recipient = args?.recipient?.trim() || effectiveConfig.testRecipient.trim();
@@ -710,7 +760,7 @@ export async function sendMailgunTestEmail(args?: Partial<TransactionalEmailSett
     throw new Error("Add a test recipient before sending a test email.");
   }
 
-  if (!hasMailgunConfig(effectiveConfig)) {
+  if (!effectiveConfig.apiBaseUrl.trim() || !effectiveConfig.apiKey.trim() || !effectiveConfig.domain.trim() || !effectiveConfig.fromEmail.trim()) {
     throw new Error("Complete the Mailgun configuration before testing email delivery.");
   }
 
@@ -758,6 +808,75 @@ export async function sendMailgunTestEmail(args?: Partial<TransactionalEmailSett
       subject: "MagneticICT test email",
       errorMessage: error instanceof Error ? error.message : "Mailgun test failed.",
       metadata: { domain: effectiveConfig.domain, fromEmail: effectiveConfig.fromEmail }
+    });
+    throw error;
+  }
+}
+
+export async function sendBrevoTestEmail(args?: { apiKey?: string; fromEmail?: string; fromName?: string; replyToEmail?: string; testRecipient?: string; recipient?: string }) {
+  const settings = await getPlatformSettings();
+  const brevo = {
+    ...settings.transactionalEmailConfig.brevo,
+    ...args
+  };
+  const recipient = args?.recipient?.trim() || brevo.testRecipient?.trim();
+
+  if (!recipient) {
+    throw new Error("Add a test recipient before sending a Brevo test email.");
+  }
+
+  if (!brevo.apiKey?.trim() || !brevo.fromEmail?.trim()) {
+    throw new Error("Complete the Brevo configuration (API key + from email) before testing.");
+  }
+
+  const fakeConfig: TransactionalEmailSettings = {
+    ...settings.transactionalEmailConfig,
+    activeProvider: "brevo",
+    brevo
+  };
+
+  const previewHtml = `
+    <div style="background:#050816;padding:32px;font-family:Inter,Arial,sans-serif;color:#f8fafc">
+      <div style="max-width:560px;margin:0 auto;background:rgba(15,23,42,0.88);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:32px">
+        <p style="margin:0 0 12px;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#94a3b8">MagneticICT</p>
+        <h1 style="margin:0 0 16px;font-size:28px;line-height:1.2">Brevo configuration successful</h1>
+        <p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#cbd5e1">This is a test email from the MagneticICT admin panel. Your Brevo transactional email configuration is working.</p>
+        <div style="padding:18px 20px;border-radius:18px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06)">
+          <p style="margin:0 0 8px;font-size:14px;color:#94a3b8">Provider</p>
+          <p style="margin:0;font-size:18px;font-weight:600;color:#ffffff">Brevo</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  try {
+    await sendViaBrevo(fakeConfig, {
+      to: recipient,
+      subject: "MagneticICT test email (Brevo)",
+      html: previewHtml,
+      replyTo: brevo.replyToEmail,
+      tags: ["test-email"]
+    });
+
+    await logEmail({
+      category: "test_email",
+      notificationKey: null,
+      provider: "brevo",
+      status: "sent",
+      to: recipient,
+      subject: "MagneticICT test email (Brevo)",
+      metadata: { fromEmail: brevo.fromEmail }
+    });
+  } catch (error) {
+    await logEmail({
+      category: "test_email",
+      notificationKey: null,
+      provider: "brevo",
+      status: "failed",
+      to: recipient,
+      subject: "MagneticICT test email (Brevo)",
+      errorMessage: error instanceof Error ? error.message : "Brevo test failed.",
+      metadata: { fromEmail: brevo.fromEmail }
     });
     throw error;
   }

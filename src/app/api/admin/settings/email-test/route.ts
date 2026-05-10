@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
-import { sendMailgunTestEmail } from "@/lib/email";
+import { sendBrevoTestEmail, sendMailgunTestEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
 const requestSchema = z.object({
+  activeProvider: z.enum(["mailgun", "brevo"]).optional(),
   enabled: z.boolean().optional(),
   provider: z.literal("mailgun").optional(),
   apiBaseUrl: z.string().optional(),
@@ -15,7 +16,14 @@ const requestSchema = z.object({
   fromName: z.string().optional(),
   replyToEmail: z.string().optional(),
   testRecipient: z.string().optional(),
-  recipient: z.string().optional()
+  recipient: z.string().optional(),
+  brevo: z.object({
+    apiKey: z.string().optional(),
+    fromEmail: z.string().optional(),
+    fromName: z.string().optional(),
+    replyToEmail: z.string().optional(),
+    testRecipient: z.string().optional()
+  }).optional()
 });
 
 export async function POST(request: Request) {
@@ -30,14 +38,26 @@ export async function POST(request: Request) {
     const parsed = requestSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json({ error: "Provide a valid Mailgun test payload." }, { status: 400 });
+      return NextResponse.json({ error: "Provide a valid email test payload." }, { status: 400 });
     }
 
-    await sendMailgunTestEmail(parsed.data);
+    const activeProvider = parsed.data.activeProvider ?? "mailgun";
+
+    if (activeProvider === "brevo") {
+      await sendBrevoTestEmail({
+        ...parsed.data.brevo,
+        recipient: parsed.data.recipient
+      });
+      return NextResponse.json({ ok: true, message: "Brevo test email sent successfully." });
+    }
+
+    const { brevo: _brevo, activeProvider: _ap, ...mailgunArgs } = parsed.data;
+    void _brevo; void _ap;
+    await sendMailgunTestEmail(mailgunArgs);
     return NextResponse.json({ ok: true, message: "Mailgun test email sent successfully." });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to send the Mailgun test email right now." },
+      { error: error instanceof Error ? error.message : "Unable to send the test email right now." },
       { status: 400 }
     );
   }

@@ -4,7 +4,7 @@ import { findMongoDocuments, insertMongoDocument } from "@/lib/social-bot-db";
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
 export type EmailLogStatus = "sent" | "failed" | "skipped";
-export type EmailLogProvider = "mailgun" | "resend" | "none";
+export type EmailLogProvider = "mailgun" | "brevo" | "resend" | "none";
 
 export type EmailLogRecord = {
   _id: string;

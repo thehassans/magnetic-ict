@@ -55,7 +55,7 @@ const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth"
   payments: "Payment",
   oauth: "OAuth",
   gemini: "Gemini",
-  socialBot: "Social Bot",
+  socialBot: "Chatbot",
   magneticCommerce: "Magnetic Commerce",
   trustedPartners: "Trusted partners",
   welcomeEmail: "Welcome email",
@@ -78,10 +78,10 @@ const tabs: { key: TabKey; label: string; icon: ReactNode }[] = [
   { key: "gemini",              label: "AI / Gemini",    icon: <Sparkles className="h-3.5 w-3.5" /> },
   { key: "domain",              label: "Domains",        icon: <Globe2 className="h-3.5 w-3.5" /> },
   { key: "hosting",             label: "Hosting",        icon: <Server className="h-3.5 w-3.5" /> },
-  { key: "socialBot",           label: "Social Bot",     icon: <MessageSquare className="h-3.5 w-3.5" /> },
+  { key: "socialBot",           label: "Chatbot",        icon: <MessageSquare className="h-3.5 w-3.5" /> },
   { key: "magneticCommerce",    label: "Commerce",       icon: <Code2 className="h-3.5 w-3.5" /> },
   { key: "welcomeEmail",        label: "Welcome Email",  icon: <MailOpen className="h-3.5 w-3.5" /> },
-  { key: "transactionalEmail",  label: "Mailgun",        icon: <Mail className="h-3.5 w-3.5" /> },
+  { key: "transactionalEmail",  label: "Email Provider", icon: <Mail className="h-3.5 w-3.5" /> },
   { key: "emailNotifications",  label: "Notifications",  icon: <Bell className="h-3.5 w-3.5" /> },
   { key: "emailLogs",           label: "Email Logs",     icon: <ToggleLeft className="h-3.5 w-3.5" /> },
 ];
@@ -173,7 +173,10 @@ export function AdminSettingsClient({
       },
       body: JSON.stringify({
         ...transactionalEmailState,
-        recipient: transactionalEmailState.testRecipient
+        activeProvider: transactionalEmailState.activeProvider,
+        recipient: transactionalEmailState.activeProvider === "brevo"
+          ? transactionalEmailState.brevo.testRecipient
+          : transactionalEmailState.testRecipient
       })
     });
 
@@ -578,7 +581,7 @@ export function AdminSettingsClient({
       </SettingsCard>}
 
       {activeTab === "socialBot" && <SettingsCard
-        title="Magnetic Social Bot"
+        title="Magnetic Chatbot"
         description="Configure the Meta app values required by WhatsApp, Messenger, and Instagram. This follows the Meta setup flow for webhook callback URL, verify token, app secret validation, and embedded business login configuration."
         action={<Button label="Save Social Bot config" loading={loadingSection === "socialBot"} onClick={() => void handleSaveSocialBot()} />}
       >
@@ -713,28 +716,88 @@ export function AdminSettingsClient({
       </SettingsCard>}
 
       {activeTab === "transactionalEmail" && <SettingsCard
-        title="Transactional email · Mailgun"
-        description="Configure Mailgun for transactional emails, save the live delivery settings, and send a test email from the admin panel. If Mailgun is not enabled, the platform can still fall back to the existing auth mail transport for legacy flows."
+        title="Transactional email provider"
+        description="Choose between Mailgun and Brevo as your active transactional email provider. Only the enabled provider is used for delivery. The fallback (Resend/AUTH_EMAIL_FROM) is used when both are unconfigured."
         action={
           <div className="flex flex-wrap gap-3">
             <Button label="Save email config" loading={loadingSection === "transactionalEmail"} onClick={() => saveSection("transactionalEmail", transactionalEmailState)} />
-            <Button label="Test email configuration" loading={loadingSection === "email-test"} onClick={() => void handleEmailTest()} variant="secondary" />
+            <Button label="Test active provider" loading={loadingSection === "email-test"} onClick={() => void handleEmailTest()} variant="secondary" />
           </div>
         }
       >
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2">
           <ToggleCard label="Transactional email enabled" checked={transactionalEmailState.enabled} onChange={(checked) => setTransactionalEmailState((current) => ({ ...current, enabled: checked }))} />
         </div>
-        <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          <Input label="Provider" value={transactionalEmailState.provider} onChange={() => undefined} readOnly />
-          <Input label="Mailgun API base URL" value={transactionalEmailState.apiBaseUrl} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, apiBaseUrl: value }))} />
-          <Input label="Mailgun API key" value={transactionalEmailState.apiKey} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, apiKey: value }))} type="password" />
-          <Input label="Mailgun domain" value={transactionalEmailState.domain} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, domain: value }))} />
-          <Input label="From email" value={transactionalEmailState.fromEmail} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, fromEmail: value }))} />
-          <Input label="From name" value={transactionalEmailState.fromName} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, fromName: value }))} />
-          <Input label="Reply-to email" value={transactionalEmailState.replyToEmail} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, replyToEmail: value }))} />
-          <Input label="Test recipient" value={transactionalEmailState.testRecipient} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, testRecipient: value }))} />
+
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => setTransactionalEmailState((current) => ({ ...current, activeProvider: "mailgun" }))}
+            className={`flex items-center gap-3 rounded-2xl border px-5 py-4 text-left transition ${
+              transactionalEmailState.activeProvider === "mailgun"
+                ? "border-violet-500/40 bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/20"
+                : "border-slate-200/80 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-white"
+            }`}
+          >
+            <Mail className="h-5 w-5 shrink-0" />
+            <div>
+              <div className="text-[13px] font-semibold">Mailgun</div>
+              <div className={`text-[11px] font-medium uppercase tracking-[0.2em] ${
+                transactionalEmailState.activeProvider === "mailgun" ? "text-white/70" : "text-slate-400"
+              }`}>SMTP / REST API</div>
+            </div>
+            {transactionalEmailState.activeProvider === "mailgun" && <Check className="ml-auto h-4 w-4" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => setTransactionalEmailState((current) => ({ ...current, activeProvider: "brevo" }))}
+            className={`flex items-center gap-3 rounded-2xl border px-5 py-4 text-left transition ${
+              transactionalEmailState.activeProvider === "brevo"
+                ? "border-violet-500/40 bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/20"
+                : "border-slate-200/80 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-white"
+            }`}
+          >
+            <Mail className="h-5 w-5 shrink-0" />
+            <div>
+              <div className="text-[13px] font-semibold">Brevo</div>
+              <div className={`text-[11px] font-medium uppercase tracking-[0.2em] ${
+                transactionalEmailState.activeProvider === "brevo" ? "text-white/70" : "text-slate-400"
+              }`}>Sendinblue API v3</div>
+            </div>
+            {transactionalEmailState.activeProvider === "brevo" && <Check className="ml-auto h-4 w-4" />}
+          </button>
         </div>
+
+        {transactionalEmailState.activeProvider === "mailgun" && (
+          <div className="mt-6">
+            <div className="mb-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Mailgun configuration</div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Input label="Mailgun API base URL" value={transactionalEmailState.apiBaseUrl} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, apiBaseUrl: value }))} />
+              <Input label="Mailgun API key" value={transactionalEmailState.apiKey} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, apiKey: value }))} type="password" />
+              <Input label="Mailgun domain" value={transactionalEmailState.domain} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, domain: value }))} />
+              <Input label="From email" value={transactionalEmailState.fromEmail} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, fromEmail: value }))} />
+              <Input label="From name" value={transactionalEmailState.fromName} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, fromName: value }))} />
+              <Input label="Reply-to email" value={transactionalEmailState.replyToEmail} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, replyToEmail: value }))} />
+              <Input label="Test recipient" value={transactionalEmailState.testRecipient} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, testRecipient: value }))} />
+            </div>
+          </div>
+        )}
+
+        {transactionalEmailState.activeProvider === "brevo" && (
+          <div className="mt-6">
+            <div className="mb-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Brevo configuration</div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Input label="Brevo API key" value={transactionalEmailState.brevo.apiKey} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, brevo: { ...current.brevo, apiKey: value } }))} type="password" />
+              <Input label="From email" value={transactionalEmailState.brevo.fromEmail} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, brevo: { ...current.brevo, fromEmail: value } }))} />
+              <Input label="From name" value={transactionalEmailState.brevo.fromName} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, brevo: { ...current.brevo, fromName: value } }))} />
+              <Input label="Reply-to email" value={transactionalEmailState.brevo.replyToEmail} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, brevo: { ...current.brevo, replyToEmail: value } }))} />
+              <Input label="Test recipient" value={transactionalEmailState.brevo.testRecipient} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, brevo: { ...current.brevo, testRecipient: value } }))} />
+            </div>
+            <div className="mt-4 rounded-2xl border border-blue-200/60 bg-blue-50/60 px-5 py-4 text-sm text-blue-800">
+              Brevo uses the <strong>Transactional Emails API v3</strong> (<code className="font-mono text-xs">https://api.brevo.com/v3/smtp/email</code>). Generate your API key from the Brevo dashboard under <strong>SMTP &amp; API</strong>.
+            </div>
+          </div>
+        )}
       </SettingsCard>}
 
       {activeTab === "emailNotifications" && <SettingsCard

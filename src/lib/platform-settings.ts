@@ -90,6 +90,7 @@ export type WelcomeEmailSettings = {
 
 export type TransactionalEmailSettings = {
   enabled: boolean;
+  activeProvider: "mailgun" | "brevo";
   provider: "mailgun";
   apiBaseUrl: string;
   apiKey: string;
@@ -98,6 +99,13 @@ export type TransactionalEmailSettings = {
   fromName: string;
   replyToEmail: string;
   testRecipient: string;
+  brevo: {
+    apiKey: string;
+    fromEmail: string;
+    fromName: string;
+    replyToEmail: string;
+    testRecipient: string;
+  };
 };
 
 export const emailNotificationKeys = [
@@ -252,6 +260,26 @@ export const defaultTrustedPartnersConfig: TrustedPartnersSettings = {
   ]
 };
 
+export const defaultTransactionalEmailConfig: TransactionalEmailSettings = {
+  enabled: false,
+  activeProvider: "mailgun",
+  provider: "mailgun",
+  apiBaseUrl: "https://api.mailgun.net",
+  apiKey: "",
+  domain: "",
+  fromEmail: "",
+  fromName: "MagneticICT",
+  replyToEmail: "",
+  testRecipient: "",
+  brevo: {
+    apiKey: "",
+    fromEmail: "",
+    fromName: "MagneticICT",
+    replyToEmail: "",
+    testRecipient: ""
+  }
+};
+
 export const defaultWelcomeEmailConfig: WelcomeEmailSettings = {
   enabled: true,
   subject: "Welcome to MagneticICT",
@@ -261,17 +289,6 @@ export const defaultWelcomeEmailConfig: WelcomeEmailSettings = {
   ctaHref: "/dashboard"
 };
 
-export const defaultTransactionalEmailConfig: TransactionalEmailSettings = {
-  enabled: false,
-  provider: "mailgun",
-  apiBaseUrl: "https://api.mailgun.net",
-  apiKey: "",
-  domain: "",
-  fromEmail: "",
-  fromName: "MagneticICT",
-  replyToEmail: "",
-  testRecipient: ""
-};
 
 export const defaultEmailNotificationsConfig: EmailNotificationsSettings = {
   welcomeEmail: true,
@@ -2375,8 +2392,10 @@ export function normalizeTransactionalEmailConfig(value: unknown): Transactional
     return defaultTransactionalEmailConfig;
   }
 
+  const brevoRaw = isObject(value.brevo) ? value.brevo : {};
   return {
     enabled: coerceBoolean(value.enabled, defaultTransactionalEmailConfig.enabled),
+    activeProvider: (value.activeProvider === "brevo" ? "brevo" : "mailgun") as "mailgun" | "brevo",
     provider: "mailgun",
     apiBaseUrl: coerceString(value.apiBaseUrl, defaultTransactionalEmailConfig.apiBaseUrl),
     apiKey: coerceString(value.apiKey, defaultTransactionalEmailConfig.apiKey),
@@ -2384,7 +2403,14 @@ export function normalizeTransactionalEmailConfig(value: unknown): Transactional
     fromEmail: coerceString(value.fromEmail, defaultTransactionalEmailConfig.fromEmail),
     fromName: coerceString(value.fromName, defaultTransactionalEmailConfig.fromName),
     replyToEmail: coerceString(value.replyToEmail, defaultTransactionalEmailConfig.replyToEmail),
-    testRecipient: coerceString(value.testRecipient, defaultTransactionalEmailConfig.testRecipient)
+    testRecipient: coerceString(value.testRecipient, defaultTransactionalEmailConfig.testRecipient),
+    brevo: {
+      apiKey: coerceString(brevoRaw.apiKey, ""),
+      fromEmail: coerceString(brevoRaw.fromEmail, ""),
+      fromName: coerceString(brevoRaw.fromName, "MagneticICT"),
+      replyToEmail: coerceString(brevoRaw.replyToEmail, ""),
+      testRecipient: coerceString(brevoRaw.testRecipient, "")
+    }
   };
 }
 

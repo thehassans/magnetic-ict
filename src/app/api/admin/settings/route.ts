@@ -121,14 +121,22 @@ const requestSchema = z.discriminatedUnion("section", [
     section: z.literal("transactionalEmail"),
     value: z.object({
       enabled: z.boolean(),
+      activeProvider: z.enum(["mailgun", "brevo"]),
       provider: z.literal("mailgun"),
-      apiBaseUrl: z.string().min(1),
+      apiBaseUrl: z.string(),
       apiKey: z.string(),
       domain: z.string(),
       fromEmail: z.string(),
       fromName: z.string(),
       replyToEmail: z.string(),
-      testRecipient: z.string()
+      testRecipient: z.string(),
+      brevo: z.object({
+        apiKey: z.string(),
+        fromEmail: z.string(),
+        fromName: z.string(),
+        replyToEmail: z.string(),
+        testRecipient: z.string()
+      })
     })
   }),
   z.object({
