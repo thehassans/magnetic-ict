@@ -129,6 +129,11 @@ export function Header({
   const companyLinks = React.useMemo<LinkItem[]>(() => {
     const items: LinkItem[] = [
       {
+        title: t("about"),
+        href: "/about",
+        icon: Star
+      },
+      {
         title: t("customerStories"),
         href: "/#home-reviews",
         description: t("customerStoriesDesc"),
@@ -255,12 +260,6 @@ export function Header({
         label: t("support"),
         icon: HelpCircle,
         link: "/support"
-      },
-      {
-        id: 5,
-        label: t("about"),
-        icon: Star,
-        link: "/about"
       }
     ];
   }, [companyLinks, companyLinks2, magneticProductLinks, productLinks, t]);
@@ -349,9 +348,6 @@ export function Header({
             </MobileLink>
             <MobileLink locale={locale} href="/support" onClick={() => setOpen(false)} icon={HelpCircle}>
               {t("support")}
-            </MobileLink>
-            <MobileLink locale={locale} href="/about" onClick={() => setOpen(false)} icon={Star}>
-              {t("about")}
             </MobileLink>
           </div>
 
