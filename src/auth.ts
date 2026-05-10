@@ -243,6 +243,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => ({
   session: {
     strategy: "jwt"
   },
+  cookies: {
+    state: {
+      options: {
+        httpOnly: true,
+        sameSite: "none" as const,
+        path: "/",
+        secure: true
+      }
+    },
+    pkceCodeVerifier: {
+      options: {
+        httpOnly: true,
+        sameSite: "none" as const,
+        path: "/",
+        secure: true
+      }
+    },
+    nonce: {
+      options: {
+        httpOnly: true,
+        sameSite: "none" as const,
+        path: "/",
+        secure: true
+      }
+    }
+  },
   providers: await buildProviders(),
   events: {
     async createUser({ user }) {
