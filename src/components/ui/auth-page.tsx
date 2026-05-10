@@ -117,7 +117,7 @@ export function AuthPage({
           </div>
 
           <div className="space-y-2">
-            {socialProviders.map((provider) => (
+            {socialProviders.filter((provider) => provider.enabled).map((provider) => (
               <Button
                 key={provider.id}
                 type="button"
@@ -138,7 +138,7 @@ export function AuthPage({
             ))}
           </div>
 
-          <AuthSeparator />
+          {socialProviders.some((provider) => provider.enabled) && <AuthSeparator />}
 
           {otpStage === "email" ? (
             <form onSubmit={onEmailSubmit} className="space-y-3">
