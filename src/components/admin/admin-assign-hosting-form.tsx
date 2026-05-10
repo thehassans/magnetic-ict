@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { ArrowUpRight, CheckCircle2, ChevronDown, Clock, Link2, Plus, Server, Sparkles, X } from "lucide-react";
 import type { HostingProvisionRecord } from "@/lib/hosting-db";
 
@@ -24,6 +24,8 @@ const defaultForm = (email: string) => ({
 
 export function AdminAssignHostingForm({ userId, userEmail, provisions: initialProvisions }: Props) {
   const [open, setOpen] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const [provisions, setProvisions] = useState(initialProvisions);
   const [selected, setSelected] = useState<HostingProvisionRecord | null>(initialProvisions[0] ?? null);
   const [mode, setMode] = useState<"edit" | "create">(initialProvisions.length === 0 ? "create" : "edit");
@@ -127,11 +129,23 @@ export function AdminAssignHostingForm({ userId, userEmail, provisions: initialP
     });
   }
 
+  function handleOpen() {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPos({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right
+      });
+    }
+    setOpen((v) => !v);
+  }
+
   return (
     <div className="relative">
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={handleOpen}
         className="inline-flex h-8 items-center gap-1.5 rounded-full border border-violet-300 bg-gradient-to-r from-violet-50 to-indigo-50 px-3 text-[12px] font-semibold text-violet-700 shadow-sm transition hover:from-violet-100 hover:to-indigo-100"
       >
         <Sparkles className="h-3 w-3" />
@@ -144,7 +158,10 @@ export function AdminAssignHostingForm({ userId, userEmail, provisions: initialP
           {/* Backdrop */}
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
 
-          <div className="absolute right-0 top-10 z-50 w-[440px] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.16)]">
+          <div
+            className="fixed z-[9999] w-[440px] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.16)]"
+            style={{ top: dropdownPos.top, right: dropdownPos.right }}
+          >
             {/* Header */}
             <div className="flex items-center justify-between bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-4">
               <div>
