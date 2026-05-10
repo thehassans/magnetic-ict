@@ -155,12 +155,13 @@ export function AdminAssignHostingForm({ userId, userEmail, provisions: initialP
 
       {open && (
         <>
-          {/* Backdrop */}
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          {/* Backdrop — sits behind the panel, catches outside clicks */}
+          <div className="fixed inset-0 z-[9998]" onClick={() => setOpen(false)} />
 
           <div
-            className="fixed z-[9999] w-[440px] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.16)]"
+            className="fixed z-[9999] w-[440px] rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.16)]"
             style={{ top: dropdownPos.top, right: dropdownPos.right }}
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex items-center justify-between bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-4">
@@ -178,7 +179,7 @@ export function AdminAssignHostingForm({ userId, userEmail, provisions: initialP
               </button>
             </div>
 
-            <div className="max-h-[80vh] overflow-y-auto p-5">
+            <div className="max-h-[calc(100vh-120px)] overflow-y-auto p-5">
               <div className="space-y-4">
                 {/* Mode tabs: existing provisions + New button */}
                 <div className="flex flex-wrap gap-2">
