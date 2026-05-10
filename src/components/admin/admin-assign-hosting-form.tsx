@@ -16,10 +16,10 @@ type Props = {
 const defaultForm = (email: string) => ({
   tierName: "Manual VPS",
   panel: "plesk" as PanelType,
-  panelLabel: "Plesk Control Panel",
+  panelLabel: "Open Plesk Panel",
   loginUrl: "",
   username: email,
-  isReady: false,
+  isReady: true,
   notes: ""
 });
 

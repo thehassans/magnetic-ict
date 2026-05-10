@@ -79,6 +79,8 @@ export default async function ServerManagementPage({ params }: { params: Promise
           {provisions.map((provision) => {
             const meta = statusMeta(provision.status);
             const panelReady = provision.access.isReady && Boolean(provision.access.loginUrl);
+            const isManual = provision.orderId.startsWith("manual_");
+            const hasRealPlan = !isManual && (provision.plan.cores > 0 || provision.plan.storageGb > 0);
 
             return (
               <section
@@ -121,34 +123,38 @@ export default async function ServerManagementPage({ params }: { params: Promise
                           Panel being prepared
                         </div>
                       )}
-                      <Link
-                        href={`/dashboard/orders/${provision.orderId}/invoice`}
-                        locale={locale}
-                        className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"
-                      >
-                        View invoice
-                      </Link>
+                      {!isManual && (
+                        <Link
+                          href={`/dashboard/orders/${provision.orderId}/invoice`}
+                          locale={locale}
+                          className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"
+                        >
+                          View invoice
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {/* Stats row */}
-                <div className="grid grid-cols-2 divide-x divide-slate-200/70 border-b border-slate-200/70 dark:divide-white/10 dark:border-white/10 sm:grid-cols-4">
-                  {[
-                    { label: "vCPU cores", value: String(provision.plan.cores), icon: Layers },
-                    { label: "RAM", value: `${provision.plan.ramMb >= 1024 ? `${(provision.plan.ramMb / 1024).toFixed(0)} GB` : `${provision.plan.ramMb} MB`}`, icon: Activity },
-                    { label: "Storage", value: `${provision.plan.storageGb} GB`, icon: HardDrive },
-                    { label: "Region", value: provision.configuration.locationName ?? provision.cloud.location ?? "Default", icon: Globe2 }
-                  ].map(({ label, value, icon: Icon }) => (
-                    <div key={label} className="flex flex-col gap-1 px-5 py-4 sm:px-6">
-                      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">
-                        <Icon className="h-3 w-3" />
-                        {label}
+                {/* Stats row — only for provisioned (non-manual) servers */}
+                {hasRealPlan && (
+                  <div className="grid grid-cols-2 divide-x divide-slate-200/70 border-b border-slate-200/70 dark:divide-white/10 dark:border-white/10 sm:grid-cols-4">
+                    {[
+                      { label: "vCPU cores", value: String(provision.plan.cores), icon: Layers },
+                      { label: "RAM", value: provision.plan.ramMb >= 1024 ? `${(provision.plan.ramMb / 1024).toFixed(0)} GB` : `${provision.plan.ramMb} MB`, icon: Activity },
+                      { label: "Storage", value: `${provision.plan.storageGb} GB`, icon: HardDrive },
+                      { label: "Region", value: provision.configuration.locationName ?? provision.cloud.location ?? "Default", icon: Globe2 }
+                    ].map(({ label, value, icon: Icon }) => (
+                      <div key={label} className="flex flex-col gap-1 px-5 py-4 sm:px-6">
+                        <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">
+                          <Icon className="h-3 w-3" />
+                          {label}
+                        </div>
+                        <div className="text-base font-semibold tracking-tight text-slate-950 dark:text-white">{value}</div>
                       </div>
-                      <div className="text-base font-semibold tracking-tight text-slate-950 dark:text-white">{value}</div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Detail cards */}
                 <div className="grid gap-4 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-3">
@@ -204,38 +210,40 @@ export default async function ServerManagementPage({ params }: { params: Promise
                     )}
                   </div>
 
-                  {/* OS & Config card */}
-                  <div className="rounded-[22px] border border-slate-200/80 bg-slate-50/80 p-5 dark:border-white/10 dark:bg-white/[0.04]">
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-100 to-sky-100 text-cyan-700 dark:from-cyan-400/20 dark:to-sky-400/10 dark:text-cyan-300">
-                        <Server className="h-4 w-4" />
+                  {/* OS & Config card — only for real provisions */}
+                  {!isManual && (
+                    <div className="rounded-[22px] border border-slate-200/80 bg-slate-50/80 p-5 dark:border-white/10 dark:bg-white/[0.04]">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-100 to-sky-100 text-cyan-700 dark:from-cyan-400/20 dark:to-sky-400/10 dark:text-cyan-300">
+                          <Server className="h-4 w-4" />
+                        </div>
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Server Config</div>
                       </div>
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Server Config</div>
+                      <div className="mt-4 space-y-2.5 text-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-slate-500 dark:text-slate-400">OS</span>
+                          <span className="font-medium text-slate-950 dark:text-white">{provision.configuration.operatingSystemName ?? "Default"}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-slate-500 dark:text-slate-400">Image</span>
+                          <span className="truncate font-mono text-[12px] text-slate-950 dark:text-white">{provision.plan.imageAlias}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-slate-500 dark:text-slate-400">Add-ons</span>
+                          <span className="text-right font-medium text-slate-950 dark:text-white">
+                            {provision.configuration.addonNames.length ? provision.configuration.addonNames.join(", ") : "None"}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-slate-500 dark:text-slate-400">Status</span>
+                          <span className={`inline-flex items-center gap-1.5 font-medium ${meta.text}`}>
+                            <span className={`h-2 w-2 rounded-full ${meta.color}`} />
+                            {meta.label}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="mt-4 space-y-2.5 text-sm">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-slate-500 dark:text-slate-400">OS</span>
-                        <span className="font-medium text-slate-950 dark:text-white">{provision.configuration.operatingSystemName ?? "Default"}</span>
-                      </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-slate-500 dark:text-slate-400">Image</span>
-                        <span className="truncate font-mono text-[12px] text-slate-950 dark:text-white">{provision.plan.imageAlias}</span>
-                      </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-slate-500 dark:text-slate-400">Add-ons</span>
-                        <span className="text-right font-medium text-slate-950 dark:text-white">
-                          {provision.configuration.addonNames.length ? provision.configuration.addonNames.join(", ") : "None"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-slate-500 dark:text-slate-400">Status</span>
-                        <span className={`inline-flex items-center gap-1.5 font-medium ${meta.text}`}>
-                          <span className={`h-2 w-2 rounded-full ${meta.color}`} />
-                          {meta.label}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  )}
 
                   {/* Domain card */}
                   <div className="rounded-[22px] border border-slate-200/80 bg-slate-50/80 p-5 dark:border-white/10 dark:bg-white/[0.04]">
