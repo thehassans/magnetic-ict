@@ -186,6 +186,52 @@ export async function updateHostingProvisionManagement(
   return nextRecord;
 }
 
+export async function createManualHostingProvision(params: {
+  userId: string;
+  customerEmail: string;
+  customerName: string | null;
+  tierName: string;
+  panel: HostingProvisionAccess["panel"];
+  panelLabel: string | null;
+  loginUrl: string | null;
+  username: string | null;
+  isReady: boolean;
+  notes: string | null;
+}): Promise<HostingProvisionRecord> {
+  const now = new Date().toISOString();
+  const record: HostingProvisionRecord = {
+    _id: createHostingProvisionId(),
+    orderId: `manual_${randomUUID()}`,
+    userId: params.userId,
+    customerEmail: params.customerEmail,
+    customerName: params.customerName,
+    serviceCatalogKey: "magneticVpsHosting",
+    tierCatalogKey: "manual",
+    tierName: params.tierName || "Manual VPS",
+    provider: "ionos",
+    status: "provisioned",
+    errorMessage: null,
+    createdAt: now,
+    updatedAt: now,
+    provisionedAt: now,
+    plan: { cores: 0, ramMb: 0, storageGb: 0, imageAlias: "manual", location: "" },
+    configuration: { operatingSystemName: null, controlPanelName: params.panelLabel, addonNames: [], locationName: null, extraMonthlyPrice: 0, summaryLines: [] },
+    domain: { mode: "none", name: null, years: 0, privacyProtection: false, unitPrice: 0, totalPrice: 0, status: "not_requested", registrarReference: null, errorMessage: null },
+    reseller: { contractId: null, adminId: null, contractReference: null },
+    cloud: { contractNumber: null, datacenterId: null, serverId: null, volumeId: null, location: null },
+    access: normalizeHostingProvisionAccess({
+      panel: params.panel,
+      panelLabel: params.panelLabel,
+      loginUrl: params.loginUrl,
+      username: params.username,
+      isReady: params.isReady,
+      notes: params.notes
+    })
+  };
+  await upsertHostingProvision(record);
+  return record;
+}
+
 export async function upsertHostingProvision(record: HostingProvisionRecord) {
   await upsertMongoDocument(
     hostingCollections.provisions,
