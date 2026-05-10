@@ -1,7 +1,7 @@
 "use client";
 
 import { type InputHTMLAttributes, type ReactNode, useEffect, useMemo, useState, useTransition } from "react";
-import { ArrowLeft, Clock, Globe, Lock, Mail, MapPin, Phone, RefreshCcw, ShieldCheck, Trash2, User, Zap } from "lucide-react";
+import { ArrowLeft, Clock, Globe, Lock, Mail, MapPin, Phone, ShieldCheck, Trash2, User, Zap } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils";
 
 const trustBadges = [
   { icon: ShieldCheck, label: "256-bit SSL", desc: "Encrypted" },
-  { icon: RefreshCcw, label: "45 days", desc: "Money back" },
   { icon: Zap, label: "99.9%", desc: "Uptime" },
   { icon: Clock, label: "24/7", desc: "Support" }
 ] as const;
@@ -266,16 +265,6 @@ export function DomainCartClient() {
                 <div className="mt-4 flex items-center justify-center gap-4 text-[10px] uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">
                   <span className="inline-flex items-center gap-1"><Lock className="h-3 w-3" /> Encrypted</span>
                   <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> PCI compliant</span>
-                </div>
-              </section>
-
-              <section className="flex items-center gap-4 rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-950">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-700 dark:border-white/10 dark:text-slate-200">
-                  <RefreshCcw className="h-4 w-4" />
-                </span>
-                <div>
-                  <div className="text-[13px] font-medium text-slate-950 dark:text-white">45-day money back</div>
-                  <div className="text-[12px] text-slate-500 dark:text-slate-400">Full refund, no questions asked.</div>
                 </div>
               </section>
             </div>

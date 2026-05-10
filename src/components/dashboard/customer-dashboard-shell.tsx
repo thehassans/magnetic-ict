@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useMemo, useState, useTransition } from "react";
-import { Bot, BrainCircuit, ChevronRight, Globe, LayoutDashboard, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Receipt, Server, ShoppingCart, X } from "lucide-react";
+import { Bot, BrainCircuit, ChevronRight, Globe, LayoutDashboard, LogOut, Menu, MonitorCheck, PanelLeftClose, PanelLeftOpen, Receipt, Server, ShoppingCart, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/branding/brand-logo";
@@ -73,6 +73,12 @@ export function CustomerDashboardShell({
         label: "Hosting",
         Icon: Server,
         match: (value) => value.startsWith("/dashboard/hosting")
+      });
+      items.push({
+        href: "/dashboard/server-management",
+        label: "Server Management",
+        Icon: MonitorCheck,
+        match: (value) => value.startsWith("/dashboard/server-management")
       });
     }
 

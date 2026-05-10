@@ -448,67 +448,93 @@ export function AdminHostingClient({ provisions }: { provisions: HostingProvisio
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-              <div className="text-sm font-semibold text-slate-950">Customer access</div>
-              <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                <label className="space-y-2 text-sm">
-              <span className="font-semibold text-slate-700">Panel type</span>
-              <select
-                value={formState.panel}
-                onChange={(event) => setFormState((current) => ({ ...current, panel: event.target.value as typeof current.panel }))}
-                    className="h-12 w-full rounded-[20px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950"
-              >
-                <option value="none">None</option>
-                <option value="plesk">Plesk</option>
-                <option value="cpanel">cPanel</option>
-                <option value="directadmin">DirectAdmin</option>
-                <option value="custom">Custom</option>
-              </select>
-            </label>
-            <label className="space-y-2 text-sm">
-              <span className="font-semibold text-slate-700">Panel label</span>
-              <input
-                value={formState.panelLabel}
-                onChange={(event) => setFormState((current) => ({ ...current, panelLabel: event.target.value }))}
-                    className="h-12 w-full rounded-[20px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950"
-              />
-            </label>
-            <label className="space-y-2 text-sm lg:col-span-2">
-              <span className="font-semibold text-slate-700">Login URL</span>
-              <input
-                value={formState.loginUrl}
-                onChange={(event) => setFormState((current) => ({ ...current, loginUrl: event.target.value }))}
-                    className="h-12 w-full rounded-[20px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950"
-              />
-            </label>
-            <label className="space-y-2 text-sm">
-              <span className="font-semibold text-slate-700">Username</span>
-              <input
-                value={formState.username}
-                onChange={(event) => setFormState((current) => ({ ...current, username: event.target.value }))}
-                    className="h-12 w-full rounded-[20px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950"
-              />
-            </label>
-            <label className="space-y-2 text-sm">
-              <span className="font-semibold text-slate-700">Access ready</span>
-              <button
-                type="button"
-                onClick={() => setFormState((current) => ({ ...current, isReady: !current.isReady }))}
-                    className={`flex h-12 w-full items-center rounded-[20px] border px-4 text-sm font-medium transition ${formState.isReady ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 bg-white text-slate-700"}`}
-              >
-                {formState.isReady ? "Ready for customer login" : "Still pending"}
-              </button>
-            </label>
-            <label className="space-y-2 text-sm lg:col-span-2">
-              <span className="font-semibold text-slate-700">Customer notes</span>
-              <textarea
-                value={formState.notes}
-                onChange={(event) => setFormState((current) => ({ ...current, notes: event.target.value }))}
-                rows={3}
-                    className="w-full rounded-[20px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950"
-              />
-            </label>
+            <div className="rounded-[24px] border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-indigo-50 p-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-600 text-white shadow-md shadow-violet-500/30">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-slate-950">Assign Server Panel Access</div>
+                  <div className="text-[11px] text-violet-700">Paste the Plesk / cPanel URL to give the customer instant server access</div>
+                </div>
               </div>
+
+              <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                <label className="space-y-2 text-sm">
+                  <span className="font-semibold text-slate-700">Panel type</span>
+                  <select
+                    value={formState.panel}
+                    onChange={(event) => setFormState((current) => ({ ...current, panel: event.target.value as typeof current.panel }))}
+                    className="h-12 w-full rounded-[20px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950"
+                  >
+                    <option value="none">None</option>
+                    <option value="plesk">Plesk</option>
+                    <option value="cpanel">cPanel</option>
+                    <option value="directadmin">DirectAdmin</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </label>
+                <label className="space-y-2 text-sm">
+                  <span className="font-semibold text-slate-700">Panel label (shown to customer)</span>
+                  <input
+                    value={formState.panelLabel}
+                    onChange={(event) => setFormState((current) => ({ ...current, panelLabel: event.target.value }))}
+                    placeholder="e.g. Plesk Control Panel"
+                    className="h-12 w-full rounded-[20px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950"
+                  />
+                </label>
+                <label className="space-y-2 text-sm lg:col-span-2">
+                  <span className="font-bold text-slate-950">
+                    🔗 Panel login URL
+                    <span className="ml-2 text-[11px] font-normal text-violet-600">This is the direct link the customer will use to open their server</span>
+                  </span>
+                  <input
+                    value={formState.loginUrl}
+                    onChange={(event) => setFormState((current) => ({ ...current, loginUrl: event.target.value }))}
+                    placeholder="https://your-plesk-server.com:8443"
+                    className="h-12 w-full rounded-[20px] border-2 border-violet-300 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-violet-600 focus:ring-2 focus:ring-violet-200"
+                  />
+                </label>
+                <label className="space-y-2 text-sm">
+                  <span className="font-semibold text-slate-700">Customer username</span>
+                  <input
+                    value={formState.username}
+                    onChange={(event) => setFormState((current) => ({ ...current, username: event.target.value }))}
+                    placeholder="e.g. customer@email.com"
+                    className="h-12 w-full rounded-[20px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950"
+                  />
+                </label>
+                <label className="space-y-2 text-sm">
+                  <span className="font-semibold text-slate-700">Access status</span>
+                  <button
+                    type="button"
+                    onClick={() => setFormState((current) => ({ ...current, isReady: !current.isReady }))}
+                    className={`flex h-12 w-full items-center gap-3 rounded-[20px] border px-4 text-sm font-semibold transition ${formState.isReady ? "border-emerald-500 bg-emerald-600 text-white shadow-md shadow-emerald-500/20" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"}`}
+                  >
+                    <span className={`h-2.5 w-2.5 rounded-full ${formState.isReady ? "bg-white" : "bg-slate-300"}`} />
+                    {formState.isReady ? "✓ Ready — customer can now access their server" : "Pending — customer cannot access yet"}
+                  </button>
+                </label>
+                <label className="space-y-2 text-sm lg:col-span-2">
+                  <span className="font-semibold text-slate-700">Notes for customer (shown in their dashboard)</span>
+                  <textarea
+                    value={formState.notes}
+                    onChange={(event) => setFormState((current) => ({ ...current, notes: event.target.value }))}
+                    rows={3}
+                    placeholder="e.g. Use your registered email to log in. Contact support if you need a password reset."
+                    className="w-full rounded-[20px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950"
+                  />
+                </label>
+              </div>
+
+              {formState.loginUrl && formState.panel !== "none" && (
+                <div className="mt-4 flex items-center gap-3 rounded-[16px] border border-emerald-200 bg-emerald-50 px-4 py-3">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                  <span className="text-[12px] text-emerald-800">
+                    Panel URL set. Toggle <strong>Access status → Ready</strong> and click <strong>Save hosting access</strong> to push access to the customer&apos;s Server Management dashboard.
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </section>

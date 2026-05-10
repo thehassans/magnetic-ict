@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition, type InputHTMLAttributes, type ReactNode } from "react";
-import { ArrowLeft, Award, CheckCircle2, Clock, Lock, Mail, MapPin, RefreshCcw, ShieldCheck, Star, User, Zap, Sparkles } from "lucide-react";
+import { ArrowLeft, Award, CheckCircle2, Clock, Lock, Mail, MapPin, ShieldCheck, Star, User, Zap, Sparkles } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -25,7 +25,6 @@ const stripeBackedPaymentMethods = new Set<(typeof paymentMethods)[number]["id"]
 
 const trustBadges = [
   { icon: ShieldCheck, label: "256-bit SSL", desc: "Encrypted" },
-  { icon: RefreshCcw, label: "45 days", desc: "Money back" },
   { icon: Zap, label: "99.9%", desc: "Uptime" },
   { icon: Clock, label: "24/7", desc: "Support" }
 ] as const;
@@ -444,15 +443,6 @@ export function CheckoutPageContent({ availablePaymentMethods, hostingProviderCo
                 </div>
               </section>
 
-              <section className="flex items-center gap-4 rounded-3xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-950">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-700 dark:border-white/10 dark:text-slate-200">
-                  <RefreshCcw className="h-4 w-4" />
-                </span>
-                <div>
-                  <div className="text-[13px] font-medium text-slate-950 dark:text-white">45-day money back</div>
-                  <div className="text-[12px] text-slate-500 dark:text-slate-400">Full refund, no questions asked.</div>
-                </div>
-              </section>
 
               <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 dark:border-white/10 dark:bg-slate-950">
                 <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
