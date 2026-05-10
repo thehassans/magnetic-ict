@@ -1,5 +1,6 @@
 import { CheckCircle2, Clock, ExternalLink, Server } from "lucide-react";
 import Link from "next/link";
+import { AdminAssignHostingForm } from "@/components/admin/admin-assign-hosting-form";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { requireAdmin } from "@/lib/admin";
 import { getHostingProvisionsForUser } from "@/lib/hosting-db";
@@ -106,13 +107,11 @@ export default async function AdminUsersPage() {
                   <div className="text-[12px] text-slate-400">
                     {new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(user.createdAt)}
                   </div>
-                  <Link
-                    href={`/admin/hosting`}
-                    className="inline-flex h-8 items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 text-[12px] font-medium text-slate-700 transition hover:bg-slate-100"
-                  >
-                    <Server className="h-3 w-3" />
-                    Manage hosting
-                  </Link>
+                  <AdminAssignHostingForm
+                    userId={user.id}
+                    userEmail={user.email}
+                    provisions={provisions}
+                  />
                 </div>
               </div>
 
