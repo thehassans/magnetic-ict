@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { Link } from "@/i18n/navigation";
 import { getHostingProvisionsForUser } from "@/lib/hosting-db";
 import { userHasMagneticVpsAccess } from "@/lib/hosting-access";
+import { ServerCredentialRow } from "@/components/dashboard/server-credential-row";
 
 export const metadata = { title: "Server Management" };
 
@@ -173,12 +174,17 @@ export default async function ServerManagementPage({ params }: { params: Promise
                           {provision.access.panelLabel ?? provision.configuration.controlPanelName ?? "None assigned"}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-slate-500 dark:text-slate-400">Username</span>
-                        <span className="truncate font-mono text-[12px] text-slate-950 dark:text-white">
-                          {provision.access.username ?? provision.customerEmail}
-                        </span>
-                      </div>
+                      <ServerCredentialRow
+                        label="Username"
+                        value={provision.access.username ?? provision.customerEmail}
+                      />
+                      {provision.access.password && (
+                        <ServerCredentialRow
+                          label="Password"
+                          value={provision.access.password}
+                          masked
+                        />
+                      )}
                       <div className="flex items-center justify-between gap-3">
                         <span className="text-slate-500 dark:text-slate-400">Access</span>
                         {panelReady ? (

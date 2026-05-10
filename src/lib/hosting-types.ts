@@ -104,6 +104,7 @@ export type HostingProvisionAccess = {
   panelLabel: string | null;
   loginUrl: string | null;
   username: string | null;
+  password: string | null;
   isReady: boolean;
   notes: string | null;
 };

@@ -13,6 +13,7 @@ const requestSchema = z.object({
   panelLabel: z.string(),
   loginUrl: z.string(),
   username: z.string(),
+  password: z.string(),
   isReady: z.boolean(),
   notes: z.string()
 });
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
       panelLabel: parsed.panelLabel.trim() || null,
       loginUrl: parsed.loginUrl.trim() || null,
       username: parsed.username.trim() || null,
+      password: parsed.password.trim() || null,
       isReady: parsed.isReady,
       notes: parsed.notes.trim() || null
     });

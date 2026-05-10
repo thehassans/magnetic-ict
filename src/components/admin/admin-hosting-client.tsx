@@ -45,6 +45,7 @@ type HostingProvision = {
     panelLabel: string | null;
     loginUrl: string | null;
     username: string | null;
+    password: string | null;
     isReady: boolean;
     notes: string | null;
   };
@@ -106,6 +107,7 @@ export function AdminHostingClient({ provisions }: { provisions: HostingProvisio
     panelLabel: provisions[0]?.access.panelLabel ?? "",
     loginUrl: provisions[0]?.access.loginUrl ?? "",
     username: provisions[0]?.access.username ?? "",
+    password: provisions[0]?.access.password ?? "",
     isReady: provisions[0]?.access.isReady ?? false,
     notes: provisions[0]?.access.notes ?? ""
   }));
@@ -135,6 +137,7 @@ export function AdminHostingClient({ provisions }: { provisions: HostingProvisio
       panelLabel: nextProvision.access.panelLabel ?? "",
       loginUrl: nextProvision.access.loginUrl ?? "",
       username: nextProvision.access.username ?? "",
+      password: nextProvision.access.password ?? "",
       isReady: nextProvision.access.isReady,
       notes: nextProvision.access.notes ?? ""
     });
@@ -502,6 +505,16 @@ export function AdminHostingClient({ provisions }: { provisions: HostingProvisio
                     onChange={(event) => setFormState((current) => ({ ...current, username: event.target.value }))}
                     placeholder="e.g. customer@email.com"
                     className="h-12 w-full rounded-[20px] border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none transition focus:border-slate-950"
+                  />
+                </label>
+                <label className="space-y-2 text-sm">
+                  <span className="font-semibold text-slate-700">Login password</span>
+                  <input
+                    value={formState.password}
+                    onChange={(event) => setFormState((current) => ({ ...current, password: event.target.value }))}
+                    type="text"
+                    placeholder="e.g. MySecureP@ssw0rd"
+                    className="h-12 w-full rounded-[20px] border border-slate-200 bg-white px-4 font-mono text-sm text-slate-950 outline-none transition focus:border-slate-950"
                   />
                 </label>
                 <label className="space-y-2 text-sm">

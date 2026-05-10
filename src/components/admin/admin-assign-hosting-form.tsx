@@ -19,6 +19,7 @@ const defaultForm = (email: string) => ({
   panelLabel: "Open Plesk Panel",
   loginUrl: "",
   username: email,
+  password: "",
   isReady: true,
   notes: ""
 });
@@ -39,6 +40,7 @@ export function AdminAssignHostingForm({ userId, userEmail, provisions: initialP
           panelLabel: initialProvisions[0].access.panelLabel ?? "Plesk Control Panel",
           loginUrl: initialProvisions[0].access.loginUrl ?? "",
           username: initialProvisions[0].access.username ?? userEmail,
+          password: initialProvisions[0].access.password ?? "",
           isReady: initialProvisions[0].access.isReady,
           notes: initialProvisions[0].access.notes ?? ""
         }
@@ -68,6 +70,7 @@ export function AdminAssignHostingForm({ userId, userEmail, provisions: initialP
       panelLabel: p.access.panelLabel ?? "Plesk Control Panel",
       loginUrl: p.access.loginUrl ?? "",
       username: p.access.username ?? userEmail,
+      password: p.access.password ?? "",
       isReady: p.access.isReady,
       notes: p.access.notes ?? ""
     });
@@ -97,6 +100,7 @@ export function AdminAssignHostingForm({ userId, userEmail, provisions: initialP
               panelLabel: form.panelLabel,
               loginUrl: form.loginUrl,
               username: form.username,
+              password: form.password,
               isReady: form.isReady,
               notes: form.notes
             })
@@ -120,6 +124,7 @@ export function AdminAssignHostingForm({ userId, userEmail, provisions: initialP
               panelLabel: form.panelLabel,
               loginUrl: form.loginUrl,
               username: form.username,
+              password: form.password,
               isReady: form.isReady,
               notes: form.notes
             })
@@ -265,6 +270,18 @@ export function AdminAssignHostingForm({ userId, userEmail, provisions: initialP
                 onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
                 placeholder={userEmail}
                 className="mt-1.5 block h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-950 outline-none transition focus:border-violet-400 focus:bg-white"
+              />
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Login password</label>
+              <input
+                value={form.password}
+                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                type="text"
+                placeholder="e.g. MySecureP@ssw0rd"
+                className="mt-1.5 block h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 font-mono text-sm text-slate-950 outline-none transition focus:border-violet-400 focus:bg-white"
               />
             </div>
 

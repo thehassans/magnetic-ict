@@ -81,6 +81,7 @@ const defaultHostingProvisionAccess: HostingProvisionAccess = {
   panelLabel: null,
   loginUrl: null,
   username: null,
+  password: null,
   isReady: false,
   notes: null
 };
@@ -91,6 +92,7 @@ function normalizeHostingProvisionAccess(value: Partial<HostingProvisionAccess> 
     panelLabel: typeof value?.panelLabel === "string" ? value.panelLabel : defaultHostingProvisionAccess.panelLabel,
     loginUrl: typeof value?.loginUrl === "string" ? value.loginUrl : defaultHostingProvisionAccess.loginUrl,
     username: typeof value?.username === "string" ? value.username : defaultHostingProvisionAccess.username,
+    password: typeof value?.password === "string" ? value.password : defaultHostingProvisionAccess.password,
     isReady: typeof value?.isReady === "boolean" ? value.isReady : defaultHostingProvisionAccess.isReady,
     notes: typeof value?.notes === "string" ? value.notes : defaultHostingProvisionAccess.notes
   };
@@ -195,6 +197,7 @@ export async function createManualHostingProvision(params: {
   panelLabel: string | null;
   loginUrl: string | null;
   username: string | null;
+  password: string | null;
   isReady: boolean;
   notes: string | null;
 }): Promise<HostingProvisionRecord> {
@@ -224,6 +227,7 @@ export async function createManualHostingProvision(params: {
       panelLabel: params.panelLabel,
       loginUrl: params.loginUrl,
       username: params.username,
+      password: params.password,
       isReady: params.isReady,
       notes: params.notes
     })
