@@ -198,6 +198,7 @@ function createProvisionAccess(settings: HostingProviderSettings, request: Hosti
     panelLabel: panel === "none" ? null : (settings.customerPanelLabel.trim() || request.configuration.controlPanel?.name || "Hosting panel"),
     loginUrl,
     username: provision.customerEmail,
+    password: null,
     isReady: panel !== "none" && Boolean(loginUrl),
     notes: settings.customerPanelHelpText.trim() || null
   };
@@ -263,6 +264,7 @@ function createProvisionRecord(request: HostingProvisionRequest, settings: Hosti
       panelLabel: null,
       loginUrl: null,
       username: null,
+      password: null,
       isReady: false,
       notes: null
     }
