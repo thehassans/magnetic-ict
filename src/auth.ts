@@ -207,7 +207,8 @@ async function buildProviders() {
         clientSecret: oauthSettings.google.clientSecret,
         authorization: {
           params: {
-            scope: "openid email profile"
+            scope: "openid email profile",
+            response_mode: "form_post"
           }
         }
       })
