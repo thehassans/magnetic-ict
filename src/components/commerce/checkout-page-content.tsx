@@ -21,7 +21,8 @@ const paymentMethods = [
   { id: "GOOGLE_PAY", titleKey: "paymentGooglePay" }
 ] as const;
 const minimumStripeChargeUsd = 0.5;
-const stripeBackedPaymentMethods = new Set<(typeof paymentMethods)[number]["id"]>(["STRIPE", "APPLE_PAY", "GOOGLE_PAY"]);
+const stripeBackedPaymentMethods = new Set<(typeof paymentMethods)[number]["id"]>(["STRIPE", "APPLE_PAY"]);
+const payPalBackedPaymentMethods = new Set<(typeof paymentMethods)[number]["id"]>(["PAYPAL", "GOOGLE_PAY"]);
 
 const trustBadges = [
   { icon: ShieldCheck, label: "256-bit SSL", desc: "Encrypted" },
@@ -104,7 +105,7 @@ export function CheckoutPageContent({ availablePaymentMethods, hostingProviderCo
       return;
     }
     if (hasStripeMinimumIssue) {
-      setError("Card, Apple Pay, and Google Pay payments require at least $0.50 USD. Increase your order total or use PayPal.");
+      setError("Card and Apple Pay payments require at least $0.50 USD. Increase your order total or use PayPal/Google Pay.");
       return;
     }
 
@@ -429,7 +430,7 @@ export function CheckoutPageContent({ availablePaymentMethods, hostingProviderCo
                   </button>
                 )}
 
-                {!error && hasStripeMinimumIssue ? <p className="mt-3 text-[12px] text-amber-600 dark:text-amber-300">Your current subtotal is below the $0.50 minimum for card, Apple Pay, and Google Pay. Choose PayPal or add another item.</p> : null}
+                {!error && hasStripeMinimumIssue ? <p className="mt-3 text-[12px] text-amber-600 dark:text-amber-300">Your current subtotal is below the $0.50 minimum for card and Apple Pay. Choose PayPal/Google Pay or add another item.</p> : null}
                 {error ? <p className="mt-3 text-[12px] text-rose-600 dark:text-rose-300">{error}</p> : null}
                 {!error && success ? <p className="mt-3 text-[12px] text-emerald-600 dark:text-emerald-300">{success}</p> : null}
 

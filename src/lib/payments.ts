@@ -10,6 +10,7 @@ type PayPalCheckoutOrderInput = {
   locale: string;
   successPath?: string;
   cancelPath?: string;
+  paymentMethod?: "PAYPAL" | "GOOGLE_PAY";
 };
 
 type PayPalLink = {
@@ -87,13 +88,35 @@ async function getPayPalAccessToken() {
   return payload.access_token ?? null;
 }
 
-export async function createPayPalCheckoutOrder({ amount, orderIds, locale, successPath = "/checkout/success", cancelPath = "/checkout/cancel" }: PayPalCheckoutOrderInput) {
+export async function createPayPalCheckoutOrder({ amount, orderIds, locale, successPath = "/checkout/success", cancelPath = "/checkout/cancel", paymentMethod = "PAYPAL" }: PayPalCheckoutOrderInput) {
   const accessToken = await getPayPalAccessToken();
   const appUrl = getAppUrl();
 
   if (!accessToken || !appUrl) {
     return null;
   }
+
+  const paymentSource = paymentMethod === "GOOGLE_PAY"
+    ? {
+        google_pay: {
+          experience_context: {
+            user_action: "PAY_NOW",
+            shipping_preference: "NO_SHIPPING",
+            return_url: `${appUrl}/${locale}${successPath}?provider=googlepay&order_refs=${orderIds.join(",")}`,
+            cancel_url: `${appUrl}/${locale}${cancelPath}?provider=googlepay&order_refs=${orderIds.join(",")}`
+          }
+        }
+      }
+    : {
+        paypal: {
+          experience_context: {
+            user_action: "PAY_NOW",
+            shipping_preference: "NO_SHIPPING",
+            return_url: `${appUrl}/${locale}${successPath}?provider=paypal&order_refs=${orderIds.join(",")}`,
+            cancel_url: `${appUrl}/${locale}${cancelPath}?provider=paypal&order_refs=${orderIds.join(",")}`
+          }
+        }
+      };
 
   const response = await fetch(`${getPayPalApiBaseUrl()}/v2/checkout/orders`, {
     method: "POST",
@@ -114,16 +137,7 @@ export async function createPayPalCheckoutOrder({ amount, orderIds, locale, succ
           }
         }
       ],
-      payment_source: {
-        paypal: {
-          experience_context: {
-            user_action: "PAY_NOW",
-            shipping_preference: "NO_SHIPPING",
-            return_url: `${appUrl}/${locale}${successPath}?provider=paypal&order_refs=${orderIds.join(",")}`,
-            cancel_url: `${appUrl}/${locale}${cancelPath}?provider=paypal&order_refs=${orderIds.join(",")}`
-          }
-        }
-      }
+      payment_source: paymentSource
     })
   });
 

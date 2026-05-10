@@ -16,7 +16,8 @@ import {
 import { getEnabledPaymentMethodIds, getPaymentIntegrationsSettings } from "@/lib/platform-settings";
 
 const paymentMethodSchema = z.enum(["STRIPE", "PAYPAL", "APPLE_PAY", "GOOGLE_PAY"]);
-const stripeBackedPaymentMethods = new Set<CheckoutPaymentMethod>(["STRIPE", "APPLE_PAY", "GOOGLE_PAY"]);
+const stripeBackedPaymentMethods = new Set<CheckoutPaymentMethod>(["STRIPE", "APPLE_PAY"]);
+const payPalBackedPaymentMethods = new Set<CheckoutPaymentMethod>(["PAYPAL", "GOOGLE_PAY"]);
 const minimumStripeChargeUsd = 0.5;
 
 const checkoutSchema = z.object({
@@ -101,7 +102,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (payload.paymentMethod === "PAYPAL") {
+    if (payPalBackedPaymentMethods.has(payload.paymentMethod as CheckoutPaymentMethod)) {
       if (!isPayPalConfigured()) {
         await markOrdersFailed(orderIds);
         return NextResponse.json(
@@ -114,7 +115,8 @@ export async function POST(request: Request) {
         const paypalOrder = await createPayPalCheckoutOrder({
           amount: totalAmount,
           orderIds,
-          locale: payload.locale
+          locale: payload.locale,
+          paymentMethod: payload.paymentMethod as "PAYPAL" | "GOOGLE_PAY"
         });
 
         if (!paypalOrder) {
