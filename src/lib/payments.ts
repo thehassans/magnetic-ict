@@ -142,7 +142,9 @@ export async function createPayPalCheckoutOrder({ amount, orderIds, locale, succ
   });
 
   if (!response.ok) {
-    throw new Error("Unable to create a PayPal order.");
+    const errorText = await response.text();
+    console.error("PayPal order creation failed:", response.status, errorText);
+    throw new Error(`PayPal order creation failed: ${response.status} ${errorText}`);
   }
 
   const payload = (await response.json()) as PayPalOrderResponse;
