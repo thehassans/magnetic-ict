@@ -142,9 +142,7 @@ export async function createPayPalCheckoutOrder({ amount, orderIds, locale, succ
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error("PayPal order creation failed:", response.status, errorText);
-    throw new Error(`PayPal order creation failed: ${response.status} ${errorText}`);
+    throw new Error("Unable to create a PayPal order.");
   }
 
   const payload = (await response.json()) as PayPalOrderResponse;
@@ -156,6 +154,43 @@ export async function createPayPalCheckoutOrder({ amount, orderIds, locale, succ
         approveUrl
       }
     : null;
+}
+
+export async function createPayPalOrderForGooglePay({ amount, orderIds }: { amount: number; orderIds: string[] }) {
+  const accessToken = await getPayPalAccessToken();
+
+  if (!accessToken) {
+    return null;
+  }
+
+  const response = await fetch(`${getPayPalApiBaseUrl()}/v2/checkout/orders`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      intent: "CAPTURE",
+      purchase_units: [
+        {
+          reference_id: "magneticict-order-bundle",
+          custom_id: orderIds.join(","),
+          description: "MagneticICT premium services",
+          amount: {
+            currency_code: "USD",
+            value: amount.toFixed(2)
+          }
+        }
+      ]
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to create a PayPal order for Google Pay.");
+  }
+
+  const payload = (await response.json()) as PayPalOrderResponse;
+  return payload.id ?? null;
 }
 
 export async function capturePayPalCheckoutOrder(orderToken: string) {

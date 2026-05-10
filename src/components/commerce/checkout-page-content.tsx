@@ -10,6 +10,7 @@ import { useCommerce } from "@/components/commerce/commerce-provider";
 import { resolveHostingConfiguration, getHostingConfigurationTotal } from "@/lib/hosting-commerce";
 import type { HostingProviderSettings } from "@/lib/hosting-types";
 import { ApplePayMark, GooglePayMark, MastercardMark, PayPalMark, VisaMark } from "@/components/ui/payment-brand-icons";
+import { GooglePayButton } from "@/components/commerce/google-pay-button";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
 import { reviews } from "@/lib/reviews";
 import { cn } from "@/lib/utils";
@@ -292,6 +293,9 @@ export function CheckoutPageContent({ availablePaymentMethods, hostingProviderCo
                           {id === "STRIPE" ? (
                             <div className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">Card details are collected securely on Stripe Checkout.</div>
                           ) : null}
+                          {id === "GOOGLE_PAY" ? (
+                            <div className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">Processed via PayPal. Google Pay sheet opens on checkout.</div>
+                          ) : null}
                           {stripeBackedPaymentMethods.has(id) && subtotal < minimumStripeChargeUsd ? (
                             <div className="mt-1.5 text-[11px] text-amber-600 dark:text-amber-300">Requires at least $0.50 subtotal.</div>
                           ) : null}
@@ -418,6 +422,14 @@ export function CheckoutPageContent({ availablePaymentMethods, hostingProviderCo
                     <Lock className="h-4 w-4" />
                     {t("authenticateToContinue")}
                   </button>
+                ) : paymentMethod === "GOOGLE_PAY" ? (
+                  <GooglePayButton
+                    total={total}
+                    items={items}
+                    disabled={!contactValid || !termsAccepted}
+                    onError={(msg) => { setError(msg); }}
+                    onStart={() => { setError(""); setSuccess(""); }}
+                  />
                 ) : (
                   <button
                     type="button"

@@ -97,7 +97,7 @@ export async function POST(request: Request) {
     if (stripeBackedPaymentMethods.has(payload.paymentMethod as CheckoutPaymentMethod) && totalAmount < minimumStripeChargeUsd) {
       await markOrdersFailed(orderIds);
       return NextResponse.json(
-        { error: "Card, Apple Pay, and Google Pay payments require at least $0.50 USD. Increase your order total or use PayPal." },
+        { error: "Card and Apple Pay payments require at least $0.50 USD. Increase your order total or use PayPal/Google Pay." },
         { status: 400 }
       );
     }
