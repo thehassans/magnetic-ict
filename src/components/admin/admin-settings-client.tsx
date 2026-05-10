@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useMemo, useState } from "react";
-import { Check, Loader2, Sparkles } from "lucide-react";
+import { Bell, BookOpen, Check, Code2, CreditCard, Globe2, Key, Languages, Loader2, Mail, MailOpen, MessageSquare, Server, Settings2, Sparkles, ToggleLeft, Users } from "lucide-react";
 import { HostingConfigEditor } from "@/components/admin/hosting-config-editor";
 import { TrustedPartnersEditor } from "@/components/admin/trusted-partners-editor";
 import { DomainTldEditor } from "@/components/admin/domain-tld-editor";
@@ -66,6 +66,26 @@ const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth"
   about: "About page"
 };
 
+type TabKey = "about" | "languages" | "footer" | "trustedPartners" | "payments" | "oauth" | "gemini" | "domain" | "hosting" | "socialBot" | "magneticCommerce" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "emailLogs";
+
+const tabs: { key: TabKey; label: string; icon: ReactNode }[] = [
+  { key: "about",               label: "About",          icon: <BookOpen className="h-3.5 w-3.5" /> },
+  { key: "languages",           label: "Languages",      icon: <Languages className="h-3.5 w-3.5" /> },
+  { key: "footer",              label: "Footer",         icon: <Settings2 className="h-3.5 w-3.5" /> },
+  { key: "trustedPartners",     label: "Partners",       icon: <Users className="h-3.5 w-3.5" /> },
+  { key: "payments",            label: "Payments",       icon: <CreditCard className="h-3.5 w-3.5" /> },
+  { key: "oauth",               label: "OAuth",          icon: <Key className="h-3.5 w-3.5" /> },
+  { key: "gemini",              label: "AI / Gemini",    icon: <Sparkles className="h-3.5 w-3.5" /> },
+  { key: "domain",              label: "Domains",        icon: <Globe2 className="h-3.5 w-3.5" /> },
+  { key: "hosting",             label: "Hosting",        icon: <Server className="h-3.5 w-3.5" /> },
+  { key: "socialBot",           label: "Social Bot",     icon: <MessageSquare className="h-3.5 w-3.5" /> },
+  { key: "magneticCommerce",    label: "Commerce",       icon: <Code2 className="h-3.5 w-3.5" /> },
+  { key: "welcomeEmail",        label: "Welcome Email",  icon: <MailOpen className="h-3.5 w-3.5" /> },
+  { key: "transactionalEmail",  label: "Mailgun",        icon: <Mail className="h-3.5 w-3.5" /> },
+  { key: "emailNotifications",  label: "Notifications",  icon: <Bell className="h-3.5 w-3.5" /> },
+  { key: "emailLogs",           label: "Email Logs",     icon: <ToggleLeft className="h-3.5 w-3.5" /> },
+];
+
 function createVerifyToken() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
@@ -110,6 +130,7 @@ export function AdminSettingsClient({
   const [aboutState, setAboutState] = useState(aboutConfig);
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState>(null);
+  const [activeTab, setActiveTab] = useState<TabKey>("about");
 
   const selectedLanguages = useMemo(
     () => availableLanguages.filter((language) => selectedLanguageCodes.includes(language.code)),
@@ -225,24 +246,50 @@ export function AdminSettingsClient({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-0">
       {toast ? (
-        <div className={`fixed right-6 top-6 z-[120] max-w-sm rounded-[24px] border px-5 py-4 text-sm shadow-[0_24px_80px_rgba(15,23,42,0.14)] ${toast.type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-rose-200 bg-rose-50 text-rose-800"}`}>
+        <div className={`fixed right-6 top-6 z-[120] flex items-center gap-3 rounded-2xl border px-5 py-4 text-sm font-medium shadow-[0_24px_80px_rgba(15,23,42,0.18)] backdrop-blur-md ${
+          toast.type === "success"
+            ? "border-emerald-200/60 bg-emerald-50/95 text-emerald-800"
+            : "border-rose-200/60 bg-rose-50/95 text-rose-800"
+        }`}>
+          <span className={`h-2 w-2 rounded-full ${toast.type === "success" ? "bg-emerald-500" : "bg-rose-500"}`} />
           {toast.message}
         </div>
       ) : null}
 
       {!canPersist ? (
-        <div className="rounded-[28px] border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
-          DATABASE_URL is not configured, so these forms are preview-only locally.
+        <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
+          DATABASE_URL is not configured — forms are preview-only.
         </div>
       ) : null}
 
-      <SettingsCard
+      {/* ── Tab bar ── */}
+      <div className="relative mb-6">
+        <div className="scrollbar-none flex gap-1 overflow-x-auto rounded-2xl border border-slate-200/80 bg-slate-50/80 p-1.5 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2.5 text-[12px] font-semibold whitespace-nowrap transition-all ${
+                activeTab === tab.key
+                  ? "bg-white text-slate-950 shadow-md shadow-slate-200/80 dark:bg-slate-800 dark:text-white dark:shadow-slate-900/50"
+                  : "text-slate-500 hover:bg-white/60 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-white/[0.06]"
+              }`}
+            >
+              <span className={activeTab === tab.key ? "text-violet-600 dark:text-violet-400" : ""}>{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {activeTab === "about" && <SettingsCard
         title="About page"
         description="Edit the content shown on the public /about page. Changes take effect immediately on the next page load."
         action={<Button label="Save about page" loading={loadingSection === "about"} onClick={() => saveSection("about", aboutState)} />}
-      >
+      >{/* about */}
         <div className="grid gap-4 lg:grid-cols-2">
           <Input label="Eyebrow" value={aboutState.eyebrow} onChange={(value) => setAboutState((current) => ({ ...current, eyebrow: value }))} />
           <Input label="Headline" value={aboutState.headline} onChange={(value) => setAboutState((current) => ({ ...current, headline: value }))} />
@@ -309,9 +356,9 @@ export function AdminSettingsClient({
             + Add value
           </button>
         </div>
-      </SettingsCard>
+      </SettingsCard>}
 
-      <SettingsCard
+      {activeTab === "languages" && <SettingsCard
         title="Language & localization"
         description="Choose which shipped locales are active in the storefront header. New arbitrary languages still require code-level routing/messages to be added."
         action={
@@ -334,7 +381,6 @@ export function AdminSettingsClient({
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {availableLanguages.map((language) => {
             const checked = selectedLanguageCodes.includes(language.code);
-
             return (
               <button
                 key={language.code}
@@ -344,20 +390,20 @@ export function AdminSettingsClient({
                     checked ? current.filter((code) => code !== language.code) : [...current, language.code]
                   )
                 }
-                className={`flex items-center justify-between rounded-[22px] border px-4 py-4 text-left transition ${checked ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-white"}`}
+                className={`flex items-center justify-between rounded-2xl border px-4 py-4 text-left transition ${checked ? "border-violet-500/40 bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/20" : "border-slate-200/80 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-white dark:border-white/[0.08] dark:bg-white/[0.03]"}`}
               >
                 <div>
-                  <div className="font-semibold">{language.label}</div>
-                  <div className={`mt-1 text-xs uppercase tracking-[0.24em] ${checked ? "text-white/70" : "text-slate-500"}`}>{language.code}</div>
+                  <div className="text-[13px] font-semibold">{language.label}</div>
+                  <div className={`mt-0.5 text-[10px] font-bold uppercase tracking-[0.24em] ${checked ? "text-white/70" : "text-slate-400"}`}>{language.code}</div>
                 </div>
                 {checked ? <Check className="h-4 w-4" /> : null}
               </button>
             );
           })}
         </div>
-      </SettingsCard>
+      </SettingsCard>}
 
-      <SettingsCard
+      {activeTab === "footer" && <SettingsCard
         title="Footer management"
         description="Update the public footer contact details and CTA destination. These values are wired into the live footer."
         action={<Button label="Save footer" loading={loadingSection === "footer"} onClick={() => saveSection("footer", footerState)} />}
@@ -368,17 +414,17 @@ export function AdminSettingsClient({
           <Input label="Location label" value={footerState.locationLabel} onChange={(value) => setFooterState((current) => ({ ...current, locationLabel: value }))} />
           <Input label="CTA href" value={footerState.ctaHref} onChange={(value) => setFooterState((current) => ({ ...current, ctaHref: value }))} />
         </div>
-      </SettingsCard>
+      </SettingsCard>}
 
-      <SettingsCard
+      {activeTab === "trustedPartners" && <SettingsCard
         title="Trusted partners"
         description="Manage the partner logos shown on the landing page. Uploads are converted to WebP and stored through the admin panel."
         action={<Button label="Save partners" loading={loadingSection === "trustedPartners"} onClick={() => saveSection("trustedPartners", trustedPartnersState)} />}
       >
         <TrustedPartnersEditor value={trustedPartnersState} onChange={setTrustedPartnersState} disabled={loadingSection === "trustedPartners"} />
-      </SettingsCard>
+      </SettingsCard>}
 
-      <SettingsCard
+      {activeTab === "payments" && <SettingsCard
         title="Payment integrations"
         description="Control which payment methods appear at checkout and are accepted by the checkout API."
         action={<Button label="Save payments" loading={loadingSection === "payments"} onClick={() => saveSection("payments", paymentState)} />}
@@ -389,9 +435,9 @@ export function AdminSettingsClient({
           <ToggleCard label="Apple Pay" checked={paymentState.applePay.enabled} onChange={(checked) => setPaymentState((current) => ({ ...current, applePay: { enabled: checked } }))} />
           <ToggleCard label="Google Pay" checked={paymentState.googlePay.enabled} onChange={(checked) => setPaymentState((current) => ({ ...current, googlePay: { enabled: checked } }))} />
         </div>
-      </SettingsCard>
+      </SettingsCard>}
 
-      <SettingsCard
+      {activeTab === "oauth" && <SettingsCard
         title="OAuth configuration"
         description="Control which social sign-in providers are live and store their credentials for the customer login experience."
         action={<Button label="Save OAuth config" loading={loadingSection === "oauth"} onClick={() => saveSection("oauth", oauthState)} />}
@@ -427,9 +473,9 @@ export function AdminSettingsClient({
             <Input label="Client secret" value={oauthState.apple.clientSecret} onChange={(value) => setOAuthState((current) => ({ ...current, apple: { ...current.apple, clientSecret: value } }))} type="password" />
           </div>
         </div>
-      </SettingsCard>
+      </SettingsCard>}
 
-      <SettingsCard
+      {activeTab === "gemini" && <SettingsCard
         title="AI integration"
         description="Store your Gemini API key and test a live request against the `gemini-3-flash-preview` model."
         action={
@@ -440,9 +486,9 @@ export function AdminSettingsClient({
         }
       >
         <Input label="Gemini API key" value={geminiState.apiKey} onChange={(value) => setGeminiState({ apiKey: value })} type="password" icon={<Sparkles className="h-4 w-4" />} />
-      </SettingsCard>
+      </SettingsCard>}
 
-      <SettingsCard
+      {activeTab === "domain" && <SettingsCard
         title="Domain operations"
         description="Configure domain pricing, public search behavior, checkout provider, and optional live registration automation. Search uses RDAP availability checks. Public customers do not choose the payment provider here; checkout uses the admin-managed configuration below."
         action={<Button label="Save domain config" loading={loadingSection === "domain"} onClick={() => saveSection("domain", domainState)} />}
@@ -482,9 +528,9 @@ export function AdminSettingsClient({
           />
         </label>
         <DomainTldEditor tlds={domainState.tlds || []} onChange={(tlds) => setDomainState(current => ({ ...current, tlds }))} />
-      </SettingsCard>
+      </SettingsCard>}
 
-      <SettingsCard
+      {activeTab === "hosting" && <SettingsCard
         title="Magnetic VPS Hosting provider"
         description="Configure the reseller and cloud settings used by Magnetic VPS Hosting fulfillment. Manual mode keeps provisioning records internal. Live mode enables direct API-backed contract and infrastructure orchestration."
         action={<Button label="Save hosting config" loading={loadingSection === "hosting"} onClick={() => saveSection("hosting", hostingState)} />}
@@ -529,9 +575,9 @@ export function AdminSettingsClient({
           </p>
         </div>
         <HostingConfigEditor value={hostingState} onChange={setHostingState} />
-      </SettingsCard>
+      </SettingsCard>}
 
-      <SettingsCard
+      {activeTab === "socialBot" && <SettingsCard
         title="Magnetic Social Bot"
         description="Configure the Meta app values required by WhatsApp, Messenger, and Instagram. This follows the Meta setup flow for webhook callback URL, verify token, app secret validation, and embedded business login configuration."
         action={<Button label="Save Social Bot config" loading={loadingSection === "socialBot"} onClick={() => void handleSaveSocialBot()} />}
@@ -610,9 +656,9 @@ export function AdminSettingsClient({
             />
           </label>
         </div>
-      </SettingsCard>
+      </SettingsCard>}
 
-      <SettingsCard
+      {activeTab === "magneticCommerce" && <SettingsCard
         title="Magnetic Commerce"
         description="Configure global Magnetic Commerce rollout behavior including automatic DNS records, storefront/admin targets, and default workspace values."
         action={<Button label="Save Magnetic Commerce config" loading={loadingSection === "magneticCommerce"} onClick={() => saveSection("magneticCommerce", magneticCommerceState)} />}
@@ -637,9 +683,9 @@ export function AdminSettingsClient({
           <p><span className="font-medium text-slate-950">Manual mode:</span> records are stored inside Magnetic only.</p>
           <p><span className="font-medium text-slate-950">Live mode:</span> DNS changes use the managed-domain registrar integration when the assigned domain is active.</p>
         </div>
-      </SettingsCard>
+      </SettingsCard>}
 
-      <SettingsCard
+      {activeTab === "welcomeEmail" && <SettingsCard
         title="Welcome email automation"
         description="Automatically send a branded MagneticICT welcome email the first time a customer account is created."
         action={<Button label="Save welcome email" loading={loadingSection === "welcomeEmail"} onClick={() => saveSection("welcomeEmail", welcomeEmailState)} />}
@@ -664,9 +710,9 @@ export function AdminSettingsClient({
             />
           </label>
         </div>
-      </SettingsCard>
+      </SettingsCard>}
 
-      <SettingsCard
+      {activeTab === "transactionalEmail" && <SettingsCard
         title="Transactional email · Mailgun"
         description="Configure Mailgun for transactional emails, save the live delivery settings, and send a test email from the admin panel. If Mailgun is not enabled, the platform can still fall back to the existing auth mail transport for legacy flows."
         action={
@@ -689,9 +735,9 @@ export function AdminSettingsClient({
           <Input label="Reply-to email" value={transactionalEmailState.replyToEmail} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, replyToEmail: value }))} />
           <Input label="Test recipient" value={transactionalEmailState.testRecipient} onChange={(value) => setTransactionalEmailState((current) => ({ ...current, testRecipient: value }))} />
         </div>
-      </SettingsCard>
+      </SettingsCard>}
 
-      <SettingsCard
+      {activeTab === "emailNotifications" && <SettingsCard
         title="Email notifications"
         description="Choose which emails are sent automatically. Some events are already wired today, while the rest are saved as live automation policy and will be used as their workflows are connected."
         action={<Button label="Save email notifications" loading={loadingSection === "emailNotifications"} onClick={() => saveSection("emailNotifications", emailNotificationsState)} />}
@@ -713,9 +759,9 @@ export function AdminSettingsClient({
           <ToggleCard label="Service Expiring" checked={emailNotificationsState.serviceExpiring} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, serviceExpiring: checked }))} />
           <ToggleCard label="Service Suspended" checked={emailNotificationsState.serviceSuspended} onChange={(checked) => setEmailNotificationsState((current) => ({ ...current, serviceSuspended: checked }))} />
         </div>
-      </SettingsCard>
+      </SettingsCard>}
 
-      <SettingsCard
+      {activeTab === "emailLogs" && <SettingsCard
         title="Email logs"
         description="Review recent transactional email activity, including successful sends, skipped notifications, and delivery failures."
         action={<div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700">{emailLogs.length} recent logs</div>}
@@ -748,7 +794,7 @@ export function AdminSettingsClient({
             ))}
           </div>
         )}
-      </SettingsCard>
+      </SettingsCard>}
     </div>
   );
 }
@@ -765,15 +811,17 @@ function SettingsCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)] sm:p-8">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="max-w-3xl">
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-950">{title}</h2>
-          <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
+    <section className="overflow-hidden rounded-[28px] border border-slate-200/70 bg-white shadow-[0_4px_24px_rgba(15,23,42,0.06)] dark:border-white/[0.08] dark:bg-[#0d1117]">
+      {/* Card header */}
+      <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-5 dark:border-white/[0.07] sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-6">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-lg font-bold tracking-tight text-slate-950 dark:text-white">{title}</h2>
+          <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{description}</p>
         </div>
         <div className="shrink-0">{action}</div>
       </div>
-      <div className="mt-6">{children}</div>
+      {/* Card body */}
+      <div className="px-6 py-6 sm:px-8 sm:py-7">{children}</div>
     </section>
   );
 }
@@ -794,9 +842,13 @@ function Button({
       type="button"
       onClick={onClick}
       disabled={loading}
-      className={`inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${variant === "primary" ? "bg-slate-950 text-white hover:bg-slate-800" : "border border-slate-200 bg-slate-50 text-slate-950 hover:bg-slate-100"}`}
+      className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl px-5 text-[13px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+        variant === "primary"
+          ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/20 hover:brightness-110"
+          : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200 dark:hover:bg-white/[0.08]"
+      }`}
     >
-      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+      {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
       {label}
     </button>
   );
@@ -818,16 +870,16 @@ function Input({
   readOnly?: boolean;
 }) {
   return (
-    <label className="space-y-2 text-sm">
-      <span className="font-semibold text-slate-700">{label}</span>
-      <span className="flex h-12 items-center gap-3 rounded-[18px] border border-slate-200 bg-slate-50 px-4 text-slate-700 focus-within:border-slate-950 focus-within:bg-white">
-        {icon}
+    <label className="block space-y-1.5 text-sm">
+      <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">{label}</span>
+      <span className="flex h-11 items-center gap-3 rounded-xl border border-slate-200/80 bg-slate-50 px-4 text-slate-500 transition focus-within:border-violet-400 focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(139,92,246,0.08)] dark:border-white/[0.08] dark:bg-white/[0.04] dark:focus-within:border-violet-500">
+        {icon && <span className="shrink-0 text-slate-400">{icon}</span>}
         <input
           type={type}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           readOnly={readOnly}
-          className="w-full bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400"
+          className="w-full bg-transparent text-[13px] text-slate-950 outline-none placeholder:text-slate-400 dark:text-white"
         />
       </span>
     </label>
@@ -846,10 +898,10 @@ function SelectInput({
   options: Array<{ value: string; label: string }>;
 }) {
   return (
-    <label className="space-y-2 text-sm">
-      <span className="font-semibold text-slate-700">{label}</span>
-      <span className="flex h-12 items-center rounded-[18px] border border-slate-200 bg-slate-50 px-4 text-slate-700 focus-within:border-slate-950 focus-within:bg-white">
-        <select value={value} onChange={(event) => onChange(event.target.value)} className="w-full bg-transparent text-sm text-slate-950 outline-none">
+    <label className="block space-y-1.5 text-sm">
+      <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">{label}</span>
+      <span className="flex h-11 items-center rounded-xl border border-slate-200/80 bg-slate-50 px-4 text-slate-500 transition focus-within:border-violet-400 focus-within:bg-white dark:border-white/[0.08] dark:bg-white/[0.04]">
+        <select value={value} onChange={(event) => onChange(event.target.value)} className="w-full bg-transparent text-[13px] text-slate-950 outline-none dark:text-white">
           {options.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -871,11 +923,11 @@ function ReadOnlyValueCard({
   onCopy?: () => void;
 }) {
   return (
-    <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+    <div className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4 dark:border-white/[0.07] dark:bg-white/[0.03]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold text-slate-950">{label}</div>
-          <div className="mt-3 break-all rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">{value}</div>
+          <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">{label}</div>
+          <div className="mt-3 break-all rounded-xl border border-slate-200 bg-white px-4 py-3 font-mono text-[12px] text-slate-700 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-300">{value}</div>
         </div>
         {onCopy ? <Button label="Copy" loading={false} onClick={onCopy} variant="secondary" /> : null}
       </div>
@@ -893,12 +945,13 @@ function MetaChannelCard({
   checklist: string[];
 }) {
   return (
-    <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-      <div className="font-semibold text-slate-950">{title}</div>
-      <p className="mt-2 text-sm leading-7 text-slate-600">{description}</p>
+    <div className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-5 dark:border-white/[0.07] dark:bg-white/[0.03]">
+      <div className="text-sm font-bold text-slate-950 dark:text-white">{title}</div>
+      <p className="mt-2 text-[13px] leading-6 text-slate-500 dark:text-slate-400">{description}</p>
       <div className="mt-4 space-y-2">
-        {checklist.map((item) => (
-          <div key={item} className="rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+        {checklist.map((item, i) => (
+          <div key={item} className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-white px-4 py-3 text-[13px] text-slate-600 dark:border-white/[0.07] dark:bg-white/[0.04] dark:text-slate-300">
+            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-violet-100 text-[9px] font-bold text-violet-700 dark:bg-violet-500/20 dark:text-violet-300">{i + 1}</span>
             {item}
           </div>
         ))}
@@ -920,15 +973,25 @@ function ToggleCard({
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className={`rounded-[24px] border px-4 py-5 text-left transition ${checked ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-white"}`}
+      className={`group rounded-2xl border px-4 py-4 text-left transition ${
+        checked
+          ? "border-violet-500/40 bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/20"
+          : "border-slate-200/80 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-white dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-slate-300"
+      }`}
     >
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="font-semibold">{label}</div>
-          <div className={`mt-1 text-xs uppercase tracking-[0.22em] ${checked ? "text-white/70" : "text-slate-500"}`}>{checked ? "Enabled" : "Disabled"}</div>
+          <div className="text-[13px] font-semibold">{label}</div>
+          <div className={`mt-0.5 text-[10px] font-bold uppercase tracking-[0.22em] ${checked ? "text-white/70" : "text-slate-400"}`}>
+            {checked ? "Enabled" : "Disabled"}
+          </div>
         </div>
-        <div className={`flex h-6 w-11 items-center rounded-full p-1 transition ${checked ? "bg-white/20" : "bg-slate-200"}`}>
-          <div className={`h-4 w-4 rounded-full bg-white transition ${checked ? "translate-x-5" : "translate-x-0"}`} />
+        <div className={`flex h-5 w-9 items-center rounded-full p-0.5 transition ${
+          checked ? "bg-white/25" : "bg-slate-200 dark:bg-white/10"
+        }`}>
+          <div className={`h-4 w-4 rounded-full transition ${
+            checked ? "translate-x-4 bg-white shadow-sm" : "translate-x-0 bg-white shadow-sm dark:bg-slate-400"
+          }`} />
         </div>
       </div>
     </button>
