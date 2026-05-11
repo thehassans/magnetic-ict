@@ -1,7 +1,8 @@
-import { ArrowRight, Moon, Sun } from "lucide-react";
+import { ArrowRight, Moon, Sparkles, Sun } from "lucide-react";
 import Link from "next/link";
 import { AuroraTemplate } from "@/components/portfolio/template-aurora";
 import { LuminaTemplate } from "@/components/portfolio/template-lumina";
+import { PrismTemplate } from "@/components/portfolio/template-prism";
 import type { PortfolioSite } from "@/lib/portfolio-db";
 
 const DEMO_SITE: PortfolioSite = {
@@ -57,6 +58,12 @@ const DEMO_LUMINA: PortfolioSite = {
   ...DEMO_SITE,
   selectedTemplate: "lumina",
   accentColor: "#0ea5e9"
+};
+
+const DEMO_PRISM: PortfolioSite = {
+  ...DEMO_SITE,
+  selectedTemplate: "prism",
+  accentColor: "#f59e0b"
 };
 
 export default function PortfolioPreviewPage() {
@@ -122,6 +129,31 @@ export default function PortfolioPreviewPage() {
               </div>
               <div className="hidden sm:block" style={{ transform: "scale(1.34) translateY(0)", transformOrigin: "top left", width: "134%" }}>
                 <LuminaTemplate site={DEMO_LUMINA} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Template 3: Prism */}
+      <section className="border-b border-white/10 px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/50">
+                <Sparkles className="h-3 w-3" /> Dark · Editorial
+              </div>
+              <h2 className="text-2xl font-bold text-white">Prism</h2>
+              <p className="mt-1 text-sm text-white/50">Bold split-layout with giant typography, noise texture, and accent-first design language.</p>
+            </div>
+          </div>
+          <div className="overflow-hidden rounded-[24px] border border-white/10 shadow-[0_32px_80px_rgba(0,0,0,0.5)]">
+            <div className="pointer-events-none origin-top scale-[0.6] sm:scale-75" style={{ height: "clamp(520px, 60vw, 900px)" }}>
+              <div style={{ transform: "scale(1.67) translateY(0)", transformOrigin: "top left", width: "150%" }} className="sm:hidden">
+                <PrismTemplate site={DEMO_PRISM} />
+              </div>
+              <div className="hidden sm:block" style={{ transform: "scale(1.34) translateY(0)", transformOrigin: "top left", width: "134%" }}>
+                <PrismTemplate site={DEMO_PRISM} />
               </div>
             </div>
           </div>
