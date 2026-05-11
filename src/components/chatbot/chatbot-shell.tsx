@@ -1,9 +1,10 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useTransition } from "react";
+import { signOut } from "next-auth/react";
 import {
   BarChart3,
   Bot,
@@ -39,7 +40,12 @@ type Props = {
 
 export function ChatbotShell({ children, userName, userEmail }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [signingOut, startSignOut] = useTransition();
   const pathname = usePathname();
+
+  function handleSignOut() {
+    startSignOut(() => { void signOut({ redirectTo: "/en" }); });
+  }
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950">
@@ -102,13 +108,15 @@ export function ChatbotShell({ children, userName, userEmail }: Props) {
               <div className="truncate text-[10px] text-slate-500 dark:text-slate-400">{userEmail}</div>
             </div>
           </div>
-          <a
-            href="/en/sign-out"
-            className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2 text-xs text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-white/5"
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="mt-2 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50 dark:text-slate-400 dark:hover:bg-white/5"
           >
             <LogOut className="h-3.5 w-3.5" />
-            Sign out
-          </a>
+            {signingOut ? "Signing out…" : "Sign out"}
+          </button>
         </div>
       </aside>
 

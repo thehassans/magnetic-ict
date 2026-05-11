@@ -80,7 +80,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">Connect Channels</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Link your messaging channels through Meta's guided flow.</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Link your messaging channels through Meta&#39;s guided flow.</p>
         </div>
         <button type="button" onClick={() => void reload()} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300">
           <RefreshCw className="h-4 w-4" />
@@ -142,7 +142,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
 
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
         <p className="font-semibold text-slate-950 dark:text-white">How it works</p>
-        <p className="mt-1">Click <strong>Connect</strong> to open Meta&apos;s guided business login. You don&apos;t need to copy tokens — our team receives the authorization and activates your channel within 24 hours. Once active, messages flow directly into your Inbox.</p>
+        <p className="mt-1">Click <strong>Connect</strong> to open Meta&#39;s guided business login. You don&#39;t need to copy tokens &#8212; our team receives the authorization and activates your channel within 24 hours. Once active, messages flow directly into your Inbox.</p>
       </div>
     </div>
   );
