@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
+import { CartParamInitializer } from "@/components/commerce/cart-param-initializer";
 import { ArrowRight, Clock3, Lock, Package, ShieldCheck, ShoppingBag, Star, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -52,6 +53,7 @@ export function CartPageContent({ hostingProviderConfig }: { hostingProviderConf
   if (items.length === 0) {
     return (
       <main className="min-h-screen bg-white dark:bg-slate-950">
+        <Suspense><CartParamInitializer /></Suspense>
         <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
           <section className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center shadow-[0_24px_80px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-slate-950 sm:p-14">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-slate-200 text-slate-700 dark:border-white/10 dark:text-slate-200">
@@ -84,6 +86,7 @@ export function CartPageContent({ hostingProviderConfig }: { hostingProviderConf
 
   return (
     <main className="min-h-screen bg-white dark:bg-slate-950">
+      <Suspense><CartParamInitializer /></Suspense>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <header className="rounded-[2rem] border border-slate-200 bg-white px-6 py-8 shadow-[0_24px_80px_rgba(15,23,42,0.04)] dark:border-white/10 dark:bg-slate-950 sm:px-8 sm:py-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">

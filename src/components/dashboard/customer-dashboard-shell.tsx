@@ -5,6 +5,7 @@ import { Bot, BrainCircuit, ChevronRight, ExternalLink, Globe, LayoutDashboard, 
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/branding/brand-logo";
+import { ProfilePanel } from "@/components/dashboard/profile-panel";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -45,6 +46,7 @@ export function CustomerDashboardShell({
   const [isSigningOut, startSignOutTransition] = useTransition();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const normalizedPath = useMemo(() => {
     const localePrefix = `/${locale}`;
@@ -281,9 +283,14 @@ export function CustomerDashboardShell({
                 <div className="truncate text-[11px] text-slate-500 dark:text-slate-400">{userEmail || "Signed in"}</div>
               </div>
               <ThemeToggle className="justify-end" />
-              <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-950 text-sm font-semibold text-white dark:bg-white dark:text-slate-950">
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen(true)}
+                title="View profile"
+                className="flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+              >
                 {initials}
-              </div>
+              </button>
             </div>
           </header>
 
@@ -292,6 +299,19 @@ export function CustomerDashboardShell({
           </section>
         </div>
       </div>
+
+      <ProfilePanel
+        open={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        locale={locale}
+        userName={userName}
+        userEmail={userEmail}
+        initials={initials}
+        hasMagneticVpsAccess={hasMagneticVpsAccess}
+        hasMagneticSocialBotAccess={hasMagneticSocialBotAccess}
+        hasMagneticCommerceAccess={hasMagneticCommerceAccess}
+        hasPortfolioAccess={hasPortfolioAccess}
+      />
     </main>
   );
 }
