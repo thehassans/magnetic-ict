@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import type {
+  SocialBotAgent,
   SocialBotChunk,
   SocialBotDocument,
   SocialBotIntegration,
@@ -116,7 +117,8 @@ export const socialBotCollections = {
   chunks: "SocialBotChunks",
   integrations: "SocialBotIntegrations",
   threads: "SocialBotThreads",
-  messages: "SocialBotMessages"
+  messages: "SocialBotMessages",
+  agents: "SocialBotAgents"
 } as const;
 
 export async function getSocialBotProfile(userId: string) {
@@ -149,4 +151,28 @@ export async function getSocialBotThreadByExternalId(userId: string, source: str
 
 export async function getSocialBotMessages(userId: string, threadId: string) {
   return findMongoDocuments<SocialBotMessage>(socialBotCollections.messages, { userId, threadId }, { sort: { timestamp: 1 }, limit: 200 });
+}
+
+export async function getSocialBotAgents(userId: string) {
+  return findMongoDocuments<SocialBotAgent>(socialBotCollections.agents, { userId }, { sort: { createdAt: -1 } });
+}
+
+export async function getSocialBotAgentById(userId: string, agentId: string) {
+  return findOneMongoDocument<SocialBotAgent>(socialBotCollections.agents, { userId, _id: agentId });
+}
+
+export async function createSocialBotAgent(agent: SocialBotAgent) {
+  return insertMongoDocument(socialBotCollections.agents, agent);
+}
+
+export async function updateSocialBotAgent(userId: string, agentId: string, updates: Partial<SocialBotAgent>) {
+  await upsertMongoDocument(
+    socialBotCollections.agents,
+    { userId, _id: agentId },
+    { ...updates, updatedAt: new Date().toISOString() }
+  );
+}
+
+export async function deleteSocialBotAgent(userId: string, agentId: string) {
+  await deleteMongoDocuments(socialBotCollections.agents, { userId, _id: agentId });
 }

@@ -95,3 +95,16 @@ export type SocialBotWorkspace = {
   integrations: SocialBotIntegration[];
   threads: SocialBotThread[];
 };
+
+export type SocialBotAgent = {
+  _id: string;
+  userId: string;
+  name: string;
+  description: string;
+  instructions: string;
+  avatarDataUrl: string;
+  channels: SocialChannel[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
