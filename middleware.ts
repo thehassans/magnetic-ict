@@ -15,7 +15,12 @@ function stripLocalePrefix(pathname: string): string {
 }
 
 export default function middleware(request: NextRequest) {
-  const hostname = request.headers.get("host") ?? "";
+  const hostname = (
+    request.headers.get("x-forwarded-host")?.split(",")[0]?.trim()
+    ?? request.nextUrl.hostname
+    ?? request.headers.get("host")?.split(":")[0]
+    ?? ""
+  );
   const pathname = request.nextUrl.pathname;
 
   if (hostname.startsWith("chatbot.")) {
