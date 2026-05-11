@@ -4,6 +4,7 @@ import { Activity, Bot, Box, Globe, LifeBuoy, LogOut, Mail, Server, Settings2, S
 import { logoutAdmin } from "@/app/admin/actions";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { defaultBrandingConfig, getBrandingConfig } from "@/lib/platform-settings";
 
 type AdminShellProps = {
   title: string;
@@ -28,7 +29,8 @@ const navItems = [
   { href: "/admin/settings", label: "Settings", Icon: Settings2 }
 ] as const;
 
-export function AdminShell({ title, description, eyebrow = "Operations cockpit", activePath, children, actions }: AdminShellProps) {
+export async function AdminShell({ title, description, eyebrow = "Operations cockpit", activePath, children, actions }: AdminShellProps) {
+  const branding = await getBrandingConfig().catch(() => defaultBrandingConfig);
   return (
     <main className="min-h-screen bg-transparent">
       <div className="grid min-h-screen xl:grid-cols-[280px_minmax(0,1fr)]">
@@ -36,7 +38,7 @@ export function AdminShell({ title, description, eyebrow = "Operations cockpit",
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between gap-3 rounded-[28px] border border-slate-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.04]">
               <Link href="/admin/dashboard" className="rounded-[20px] transition hover:opacity-90">
-                <BrandLogo className="w-[138px]" framed priority />
+                <BrandLogo className="w-[138px]" framed priority lightSrc={branding.adminLogoLight || undefined} darkSrc={branding.adminLogoDark || undefined} />
               </Link>
               <ThemeToggle />
             </div>

@@ -28,7 +28,8 @@ import {
   Activity,
   Sparkles,
   Server,
-  Package
+  Package,
+  Layout
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -74,7 +75,8 @@ const iconMap = {
   siteMonitoring: Activity,
   websiteSecurity: Shield,
   websiteBackup: Database,
-  nordVpn: Globe
+  nordVpn: Globe,
+  magneticPortfolioBuilder: Layout
 } satisfies Record<ServiceMenuKey, typeof ShieldCheck>;
 
 export function SiteHeader({ locale, activeLanguages, visibleServiceMenuItems, sessionUser, hasMagneticSocialBotAccess = false }: SiteHeaderProps) {

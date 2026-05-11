@@ -1,4 +1,4 @@
-import { Activity, Briefcase, Bot, BrainCircuit, Database, Download, Globe, ImageIcon, LayoutGrid, Lock, Mail, Package, ScanFace, Search, Server, Shield, ShieldCheck } from "lucide-react";
+import { Activity, Briefcase, Bot, BrainCircuit, Database, Download, Globe, ImageIcon, Layout, LayoutGrid, Lock, Mail, Package, ScanFace, Search, Server, Shield, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getServiceTitle } from "@/lib/service-i18n";
@@ -25,7 +25,8 @@ const iconMap = {
   siteMonitoring: Activity,
   websiteSecurity: Shield,
   websiteBackup: Database,
-  nordVpn: Globe
+  nordVpn: Globe,
+  magneticPortfolioBuilder: Layout
 } satisfies Record<ServiceMenuKey, typeof ShieldCheck>;
 
 export default async function ServicesPage() {

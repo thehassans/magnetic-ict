@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/home/scroll-reveal";
 import { MagneticCommerceServicePage } from "@/components/services/magnetic-commerce-service-page";
+import { MagneticPortfolioBuilderServicePage } from "@/components/services/magnetic-portfolio-builder-service-page";
 import { MagneticSocialBotServicePage } from "@/components/services/magnetic-social-bot-service-page";
 import { MagneticVpsServicePage } from "@/components/services/magnetic-vps-service-page";
 import { AiDetectionTool } from "@/components/services/ai-detection-tool";
@@ -39,8 +40,13 @@ export default async function ServiceDetailPage({
   const isMagneticSocialBotService = service.id === "magneticSocialBot";
   const isMagneticCommerceService = service.id === "magneticCommerce";
   const isMagneticVpsHostingService = service.id === "magneticVpsHosting";
+  const isMagneticPortfolioBuilderService = service.id === "magneticPortfolioBuilder";
   const isFreeUtilityService = isImageConversionService || isAiDetectionService || isVideoDownloaderService;
   const hostingProviderConfig = isMagneticVpsHostingService ? await getHostingProviderSettings() : null;
+
+  if (isMagneticPortfolioBuilderService) {
+    return <MagneticPortfolioBuilderServicePage service={service} />;
+  }
 
   if (isMagneticCommerceService) {
     return <MagneticCommerceServicePage service={service} title={title} />;

@@ -30,6 +30,7 @@ import {
   Shield,
   ShieldCheck,
   Star,
+  Layout,
   UserRound
 } from "lucide-react";
 import { BrandLogo } from "@/components/branding/brand-logo";
@@ -63,6 +64,8 @@ type HeaderProps = {
   visibleServiceMenuItems: ReadonlyArray<{ key: ServiceMenuKey; id: string; href: string }>;
   sessionUser?: SessionUser | null;
   hasMagneticSocialBotAccess?: boolean;
+  logoLight?: string;
+  logoDark?: string;
 };
 
 const iconMap = {
@@ -82,7 +85,8 @@ const iconMap = {
   siteMonitoring: Activity,
   websiteSecurity: Shield,
   websiteBackup: Database,
-  nordVpn: Globe
+  nordVpn: Globe,
+  magneticPortfolioBuilder: Layout
 } satisfies Record<ServiceMenuKey, LucideIcon>;
 
 function chunkDropdownItems(items: DropdownNavigationSubMenuItem[], size: number) {
@@ -100,7 +104,9 @@ export function Header({
   activeLanguages,
   visibleServiceMenuItems,
   sessionUser,
-  hasMagneticSocialBotAccess = false
+  hasMagneticSocialBotAccess = false,
+  logoLight,
+  logoDark
 }: HeaderProps) {
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname() ?? "";
@@ -293,7 +299,7 @@ export function Header({
       <nav className="mx-auto flex h-[4.75rem] w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-4 xl:gap-5">
           <Link href="/" locale={locale} className="rounded-md p-1 transition">
-            <BrandLogo className="w-[150px] sm:w-[168px]" priority />
+            <BrandLogo className="w-[150px] sm:w-[168px]" priority lightSrc={logoLight} darkSrc={logoDark} />
           </Link>
           <DropdownNavigation navItems={desktopNavItems} locale={locale} className="hidden lg:flex" />
         </div>

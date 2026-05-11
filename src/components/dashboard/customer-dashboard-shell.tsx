@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useMemo, useState, useTransition } from "react";
-import { Bot, BrainCircuit, ChevronRight, ExternalLink, Globe, LayoutDashboard, LogOut, Menu, MessageCircle, MonitorCheck, PanelLeftClose, PanelLeftOpen, Receipt, Server, ShoppingCart, X } from "lucide-react";
+import { Bot, BrainCircuit, ChevronRight, ExternalLink, Globe, LayoutDashboard, Layout, LogOut, Menu, MessageCircle, MonitorCheck, PanelLeftClose, PanelLeftOpen, Receipt, Server, ShoppingCart, Sparkles, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/branding/brand-logo";
@@ -17,6 +17,9 @@ type CustomerDashboardShellProps = {
   hasMagneticVpsAccess?: boolean;
   hasMagneticSocialBotAccess?: boolean;
   hasMagneticCommerceAccess?: boolean;
+  hasPortfolioAccess?: boolean;
+  logoLight?: string;
+  logoDark?: string;
 };
 
 type NavItem = {
@@ -33,7 +36,10 @@ export function CustomerDashboardShell({
   userEmail,
   hasMagneticVpsAccess = false,
   hasMagneticSocialBotAccess = false,
-  hasMagneticCommerceAccess = false
+  hasMagneticCommerceAccess = false,
+  hasPortfolioAccess = false,
+  logoLight,
+  logoDark
 }: CustomerDashboardShellProps) {
   const pathname = usePathname() ?? "";
   const [isSigningOut, startSignOutTransition] = useTransition();
@@ -106,8 +112,23 @@ export function CustomerDashboardShell({
       });
     }
 
+    if (hasPortfolioAccess) {
+      items.push({
+        href: "/dashboard/portfolio",
+        label: "Portfolio Builder",
+        Icon: Layout,
+        match: (value) => value.startsWith("/dashboard/portfolio") && !value.startsWith("/dashboard/portfolio/chat")
+      });
+      items.push({
+        href: "/dashboard/portfolio/chat",
+        label: "Portfolio AI",
+        Icon: Sparkles,
+        match: (value) => value.startsWith("/dashboard/portfolio/chat")
+      });
+    }
+
     return items;
-  }, [hasMagneticCommerceAccess, hasMagneticSocialBotAccess, hasMagneticVpsAccess]);
+  }, [hasMagneticCommerceAccess, hasMagneticSocialBotAccess, hasMagneticVpsAccess, hasPortfolioAccess]);
 
   const initials = useMemo(() => {
     const source = userName?.trim() || userEmail?.trim() || "M";
@@ -128,7 +149,7 @@ export function CustomerDashboardShell({
     <div className="flex h-full flex-col rounded-[30px] border border-slate-200/70 bg-white/88 p-3 shadow-[0_18px_50px_rgba(15,23,42,0.05)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/82 dark:shadow-[0_18px_50px_rgba(2,6,23,0.32)]">
       <div className="flex items-center justify-between gap-3 px-1 pb-4">
         <Link href="/dashboard" locale={locale} className="inline-flex items-center">
-          <BrandLogo className="w-[128px] sm:w-[144px]" priority />
+          <BrandLogo className="w-[128px] sm:w-[144px]" priority lightSrc={logoLight} darkSrc={logoDark} />
         </Link>
         <button
           type="button"

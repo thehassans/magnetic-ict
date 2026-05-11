@@ -21,6 +21,13 @@ type LogoSlot = {
 
 const slots: { group: string; items: LogoSlot[] }[] = [
   {
+    group: "Landing Page / Site",
+    items: [
+      { key: "siteLogoLight", label: "Light theme logo", themeIcon: "light", hint: "Shown in the public site header and footer on light backgrounds" },
+      { key: "siteLogoDark",  label: "Dark theme logo",  themeIcon: "dark",  hint: "Shown in the public site header and footer on dark backgrounds" }
+    ]
+  },
+  {
     group: "Admin Panel",
     items: [
       { key: "adminLogoLight", label: "Light theme logo", themeIcon: "light", hint: "Shown in the admin dashboard on light backgrounds" },

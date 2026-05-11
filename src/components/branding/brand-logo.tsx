@@ -4,12 +4,19 @@ import { cn } from "@/lib/utils";
 export function BrandLogo({
   className,
   priority = false,
-  framed = false
+  framed = false,
+  lightSrc,
+  darkSrc
 }: {
   className?: string;
   priority?: boolean;
   framed?: boolean;
+  lightSrc?: string;
+  darkSrc?: string;
 }) {
+  const resolvedLight = lightSrc || "/branding/magnetic-ict-light.png";
+  const resolvedDark  = darkSrc  || "/branding/magnetic-ict-darkmode.png";
+
   return (
     <span
       className={cn(
@@ -19,19 +26,21 @@ export function BrandLogo({
       )}
     >
       <Image
-        src="/branding/magnetic-ict-light.png"
+        src={resolvedLight}
         alt="Magnetic ICT"
         width={680}
         height={350}
         priority={priority}
+        unoptimized={!!lightSrc}
         className="h-auto w-full object-contain dark:hidden"
       />
       <Image
-        src="/branding/magnetic-ict-darkmode.png"
+        src={resolvedDark}
         alt="Magnetic ICT"
         width={800}
         height={330}
         priority={priority}
+        unoptimized={!!darkSrc}
         className="hidden h-auto w-full object-contain dark:block"
       />
     </span>

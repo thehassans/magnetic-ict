@@ -14,6 +14,7 @@ import { serviceMenuItems } from "@/lib/service-menu";
 import { getVisibleServiceCatalogWithOverrides } from "@/lib/service-overrides";
 import { userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
 import { fallbackLanguages, getActiveLanguages } from "@/lib/settings";
+import { defaultBrandingConfig, getBrandingConfig } from "@/lib/platform-settings";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -44,11 +45,12 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
 
-  const [messages, session, activeLanguages, visibleServices] = await Promise.all([
+  const [messages, session, activeLanguages, visibleServices, brandingConfig] = await Promise.all([
     getMessages(),
     auth(),
     getActiveLanguages().catch(() => fallbackLanguages),
-    getVisibleServiceCatalogWithOverrides()
+    getVisibleServiceCatalogWithOverrides(),
+    getBrandingConfig().catch(() => defaultBrandingConfig)
   ]);
   const visibleServiceIds = new Set(visibleServices.map((service) => service.id));
   const visibleServiceMenuItems = serviceMenuItems.filter((item) => visibleServiceIds.has(item.key));
@@ -76,6 +78,8 @@ export default async function LocaleLayout({
               visibleServiceMenuItems={visibleServiceMenuItems}
               sessionUser={session?.user}
               hasMagneticSocialBotAccess={hasMagneticSocialBotAccess}
+              logoLight={brandingConfig.siteLogoLight || undefined}
+              logoDark={brandingConfig.siteLogoDark || undefined}
             />
             <AnimatedPageShell>
               <div className="relative z-10">{children}</div>

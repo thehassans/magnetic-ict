@@ -132,6 +132,8 @@ export type EmailNotificationKey = (typeof emailNotificationKeys)[number];
 export type EmailNotificationsSettings = Record<EmailNotificationKey, boolean>;
 
 export type BrandingConfig = {
+  siteLogoLight: string;
+  siteLogoDark: string;
   adminLogoLight: string;
   adminLogoDark: string;
   customerLogoLight: string;
@@ -140,10 +142,12 @@ export type BrandingConfig = {
   chatbotLogoDark: string;
 };
 
-export const BRANDING_LOGO_KEYS = ["adminLogoLight", "adminLogoDark", "customerLogoLight", "customerLogoDark", "chatbotLogoLight", "chatbotLogoDark"] as const;
+export const BRANDING_LOGO_KEYS = ["siteLogoLight", "siteLogoDark", "adminLogoLight", "adminLogoDark", "customerLogoLight", "customerLogoDark", "chatbotLogoLight", "chatbotLogoDark"] as const;
 export type BrandingLogoKey = (typeof BRANDING_LOGO_KEYS)[number];
 
 export const defaultBrandingConfig: BrandingConfig = {
+  siteLogoLight: "",
+  siteLogoDark: "",
   adminLogoLight: "",
   adminLogoDark: "",
   customerLogoLight: "",
@@ -155,6 +159,8 @@ export const defaultBrandingConfig: BrandingConfig = {
 export function normalizeBrandingConfig(value: unknown): BrandingConfig {
   if (!isObject(value)) return defaultBrandingConfig;
   return {
+    siteLogoLight: coerceString(value.siteLogoLight, ""),
+    siteLogoDark: coerceString(value.siteLogoDark, ""),
     adminLogoLight: coerceString(value.adminLogoLight, ""),
     adminLogoDark: coerceString(value.adminLogoDark, ""),
     customerLogoLight: coerceString(value.customerLogoLight, ""),

@@ -15,7 +15,8 @@ export type ServiceMenuKey =
   | "websiteSecurity"
   | "websiteBackup"
   | "nordVpn"
-  | "magneticCommerce";
+  | "magneticCommerce"
+  | "magneticPortfolioBuilder";
 
 export const serviceMenuItems = [
   { key: "imageConversion", id: "image-conversion", href: "/services#image-conversion" },
@@ -25,5 +26,6 @@ export const serviceMenuItems = [
   { key: "aiDetection", id: "ai-detection", href: "/services#ai-detection" },
   { key: "videoDownloader", id: "video-downloader", href: "/services#video-downloader" },
   { key: "magneticSocialBot", id: "magnetic-social-bot", href: "/services#magnetic-social-bot" },
-  { key: "magneticFaceSearch", id: "magnetic-face-search", href: "/services#magnetic-face-search" }
+  { key: "magneticFaceSearch", id: "magnetic-face-search", href: "/services#magnetic-face-search" },
+  { key: "magneticPortfolioBuilder", id: "magnetic-portfolio-builder", href: "/services/magneticPortfolioBuilder" }
 ] as const satisfies ReadonlyArray<{ key: ServiceMenuKey; id: string; href: string }>;

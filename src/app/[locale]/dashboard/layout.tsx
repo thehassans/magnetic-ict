@@ -5,6 +5,8 @@ import { CustomerDashboardShell } from "@/components/dashboard/customer-dashboar
 import { userHasMagneticVpsAccess } from "@/lib/hosting-access";
 import { userHasMagneticCommerceAccess } from "@/lib/magnetic-commerce-access";
 import { userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
+import { userHasPortfolioAccess } from "@/lib/portfolio-access";
+import { defaultBrandingConfig, getBrandingConfig } from "@/lib/platform-settings";
 
 export default async function DashboardLayout({
   children,
@@ -20,10 +22,12 @@ export default async function DashboardLayout({
     notFound();
   }
 
-  const [hasMagneticVpsAccess, hasMagneticSocialBotAccess, hasMagneticCommerceAccess] = await Promise.all([
+  const [hasMagneticVpsAccess, hasMagneticSocialBotAccess, hasMagneticCommerceAccess, hasPortfolioAccess, brandingConfig] = await Promise.all([
     userHasMagneticVpsAccess(session.user.id).catch(() => false),
     userHasMagneticSocialBotAccess(session.user.id).catch(() => false),
-    userHasMagneticCommerceAccess(session.user.id).catch(() => false)
+    userHasMagneticCommerceAccess(session.user.id).catch(() => false),
+    userHasPortfolioAccess(session.user.id).catch(() => false),
+    getBrandingConfig().catch(() => defaultBrandingConfig)
   ]);
 
   return (
@@ -34,6 +38,9 @@ export default async function DashboardLayout({
       hasMagneticVpsAccess={hasMagneticVpsAccess}
       hasMagneticSocialBotAccess={hasMagneticSocialBotAccess}
       hasMagneticCommerceAccess={hasMagneticCommerceAccess}
+      hasPortfolioAccess={hasPortfolioAccess}
+      logoLight={brandingConfig.customerLogoLight || undefined}
+      logoDark={brandingConfig.customerLogoDark || undefined}
     >
       {children}
     </CustomerDashboardShell>

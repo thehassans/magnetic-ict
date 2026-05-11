@@ -696,6 +696,44 @@ const allServiceCatalog: CatalogService[] = [
         features: ["Investor and dropshipper earning visibility", "Profit and loss with business reports", "Website modification and rollout advisory"]
       }
     ]
+  },
+  {
+    id: "magneticPortfolioBuilder",
+    name: "Magnetic Portfolio Builder",
+    category: "Web Presence",
+    eyebrow: "Your brand, live online",
+    tagline: "Launch a stunning personal or business portfolio in minutes — powered by AI, fully customisable.",
+    description: "Create a professional portfolio site with your own branding, domain, and content. Use the Portfolio AI chatbot to make live changes instantly — update your phone number, add projects, or change your bio just by chatting.",
+    imageLabel: "Aurora Portfolio Studio",
+    highlights: ["AI-powered editing", "Custom domain", "1-click publish"],
+    benefits: [
+      "Go live in minutes with a beautifully designed portfolio template.",
+      "Make changes to your site by chatting with the Portfolio AI — no code needed.",
+      "Connect your own domain and present a fully branded experience to clients."
+    ],
+    tiers: [
+      {
+        id: "magneticPortfolioBuilder-starter",
+        name: "Starter",
+        price: 29,
+        summary: "One premium template, subdomain hosting, and AI-assisted editing.",
+        features: ["1 portfolio template", "Subdomain hosting (you.magnetic-ict.com)", "Logo upload (light & dark)", "AI chat editor", "Phone, address & about sections"]
+      },
+      {
+        id: "magneticPortfolioBuilder-professional",
+        name: "Professional",
+        price: 79,
+        summary: "Five templates, custom domain, social links, and projects showcase.",
+        features: ["5 portfolio templates", "Custom domain connection", "Projects & experience sections", "Social links", "Priority support"]
+      },
+      {
+        id: "magneticPortfolioBuilder-enterprise",
+        name: "Enterprise",
+        price: 149,
+        summary: "All templates, analytics, white-label branding, and dedicated onboarding.",
+        features: ["All templates (unlimited)", "Analytics dashboard", "White-label option", "Dedicated onboarding", "SLA-backed support"]
+      }
+    ]
   }
 ];
 
@@ -707,7 +745,8 @@ export const liveServiceCatalogKeys = [
   "aiDetection",
   "videoDownloader",
   "magneticSocialBot",
-  "magneticFaceSearch"
+  "magneticFaceSearch",
+  "magneticPortfolioBuilder"
 ] as const satisfies ReadonlyArray<ServiceMenuKey>;
 
 const liveServiceCatalogKeySet = new Set<ServiceMenuKey>(liveServiceCatalogKeys);
