@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useMemo, useState, useTransition } from "react";
-import { Bot, BrainCircuit, ChevronRight, Globe, LayoutDashboard, LogOut, Menu, MonitorCheck, PanelLeftClose, PanelLeftOpen, Receipt, Server, ShoppingCart, X } from "lucide-react";
+import { Bot, BrainCircuit, ChevronRight, ExternalLink, Globe, LayoutDashboard, LogOut, Menu, MessageCircle, MonitorCheck, PanelLeftClose, PanelLeftOpen, Receipt, Server, ShoppingCart, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/branding/brand-logo";
@@ -174,11 +174,29 @@ export function CustomerDashboardShell({
         })}
       </nav>
 
+      {hasMagneticSocialBotAccess && (
+        <a
+          href="https://chatbot.magnetic-ict.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 flex w-full items-center gap-3 rounded-[18px] border border-violet-200/70 bg-gradient-to-r from-violet-50 to-indigo-50 px-4 py-3 text-sm font-medium text-violet-700 transition hover:border-violet-300 hover:from-violet-100 hover:to-indigo-100 dark:border-violet-400/20 dark:from-violet-500/10 dark:to-indigo-500/10 dark:text-violet-300 dark:hover:border-violet-400/30"
+        >
+          <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-violet-100 text-violet-700 dark:bg-violet-400/20 dark:text-violet-300">
+            <MessageCircle className="h-4 w-4" />
+          </span>
+          <span className="flex-1 text-xs leading-tight">
+            <span className="block font-semibold">Chatbot Platform</span>
+            <span className="block text-violet-500 dark:text-violet-400">chatbot.magnetic-ict.com</span>
+          </span>
+          <ExternalLink className="h-3.5 w-3.5 text-violet-400" />
+        </a>
+      )}
+
       <button
         type="button"
         onClick={handleSignOut}
         disabled={isSigningOut}
-        className="mt-auto flex w-full items-center gap-3 rounded-[18px] border border-slate-200/70 bg-white/90 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:bg-white/[0.06] dark:hover:text-white"
+        className="mt-3 flex w-full items-center gap-3 rounded-[18px] border border-slate-200/70 bg-white/90 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:bg-white/[0.06] dark:hover:text-white"
       >
         <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 dark:bg-white/[0.08] dark:text-slate-200">
           <LogOut className="h-4 w-4" />
