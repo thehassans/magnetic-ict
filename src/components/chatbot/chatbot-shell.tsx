@@ -8,6 +8,7 @@ import { useEffect, useState, useTransition } from "react";
 import { signOut } from "next-auth/react";
 import {
   BarChart3,
+  BookOpen,
   Bot,
   Inbox,
   LayoutDashboard,
@@ -29,6 +30,7 @@ const navItems = [
   { href: "/chatbot/inbox", label: "Inbox", icon: Inbox, exact: false },
   { href: "/chatbot/contacts", label: "Contacts", icon: Users, exact: false },
   { href: "/chatbot/agents", label: "AI Agents", icon: Zap, exact: false },
+  { href: "/chatbot/knowledge", label: "Knowledge", icon: BookOpen, exact: false },
   { href: "/chatbot/reports", label: "Reports", icon: BarChart3, exact: false },
   { href: "/chatbot/connect", label: "Connect", icon: Plug, exact: false }
 ];

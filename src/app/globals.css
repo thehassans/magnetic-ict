@@ -175,6 +175,28 @@ body {
 [data-chatbot-theme="light"] textarea,
 [data-chatbot-theme="light"] select { color: #0f172a; }
 [data-chatbot-theme="light"] .shadow-\[0_4px_20px_rgba\(124\,58\,237\,0\.35\)\] { box-shadow: 0 4px 20px rgba(124,58,237,0.25) !important; }
+/* Modal + agent dialog */
+[data-chatbot-theme="light"] .bg-\[\#0e0e22\] { background-color: #ffffff !important; }
+[data-chatbot-theme="light"] .bg-\[\#0d0d1f\] { background-color: #ffffff !important; }
+[data-chatbot-theme="light"] .bg-black\/70 { background-color: rgba(15,23,42,0.35) !important; }
+[data-chatbot-theme="light"] .bg-black\/60 { background-color: rgba(15,23,42,0.28) !important; }
+[data-chatbot-theme="light"] .bg-black\/50 { background-color: rgba(15,23,42,0.22) !important; }
+[data-chatbot-theme="light"] .bg-black\/30 { background-color: rgba(15,23,42,0.14) !important; }
+[data-chatbot-theme="light"] .shadow-2xl { box-shadow: 0 32px 80px rgba(15,23,42,0.14), 0 8px 24px rgba(15,23,42,0.08) !important; }
+/* Knowledge base / dashed borders */
+[data-chatbot-theme="light"] .border-dashed.border-white\/\[0\.1\] { border-color: rgba(15,23,42,0.15) !important; }
+[data-chatbot-theme="light"] .border-dashed.border-white\/\[0\.15\] { border-color: rgba(15,23,42,0.18) !important; }
+[data-chatbot-theme="light"] .border-dashed.border-violet-500\/30 { border-color: rgba(124,58,237,0.4) !important; }
+[data-chatbot-theme="light"] .bg-violet-500\/\[0\.05\] { background-color: rgba(124,58,237,0.05) !important; }
+[data-chatbot-theme="light"] .bg-violet-500\/10 { background-color: rgba(124,58,237,0.08) !important; }
+[data-chatbot-theme="light"] .bg-violet-500\/15 { background-color: rgba(124,58,237,0.10) !important; }
+[data-chatbot-theme="light"] .bg-violet-500\/20 { background-color: rgba(124,58,237,0.12) !important; }
+[data-chatbot-theme="light"] .bg-emerald-500\/10 { background-color: rgba(16,185,129,0.10) !important; }
+[data-chatbot-theme="light"] .bg-rose-500\/10 { background-color: rgba(239,68,68,0.08) !important; }
+[data-chatbot-theme="light"] .bg-amber-500\/10 { background-color: rgba(245,158,11,0.08) !important; }
+/* Glow effects subtle in light mode */
+[data-chatbot-theme="light"] .shadow-\[0_0_16px_rgba\(124\,58\,237\,0\.35\)\] { box-shadow: 0 0 16px rgba(124,58,237,0.20) !important; }
+[data-chatbot-theme="light"] .shadow-\[0_0_14px_rgba\(124\,58\,237\,0\.4\)\] { box-shadow: 0 0 14px rgba(124,58,237,0.18) !important; }
 
 ::selection {
   background: var(--app-selection-bg);
