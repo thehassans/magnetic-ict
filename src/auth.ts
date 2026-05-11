@@ -37,6 +37,18 @@ if (canonicalAuthUrl) {
   process.env.NEXTAUTH_URL ??= canonicalAuthUrl;
 }
 
+function getParentDomain(): string | undefined {
+  const url = process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL ?? process.env.AUTH_URL;
+  if (!url) return undefined;
+  try {
+    const { hostname } = new URL(url);
+    if (hostname === "localhost" || hostname === "127.0.0.1") return undefined;
+    const parts = hostname.split(".");
+    if (parts.length >= 2) return `.${parts.slice(-2).join(".")}`;
+  } catch { /* ignore */ }
+  return undefined;
+}
+
 function compareSecret(candidate: string, expected: string) {
   const candidateBuffer = Buffer.from(candidate);
   const expectedBuffer = Buffer.from(expected);
@@ -244,6 +256,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => ({
     strategy: "jwt"
   },
   cookies: {
+    sessionToken: {
+      options: {
+        httpOnly: true,
+        sameSite: "lax" as const,
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        domain: getParentDomain()
+      }
+    },
     state: {
       options: {
         httpOnly: true,

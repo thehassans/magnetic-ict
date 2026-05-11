@@ -432,13 +432,16 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
     );
   }
 
-  const baseUrl = respondIoWorkspaceUrl?.replace(/\/$/, "") || "";
+  const CHATBOT_SUBDOMAIN = "https://chatbot.magnetic-ict.com";
+  const baseUrl = respondIoWorkspaceUrl?.replace(/\/$/, "") || CHATBOT_SUBDOMAIN;
 
   const chatbotLinks = [
+    { label: "Dashboard", description: "Overview and stats", icon: BarChart3, path: "" },
     { label: "Inbox", description: "All conversations in one place", icon: MessageCircle, path: "/inbox" },
     { label: "Contacts", description: "CRM-style contact management", icon: Users, path: "/contacts" },
-    { label: "AI Agents", description: "Configure automated AI agents", icon: Zap, path: "/ai-agents" },
-    { label: "Reports", description: "Performance and usage analytics", icon: BarChart3, path: "/reports" }
+    { label: "AI Agents", description: "Configure automated AI agents", icon: Zap, path: "/agents" },
+    { label: "Reports", description: "Performance and usage analytics", icon: BarChart3, path: "/reports" },
+    { label: "Connect", description: "Link WhatsApp, Instagram, Messenger", icon: Webhook, path: "/connect" }
   ];
 
   return (
@@ -446,8 +449,7 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
       {toast ? <div className="rounded-[24px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{toast}</div> : null}
       {error ? <div className="rounded-[24px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">{error}</div> : null}
 
-      {baseUrl ? (
-        <section className="rounded-[32px] border border-slate-200 bg-white/90 p-5 dark:border-white/10 dark:bg-slate-950/50 sm:p-6">
+      <section className="rounded-[32px] border border-slate-200 bg-white/90 p-5 dark:border-white/10 dark:bg-slate-950/50 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="text-sm font-semibold text-slate-950 dark:text-white">Chatbot Dashboard</div>
@@ -485,8 +487,7 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
               );
             })}
           </div>
-        </section>
-      ) : null}
+      </section>
 
       <section className="grid gap-4 md:grid-cols-3">
         <StatCard label="Docs" value={String(stats.documentsReady)} icon={<Upload className="h-4 w-4" />} />
