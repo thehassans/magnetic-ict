@@ -19,12 +19,15 @@ type ProviderAvailability = {
   apple: boolean;
 };
 
-function normalizeCallbackPath(rawPath: string | null) {
-  if (!rawPath || !rawPath.startsWith("/")) {
-    return "/dashboard";
-  }
-
+function normalizeCallbackPath(rawPath: string | null): string {
+  if (!rawPath) return "/dashboard";
+  if (rawPath.startsWith("https://chatbot.") || rawPath.startsWith("https://chat.")) return rawPath;
+  if (!rawPath.startsWith("/")) return "/dashboard";
   return rawPath;
+}
+
+function isExternalCallback(path: string) {
+  return path.startsWith("https://");
 }
 
 export function CustomerSignInClient({ providerAvailability }: { providerAvailability: ProviderAvailability }) {
@@ -60,7 +63,8 @@ export function CustomerSignInClient({ providerAvailability }: { providerAvailab
     setError("");
     setInfo("");
     setAdminError("");
-    await signIn(provider, { callbackUrl: `/${locale}${callbackPath}` });
+    const cbUrl = callbackPath.startsWith("https://") ? callbackPath : `/${locale}${callbackPath}`;
+    await signIn(provider, { callbackUrl: cbUrl });
   }
 
   async function handleEmailSubmit(event: FormEvent<HTMLFormElement>) {
@@ -122,7 +126,7 @@ export function CustomerSignInClient({ providerAvailability }: { providerAvailab
         return;
       }
 
-      router.push(callbackPath);
+      if (isExternalCallback(callbackPath)) { window.location.href = callbackPath; } else { router.push(callbackPath as Parameters<typeof router.push>[0]); }
     });
   }
 
@@ -152,7 +156,7 @@ export function CustomerSignInClient({ providerAvailability }: { providerAvailab
         return;
       }
 
-      router.push(callbackPath);
+      if (isExternalCallback(callbackPath)) { window.location.href = callbackPath; } else { router.push(callbackPath as Parameters<typeof router.push>[0]); }
     });
   }
 

@@ -10,7 +10,7 @@ export default async function ChatbotLayout({ children }: { children: ReactNode 
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://magnetic-ict.com").replace(/\/$/, "");
 
   if (!session?.user?.id) {
-    redirect(`${appUrl}/en/sign-in?callbackUrl=https://chatbot.magnetic-ict.com`);
+    redirect(`${appUrl}/en/customer/sign-in?callback=https://chatbot.magnetic-ict.com`);
   }
 
   const hasAccess = await userHasMagneticSocialBotAccess(session.user.id);
