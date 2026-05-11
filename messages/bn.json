@@ -170,6 +170,10 @@
       "nordVpn": {
         "title": "NordVPN",
         "description": "Secure connectivity solutions for teams, founders, and distributed operations."
+      },
+      "magneticPortfolioBuilder": {
+        "title": "Magnetic Portfolio Builder",
+        "description": "মিনিটের মধ্যে AI-চালিত পোর্টফোলিও সাইট তৈরি করুন কাস্টম ডোমেইনসহ।"
       }
     },
     "company": "কোম্পানি",

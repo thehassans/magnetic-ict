@@ -142,6 +142,10 @@
       "nordVpn": {
         "title": "NordVPN",
         "description": "حلول اتصال امنة للفرق والمؤسسين والعمليات الموزعة."
+      },
+      "magneticPortfolioBuilder": {
+        "title": "Magnetic Portfolio Builder",
+        "description": "أطلق موقع بورتفوليو مذهلاً مدعوماً بالذكاء الاصطناعي مع نطاق مخصص في دقائق."
       }
     },
     "company": "الشركة",

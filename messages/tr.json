@@ -167,6 +167,10 @@
       "nordVpn": {
         "title": "NordVPN",
         "description": "Ekipler, kurucular ve daginik operasyonlar icin guvenli baglanti cozumleri."
+      },
+      "magneticPortfolioBuilder": {
+        "title": "Magnetic Portfolio Builder",
+        "description": "Dakikalar içinde özel alan adıyla AI destekli çarpıcı bir portfolyo sitesi başlatın."
       }
     },
     "company": "Company",

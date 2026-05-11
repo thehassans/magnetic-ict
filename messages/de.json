@@ -167,6 +167,10 @@
       "nordVpn": {
         "title": "NordVPN",
         "description": "Sichere Konnektivitätslösungen für Teams, Gründer und verteilte Abläufe."
+      },
+      "magneticPortfolioBuilder": {
+        "title": "Magnetic Portfolio Builder",
+        "description": "Starten Sie in Minuten eine beeindruckende KI-Portfolio-Website mit eigener Domain."
       }
     },
     "company": "Company",
