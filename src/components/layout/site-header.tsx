@@ -84,7 +84,7 @@ export function SiteHeader({ locale, activeLanguages, visibleServiceMenuItems, s
   const [isSigningOut, startSignOutTransition] = useTransition();
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
   const t = useTranslations("Navigation");
-  const signInHref = "/customer/sign-in?callback=/dashboard";
+  const signInHref = `/${locale}/customer/sign-in?callback=/dashboard`;
 
   const initials = useMemo(() => {
     const source = sessionUser?.name?.trim() || sessionUser?.email?.trim() || "M";
@@ -332,10 +332,10 @@ export function SiteHeader({ locale, activeLanguages, visibleServiceMenuItems, s
               </div>
             ) : (
               <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
-                <Link href={signInHref} locale={locale} className="inline-flex h-11 items-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-violet-700">
+                <a href={signInHref} className="inline-flex h-11 items-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-violet-700">
                   <UserRound className="h-4 w-4" />
                   {t("signIn")}
-                </Link>
+                </a>
               </motion.div>
             )}
           </div>
@@ -448,10 +448,10 @@ export function SiteHeader({ locale, activeLanguages, visibleServiceMenuItems, s
                   </button>
                 </>
               ) : (
-                <Link href={signInHref} locale={locale} onClick={() => setMobileMenuOpen(false)} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-semibold text-white">
+                <a href={signInHref} onClick={() => setMobileMenuOpen(false)} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-semibold text-white">
                   <UserRound className="h-4 w-4" />
                   {t("signIn")}
-                </Link>
+                </a>
               )}
             </div>
           </motion.div>

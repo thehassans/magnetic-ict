@@ -106,7 +106,7 @@ export function Header({
   const pathname = usePathname() ?? "";
   const scrolled = useScroll(10);
   const t = useTranslations("Navigation");
-  const signInHref = "/customer/sign-in?callback=/dashboard";
+  const signInHref = `/${locale}/customer/sign-in?callback=/dashboard`;
   const hideOnDashboard = pathname.startsWith(`/${locale}/dashboard`);
 
   const mapServiceLink = React.useCallback((item: { key: ServiceMenuKey; id: string; href: string }): LinkItem => {
@@ -319,9 +319,9 @@ export function Header({
               </Button>
             </>
           ) : (
-            <Link href={signInHref} locale={locale} className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200/70 bg-transparent px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white">
+            <a href={signInHref} className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200/70 bg-transparent px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white">
               {t("signIn")}
-            </Link>
+            </a>
           )}
         </div>
         <Button
@@ -413,9 +413,9 @@ export function Header({
               </Button>
             </>
           ) : (
-            <Link href={signInHref} locale={locale} onClick={() => setOpen(false)} className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200/70 bg-transparent px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white">
+            <a href={signInHref} onClick={() => setOpen(false)} className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200/70 bg-transparent px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-transparent hover:text-slate-950 dark:border-white/10 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-transparent dark:hover:text-white">
               {t("signIn")}
-            </Link>
+            </a>
           )}
         </div>
       </MobileMenu>
