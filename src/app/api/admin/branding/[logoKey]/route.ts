@@ -14,11 +14,27 @@ import {
 export const runtime = "nodejs";
 
 const maxUploadBytes = 6 * 1024 * 1024;
+const hasDatabase = Boolean(process.env.DATABASE_URL);
+
+const imageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".svg", ".gif", ".avif", ".bmp", ".tiff", ".ico"];
+
+function isImageFile(file: File) {
+  if (file.type.startsWith("image/")) return true;
+  const lower = file.name.toLowerCase();
+  return imageExtensions.some((ext) => lower.endsWith(ext));
+}
+
+function isSvgFile(file: File) {
+  return file.type === "image/svg+xml" || file.name.toLowerCase().endsWith(".svg");
+}
 
 async function requireAdmin() {
   const session = await auth();
   if (!session?.user || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Admin access required." }, { status: 403 });
+  }
+  if (!hasDatabase) {
+    return NextResponse.json({ error: "DATABASE_URL must be configured to manage branding." }, { status: 503 });
   }
   return null;
 }
@@ -55,8 +71,8 @@ export async function POST(
     if (!(imageFile instanceof File)) {
       return NextResponse.json({ error: "Select a logo file to upload." }, { status: 400 });
     }
-    if (!imageFile.type.startsWith("image/")) {
-      return NextResponse.json({ error: "Only image uploads are supported." }, { status: 400 });
+    if (!isImageFile(imageFile)) {
+      return NextResponse.json({ error: "Only image uploads are supported. (jpg, png, webp, svg, etc.)" }, { status: 400 });
     }
     if (imageFile.size === 0 || imageFile.size > maxUploadBytes) {
       return NextResponse.json({ error: "Use an image up to 6 MB." }, { status: 400 });
@@ -66,20 +82,24 @@ export async function POST(
     const oldUrl: string = currentConfig[logoKey as BrandingLogoKey] ?? "";
 
     const sourceBuffer = Buffer.from(await imageFile.arrayBuffer());
-    const isSvg = imageFile.type === "image/svg+xml";
-
     let fileBuffer: Buffer;
     let ext: string;
 
-    if (isSvg) {
+    if (isSvgFile(imageFile)) {
       fileBuffer = sourceBuffer;
       ext = "svg";
     } else {
-      fileBuffer = await sharp(sourceBuffer, { failOn: "none" })
-        .resize({ width: 600, height: 200, fit: "contain", withoutEnlargement: true, background: { r: 0, g: 0, b: 0, alpha: 0 } })
-        .webp({ quality: 90, effort: 4 })
-        .toBuffer();
-      ext = "webp";
+      try {
+        fileBuffer = await sharp(sourceBuffer, { failOn: "none" })
+          .resize({ width: 600, height: 200, fit: "inside", withoutEnlargement: true })
+          .webp({ quality: 90 })
+          .toBuffer();
+        ext = "webp";
+      } catch {
+        fileBuffer = sourceBuffer;
+        const lower = imageFile.name.toLowerCase();
+        ext = lower.endsWith(".png") ? "png" : lower.endsWith(".webp") ? "webp" : lower.endsWith(".jpg") || lower.endsWith(".jpeg") ? "jpg" : "png";
+      }
     }
 
     const newUrl = `/branding/uploads/${logoKey}.${ext}`;
@@ -92,7 +112,8 @@ export async function POST(
     return NextResponse.json({ ok: true, logoUrl: newUrl, message: "Logo uploaded successfully." });
   } catch (error) {
     console.error("Branding logo upload failed", error);
-    return NextResponse.json({ error: "Unable to upload logo right now." }, { status: 500 });
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: `Upload failed: ${msg}` }, { status: 500 });
   }
 }
 
