@@ -1,7 +1,8 @@
 import { ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
-import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { CommerceOverlays } from "@/components/commerce/commerce-overlays";
 import { AnimatedPageShell } from "@/components/layout/animated-page-shell";
@@ -26,6 +27,16 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+
+  const reqHeaders = await headers();
+  const host =
+    reqHeaders.get("x-forwarded-host")?.split(",")[0]?.trim()
+    ?? reqHeaders.get("host")?.split(":")[0]
+    ?? "";
+
+  if (host.startsWith("chatbot.")) {
+    redirect("/chatbot");
+  }
 
   if (!routing.locales.includes(locale as (typeof routing.locales)[number])) {
     notFound();
