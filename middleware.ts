@@ -4,13 +4,26 @@ import { routing } from "@/i18n/routing";
 
 const nextIntlMiddleware = createMiddleware(routing);
 
+const LOCALES = ["en", "fr", "ar", "de", "es", "tr", "bn"];
+
+function stripLocalePrefix(pathname: string): string {
+  for (const locale of LOCALES) {
+    if (pathname === `/${locale}`) return "/";
+    if (pathname.startsWith(`/${locale}/`)) return pathname.slice(locale.length + 1);
+  }
+  return pathname;
+}
+
 export default function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") ?? "";
   const pathname = request.nextUrl.pathname;
 
   if (hostname.startsWith("chatbot.")) {
     const url = request.nextUrl.clone();
-    url.pathname = pathname.startsWith("/chatbot") ? pathname : `/chatbot${pathname}`;
+    const cleanPath = stripLocalePrefix(pathname);
+    url.pathname = cleanPath.startsWith("/chatbot")
+      ? cleanPath
+      : `/chatbot${cleanPath === "/" ? "" : cleanPath}`;
     return NextResponse.rewrite(url);
   }
 

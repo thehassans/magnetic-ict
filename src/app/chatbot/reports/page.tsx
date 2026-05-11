@@ -1,13 +1,12 @@
 import { BarChart3, MessageCircle, TrendingUp, Users, Zap } from "lucide-react";
 import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import { getSocialBotThreads, getSocialBotIntegrations } from "@/lib/social-bot-db";
 
 export const dynamic = "force-dynamic";
 
 export default async function ChatbotReportsPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/en/sign-in");
+  if (!session?.user?.id) return null;
   const uid = session.user.id;
 
   const [threads, integrations] = await Promise.all([

@@ -1,6 +1,5 @@
 import { BarChart3, Bot, FileText, MessageCircle, Users, Webhook, Zap } from "lucide-react";
 import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import {
   getSocialBotAgents,
   getSocialBotDocuments,
@@ -12,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ChatbotDashboardPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/en/sign-in");
+  if (!session?.user?.id) return null;
   const uid = session.user.id;
 
   const [threads, integrations, documents, agents] = await Promise.all([

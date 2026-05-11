@@ -1,6 +1,5 @@
 import { Bot, Instagram, MessageCircle, Search, Users } from "lucide-react";
 import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import { getSocialBotThreads } from "@/lib/social-bot-db";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +12,7 @@ const sourceIcon: Record<string, typeof MessageCircle> = {
 
 export default async function ChatbotContactsPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/en/sign-in");
+  if (!session?.user?.id) return null;
 
   const threads = await getSocialBotThreads(session.user.id);
 

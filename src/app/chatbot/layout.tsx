@@ -7,15 +7,16 @@ import { getPlatformSettings } from "@/lib/platform-settings";
 
 export default async function ChatbotLayout({ children }: { children: ReactNode }) {
   const session = await auth();
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://magnetic-ict.com").replace(/\/$/, "");
 
   if (!session?.user?.id) {
-    redirect("/en/sign-in?callbackUrl=/chatbot");
+    redirect(`${appUrl}/en/sign-in?callbackUrl=https://chatbot.magnetic-ict.com`);
   }
 
   const hasAccess = await userHasMagneticSocialBotAccess(session.user.id);
 
   if (!hasAccess) {
-    redirect("/en/dashboard");
+    redirect(`${appUrl}/en/dashboard`);
   }
 
   const settings = await getPlatformSettings();
