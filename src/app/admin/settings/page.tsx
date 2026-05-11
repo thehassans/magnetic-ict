@@ -40,6 +40,7 @@ export default async function AdminSettingsPage() {
         domainProviderConfig={settings.domainProviderConfig}
         hostingProviderConfig={settings.hostingProviderConfig}
         aboutConfig={settings.aboutConfig}
+        brandingConfig={settings.brandingConfig}
         emailLogs={emailLogs}
         appBaseUrl={getCanonicalAppUrl()}
         canPersist={hasDatabase}

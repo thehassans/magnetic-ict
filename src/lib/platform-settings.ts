@@ -131,6 +131,53 @@ export type EmailNotificationKey = (typeof emailNotificationKeys)[number];
 
 export type EmailNotificationsSettings = Record<EmailNotificationKey, boolean>;
 
+export type BrandingConfig = {
+  adminLogoLight: string;
+  adminLogoDark: string;
+  customerLogoLight: string;
+  customerLogoDark: string;
+  chatbotLogoLight: string;
+  chatbotLogoDark: string;
+};
+
+export const BRANDING_LOGO_KEYS = ["adminLogoLight", "adminLogoDark", "customerLogoLight", "customerLogoDark", "chatbotLogoLight", "chatbotLogoDark"] as const;
+export type BrandingLogoKey = (typeof BRANDING_LOGO_KEYS)[number];
+
+export const defaultBrandingConfig: BrandingConfig = {
+  adminLogoLight: "",
+  adminLogoDark: "",
+  customerLogoLight: "",
+  customerLogoDark: "",
+  chatbotLogoLight: "",
+  chatbotLogoDark: ""
+};
+
+export function normalizeBrandingConfig(value: unknown): BrandingConfig {
+  if (!isObject(value)) return defaultBrandingConfig;
+  return {
+    adminLogoLight: coerceString(value.adminLogoLight, ""),
+    adminLogoDark: coerceString(value.adminLogoDark, ""),
+    customerLogoLight: coerceString(value.customerLogoLight, ""),
+    customerLogoDark: coerceString(value.customerLogoDark, ""),
+    chatbotLogoLight: coerceString(value.chatbotLogoLight, ""),
+    chatbotLogoDark: coerceString(value.chatbotLogoDark, "")
+  };
+}
+
+export async function getBrandingConfig(): Promise<BrandingConfig> {
+  const value = await getSettingValue("branding_config");
+  return normalizeBrandingConfig(value);
+}
+
+export async function saveBrandingConfig(value: BrandingConfig) {
+  if (!hasDatabase) return;
+  await prisma.setting.upsert({
+    where: { key: "branding_config" },
+    update: { value },
+    create: { key: "branding_config", value }
+  });
+}
+
 export type PlatformSettingsBundle = {
   activeLanguages: ActiveLanguage[];
   footerDetails: FooterSettings;
@@ -146,6 +193,7 @@ export type PlatformSettingsBundle = {
   domainProviderConfig: DomainProviderSettings;
   hostingProviderConfig: HostingProviderSettings;
   aboutConfig: AboutSettings;
+  brandingConfig: BrandingConfig;
 };
 
 export const defaultFooterDetails: FooterSettings = {
@@ -2546,7 +2594,8 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     emailNotificationsConfig,
     domainProviderConfig,
     hostingProviderConfig,
-    aboutConfig
+    aboutConfig,
+    brandingConfig
   ] = await Promise.all([
     getSettingValue("active_languages"),
     getSettingValue("footer_details"),
@@ -2561,7 +2610,8 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     getSettingValue("email_notifications_config"),
     getSettingValue("domain_provider_config"),
     getSettingValue("hosting_provider_config"),
-    getSettingValue("about_config")
+    getSettingValue("about_config"),
+    getSettingValue("branding_config")
   ]);
 
   return {
@@ -2578,7 +2628,8 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     emailNotificationsConfig: normalizeEmailNotificationsConfig(emailNotificationsConfig),
     domainProviderConfig: normalizeDomainProviderConfig(domainProviderConfig),
     hostingProviderConfig: normalizeHostingProviderConfig(hostingProviderConfig),
-    aboutConfig: normalizeAboutConfig(aboutConfig)
+    aboutConfig: normalizeAboutConfig(aboutConfig),
+    brandingConfig: normalizeBrandingConfig(brandingConfig)
   };
 }
 

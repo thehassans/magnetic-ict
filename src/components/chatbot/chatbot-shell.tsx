@@ -1,9 +1,10 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { signOut } from "next-auth/react";
 import {
   BarChart3,
@@ -13,8 +14,10 @@ import {
   LogOut,
   Menu,
   MessageSquare,
+  Moon,
   Plug,
   Settings,
+  Sun,
   Users,
   X,
   Zap
@@ -36,12 +39,28 @@ type Props = {
   userEmail: string;
   metaAppId: string;
   metaConfigId: string;
+  logoLight?: string;
+  logoDark?: string;
 };
 
-export function ChatbotShell({ children, userName, userEmail }: Props) {
+export function ChatbotShell({ children, userName, userEmail, logoLight, logoDark }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [signingOut, startSignOut] = useTransition();
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const pathname = usePathname();
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("chatbot-theme");
+      if (stored === "light" || stored === "dark") setTheme(stored);
+    } catch { /* noop */ }
+  }, []);
+
+  function toggleTheme() {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    try { localStorage.setItem("chatbot-theme", next); } catch { /* noop */ }
+  }
 
   function handleSignOut() {
     startSignOut(() => { void signOut({ redirectTo: "/en" }); });
@@ -49,9 +68,12 @@ export function ChatbotShell({ children, userName, userEmail }: Props) {
 
   const initial = userName.charAt(0).toUpperCase();
   const settingsActive = pathname.startsWith("/chatbot/settings");
+  const isDark = theme === "dark";
+
+  const logoSrc = isDark ? (logoDark || logoLight || null) : (logoLight || logoDark || null);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#070710]">
+    <div className="flex h-screen overflow-hidden bg-[#070710]" data-chatbot-theme={theme}>
       {sidebarOpen && (
         <div className="fixed inset-0 z-20 bg-black/70 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
@@ -62,18 +84,26 @@ export function ChatbotShell({ children, userName, userEmail }: Props) {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-20 -left-20 h-56 w-56 rounded-full bg-violet-700/15 blur-3xl" />
-          <div className="absolute bottom-20 right-0 h-40 w-40 rounded-full bg-indigo-700/10 blur-3xl" />
-        </div>
+        {isDark && (
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute -top-20 -left-20 h-56 w-56 rounded-full bg-violet-700/15 blur-3xl" />
+            <div className="absolute bottom-20 right-0 h-40 w-40 rounded-full bg-indigo-700/10 blur-3xl" />
+          </div>
+        )}
 
         <div className="relative flex h-[60px] shrink-0 items-center justify-between px-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-600/40">
-              <MessageSquare className="h-4 w-4 text-white" />
+          {logoSrc ? (
+            <div className="flex h-9 w-full max-w-[148px] items-center">
+              <Image src={logoSrc} alt="Logo" width={148} height={36} className="h-auto w-full object-contain" priority unoptimized={logoSrc.startsWith("/uploads/") || logoSrc.toLowerCase().endsWith(".svg")} />
             </div>
-            <span className="text-[15px] font-bold tracking-tight text-white">Magnetic <span className="text-violet-400">Chat</span></span>
-          </div>
+          ) : (
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-600/40">
+                <MessageSquare className="h-4 w-4 text-white" />
+              </div>
+              <span className="text-[15px] font-bold tracking-tight text-white">Magnetic <span className="text-violet-400">Chat</span></span>
+            </div>
+          )}
           <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-1 text-white/30 hover:text-white/70 lg:hidden">
             <X className="h-4 w-4" />
           </button>
@@ -106,8 +136,8 @@ export function ChatbotShell({ children, userName, userEmail }: Props) {
           })}
         </nav>
 
-        <div className="relative mx-2.5 mb-2">
-          <div className="mx-1 mb-2 h-px bg-white/[0.05]" />
+        <div className="relative mx-2.5 mb-1">
+          <div className="mx-1 mb-1.5 h-px bg-white/[0.05]" />
           <Link
             href="/chatbot/settings"
             onClick={() => setSidebarOpen(false)}
@@ -123,6 +153,14 @@ export function ChatbotShell({ children, userName, userEmail }: Props) {
             Settings
             {settingsActive && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-violet-400" />}
           </Link>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex w-full items-center gap-3 rounded-[10px] px-3 py-2 text-[13px] font-medium text-white/40 transition hover:bg-white/[0.04] hover:text-white/70"
+          >
+            {isDark ? <Sun className="h-4 w-4 shrink-0" /> : <Moon className="h-4 w-4 shrink-0" />}
+            {isDark ? "Light mode" : "Dark mode"}
+          </button>
         </div>
 
         <div className="relative mx-3 mb-4 rounded-[14px] border border-white/[0.07] bg-white/[0.03] p-3 backdrop-blur-sm">
@@ -152,10 +190,19 @@ export function ChatbotShell({ children, userName, userEmail }: Props) {
           <button type="button" onClick={() => setSidebarOpen(true)} className="text-white/50 hover:text-white">
             <Menu className="h-5 w-5" />
           </button>
-          <div className="flex items-center gap-2">
-            <Bot className="h-4 w-4 text-violet-400" />
-            <span className="text-sm font-bold text-white">Magnetic Chat</span>
-          </div>
+          {logoSrc ? (
+            <div className="flex h-8 items-center">
+              <Image src={logoSrc} alt="Logo" width={120} height={32} className="h-auto w-auto max-h-8 object-contain" unoptimized={logoSrc.startsWith("/uploads/") || logoSrc.toLowerCase().endsWith(".svg")} />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Bot className="h-4 w-4 text-violet-400" />
+              <span className="text-sm font-bold text-white">Magnetic Chat</span>
+            </div>
+          )}
+          <button type="button" onClick={toggleTheme} className="ml-auto rounded-lg p-1.5 text-white/40 hover:text-white/70">
+            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
         </header>
 
         <main className="flex-1 overflow-y-auto bg-[#070710]">

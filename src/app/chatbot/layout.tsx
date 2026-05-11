@@ -27,6 +27,8 @@ export default async function ChatbotLayout({ children }: { children: ReactNode 
       userEmail={session.user.email ?? ""}
       metaAppId={settings.socialBotConfig.metaAppId}
       metaConfigId={settings.socialBotConfig.metaConfigId}
+      logoLight={settings.brandingConfig.chatbotLogoLight || undefined}
+      logoDark={settings.brandingConfig.chatbotLogoDark || undefined}
     >
       {children}
     </ChatbotShell>

@@ -1,7 +1,8 @@
 "use client";
 
 import { type ReactNode, useMemo, useState } from "react";
-import { Bell, BookOpen, Check, Code2, CreditCard, Globe2, Key, Languages, Loader2, Mail, MailOpen, MessageSquare, Server, Settings2, Sparkles, ToggleLeft, Users } from "lucide-react";
+import { Bell, BookOpen, Check, Code2, CreditCard, Globe2, Key, Languages, Loader2, Mail, MailOpen, MessageSquare, Palette, Server, Settings2, Sparkles, ToggleLeft, Users } from "lucide-react";
+import { BrandingEditor } from "@/components/admin/branding-editor";
 import { HostingConfigEditor } from "@/components/admin/hosting-config-editor";
 import { TrustedPartnersEditor } from "@/components/admin/trusted-partners-editor";
 import { DomainTldEditor } from "@/components/admin/domain-tld-editor";
@@ -11,6 +12,7 @@ import type { HostingProviderSettings } from "@/lib/hosting-types";
 import type { ActiveLanguage } from "@/types/i18n";
 import type {
   AboutSettings,
+  BrandingConfig,
   EmailNotificationsSettings,
   FooterSettings,
   GeminiSettings,
@@ -39,6 +41,7 @@ type AdminSettingsClientProps = {
   domainProviderConfig: DomainProviderSettings;
   hostingProviderConfig: HostingProviderSettings;
   aboutConfig: AboutSettings;
+  brandingConfig: BrandingConfig;
   emailLogs: EmailLogRecord[];
   appBaseUrl: string;
   canPersist: boolean;
@@ -66,7 +69,7 @@ const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth"
   about: "About page"
 };
 
-type TabKey = "about" | "languages" | "footer" | "trustedPartners" | "payments" | "oauth" | "gemini" | "domain" | "hosting" | "socialBot" | "magneticCommerce" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "emailLogs";
+type TabKey = "about" | "languages" | "footer" | "trustedPartners" | "payments" | "oauth" | "gemini" | "domain" | "hosting" | "socialBot" | "magneticCommerce" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "emailLogs" | "branding";
 
 const tabs: { key: TabKey; label: string; icon: ReactNode }[] = [
   { key: "about",               label: "About",          icon: <BookOpen className="h-3.5 w-3.5" /> },
@@ -84,6 +87,7 @@ const tabs: { key: TabKey; label: string; icon: ReactNode }[] = [
   { key: "transactionalEmail",  label: "Email Provider", icon: <Mail className="h-3.5 w-3.5" /> },
   { key: "emailNotifications",  label: "Notifications",  icon: <Bell className="h-3.5 w-3.5" /> },
   { key: "emailLogs",           label: "Email Logs",     icon: <ToggleLeft className="h-3.5 w-3.5" /> },
+  { key: "branding",            label: "Branding",       icon: <Palette className="h-3.5 w-3.5" /> },
 ];
 
 function createVerifyToken() {
@@ -110,6 +114,7 @@ export function AdminSettingsClient({
   domainProviderConfig,
   hostingProviderConfig,
   aboutConfig,
+  brandingConfig,
   emailLogs,
   appBaseUrl,
   canPersist
@@ -128,6 +133,7 @@ export function AdminSettingsClient({
   const [domainState, setDomainState] = useState(domainProviderConfig);
   const [hostingState, setHostingState] = useState(hostingProviderConfig);
   const [aboutState, setAboutState] = useState(aboutConfig);
+  const [brandingState, setBrandingState] = useState(brandingConfig);
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("about");
@@ -866,6 +872,14 @@ export function AdminSettingsClient({
             ))}
           </div>
         )}
+      </SettingsCard>}
+
+      {activeTab === "branding" && <SettingsCard
+        title="Branding & Logos"
+        description="Upload light and dark logo variants for the Admin panel, Customer portal, and Magnetic Bot chatbot. SVG or PNG recommended. Changes take effect on next page load after uploading."
+        action={<span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700">Auto-saves on upload</span>}
+      >
+        <BrandingEditor value={brandingState} onChange={setBrandingState} disabled={false} />
       </SettingsCard>}
     </div>
   );
