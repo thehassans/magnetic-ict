@@ -89,78 +89,81 @@ export function ChatbotAgents({ initialAgents }: { initialAgents: SocialBotAgent
     setAgents((prev) => prev.map((a) => a._id === agent._id ? { ...a, isActive: !a.isActive } : a));
   }
 
+  const inputCls = "w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/25 focus:border-violet-500/60 focus:bg-white/[0.06] transition";
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-full space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">AI Agents</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Create and manage intelligent agents for each channel.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-white">AI Agents</h1>
+          <p className="mt-0.5 text-sm text-white/40">Create and manage intelligent agents for each channel</p>
         </div>
-        <button type="button" onClick={openCreate} className="flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700">
+        <button type="button" onClick={openCreate} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_16px_rgba(124,58,237,0.35)] transition hover:from-violet-500 hover:to-purple-500">
           <Plus className="h-4 w-4" />
           New Agent
         </button>
       </div>
 
       {toast && (
-        <div className={cn("rounded-xl px-4 py-3 text-sm", toast.type === "ok" ? "border border-emerald-200 bg-emerald-50 text-emerald-800 dark:bg-emerald-400/10 dark:text-emerald-200" : "border border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-400/10 dark:text-rose-200")}>
+        <div className={cn("rounded-xl border px-4 py-3 text-sm", toast.type === "ok" ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300" : "border-rose-500/20 bg-rose-500/10 text-rose-300")}>
           {toast.msg}
         </div>
       )}
 
       {agents.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-300 py-20 dark:border-white/20">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-600 dark:bg-violet-400/10">
-            <Bot className="h-7 w-7" />
+        <div className="flex flex-col items-center justify-center gap-5 rounded-2xl border border-dashed border-white/[0.1] py-24">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-500/15">
+            <Bot className="h-7 w-7 text-violet-300" />
           </div>
           <div className="text-center">
-            <p className="font-semibold text-slate-700 dark:text-slate-200">No agents yet</p>
-            <p className="mt-1 text-sm text-slate-400">Create your first AI agent to start automating conversations.</p>
+            <p className="font-semibold text-white/70">No agents yet</p>
+            <p className="mt-1 text-sm text-white/30">Create your first AI agent to start automating conversations</p>
           </div>
-          <button type="button" onClick={openCreate} className="flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-700">
+          <button type="button" onClick={openCreate} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_16px_rgba(124,58,237,0.35)] hover:from-violet-500 hover:to-purple-500 transition">
             <Wand2 className="h-4 w-4" /> Create Agent
           </button>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {agents.map((agent) => (
-            <div key={agent._id} className="group rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-900">
+            <div key={agent._id} className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] p-5 transition hover:border-white/[0.12] hover:bg-white/[0.05]">
+              <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-violet-600/10 blur-2xl" />
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   {agent.avatarDataUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={agent.avatarDataUrl} alt={agent.name} className="h-12 w-12 rounded-xl object-cover" />
+                    <img src={agent.avatarDataUrl} alt={agent.name} className="h-12 w-12 rounded-xl object-cover ring-1 ring-white/10" />
                   ) : (
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100 text-violet-700 dark:bg-violet-400/10 dark:text-violet-300">
-                      <Bot className="h-5 w-5" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/30 to-purple-600/20">
+                      <Bot className="h-5 w-5 text-violet-300" />
                     </div>
                   )}
                   <div>
-                    <p className="font-semibold text-slate-950 dark:text-white">{agent.name}</p>
+                    <p className="font-semibold text-white/90">{agent.name}</p>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className={cn("h-2 w-2 rounded-full", agent.isActive ? "bg-emerald-400" : "bg-slate-300")} />
-                      <span className="text-xs text-slate-400">{agent.isActive ? "Active" : "Inactive"}</span>
+                      <span className={cn("h-1.5 w-1.5 rounded-full", agent.isActive ? "bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.7)]" : "bg-white/20")} />
+                      <span className="text-[11px] text-white/35">{agent.isActive ? "Active" : "Inactive"}</span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
-                  <button type="button" onClick={() => openEdit(agent)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/10">
+                  <button type="button" onClick={() => openEdit(agent)} className="rounded-lg p-1.5 text-white/30 hover:bg-white/[0.07] hover:text-violet-300">
                     <Zap className="h-3.5 w-3.5" />
                   </button>
-                  <button type="button" onClick={() => void deleteAgent(agent._id)} disabled={deleting === agent._id} className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-400/10">
+                  <button type="button" onClick={() => void deleteAgent(agent._id)} disabled={deleting === agent._id} className="rounded-lg p-1.5 text-white/30 hover:bg-rose-500/10 hover:text-rose-300">
                     {deleting === agent._id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                   </button>
                 </div>
               </div>
-              {agent.description && <p className="mt-3 text-sm text-slate-500 dark:text-slate-400 line-clamp-2">{agent.description}</p>}
-              <div className="mt-4 flex flex-wrap items-center gap-2">
+              {agent.description && <p className="mt-3 text-[13px] text-white/35 line-clamp-2">{agent.description}</p>}
+              <div className="mt-4 flex flex-wrap items-center gap-1.5">
                 {agent.channels.map((ch) => (
-                  <span key={ch} className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                  <span key={ch} className="flex items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold text-white/50">
                     <MessageCircle className="h-2.5 w-2.5" />{ch}
                   </span>
                 ))}
               </div>
-              <button type="button" onClick={() => void toggleActive(agent)} className={cn("mt-4 w-full rounded-xl py-2 text-xs font-semibold transition", agent.isActive ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-400/10 dark:text-emerald-300" : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-white/5 dark:text-slate-400")}>
+              <button type="button" onClick={() => void toggleActive(agent)} className={cn("mt-4 w-full rounded-xl py-2 text-xs font-semibold transition", agent.isActive ? "bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/20" : "bg-white/[0.05] text-white/40 hover:bg-white/[0.08] hover:text-white/60")}>
                 {agent.isActive ? <><CheckCircle2 className="inline h-3.5 w-3.5 mr-1" />Active — click to deactivate</> : "Activate agent"}
               </button>
             </div>
@@ -170,17 +173,20 @@ export function ChatbotAgents({ initialAgents }: { initialAgents: SocialBotAgent
 
       {modal.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setModal({ open: false, editing: null })} />
-          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-white/10 dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-white/10">
-              <h2 className="font-semibold text-slate-950 dark:text-white">{modal.editing ? "Edit Agent" : "New AI Agent"}</h2>
-              <button type="button" onClick={() => setModal({ open: false, editing: null })} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setModal({ open: false, editing: null })} />
+          <div className="relative w-full max-w-lg rounded-2xl border border-white/[0.09] bg-[#0e0e22] shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
+              <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-violet-600/15 blur-3xl" />
+            </div>
+            <div className="relative flex items-center justify-between border-b border-white/[0.07] px-5 py-4">
+              <h2 className="font-semibold text-white">{modal.editing ? "Edit Agent" : "New AI Agent"}</h2>
+              <button type="button" onClick={() => setModal({ open: false, editing: null })} className="rounded-lg p-1.5 text-white/30 hover:bg-white/[0.07] hover:text-white/70">
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="space-y-5 p-5">
+            <div className="relative space-y-5 p-5">
               <div className="flex items-center gap-4">
-                <button type="button" onClick={() => fileRef.current?.click()} className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400 transition hover:border-violet-400 hover:bg-violet-50 dark:border-white/20 dark:bg-white/5">
+                <button type="button" onClick={() => fileRef.current?.click()} className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-2 border-dashed border-white/[0.12] bg-white/[0.03] text-white/25 transition hover:border-violet-500/50 hover:bg-violet-500/10">
                   {form.avatarDataUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={form.avatarDataUrl} alt="avatar" className="h-full w-full rounded-2xl object-cover" />
@@ -189,48 +195,45 @@ export function ChatbotAgents({ initialAgents }: { initialAgents: SocialBotAgent
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />
                 <div className="flex-1 space-y-3">
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">Agent Name *</label>
-                    <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g. Sales Agent" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-950 outline-none focus:border-violet-400 focus:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white" />
+                    <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-white/40">Agent Name *</label>
+                    <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g. Sales Agent" className={inputCls} />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">Description</label>
-                    <input value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="What does this agent do?" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-950 outline-none focus:border-violet-400 focus:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white" />
+                    <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-white/40">Description</label>
+                    <input value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="What does this agent do?" className={inputCls} />
                   </div>
                 </div>
               </div>
-
               <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">AI Instructions</label>
-                <textarea value={form.instructions} onChange={(e) => setForm((f) => ({ ...f, instructions: e.target.value }))} rows={5} placeholder="You are a helpful support agent for [company]. Your job is to..." className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-950 outline-none focus:border-violet-400 focus:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white" />
-                <p className="mt-1 text-xs text-slate-400">{form.instructions.length}/4000 characters</p>
+                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-white/40">AI Instructions</label>
+                <textarea value={form.instructions} onChange={(e) => setForm((f) => ({ ...f, instructions: e.target.value }))} rows={5} placeholder="You are a helpful support agent for [company]…" className={`${inputCls} resize-none`} />
+                <p className="mt-1.5 text-right text-[10px] text-white/20">{form.instructions.length}/4000</p>
               </div>
-
               <div>
-                <label className="mb-2 block text-xs font-semibold text-slate-700 dark:text-slate-300">Channels</label>
+                <label className="mb-2 block text-[11px] font-semibold uppercase tracking-wide text-white/40">Channels</label>
                 <div className="flex flex-wrap gap-2">
                   {CHANNELS.map((ch) => (
                     <button key={ch} type="button" onClick={() => toggleChannel(ch)}
                       className={cn("flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition",
-                        form.channels.includes(ch) ? "border-violet-400 bg-violet-50 text-violet-700 dark:border-violet-400/40 dark:bg-violet-400/10 dark:text-violet-300" : "border-slate-200 bg-slate-50 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400")}>
+                        form.channels.includes(ch) ? "border-violet-500/40 bg-violet-500/15 text-violet-300" : "border-white/[0.07] bg-white/[0.03] text-white/40 hover:border-white/[0.12]")}>
                       <MessageCircle className="h-3 w-3" />{ch}
                     </button>
                   ))}
                 </div>
               </div>
-
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => setForm((f) => ({ ...f, isActive: !f.isActive }))}
-                  className={cn("relative inline-flex h-6 w-11 shrink-0 rounded-full border transition", form.isActive ? "border-violet-500 bg-violet-500" : "border-slate-300 bg-slate-100 dark:border-white/20 dark:bg-white/10")}>
-                  <span className={cn("inline-block h-5 w-5 rounded-full bg-white shadow transition-transform", form.isActive ? "translate-x-5" : "translate-x-0.5")} />
+                  className={cn("relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors", form.isActive ? "bg-violet-600 shadow-[0_0_10px_rgba(124,58,237,0.4)]" : "bg-white/10")}>
+                  <span className={cn("inline-block h-5 w-5 rounded-full bg-white shadow transition-transform mt-0.5", form.isActive ? "translate-x-5" : "translate-x-0.5")} />
                 </button>
-                <span className="text-sm text-slate-600 dark:text-slate-300">Active</span>
+                <span className="text-sm text-white/50">Active</span>
               </div>
             </div>
-            <div className="flex justify-end gap-3 border-t border-slate-200 px-5 py-4 dark:border-white/10">
-              <button type="button" onClick={() => setModal({ open: false, editing: null })} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300">
+            <div className="relative flex justify-end gap-3 border-t border-white/[0.07] px-5 py-4">
+              <button type="button" onClick={() => setModal({ open: false, editing: null })} className="rounded-xl border border-white/[0.08] px-4 py-2 text-sm font-semibold text-white/50 hover:bg-white/[0.05] transition">
                 Cancel
               </button>
-              <button type="button" onClick={() => void save()} disabled={saving} className="flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-60">
+              <button type="button" onClick={() => void save()} disabled={saving} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-5 py-2 text-sm font-semibold text-white shadow-[0_0_14px_rgba(124,58,237,0.4)] hover:from-violet-500 hover:to-purple-500 disabled:opacity-50 transition">
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                 {modal.editing ? "Save changes" : "Create agent"}
               </button>

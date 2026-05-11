@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Bot, Instagram, Loader2, MessageCircle, RefreshCw, Send, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SocialBotMessage, SocialBotThread } from "@/lib/social-bot-types";
@@ -64,44 +64,52 @@ export function ChatbotInbox({ initialThreads }: { initialThreads: SocialBotThre
 
   const filtered = threads.filter((t) => filter === "ALL" || t.mode === filter);
   const selected = payload?.thread ?? null;
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [payload?.messages]);
 
   return (
     <div className="flex h-full">
-      <div className="flex w-72 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-white/10 dark:bg-slate-900">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-white/10">
-          <h2 className="font-semibold text-slate-950 dark:text-white">Inbox</h2>
-          <button type="button" onClick={() => void refreshThreads()} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10">
-            <RefreshCw className="h-4 w-4" />
+      {/* Thread list */}
+      <div className="flex w-[260px] shrink-0 flex-col border-r border-white/[0.06] bg-[#0c0c1d]">
+        <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3.5">
+          <h2 className="text-sm font-semibold text-white">Inbox</h2>
+          <button type="button" onClick={() => void refreshThreads()} className="rounded-lg p-1.5 text-white/30 transition hover:bg-white/[0.06] hover:text-white/70">
+            <RefreshCw className="h-3.5 w-3.5" />
           </button>
         </div>
-        <div className="flex gap-1 border-b border-slate-200 px-3 py-2 dark:border-white/10">
+        <div className="flex gap-1 border-b border-white/[0.06] px-3 py-2">
           {(["ALL", "AI", "MANUAL"] as const).map((f) => (
             <button key={f} type="button" onClick={() => setFilter(f)}
-              className={cn("flex-1 rounded-lg py-1.5 text-xs font-semibold transition", filter === f ? "bg-violet-600 text-white" : "text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10")}>
+              className={cn("flex-1 rounded-lg py-1.5 text-[11px] font-semibold transition", filter === f ? "bg-violet-600 text-white shadow-[0_0_10px_rgba(124,58,237,0.4)]" : "text-white/30 hover:bg-white/[0.05] hover:text-white/60")}>
               {f}
             </button>
           ))}
         </div>
-        <div className="flex-1 overflow-y-auto divide-y divide-slate-200 dark:divide-white/10">
+        <div className="flex-1 overflow-y-auto divide-y divide-white/[0.04]">
           {filtered.length === 0 ? (
-            <p className="p-4 text-sm text-slate-400">No conversations.</p>
+            <div className="flex flex-col items-center gap-2 py-12">
+              <MessageCircle className="h-7 w-7 text-white/10" />
+              <p className="text-xs text-white/25">No conversations</p>
+            </div>
           ) : filtered.map((t) => {
             const Icon = sourceIconMap[t.source];
+            const isActive = selectedId === t._id;
             return (
               <button key={t._id} type="button" onClick={() => setSelectedId(t._id)}
-                className={cn("flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5", selectedId === t._id && "bg-violet-50 dark:bg-violet-400/10")}>
-                <div className={cn("mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold",
-                  selectedId === t._id ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300")}>
+                className={cn("flex w-full items-start gap-3 px-4 py-3.5 text-left transition", isActive ? "bg-violet-500/10" : "hover:bg-white/[0.03]")}>
+                <div className={cn("mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-sm font-bold",
+                  isActive ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-[0_0_10px_rgba(124,58,237,0.4)]" : "bg-white/[0.06] text-white/50")}>
                   {t.contactName.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-1">
-                    <p className="truncate text-sm font-semibold text-slate-950 dark:text-white">{t.contactName}</p>
+                    <p className="truncate text-[13px] font-semibold text-white/90">{t.contactName}</p>
                     {t.unreadCount > 0 && <span className="flex h-4 w-4 items-center justify-center rounded-full bg-violet-600 text-[9px] font-bold text-white">{t.unreadCount}</span>}
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <Icon className="h-3 w-3 shrink-0 text-slate-400" />
-                    <p className="truncate text-xs text-slate-400">{t.lastMessagePreview}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <Icon className="h-3 w-3 shrink-0 text-white/25" />
+                    <p className="truncate text-[11px] text-white/30">{t.lastMessagePreview}</p>
                   </div>
                 </div>
               </button>
@@ -110,19 +118,27 @@ export function ChatbotInbox({ initialThreads }: { initialThreads: SocialBotThre
         </div>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      {/* Message panel */}
+      <div className="flex min-w-0 flex-1 flex-col bg-[#070710]">
         {selected ? (
           <>
-            <div className="flex items-center justify-between border-b border-slate-200 bg-white px-5 py-3 dark:border-white/10 dark:bg-slate-900">
-              <div>
-                <p className="font-semibold text-slate-950 dark:text-white">{selected.contactName}</p>
-                <p className="text-xs text-slate-400">{selected.contactHandle} · {selected.source}</p>
+            <div className="flex items-center justify-between border-b border-white/[0.06] bg-[#0c0c1d] px-5 py-3.5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/40 to-purple-600/30 text-sm font-bold text-violet-200">
+                  {selected.contactName.charAt(0)}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">{selected.contactName}</p>
+                  <p className="text-[11px] text-white/35">{selected.contactHandle} · {selected.source}</p>
+                </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 {(["AI", "MANUAL"] as const).map((m) => (
                   <button key={m} type="button" onClick={() => void toggleMode(m)}
-                    className={cn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
-                      selected.mode === m ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300")}>
+                    className={cn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition",
+                      selected.mode === m
+                        ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-[0_0_12px_rgba(124,58,237,0.5)]"
+                        : "border border-white/[0.08] text-white/40 hover:border-violet-500/40 hover:text-white/70")}>
                     {m === "AI" && <Zap className="h-3 w-3" />}
                     {m}
                   </button>
@@ -130,32 +146,33 @@ export function ChatbotInbox({ initialThreads }: { initialThreads: SocialBotThre
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-3 p-5">
+            <div className="flex-1 overflow-y-auto space-y-4 p-5">
               {(payload?.messages ?? []).map((msg) => {
                 const out = msg.direction === "OUTBOUND";
                 return (
-                  <div key={msg._id} className={cn("flex gap-2", out && "justify-end")}>
+                  <div key={msg._id} className={cn("flex gap-2.5", out && "justify-end")}>
                     {!out && (
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600 dark:bg-white/10 dark:text-slate-300">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.07] text-xs font-bold text-white/50">
                         {selected.contactName.charAt(0)}
                       </div>
                     )}
-                    <div className={cn("max-w-[70%] rounded-2xl px-4 py-2.5 text-sm leading-6",
-                      out ? "bg-violet-600 text-white" : "border border-slate-200 bg-white text-slate-800 dark:border-white/10 dark:bg-white/5 dark:text-slate-100")}>
+                    <div className={cn("max-w-[68%] rounded-2xl px-4 py-2.5 text-sm leading-[1.65]",
+                      out ? "bg-gradient-to-br from-violet-600 to-purple-600 text-white shadow-[0_4px_20px_rgba(124,58,237,0.35)]" : "border border-white/[0.07] bg-white/[0.05] text-white/80")}>
                       {msg.text}
                     </div>
                   </div>
                 );
               })}
+              <div ref={messagesEndRef} />
             </div>
 
-            <div className="border-t border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-900">
+            <div className="border-t border-white/[0.06] bg-[#0c0c1d] p-4">
               <div className="flex gap-3">
                 <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2}
                   placeholder="Type a reply…"
-                  className="flex-1 resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-950 outline-none placeholder:text-slate-400 focus:border-violet-400 focus:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white" />
+                  className="flex-1 resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/25 focus:border-violet-500/60 focus:bg-white/[0.06] transition" />
                 <button type="button" onClick={() => void send()} disabled={sending || !text.trim()}
-                  className="flex items-center gap-2 self-end rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:opacity-50">
+                  className="flex items-center gap-2 self-end rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_16px_rgba(124,58,237,0.4)] transition hover:from-violet-500 hover:to-purple-500 disabled:opacity-40">
                   {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   Send
                 </button>
@@ -165,8 +182,10 @@ export function ChatbotInbox({ initialThreads }: { initialThreads: SocialBotThre
         ) : (
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
-              <MessageCircle className="mx-auto h-10 w-10 text-slate-300" />
-              <p className="mt-3 text-sm text-slate-400">Select a conversation</p>
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.03]">
+                <MessageCircle className="h-7 w-7 text-white/15" />
+              </div>
+              <p className="text-sm text-white/25">Select a conversation to start</p>
             </div>
           </div>
         )}
