@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useCallback, useEffect, useState } from "react";
-import { Bot, CheckCircle2, Instagram, Loader2, MessageCircle, RefreshCw, Send, Sparkles, Trash2, Upload, Wand2, Webhook } from "lucide-react";
+import { BarChart3, Bot, CheckCircle2, ExternalLink, Instagram, Loader2, MessageCircle, RefreshCw, Send, Sparkles, Trash2, Upload, Users, Wand2, Webhook, Zap } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner-1";
 import { cn } from "@/lib/utils";
 import type { SocialBotIntegration, SocialBotMessage, SocialBotThread, SocialBotWorkspace, SocialChannel } from "@/lib/social-bot-types";
@@ -14,6 +14,7 @@ type ThreadPayload = {
 type CustomerSocialBotWorkspaceProps = {
   metaAppId: string;
   metaConfigId: string;
+  respondIoWorkspaceUrl?: string;
 };
 
 declare global {
@@ -40,7 +41,7 @@ const sourceIconMap = {
   MESSENGER: Bot
 } as const;
 
-export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId }: CustomerSocialBotWorkspaceProps) {
+export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoWorkspaceUrl }: CustomerSocialBotWorkspaceProps) {
   const [workspace, setWorkspace] = useState<SocialBotWorkspace | null>(null);
   const [selectedStep, setSelectedStep] = useState<1 | 2 | 3>(1);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
@@ -431,10 +432,61 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId }: Customer
     );
   }
 
+  const baseUrl = respondIoWorkspaceUrl?.replace(/\/$/, "") || "";
+
+  const chatbotLinks = [
+    { label: "Inbox", description: "All conversations in one place", icon: MessageCircle, path: "/inbox" },
+    { label: "Contacts", description: "CRM-style contact management", icon: Users, path: "/contacts" },
+    { label: "AI Agents", description: "Configure automated AI agents", icon: Zap, path: "/ai-agents" },
+    { label: "Reports", description: "Performance and usage analytics", icon: BarChart3, path: "/reports" }
+  ];
+
   return (
     <div className="space-y-6">
       {toast ? <div className="rounded-[24px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{toast}</div> : null}
       {error ? <div className="rounded-[24px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">{error}</div> : null}
+
+      {baseUrl ? (
+        <section className="rounded-[32px] border border-slate-200 bg-white/90 p-5 dark:border-white/10 dark:bg-slate-950/50 sm:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold text-slate-950 dark:text-white">Chatbot Dashboard</div>
+              <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Access your omnichannel workspace directly</div>
+            </div>
+            <a
+              href={baseUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-white/10"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Open workspace
+            </a>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {chatbotLinks.map((item) => {
+              const Icon = item.icon;
+              return (
+                <a
+                  key={item.label}
+                  href={`${baseUrl}${item.path}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-start gap-3 rounded-[22px] border border-slate-200 bg-slate-50 p-4 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:hover:border-violet-400/30 dark:hover:bg-violet-400/10"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition group-hover:border-violet-200 group-hover:bg-violet-100 group-hover:text-violet-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:group-hover:border-violet-400/30 dark:group-hover:text-violet-300">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-slate-950 dark:text-white">{item.label}</div>
+                    <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{item.description}</div>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       <section className="grid gap-4 md:grid-cols-3">
         <StatCard label="Docs" value={String(stats.documentsReady)} icon={<Upload className="h-4 w-4" />} />

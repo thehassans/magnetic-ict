@@ -43,6 +43,7 @@ export type SocialBotSettings = {
   metaAppSecret: string;
   metaConfigId: string;
   webhookVerifyToken: string;
+  respondIoWorkspaceUrl: string;
 };
 
 export type MagneticCommerceSettings = {
@@ -187,6 +188,7 @@ export const defaultSocialBotConfig: SocialBotSettings = {
   globalBotInstructions: "",
   metaAppId: "",
   metaAppSecret: "",
+  respondIoWorkspaceUrl: "",
   metaConfigId: "",
   webhookVerifyToken: ""
 };
@@ -2344,7 +2346,8 @@ export function normalizeSocialBotConfig(value: unknown): SocialBotSettings {
     metaAppId: coerceString(value.metaAppId, defaultSocialBotConfig.metaAppId),
     metaAppSecret: coerceString(value.metaAppSecret, defaultSocialBotConfig.metaAppSecret),
     metaConfigId: coerceString(value.metaConfigId, defaultSocialBotConfig.metaConfigId),
-    webhookVerifyToken: coerceString(value.webhookVerifyToken, defaultSocialBotConfig.webhookVerifyToken)
+    webhookVerifyToken: coerceString(value.webhookVerifyToken, defaultSocialBotConfig.webhookVerifyToken),
+    respondIoWorkspaceUrl: coerceString(value.respondIoWorkspaceUrl, defaultSocialBotConfig.respondIoWorkspaceUrl)
   };
 }
 

@@ -71,6 +71,7 @@ export default async function MagneticSocialBotDashboardPage({
       <CustomerSocialBotWorkspace
         metaAppId={settings.socialBotConfig.metaAppId}
         metaConfigId={settings.socialBotConfig.metaConfigId}
+        respondIoWorkspaceUrl={settings.socialBotConfig.respondIoWorkspaceUrl}
       />
     </div>
   );

@@ -649,6 +649,15 @@ export function AdminSettingsClient({
         </div>
 
         <div className="mt-6">
+          <Input
+            label="Respond.io Workspace URL"
+            value={socialBotState.respondIoWorkspaceUrl}
+            onChange={(value) => setSocialBotState((current) => ({ ...current, respondIoWorkspaceUrl: value }))}
+          />
+          <p className="mt-1.5 text-xs text-slate-500">Paste your full workspace URL (e.g. https://app.respond.io/space/415884). Customers will see direct links to Inbox, Contacts, AI Agents, and Reports.</p>
+        </div>
+
+        <div className="mt-6">
           <label className="space-y-2 text-sm">
             <span className="font-semibold text-slate-700">Global bot instructions</span>
             <textarea
