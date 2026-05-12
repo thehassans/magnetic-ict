@@ -2715,9 +2715,9 @@ export function getOAuthProviderAvailability(settings: OAuthSettings) {
   const resolved = getResolvedOAuthSettings(settings);
 
   return {
-    google: resolved.google.enabled && Boolean(resolved.google.clientId && resolved.google.clientSecret),
-    github: resolved.github.enabled && Boolean(resolved.github.clientId && resolved.github.clientSecret),
-    apple: resolved.apple.enabled && Boolean(resolved.apple.clientId && resolved.apple.clientSecret)
+    google: Boolean(resolved.google.clientId && resolved.google.clientSecret),
+    github: Boolean(resolved.github.clientId && resolved.github.clientSecret),
+    apple: Boolean(resolved.apple.clientId && resolved.apple.clientSecret)
   } as const;
 }
 
