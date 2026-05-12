@@ -13,8 +13,10 @@ import {
   Inbox,
   LayoutDashboard,
   LogOut,
+  Megaphone,
   Menu,
   MessageSquare,
+  MessageSquarePlus,
   Moon,
   Plug,
   Settings,
@@ -29,8 +31,10 @@ const navItems = [
   { href: "/chatbot", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/chatbot/inbox", label: "Inbox", icon: Inbox, exact: false },
   { href: "/chatbot/contacts", label: "Contacts", icon: Users, exact: false },
+  { href: "/chatbot/broadcast", label: "Broadcast", icon: Megaphone, exact: false },
   { href: "/chatbot/agents", label: "AI Agents", icon: Zap, exact: false },
   { href: "/chatbot/knowledge", label: "Knowledge", icon: BookOpen, exact: false },
+  { href: "/chatbot/quick-replies", label: "Quick Replies", icon: MessageSquarePlus, exact: false },
   { href: "/chatbot/reports", label: "Reports", icon: BarChart3, exact: false },
   { href: "/chatbot/connect", label: "Connect", icon: Plug, exact: false }
 ];

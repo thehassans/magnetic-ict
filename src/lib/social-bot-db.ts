@@ -7,6 +7,7 @@ import type {
   SocialBotIntegration,
   SocialBotMessage,
   SocialBotProfile,
+  SocialBotQuickReply,
   SocialBotThread
 } from "@/lib/social-bot-types";
 
@@ -118,7 +119,8 @@ export const socialBotCollections = {
   integrations: "SocialBotIntegrations",
   threads: "SocialBotThreads",
   messages: "SocialBotMessages",
-  agents: "SocialBotAgents"
+  agents: "SocialBotAgents",
+  quickReplies: "SocialBotQuickReplies"
 } as const;
 
 export async function getSocialBotProfile(userId: string) {
@@ -175,4 +177,16 @@ export async function updateSocialBotAgent(userId: string, agentId: string, upda
 
 export async function deleteSocialBotAgent(userId: string, agentId: string) {
   await deleteMongoDocuments(socialBotCollections.agents, { userId, _id: agentId });
+}
+
+export async function getSocialBotQuickReplies(userId: string) {
+  return findMongoDocuments<SocialBotQuickReply>(socialBotCollections.quickReplies, { userId }, { sort: { createdAt: -1 } });
+}
+
+export async function createSocialBotQuickReply(quickReply: SocialBotQuickReply) {
+  return insertMongoDocument(socialBotCollections.quickReplies, quickReply);
+}
+
+export async function deleteSocialBotQuickReply(userId: string, id: string) {
+  await deleteMongoDocuments(socialBotCollections.quickReplies, { userId, _id: id });
 }

@@ -88,14 +88,27 @@ export async function extractTextFromUploadedFile(file: File) {
 
   if (
     file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-    lowerName.endsWith(".docx")
+    lowerName.endsWith(".docx") || lowerName.endsWith(".doc")
   ) {
     const mammoth = await import("mammoth");
     const parsed = await mammoth.extractRawText({ buffer });
     return parsed.value;
   }
 
-  throw new Error("Only PDF, DOCX, and TXT files are supported.");
+  if (file.type === "text/csv" || lowerName.endsWith(".csv")) {
+    return buffer.toString("utf8");
+  }
+
+  if (file.type === "application/json" || lowerName.endsWith(".json")) {
+    try {
+      const parsed = JSON.parse(buffer.toString("utf8"));
+      return JSON.stringify(parsed, null, 2);
+    } catch {
+      return buffer.toString("utf8");
+    }
+  }
+
+  throw new Error("Unsupported file type. Please upload PDF, DOCX, TXT, MD, CSV, or JSON files.");
 }
 
 async function getGeminiApiKey() {
@@ -239,7 +252,7 @@ export async function generateSocialReply({
   const businessContext = profile ? `Business Name: ${profile.businessName || "Unknown"}\nIndustry: ${profile.industry || "Unknown"}` : "Business Name: Unknown\nIndustry: Unknown";
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
     {
       method: "POST",
       headers: {

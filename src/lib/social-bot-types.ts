@@ -99,6 +99,16 @@ export type SocialBotWorkspace = {
   threads: SocialBotThread[];
 };
 
+export type SocialBotQuickReply = {
+  _id: string;
+  userId: string;
+  title: string;
+  shortcut: string;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type SocialBotAgent = {
   _id: string;
   userId: string;

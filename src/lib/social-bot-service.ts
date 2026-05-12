@@ -16,7 +16,7 @@ import {
   socialBotCollections,
   upsertMongoDocument
 } from "@/lib/social-bot-db";
-import { buildKnowledgeChunks, encryptSecret, generateSocialReply, sendMetaReply } from "@/lib/social-bot-rag";
+import { splitIntoChunks, embedText, encryptSecret, generateSocialReply, sendMetaReply } from "@/lib/social-bot-rag";
 import type {
   SocialBotDocument,
   SocialBotIntegration,
@@ -206,15 +206,30 @@ export async function addKnowledgeDocument({
   await insertMongoDocument(socialBotCollections.documents, document);
 
   try {
-    const chunks = await buildKnowledgeChunks({ userId, documentId, fileName, text });
-    await insertManyMongoDocuments(socialBotCollections.chunks, chunks);
+    const textChunks = splitIntoChunks(text);
+
+    if (textChunks.length === 0) {
+      throw new Error("No readable text could be extracted from this document.");
+    }
+
+    const initialChunks = textChunks.map((content) => ({
+      _id: createSocialBotId("sbc"),
+      userId,
+      documentId,
+      fileName,
+      content,
+      embedding: [] as number[],
+      createdAt: new Date().toISOString()
+    }));
+
+    await insertManyMongoDocuments(socialBotCollections.chunks, initialChunks);
 
     await upsertMongoDocument(
       socialBotCollections.documents,
       { _id: documentId, userId },
       {
         status: "READY",
-        chunkCount: chunks.length,
+        chunkCount: initialChunks.length,
         textPreview: preview,
         updatedAt: new Date().toISOString()
       }
@@ -236,6 +251,19 @@ export async function addKnowledgeDocument({
         createdAt: now
       }
     );
+
+    for (const chunk of initialChunks) {
+      try {
+        const embedding = await embedText(chunk.content, "RETRIEVAL_DOCUMENT");
+        await upsertMongoDocument(
+          socialBotCollections.chunks,
+          { _id: chunk._id, userId },
+          { embedding }
+        );
+      } catch {
+        /* Embedding failed for this chunk — user can retrain later */
+      }
+    }
   } catch (error) {
     await upsertMongoDocument(
       socialBotCollections.documents,
