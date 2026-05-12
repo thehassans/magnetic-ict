@@ -75,14 +75,14 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
   const logoSrc = isDark ? (logoDark || logoLight || null) : (logoLight || logoDark || null);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#070710]" data-chatbot-theme={theme}>
+    <div className={cn("flex h-screen overflow-hidden bg-gray-100 dark:bg-[#070710]", isDark && "dark")}>
       {sidebarOpen && (
         <div className="fixed inset-0 z-20 bg-black/70 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-30 flex w-[220px] flex-col border-r border-white/[0.06] bg-[#0c0c1d] transition-transform duration-300 lg:static lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-30 flex w-[220px] flex-col border-r border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1d] transition-transform duration-300 lg:static lg:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -103,15 +103,15 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
               <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-600/40">
                 <MessageSquare className="h-4 w-4 text-white" />
               </div>
-              <span className="text-[15px] font-bold tracking-tight text-white">Magnetic <span className="text-violet-400">Chat</span></span>
+              <span className="text-[15px] font-bold tracking-tight text-gray-900 dark:text-white">Magnetic <span className="text-violet-600 dark:text-violet-400">Chat</span></span>
             </div>
           )}
-          <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-1 text-white/30 hover:text-white/70 lg:hidden">
+          <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-1 text-gray-400 dark:text-white/50 hover:text-gray-700 dark:hover:text-white/70 lg:hidden">
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="relative mx-4 mb-2 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <div className="relative mx-4 mb-2 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-white/10 to-transparent" />
 
         <nav className="relative flex-1 overflow-y-auto px-2.5 py-3 space-y-0.5">
           {navItems.map((item) => {
@@ -125,61 +125,61 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
                 className={cn(
                   "relative flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-[13px] font-medium transition-all duration-150",
                   active
-                    ? "bg-gradient-to-r from-violet-500/20 to-purple-600/5 text-white"
-                    : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
+                    ? "bg-violet-50 dark:bg-gradient-to-r dark:from-violet-500/20 dark:to-purple-600/5 text-violet-700 dark:text-white"
+                    : "text-gray-500 dark:text-white/40 hover:bg-gray-100 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white/70"
                 )}
               >
-                {active && <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-violet-400" />}
-                <Icon className={cn("h-4 w-4 shrink-0", active ? "text-violet-400" : "")} />
+                {active && <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-violet-500 dark:bg-violet-400" />}
+                <Icon className={cn("h-4 w-4 shrink-0", active ? "text-violet-600 dark:text-violet-400" : "")} />
                 {item.label}
-                {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-violet-400" />}
+                {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-violet-500 dark:bg-violet-400" />}
               </Link>
             );
           })}
         </nav>
 
         <div className="relative mx-2.5 mb-1">
-          <div className="mx-1 mb-1.5 h-px bg-white/[0.05]" />
+          <div className="mx-1 mb-1.5 h-px bg-gray-200 dark:bg-white/[0.05]" />
           <Link
             href="/chatbot/settings"
             onClick={() => setSidebarOpen(false)}
             className={cn(
               "relative flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-[13px] font-medium transition-all duration-150",
               settingsActive
-                ? "bg-gradient-to-r from-violet-500/20 to-purple-600/5 text-white"
-                : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
+                ? "bg-violet-50 dark:bg-gradient-to-r dark:from-violet-500/20 dark:to-purple-600/5 text-violet-700 dark:text-white"
+                : "text-gray-500 dark:text-white/40 hover:bg-gray-100 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white/70"
             )}
           >
-            {settingsActive && <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-violet-400" />}
-            <Settings className={cn("h-4 w-4 shrink-0", settingsActive ? "text-violet-400" : "")} />
+            {settingsActive && <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-violet-500 dark:bg-violet-400" />}
+            <Settings className={cn("h-4 w-4 shrink-0", settingsActive ? "text-violet-600 dark:text-violet-400" : "")} />
             Settings
-            {settingsActive && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-violet-400" />}
+            {settingsActive && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-violet-500 dark:bg-violet-400" />}
           </Link>
           <button
             type="button"
             onClick={toggleTheme}
-            className="flex w-full items-center gap-3 rounded-[10px] px-3 py-2 text-[13px] font-medium text-white/40 transition hover:bg-white/[0.04] hover:text-white/70"
+            className="flex w-full items-center gap-3 rounded-[10px] px-3 py-2 text-[13px] font-medium text-gray-500 dark:text-white/40 transition hover:bg-gray-100 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white/70"
           >
             {isDark ? <Sun className="h-4 w-4 shrink-0" /> : <Moon className="h-4 w-4 shrink-0" />}
             {isDark ? "Light mode" : "Dark mode"}
           </button>
         </div>
 
-        <div className="relative mx-3 mb-4 rounded-[14px] border border-white/[0.07] bg-white/[0.03] p-3 backdrop-blur-sm">
+        <div className="relative mx-3 mb-4 rounded-[14px] border border-gray-200 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.03] p-3 backdrop-blur-sm">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/50 to-purple-700/40 text-sm font-bold text-white ring-1 ring-white/10">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/50 to-purple-700/40 text-sm font-bold text-white ring-1 ring-gray-200 dark:ring-white/10">
               {initial}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[12px] font-semibold text-white/90">{userName}</p>
-              <p className="truncate text-[10px] text-white/35">{userEmail}</p>
+              <p className="truncate text-[12px] font-semibold text-gray-800 dark:text-white/90">{userName}</p>
+              <p className="truncate text-[10px] text-gray-400 dark:text-white/35">{userEmail}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={handleSignOut}
             disabled={signingOut}
-            className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg py-1.5 text-[11px] font-medium text-white/35 transition hover:bg-white/[0.06] hover:text-white/60 disabled:opacity-40"
+            className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg py-1.5 text-[11px] font-medium text-gray-400 dark:text-white/35 transition hover:bg-gray-100 dark:hover:bg-white/[0.06] hover:text-gray-600 dark:hover:text-white/60 disabled:opacity-40"
           >
             <LogOut className="h-3 w-3" />
             {signingOut ? "Signing out…" : "Sign out"}
@@ -188,8 +188,8 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center gap-4 border-b border-white/[0.06] bg-[#0c0c1d] px-4 lg:hidden">
-          <button type="button" onClick={() => setSidebarOpen(true)} className="text-white/50 hover:text-white">
+        <header className="flex h-14 shrink-0 items-center gap-4 border-b border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1d] px-4 lg:hidden">
+          <button type="button" onClick={() => setSidebarOpen(true)} className="text-gray-500 dark:text-white/50 hover:text-gray-900 dark:hover:text-white">
             <Menu className="h-5 w-5" />
           </button>
           {logoSrc ? (
@@ -199,15 +199,15 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
           ) : (
             <div className="flex items-center gap-2">
               <Bot className="h-4 w-4 text-violet-400" />
-              <span className="text-sm font-bold text-white">Magnetic Chat</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white">Magnetic Chat</span>
             </div>
           )}
-          <button type="button" onClick={toggleTheme} className="ml-auto rounded-lg p-1.5 text-white/40 hover:text-white/70">
+          <button type="button" onClick={toggleTheme} className="ml-auto rounded-lg p-1.5 text-gray-400 dark:text-white/40 hover:text-gray-700 dark:hover:text-white/70">
             {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
         </header>
 
-        <main className="flex-1 overflow-y-auto bg-[#070710]">
+        <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-[#070710]">
           {children}
         </main>
       </div>

@@ -77,32 +77,32 @@ function AgentPanel({
   const assigned = agents.find((a) => a._id === thread.assignedAgentId);
 
   return (
-    <div className="w-[230px] shrink-0 border-l border-white/[0.06] bg-[#0a0a1c] flex flex-col">
-      <div className="border-b border-white/[0.06] px-4 py-3">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/30">Assignment</p>
+    <div className="w-[230px] shrink-0 border-l border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-[#0a0a1c] flex flex-col">
+      <div className="border-b border-gray-200 dark:border-white/[0.06] px-4 py-3">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-gray-400 dark:text-white/30">Assignment</p>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Assigned agent card */}
-        <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-3.5">
+        <div className="rounded-xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.03] p-3.5">
           {assigned ? (
             <div className="flex items-start gap-2.5">
               {assigned.avatarDataUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={assigned.avatarDataUrl} alt={assigned.name} className="h-9 w-9 rounded-lg object-cover ring-1 ring-white/10" />
+                <img src={assigned.avatarDataUrl} alt={assigned.name} className="h-9 w-9 rounded-lg object-cover ring-1 ring-gray-200 dark:ring-white/10" />
               ) : (
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/30 to-purple-600/20 text-xs font-bold text-violet-300">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/30 to-purple-600/20 text-xs font-bold text-violet-600 dark:text-violet-300">
                   {assigned.name.charAt(0)}
                 </div>
               )}
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-white/90">{assigned.name}</p>
-                {assigned.description && <p className="mt-0.5 truncate text-[11px] text-white/35">{assigned.description}</p>}
+                <p className="truncate text-sm font-semibold text-gray-800 dark:text-white/90">{assigned.name}</p>
+                {assigned.description && <p className="mt-0.5 truncate text-[11px] text-gray-400 dark:text-white/35">{assigned.description}</p>}
                 <div className="mt-1.5 flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.7)]" />
-                  <span className="text-[10px] text-emerald-400/70">Active</span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(52,211,153,0.5)]" />
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400/70">Active</span>
                 </div>
                 {assigned.documentIds.length > 0 && (
-                  <div className="mt-1.5 flex items-center gap-1 text-[10px] text-white/25">
+                  <div className="mt-1.5 flex items-center gap-1 text-[10px] text-gray-400 dark:text-white/25">
                     <FileText className="h-2.5 w-2.5" />
                     {assigned.documentIds.length} doc{assigned.documentIds.length !== 1 ? "s" : ""} trained
                   </div>
@@ -111,10 +111,10 @@ function AgentPanel({
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2 py-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-dashed border-white/[0.1]">
-                <UserCheck className="h-4 w-4 text-white/20" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-dashed border-gray-200 dark:border-white/[0.1]">
+                <UserCheck className="h-4 w-4 text-gray-300 dark:text-white/20" />
               </div>
-              <p className="text-center text-[11px] text-white/25">No agent assigned</p>
+              <p className="text-center text-[11px] text-gray-400 dark:text-white/25">No agent assigned</p>
             </div>
           )}
         </div>
@@ -124,20 +124,20 @@ function AgentPanel({
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="flex w-full items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 text-[13px] text-white/60 transition hover:border-violet-500/30 hover:text-white/80"
+            className="flex w-full items-center justify-between rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] px-3 py-2.5 text-[13px] text-gray-600 dark:text-white/60 transition hover:border-violet-400 dark:hover:border-violet-500/30 hover:text-gray-800 dark:hover:text-white/80"
           >
             <span className="flex items-center gap-2">
-              <Users className="h-3.5 w-3.5 text-violet-400/60" />
+              <Users className="h-3.5 w-3.5 text-violet-500 dark:text-violet-400/60" />
               {assigned ? assigned.name : "Assign agent…"}
             </span>
-            <ChevronDown className={cn("h-3.5 w-3.5 transition-transform text-white/30", open && "rotate-180")} />
+            <ChevronDown className={cn("h-3.5 w-3.5 transition-transform text-gray-400 dark:text-white/30", open && "rotate-180")} />
           </button>
           {open && (
-            <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-20 overflow-hidden rounded-xl border border-white/[0.09] bg-[#0f0f24] shadow-2xl">
+            <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-20 overflow-hidden rounded-xl border border-gray-200 dark:border-white/[0.09] bg-white dark:bg-[#0f0f24] shadow-lg dark:shadow-2xl">
               <button
                 type="button"
                 onClick={() => { onAssign(null); setOpen(false); }}
-                className="flex w-full items-center gap-2.5 px-3 py-2.5 text-[13px] text-white/40 transition hover:bg-white/[0.04] hover:text-white/70"
+                className="flex w-full items-center gap-2.5 px-3 py-2.5 text-[13px] text-gray-400 dark:text-white/40 transition hover:bg-gray-50 dark:hover:bg-white/[0.04] hover:text-gray-700 dark:hover:text-white/70"
               >
                 <X className="h-3.5 w-3.5" />Unassign
               </button>
@@ -146,8 +146,8 @@ function AgentPanel({
                   key={a._id}
                   type="button"
                   onClick={() => { onAssign(a._id); setOpen(false); }}
-                  className={cn("flex w-full items-center gap-2.5 px-3 py-2.5 text-[13px] transition hover:bg-violet-500/10",
-                    a._id === thread.assignedAgentId ? "bg-violet-500/10 text-violet-300" : "text-white/70 hover:text-white")}
+                  className={cn("flex w-full items-center gap-2.5 px-3 py-2.5 text-[13px] transition hover:bg-violet-50 dark:hover:bg-violet-500/10",
+                    a._id === thread.assignedAgentId ? "bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300" : "text-gray-600 dark:text-white/70 hover:text-gray-900 dark:hover:text-white")}
                 >
                   {a.avatarDataUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -162,17 +162,17 @@ function AgentPanel({
                 </button>
               ))}
               {agents.filter((a) => a.isActive).length === 0 && (
-                <p className="px-3 py-4 text-center text-xs text-white/25">No active agents</p>
+                <p className="px-3 py-4 text-center text-xs text-gray-400 dark:text-white/25">No active agents</p>
               )}
             </div>
           )}
         </div>
 
         {/* Auto-assign toggle */}
-        <div className="flex items-center justify-between rounded-xl border border-white/[0.07] bg-white/[0.02] px-3.5 py-3">
+        <div className="flex items-center justify-between rounded-xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.02] px-3.5 py-3">
           <div>
-            <p className="text-[12px] font-semibold text-white/70">Auto-assign</p>
-            <p className="mt-0.5 text-[10px] text-white/30">Match best agent by channel</p>
+            <p className="text-[12px] font-semibold text-gray-700 dark:text-white/70">Auto-assign</p>
+            <p className="mt-0.5 text-[10px] text-gray-400 dark:text-white/30">Match best agent by channel</p>
           </div>
           <button
             type="button"
@@ -180,7 +180,7 @@ function AgentPanel({
             disabled={assigning}
             className={cn(
               "relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors disabled:opacity-50",
-              thread.autoAssign ? "bg-violet-600 shadow-[0_0_8px_rgba(124,58,237,0.4)]" : "bg-white/10"
+              thread.autoAssign ? "bg-violet-600 shadow-[0_0_8px_rgba(124,58,237,0.4)]" : "bg-gray-200 dark:bg-white/10"
             )}
           >
             {assigning ? (
@@ -193,10 +193,10 @@ function AgentPanel({
         </div>
 
         {/* Platform info */}
-        <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-3.5 py-3 space-y-2">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/30">Channel</p>
+        <div className="rounded-xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.02] px-3.5 py-3 space-y-2">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-gray-400 dark:text-white/30">Channel</p>
           <PlatformBadge source={thread.source} size="sm" />
-          <p className="text-[11px] text-white/30">{thread.contactHandle}</p>
+          <p className="text-[11px] text-gray-500 dark:text-white/30">{thread.contactHandle}</p>
         </div>
       </div>
     </div>
@@ -305,50 +305,50 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
   return (
     <div className="flex h-full overflow-hidden">
       {/* ── Thread sidebar ── */}
-      <div className="flex w-[280px] shrink-0 flex-col border-r border-white/[0.06]" style={{ background: "linear-gradient(180deg,#0d0d20 0%,#0a0a1a 100%)" }}>
+      <div className="flex w-[280px] shrink-0 flex-col border-r border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0d0d20]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3.5">
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-white/[0.06] px-4 py-3.5">
           <div>
-            <h2 className="text-sm font-bold text-white">Inbox</h2>
+            <h2 className="text-sm font-bold text-gray-900 dark:text-white">Inbox</h2>
             {unassignedCount > 0 && (
-              <p className="mt-0.5 text-[10px] text-amber-400/70">{unassignedCount} unassigned</p>
+              <p className="mt-0.5 text-[10px] text-amber-500 dark:text-amber-400/70">{unassignedCount} unassigned</p>
             )}
           </div>
           <button type="button" onClick={() => void refreshThreads()}
-            className="rounded-lg p-1.5 text-white/25 transition hover:bg-white/[0.06] hover:text-white/60">
+            className="rounded-lg p-1.5 text-gray-400 dark:text-white/25 transition hover:bg-gray-100 dark:hover:bg-white/[0.06] hover:text-gray-700 dark:hover:text-white/60">
             <RefreshCw className="h-3.5 w-3.5" />
           </button>
         </div>
 
         {/* Search */}
-        <div className="border-b border-white/[0.06] px-3 py-2.5">
-          <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2">
-            <Search className="h-3.5 w-3.5 shrink-0 text-white/20" />
+        <div className="border-b border-gray-200 dark:border-white/[0.06] px-3 py-2.5">
+          <div className="flex items-center gap-2 rounded-xl border border-gray-200 dark:border-white/[0.07] bg-gray-100 dark:bg-white/[0.03] px-3 py-2">
+            <Search className="h-3.5 w-3.5 shrink-0 text-gray-400 dark:text-white/20" />
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search conversations…"
-              className="flex-1 bg-transparent text-[13px] text-white outline-none placeholder:text-white/20" />
+              className="flex-1 bg-transparent text-[13px] text-gray-900 dark:text-white outline-none placeholder:text-gray-400 dark:placeholder:text-white/20" />
           </div>
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-1 border-b border-white/[0.06] px-3 py-2">
+        <div className="flex gap-1 border-b border-gray-200 dark:border-white/[0.06] px-3 py-2">
           {(["ALL", "AI", "MANUAL", "UNASSIGNED"] as const).map((f) => (
             <button key={f} type="button" onClick={() => setFilter(f)}
               className={cn("flex-1 rounded-lg py-1.5 text-[10px] font-semibold transition", filter === f
                 ? "bg-violet-600 text-white shadow-[0_0_10px_rgba(124,58,237,0.4)]"
-                : "text-white/25 hover:bg-white/[0.05] hover:text-white/60")}>
+                : "text-gray-400 dark:text-white/25 hover:bg-gray-100 dark:hover:bg-white/[0.05] hover:text-gray-700 dark:hover:text-white/60")}>
               {f === "UNASSIGNED" ? "Open" : f}
             </button>
           ))}
         </div>
 
         {/* Thread list */}
-        <div className="flex-1 overflow-y-auto divide-y divide-white/[0.04]">
+        <div className="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-white/[0.04]">
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-14">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-dashed border-white/[0.08]">
-                <Bot className="h-5 w-5 text-white/10" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-white/[0.08]">
+                <Bot className="h-5 w-5 text-gray-300 dark:text-white/10" />
               </div>
-              <p className="text-xs text-white/20">No conversations</p>
+              <p className="text-xs text-gray-400 dark:text-white/20">No conversations</p>
             </div>
           ) : filtered.map((t) => {
             const isActive = selectedId === t._id;
@@ -356,42 +356,42 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
             return (
               <button key={t._id} type="button" onClick={() => setSelectedId(t._id)}
                 className={cn("relative flex w-full items-start gap-3 px-4 py-3.5 text-left transition-all",
-                  isActive ? "bg-violet-500/[0.12]" : "hover:bg-white/[0.025]")}>
+                  isActive ? "bg-violet-50 dark:bg-violet-500/[0.12]" : "hover:bg-gray-50 dark:hover:bg-white/[0.025]")}>
                 {isActive && <span className="absolute left-0 top-3 bottom-3 w-0.5 rounded-r bg-violet-500" />}
                 {/* Avatar */}
                 <div className="relative mt-0.5 shrink-0">
                   <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold",
-                    isActive ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-[0_0_12px_rgba(124,58,237,0.4)]" : "bg-white/[0.06] text-white/50")}>
+                    isActive ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-[0_0_12px_rgba(124,58,237,0.4)]" : "bg-gray-100 dark:bg-white/[0.06] text-gray-600 dark:text-white/50")}>
                     {t.contactName.charAt(0).toUpperCase()}
                   </div>
                   {/* Platform icon badge */}
-                  <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-[#0d0d20] bg-[#0d0d20]">
+                  <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-white dark:border-[#0d0d20] bg-white dark:bg-[#0d0d20]">
                     <Icon className="h-2.5 w-2.5" style={{ color }} />
                   </span>
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-1">
-                    <p className={cn("truncate text-[13px] font-semibold", isActive ? "text-white" : "text-white/80")}>{t.contactName}</p>
-                    <span className="shrink-0 text-[10px] text-white/20">{formatTime(t.lastMessageAt)}</span>
+                    <p className={cn("truncate text-[13px] font-semibold", isActive ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-white/80")}>{t.contactName}</p>
+                    <span className="shrink-0 text-[10px] text-gray-400 dark:text-white/20">{formatTime(t.lastMessageAt)}</span>
                   </div>
                   {/* Agent badge if assigned */}
                   {t.assignedAgentName && (
                     <div className="mt-0.5 flex items-center gap-1">
-                      <UserCheck className="h-2.5 w-2.5 shrink-0 text-violet-400/60" />
-                      <span className="truncate text-[10px] text-violet-400/70">{t.assignedAgentName}</span>
+                      <UserCheck className="h-2.5 w-2.5 shrink-0 text-violet-500 dark:text-violet-400/60" />
+                      <span className="truncate text-[10px] text-violet-600 dark:text-violet-400/70">{t.assignedAgentName}</span>
                     </div>
                   )}
-                  <p className="mt-0.5 truncate text-[11px] text-white/30">{t.lastMessagePreview}</p>
+                  <p className="mt-0.5 truncate text-[11px] text-gray-400 dark:text-white/30">{t.lastMessagePreview}</p>
                   <div className="mt-1.5 flex items-center gap-1.5">
                     <span className={cn("rounded-md px-1.5 py-0.5 text-[9px] font-semibold",
-                      t.mode === "AI" ? "bg-violet-500/15 text-violet-300" : "bg-white/[0.07] text-white/35")}>
+                      t.mode === "AI" ? "bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300" : "bg-gray-100 dark:bg-white/[0.07] text-gray-500 dark:text-white/35")}>
                       {t.mode}
                     </span>
                     {t.unreadCount > 0 && (
                       <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-violet-600 px-1 text-[9px] font-bold text-white shadow-[0_0_6px_rgba(124,58,237,0.5)]">{t.unreadCount}</span>
                     )}
                     {!t.assignedAgentId && (
-                      <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-amber-400/80">Open</span>
+                      <span className="rounded-md bg-amber-100 dark:bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-amber-600 dark:text-amber-400/80">Open</span>
                     )}
                   </div>
                 </div>
@@ -404,25 +404,25 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
       {/* ── Chat area ── */}
       {selected ? (
         <>
-          <div className="flex min-w-0 flex-1 flex-col" style={{ background: "linear-gradient(180deg,#07070f 0%,#060610 100%)" }}>
+          <div className="flex min-w-0 flex-1 flex-col bg-gray-50 dark:bg-[#07070f]">
             {/* Chat header */}
-            <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-3.5" style={{ background: "#0c0c1e" }}>
+            <div className="flex items-center justify-between border-b border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1e] px-5 py-3.5">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/40 to-purple-600/30 text-sm font-bold text-violet-200">
                     {selected.contactName.charAt(0)}
                   </div>
-                  <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-[#0c0c1e]" style={{ background: platformConfig[selected.source].color }}>
+                  <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white dark:border-[#0c0c1e]" style={{ background: platformConfig[selected.source].color }}>
                     {(() => { const { Icon } = platformConfig[selected.source]; return <Icon className="h-2 w-2 text-white" />; })()}
                   </span>
                 </div>
                 <div>
-                  <p className="text-[14px] font-semibold text-white">{selected.contactName}</p>
+                  <p className="text-[14px] font-semibold text-gray-900 dark:text-white">{selected.contactName}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-[11px] text-white/30">{selected.contactHandle}</p>
+                    <p className="text-[11px] text-gray-500 dark:text-white/30">{selected.contactHandle}</p>
                     <PlatformBadge source={selected.source} size="xs" />
                     {selected.assignedAgentName && (
-                      <span className="flex items-center gap-1 text-[10px] text-violet-400/70">
+                      <span className="flex items-center gap-1 text-[10px] text-violet-600 dark:text-violet-400/70">
                         <UserCheck className="h-2.5 w-2.5" />
                         {selected.assignedAgentName}
                       </span>
@@ -437,7 +437,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                     className={cn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition",
                       selected.mode === m
                         ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-[0_0_14px_rgba(124,58,237,0.45)]"
-                        : "border border-white/[0.08] text-white/35 hover:border-violet-500/30 hover:text-white/70")}>
+                        : "border border-gray-200 dark:border-white/[0.08] text-gray-500 dark:text-white/35 hover:border-violet-400 dark:hover:border-violet-500/30 hover:text-gray-800 dark:hover:text-white/70")}>
                     {m === "AI" ? <Zap className="h-3 w-3" /> : <UserCheck className="h-3 w-3" />}
                     {m}
                   </button>
@@ -454,22 +454,22 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                 return (
                   <div key={msg._id} className={cn("flex gap-2.5", out ? "justify-end" : "justify-start")}>
                     {!out && showSender && (
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.07] text-[11px] font-bold text-white/50">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gray-200 dark:bg-white/[0.07] text-[11px] font-bold text-gray-600 dark:text-white/50">
                         {selected.contactName.charAt(0)}
                       </div>
                     )}
                     {!out && !showSender && <div className="w-7 shrink-0" />}
                     <div className="flex max-w-[65%] flex-col gap-0.5">
                       {out && showSender && selected.assignedAgentName && (
-                        <p className="text-right text-[10px] text-violet-400/60">{selected.assignedAgentName}</p>
+                        <p className="text-right text-[10px] text-violet-600 dark:text-violet-400/60">{selected.assignedAgentName}</p>
                       )}
                       <div className={cn("rounded-2xl px-4 py-2.5 text-[13px] leading-[1.7]",
                         out
                           ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700 text-white shadow-[0_4px_24px_rgba(124,58,237,0.3)]"
-                          : "rounded-tl-sm border border-white/[0.07] bg-white/[0.05] text-white/80")}>
+                          : "rounded-tl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05] text-gray-800 dark:text-white/80")}>
                         {msg.text}
                       </div>
-                      <p className={cn("text-[10px] text-white/20", out ? "text-right" : "text-left")}>
+                      <p className={cn("text-[10px] text-gray-400 dark:text-white/20", out ? "text-right" : "text-left")}>
                         {formatTime(msg.timestamp)}
                       </p>
                     </div>
@@ -480,11 +480,11 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
             </div>
 
             {/* Input */}
-            <div className="border-t border-white/[0.06] p-4" style={{ background: "#0c0c1e" }}>
+            <div className="border-t border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1e] p-4">
               {selected.assignedAgentName && (
                 <div className="mb-2.5 flex items-center gap-1.5">
-                  <UserCheck className="h-3 w-3 text-violet-400/60" />
-                  <span className="text-[11px] text-violet-400/60">Replying as <strong className="font-semibold text-violet-300/80">{selected.assignedAgentName}</strong></span>
+                  <UserCheck className="h-3 w-3 text-violet-500 dark:text-violet-400/60" />
+                  <span className="text-[11px] text-violet-600 dark:text-violet-400/60">Replying as <strong className="font-semibold text-violet-700 dark:text-violet-300/80">{selected.assignedAgentName}</strong></span>
                 </div>
               )}
               <div className="flex gap-3">
@@ -495,7 +495,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                   onKeyDown={handleKey}
                   rows={2}
                   placeholder={selected.mode === "AI" ? "AI is handling this conversation…" : "Type a reply… (Enter to send)"}
-                  className="flex-1 resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2.5 text-[13px] text-white outline-none placeholder:text-white/20 focus:border-violet-500/50 focus:bg-white/[0.06] transition"
+                  className="flex-1 resize-none rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] px-4 py-2.5 text-[13px] text-gray-900 dark:text-white outline-none placeholder:text-gray-400 dark:placeholder:text-white/20 focus:border-violet-400 dark:focus:border-violet-500/50 focus:ring-1 focus:ring-violet-400/20 dark:focus:ring-0 transition"
                 />
                 <button type="button" onClick={() => void send()} disabled={sending || !text.trim()}
                   className="flex items-center gap-2 self-end rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_0_20px_rgba(124,58,237,0.35)] transition hover:from-violet-500 hover:to-purple-500 disabled:opacity-40">
@@ -516,13 +516,13 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
           />
         </>
       ) : (
-        <div className="flex flex-1 items-center justify-center" style={{ background: "#07070f" }}>
+        <div className="flex flex-1 items-center justify-center bg-gray-50 dark:bg-[#07070f]">
           <div className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.03]">
-              <Bot className="h-7 w-7 text-white/10" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-gray-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.03]">
+              <Bot className="h-7 w-7 text-gray-300 dark:text-white/10" />
             </div>
-            <p className="text-sm font-medium text-white/20">Select a conversation</p>
-            <p className="mt-1 text-xs text-white/10">to view messages and assign agents</p>
+            <p className="text-sm font-medium text-gray-400 dark:text-white/20">Select a conversation</p>
+            <p className="mt-1 text-xs text-gray-300 dark:text-white/10">to view messages and assign agents</p>
           </div>
         </div>
       )}
