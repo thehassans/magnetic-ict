@@ -10,7 +10,7 @@ import {
   BarChart3,
   BookOpen,
   Bot,
-  BotMessageSquare,
+  BrainCircuit,
   Inbox,
   LayoutDashboard,
   LogOut,
@@ -35,7 +35,7 @@ const navItems = [
   { href: "/chatbot/broadcast", label: "Broadcast", icon: Megaphone, exact: false },
   { href: "/chatbot/agents", label: "AI Agents", icon: Zap, exact: false },
   { href: "/chatbot/knowledge", label: "Knowledge", icon: BookOpen, exact: false },
-  { href: "/chatbot/ask", label: "Ask Magnetic", icon: BotMessageSquare, exact: false },
+  { href: "/chatbot/ask", label: "Ask Magnetic", icon: BrainCircuit, exact: false },
   { href: "/chatbot/quick-replies", label: "Quick Replies", icon: MessageSquarePlus, exact: false },
   { href: "/chatbot/reports", label: "Reports", icon: BarChart3, exact: false },
   { href: "/chatbot/connect", label: "Connect", icon: Plug, exact: false }

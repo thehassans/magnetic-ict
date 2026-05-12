@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   try {
     const { message, history } = (await request.json()) as {
       message?: string;
-      history?: Array<{ role: "user" | "assistant"; text: string }>;
+      history?: { role: "user" | "assistant"; text: string }[];
     };
 
     if (!message?.trim()) {
@@ -28,13 +28,13 @@ export async function POST(request: Request) {
       getSocialBotChunks(userId)
     ]);
 
-    const dummyThread: SocialBotThread = {
-      _id: "ask_playground",
+    const mockThread: SocialBotThread = {
+      _id: "ask-magnetic-preview",
       userId,
       source: "WHATSAPP",
-      externalThreadId: "ask_playground",
-      contactName: "Test User",
-      contactHandle: "@playground",
+      externalThreadId: "ask-magnetic-preview",
+      contactName: "Preview User",
+      contactHandle: "@preview",
       mode: "AI",
       lastMessagePreview: message.trim(),
       lastMessageAt: new Date().toISOString(),
@@ -43,29 +43,28 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString()
     };
 
-    const now = new Date().toISOString();
     const historyMessages: SocialBotMessage[] = (history ?? []).map((h, i) => ({
-      _id: `ask_hist_${i}`,
+      _id: `ask-h-${i}`,
       userId,
-      threadId: "ask_playground",
-      source: "WHATSAPP" as const,
-      direction: h.role === "user" ? ("INBOUND" as const) : ("OUTBOUND" as const),
-      role: h.role === "user" ? ("USER" as const) : ("ASSISTANT" as const),
+      threadId: "ask-magnetic-preview",
+      source: "WHATSAPP",
+      direction: h.role === "user" ? "INBOUND" : "OUTBOUND",
+      role: h.role === "user" ? "USER" : "ASSISTANT",
       text: h.text,
-      timestamp: now,
-      deliveryStatus: "SENT" as const,
+      timestamp: new Date(Date.now() - (history!.length - i) * 1000).toISOString(),
+      deliveryStatus: "SENT",
       metadata: {}
     }));
 
     const reply = await generateSocialReply({
       profile,
-      thread: dummyThread,
+      thread: mockThread,
       messages: historyMessages,
       chunks,
       question: message.trim()
     });
 
-    return NextResponse.json({ reply, chunkCount: chunks.length });
+    return NextResponse.json({ ok: true, reply, chunksUsed: chunks.filter((c) => c.embedding.length > 0).length });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to generate reply." },

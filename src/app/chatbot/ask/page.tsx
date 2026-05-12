@@ -10,5 +10,5 @@ export default async function AskPage() {
 
   const documents = await getSocialBotDocuments(session.user.id);
 
-  return <ChatbotAsk documents={documents} />;
+  return <ChatbotAsk initialDocuments={documents} />;
 }
