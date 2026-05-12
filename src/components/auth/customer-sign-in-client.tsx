@@ -21,7 +21,7 @@ type ProviderAvailability = {
 
 function normalizeCallbackPath(rawPath: string | null): string {
   if (!rawPath) return "/dashboard";
-  if (rawPath.startsWith("https://chatbot.") || rawPath.startsWith("https://chat.")) return rawPath;
+  if (/^https:\/\/(chatbot|chat)\./.test(rawPath)) return rawPath;
   if (!rawPath.startsWith("/")) return "/dashboard";
   return rawPath;
 }
@@ -118,7 +118,7 @@ export function CustomerSignInClient({ providerAvailability }: { providerAvailab
         email,
         code: otpValue,
         redirect: false,
-        callbackUrl: `/${locale}${callbackPath}`
+        callbackUrl: isExternalCallback(callbackPath) ? callbackPath : `/${locale}${callbackPath.startsWith(`/${locale}`) ? callbackPath.slice(locale.length + 1) : callbackPath}`
       });
 
       if (result?.error) {

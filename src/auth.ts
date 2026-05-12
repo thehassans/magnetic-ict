@@ -301,6 +301,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => ({
     }
   },
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      if (url.startsWith(baseUrl)) return url;
+      try {
+        const urlObj = new URL(url);
+        const baseObj = new URL(baseUrl);
+        const baseParts = baseObj.hostname.split(".");
+        if (baseParts.length >= 2) {
+          const parentDomain = baseParts.slice(-2).join(".");
+          if (urlObj.hostname === parentDomain || urlObj.hostname.endsWith(`.${parentDomain}`)) {
+            return url;
+          }
+        }
+      } catch { /* ignore */ }
+      return baseUrl;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.role = (user.role as AppUserRole | undefined) ?? defaultUserRole;
