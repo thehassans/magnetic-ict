@@ -40,8 +40,8 @@ export default async function ChatbotReportsPage() {
   return (
     <div className="min-h-full space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">Reports</h1>
-        <p className="mt-0.5 text-sm text-white/40">Analytics and performance across all channels</p>
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Reports</h1>
+        <p className="mt-0.5 text-sm text-gray-500 dark:text-white/40">Analytics and performance across all channels</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -50,62 +50,62 @@ export default async function ChatbotReportsPage() {
           return (
             <div key={s.label} className={`relative overflow-hidden rounded-2xl border bg-gradient-to-br p-5 ${s.cls}`}>
               <div className="flex items-start justify-between">
-                <p className="text-[13px] text-white/50">{s.label}</p>
+                <p className="text-[13px] text-gray-600 dark:text-white/50">{s.label}</p>
                 <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${s.icls}`}><Icon className="h-4 w-4" /></div>
               </div>
-              <p className="mt-4 text-4xl font-bold text-white">{s.value}</p>
+              <p className="mt-4 text-4xl font-bold text-gray-900 dark:text-white">{s.value}</p>
             </div>
           );
         })}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03]">
-        <div className="flex items-center gap-2 border-b border-white/[0.06] px-5 py-4">
-          <BarChart3 className="h-4 w-4 text-violet-400" />
-          <h2 className="text-sm font-semibold text-white">Conversations by Channel</h2>
+      <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.03]">
+        <div className="flex items-center gap-2 border-b border-gray-200 dark:border-white/[0.06] px-5 py-4">
+          <BarChart3 className="h-4 w-4 text-violet-500 dark:text-violet-400" />
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Conversations by Channel</h2>
         </div>
-        <div className="divide-y divide-white/[0.04]">
+        <div className="divide-y divide-gray-100 dark:divide-white/[0.04]">
           {byChannel.map((row) => {
             const pct = threads.length ? Math.round((row.total / threads.length) * 100) : 0;
             return (
               <div key={row.channel} className="px-5 py-5">
                 <div className="mb-2.5 flex items-center justify-between">
-                  <span className="text-sm font-medium text-white/70">{row.channel}</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-white/70">{row.channel}</span>
                   <div className="flex items-center gap-4 text-[11px]">
-                    <span className="text-white/50"><span className="font-bold text-white">{row.total}</span> total</span>
-                    <span className="text-emerald-300"><span className="font-bold">{row.ai}</span> AI</span>
-                    <span className="text-white/35"><span className="font-bold text-white/50">{row.manual}</span> manual</span>
+                    <span className="text-gray-500 dark:text-white/50"><span className="font-bold text-gray-900 dark:text-white">{row.total}</span> total</span>
+                    <span className="text-emerald-600 dark:text-emerald-300"><span className="font-bold">{row.ai}</span> AI</span>
+                    <span className="text-gray-400 dark:text-white/35"><span className="font-bold text-gray-500 dark:text-white/50">{row.manual}</span> manual</span>
                   </div>
                 </div>
-                <div className="relative h-2 overflow-hidden rounded-full bg-white/[0.06]">
+                <div className="relative h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-white/[0.06]">
                   <div
                     className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r ${CH_COLOR[row.channel] ?? "from-violet-500 to-purple-600"} shadow-[0_0_8px_rgba(124,58,237,0.4)]`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
-                <p className="mt-1.5 text-right text-[10px] text-white/25">{pct}%</p>
+                <p className="mt-1.5 text-right text-[10px] text-gray-400 dark:text-white/25">{pct}%</p>
               </div>
             );
           })}
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03]">
-        <div className="flex items-center gap-2 border-b border-white/[0.06] px-5 py-4">
-          <Users className="h-4 w-4 text-violet-400" />
-          <h2 className="text-sm font-semibold text-white">Integration Status</h2>
+      <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.03]">
+        <div className="flex items-center gap-2 border-b border-gray-200 dark:border-white/[0.06] px-5 py-4">
+          <Users className="h-4 w-4 text-violet-500 dark:text-violet-400" />
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Integration Status</h2>
         </div>
         {integrations.length === 0 ? (
-          <p className="p-5 text-sm text-white/30">No channels configured.</p>
+          <p className="p-5 text-sm text-gray-400 dark:text-white/30">No channels configured.</p>
         ) : (
-          <div className="divide-y divide-white/[0.04]">
+          <div className="divide-y divide-gray-100 dark:divide-white/[0.04]">
             {integrations.map((i) => (
               <div key={i._id} className="flex items-center justify-between px-5 py-4">
                 <div className="flex items-center gap-3">
-                  <span className={`h-2 w-2 rounded-full ${i.status === "CONNECTED" ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" : i.status === "PENDING" ? "bg-amber-400" : "bg-white/20"}`} />
-                  <span className="text-sm text-white/60">{i.label || i.channel}</span>
+                  <span className={`h-2 w-2 rounded-full ${i.status === "CONNECTED" ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" : i.status === "PENDING" ? "bg-amber-400" : "bg-gray-300 dark:bg-white/20"}`} />
+                  <span className="text-sm text-gray-600 dark:text-white/60">{i.label || i.channel}</span>
                 </div>
-                <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${i.status === "CONNECTED" ? "bg-emerald-500/15 text-emerald-300" : i.status === "PENDING" ? "bg-amber-500/15 text-amber-300" : "bg-white/[0.06] text-white/30"}`}>{i.status}</span>
+                <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${i.status === "CONNECTED" ? "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : i.status === "PENDING" ? "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300" : "bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-white/30"}`}>{i.status}</span>
               </div>
             ))}
           </div>

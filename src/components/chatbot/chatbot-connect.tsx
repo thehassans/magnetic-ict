@@ -16,9 +16,9 @@ declare global {
 }
 
 const channelMeta: Record<SocialChannel, { label: string; icon: typeof MessageCircle; color: string; glow: string }> = {
-  WHATSAPP: { label: "WhatsApp", icon: MessageCircle, color: "bg-emerald-500/15 text-emerald-300 border-emerald-500/25", glow: "rgba(52,211,153,0.6)" },
-  INSTAGRAM: { label: "Instagram", icon: Instagram, color: "bg-pink-500/15 text-pink-300 border-pink-500/25", glow: "rgba(236,72,153,0.6)" },
-  MESSENGER: { label: "Messenger", icon: Bot, color: "bg-sky-500/15 text-sky-300 border-sky-500/25", glow: "rgba(14,165,233,0.6)" }
+  WHATSAPP: { label: "WhatsApp", icon: MessageCircle, color: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/25", glow: "rgba(52,211,153,0.6)" },
+  INSTAGRAM: { label: "Instagram", icon: Instagram, color: "bg-pink-50 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-500/25", glow: "rgba(236,72,153,0.6)" },
+  MESSENGER: { label: "Messenger", icon: Bot, color: "bg-sky-50 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-500/25", glow: "rgba(14,165,233,0.6)" }
 };
 
 type Props = { integrations: SocialBotIntegration[]; metaAppId: string; metaConfigId: string };
@@ -79,10 +79,10 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
     <div className="min-h-full space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Connect Channels</h1>
-          <p className="mt-0.5 text-sm text-white/40">Link messaging channels through Meta&#39;s guided flow</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Connect Channels</h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-white/40">Link messaging channels through Meta&#39;s guided flow</p>
         </div>
-        <button type="button" onClick={() => void reload()} className="flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white/50 transition hover:bg-white/[0.07] hover:text-white/80">
+        <button type="button" onClick={() => void reload()} className="flex items-center gap-2 rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] px-3 py-2 text-sm text-gray-500 dark:text-white/50 transition hover:bg-gray-50 dark:hover:bg-white/[0.07] hover:text-gray-700 dark:hover:text-white/80">
           <RefreshCw className="h-4 w-4" />
           Refresh
         </button>
@@ -95,7 +95,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
       )}
 
       {!metaReady && (
-        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+        <div className="rounded-xl border border-amber-500/20 bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
           Meta connect is not configured yet. Contact support to complete setup.
         </div>
       )}
@@ -108,7 +108,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
           const isPending = integration.status === "PENDING";
           const isLoading = connecting === integration.channel;
           return (
-            <div key={integration._id} className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] p-5 transition hover:border-white/[0.12] hover:bg-white/[0.05]">
+            <div key={integration._id} className="group relative overflow-hidden rounded-2xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.03] p-5 shadow-sm transition hover:border-gray-300 dark:hover:border-white/[0.12] hover:bg-gray-50 dark:hover:bg-white/[0.05]">
               <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl opacity-20"
                 style={{ background: meta.glow ?? "rgba(124,58,237,0.5)" }} />
               <div className="flex items-start justify-between gap-3">
@@ -117,14 +117,14 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
                 </div>
                 {isConnected
                   ? <Wifi className="h-5 w-5 text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
-                  : <WifiOff className="h-5 w-5 text-white/15" />}
+                  : <WifiOff className="h-5 w-5 text-gray-300 dark:text-white/15" />}
               </div>
-              <h3 className="mt-4 font-semibold text-white">{meta.label}</h3>
+              <h3 className="mt-4 font-semibold text-gray-900 dark:text-white">{meta.label}</h3>
               <div className="mt-1 flex items-center gap-1.5">
-                <span className={cn("h-2 w-2 rounded-full", isConnected ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" : isPending ? "bg-amber-400" : "bg-white/20")} />
-                <span className="text-xs text-white/40">{integration.status}</span>
+                <span className={cn("h-2 w-2 rounded-full", isConnected ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" : isPending ? "bg-amber-400" : "bg-gray-300 dark:bg-white/20")} />
+                <span className="text-xs text-gray-500 dark:text-white/40">{integration.status}</span>
               </div>
-              {integration.label ? <p className="mt-1 text-xs text-white/30">{integration.label}</p> : null}
+              {integration.label ? <p className="mt-1 text-xs text-gray-400 dark:text-white/30">{integration.label}</p> : null}
               <button
                 type="button"
                 disabled={!metaReady || !sdkReady || isLoading || isConnected}
@@ -144,9 +144,9 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
         })}
       </div>
 
-      <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-5">
-        <p className="text-sm font-semibold text-white/80">How it works</p>
-        <p className="mt-2 text-sm leading-7 text-white/35">Click <strong className="text-white/60">Connect</strong> to open Meta&#39;s guided business login. You don&#39;t need to copy tokens — our team receives the authorization and activates your channel within 24 hours.</p>
+      <div className="rounded-2xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.03] p-5">
+        <p className="text-sm font-semibold text-gray-700 dark:text-white/80">How it works</p>
+        <p className="mt-2 text-sm leading-7 text-gray-500 dark:text-white/35">Click <strong className="text-gray-700 dark:text-white/60">Connect</strong> to open Meta&#39;s guided business login. You don&#39;t need to copy tokens — our team receives the authorization and activates your channel within 24 hours.</p>
       </div>
     </div>
   );

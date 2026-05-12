@@ -139,14 +139,14 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Knowledge Base</h1>
-          <p className="mt-0.5 text-sm text-white/40">Train your AI with documents — PDFs, text files, spreadsheets and more</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Knowledge Base</h1>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-white/40">Train your AI with documents — PDFs, text files, spreadsheets and more</p>
         </div>
         <button
           type="button"
           onClick={() => void retrain()}
           disabled={retraining || docs.length === 0}
-          className="flex items-center gap-2 rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-2.5 text-sm font-semibold text-violet-400 transition hover:bg-violet-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex items-center gap-2 rounded-xl border border-violet-500/30 bg-violet-50 dark:bg-violet-500/10 px-4 py-2.5 text-sm font-semibold text-violet-600 dark:text-violet-400 transition hover:bg-violet-100 dark:hover:bg-violet-500/20 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {retraining ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           {retraining ? "Retraining…" : "Retrain AI"}
@@ -169,12 +169,12 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
           { label: "Ready",           value: readyDocs,      icon: CheckCircle2, color: "text-emerald-400", glow: "bg-emerald-500/10" },
           { label: "Knowledge Chunks", value: totalChunks,  icon: Zap,          color: "text-amber-400",   glow: "bg-amber-500/10" }
         ].map((s) => (
-          <div key={s.label} className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4">
+          <div key={s.label} className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.03] p-4">
             <div className={cn("mb-2 flex h-9 w-9 items-center justify-center rounded-xl", s.glow)}>
               <s.icon className={cn("h-4 w-4", s.color)} />
             </div>
-            <p className="text-2xl font-bold text-white">{s.value}</p>
-            <p className="mt-0.5 text-[11px] text-white/40">{s.label}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{s.value}</p>
+            <p className="mt-0.5 text-[11px] text-gray-500 dark:text-white/40">{s.label}</p>
           </div>
         ))}
       </div>
@@ -185,29 +185,29 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
           "relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-12 text-center transition",
           dragOver
             ? "border-violet-500/60 bg-violet-500/[0.07]"
-            : "border-white/[0.1] hover:border-violet-500/30 hover:bg-violet-500/[0.05]"
+            : "border-gray-200 dark:border-white/[0.1] hover:border-violet-400 dark:hover:border-violet-500/30 hover:bg-violet-50 dark:hover:bg-violet-500/[0.05]"
         )}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
       >
-        <div className={cn("mb-4 flex h-16 w-16 items-center justify-center rounded-2xl transition", dragOver ? "bg-violet-500/20" : "bg-white/[0.05]")}>
+        <div className={cn("mb-4 flex h-16 w-16 items-center justify-center rounded-2xl transition", dragOver ? "bg-violet-500/20" : "bg-gray-100 dark:bg-white/[0.05]")}>
           {uploading
             ? <Loader2 className="h-7 w-7 animate-spin text-violet-400" />
-            : <UploadCloud className={cn("h-7 w-7 transition", dragOver ? "text-violet-300" : "text-white/30")} />
+            : <UploadCloud className={cn("h-7 w-7 transition", dragOver ? "text-violet-300" : "text-gray-400 dark:text-white/30")} />
           }
         </div>
         {uploading && progress ? (
           <>
-            <p className="font-semibold text-white/80">Uploading {progress.current} / {progress.total}…</p>
-            <div className="mt-3 h-1.5 w-48 overflow-hidden rounded-full bg-white/[0.08]">
+            <p className="font-semibold text-gray-700 dark:text-white/80">Uploading {progress.current} / {progress.total}…</p>
+            <div className="mt-3 h-1.5 w-48 overflow-hidden rounded-full bg-gray-200 dark:bg-white/[0.08]">
               <div className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-500 transition-all duration-300" style={{ width: `${(progress.current / progress.total) * 100}%` }} />
             </div>
           </>
         ) : (
           <>
-            <p className="font-semibold text-white/70">Drag & drop files here</p>
-            <p className="mt-1 text-sm text-white/30">PDF, TXT, MD, CSV, DOCX, XLSX, JSON — up to 10 MB each</p>
+            <p className="font-semibold text-gray-700 dark:text-white/70">Drag & drop files here</p>
+            <p className="mt-1 text-sm text-gray-400 dark:text-white/30">PDF, TXT, MD, CSV, DOCX, XLSX, JSON — up to 10 MB each</p>
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
@@ -223,23 +223,23 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
 
       {/* Documents list */}
       {docs.length === 0 ? (
-        <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-white/[0.1] py-16">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.04]">
-            <BookOpen className="h-6 w-6 text-white/20" />
+        <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-gray-200 dark:border-white/[0.1] py-16">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 dark:bg-white/[0.04]">
+            <BookOpen className="h-6 w-6 text-gray-300 dark:text-white/20" />
           </div>
-          <p className="text-sm text-white/30">No documents yet — upload your first training file above</p>
+          <p className="text-sm text-gray-400 dark:text-white/30">No documents yet — upload your first training file above</p>
         </div>
       ) : (
         <div className="space-y-2">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30">Training documents</p>
-            <p className="text-[11px] text-white/25">{docs.length} file{docs.length !== 1 ? "s" : ""}</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-white/30">Training documents</p>
+            <p className="text-[11px] text-gray-400 dark:text-white/25">{docs.length} file{docs.length !== 1 ? "s" : ""}</p>
           </div>
           {docs.map((doc) => {
             const fi = fileIcon(doc.mimeType);
             const Icon = fi.icon;
             return (
-              <div key={doc._id} className="group flex items-center gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 py-3.5 transition hover:border-white/[0.12] hover:bg-white/[0.05]">
+              <div key={doc._id} className="group flex items-center gap-4 rounded-2xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.03] px-4 py-3.5 shadow-sm transition hover:border-gray-300 dark:hover:border-white/[0.12] hover:bg-gray-50 dark:hover:bg-white/[0.05]">
                 {/* File icon */}
                 <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", fi.bg)}>
                   <Icon className={cn("h-5 w-5", fi.color)} />
@@ -248,17 +248,17 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
                 {/* Info */}
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate text-[13px] font-semibold text-white/90">{doc.fileName}</p>
+                    <p className="truncate text-[13px] font-semibold text-gray-800 dark:text-white/90">{doc.fileName}</p>
                     <StatusBadge status={doc.status} />
                   </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-white/30">
+                  <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-gray-400 dark:text-white/30">
                     {doc.chunkCount > 0 && (
                       <span className="flex items-center gap-1"><Layers className="h-2.5 w-2.5" />{doc.chunkCount} chunks</span>
                     )}
                     <span className="flex items-center gap-1"><Clock className="h-2.5 w-2.5" />{new Date(doc.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                   </div>
                   {doc.textPreview && (
-                    <p className="mt-1.5 line-clamp-1 text-[11px] text-white/20">{doc.textPreview}</p>
+                    <p className="mt-1.5 line-clamp-1 text-[11px] text-gray-400 dark:text-white/20">{doc.textPreview}</p>
                   )}
                 </div>
 
@@ -267,7 +267,7 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
                   type="button"
                   onClick={() => void deleteDoc(doc._id)}
                   disabled={deleting === doc._id}
-                  className="shrink-0 rounded-lg p-2 text-white/20 opacity-0 transition hover:bg-rose-500/10 hover:text-rose-400 group-hover:opacity-100 disabled:opacity-50"
+                  className="shrink-0 rounded-lg p-2 text-gray-300 dark:text-white/20 opacity-0 transition hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-500 dark:hover:text-rose-400 group-hover:opacity-100 disabled:opacity-50"
                 >
                   {deleting === doc._id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                 </button>
@@ -278,19 +278,19 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
       )}
 
       {/* Retrain info panel */}
-      <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+      <div className="rounded-2xl border border-gray-200 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.02] p-5">
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10">
-            <Zap className="h-5 w-5 text-violet-400" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 dark:bg-violet-500/10">
+            <Zap className="h-5 w-5 text-violet-500 dark:text-violet-400" />
           </div>
           <div>
-            <p className="text-[13px] font-semibold text-white/80">How retraining works</p>
-            <p className="mt-1 text-[12px] leading-5 text-white/35">
-              When you click <strong className="text-white/50">Retrain AI</strong>, the system re-generates vector embeddings for all your knowledge chunks using the latest Gemini embedding model. This improves retrieval accuracy without re-uploading files. Run after adding new documents or if AI responses seem outdated.
+            <p className="text-[13px] font-semibold text-gray-700 dark:text-white/80">How retraining works</p>
+            <p className="mt-1 text-[12px] leading-5 text-gray-500 dark:text-white/35">
+              When you click <strong className="text-gray-700 dark:text-white/50">Retrain AI</strong>, the system re-generates vector embeddings for all your knowledge chunks using the latest Gemini embedding model. This improves retrieval accuracy without re-uploading files. Run after adding new documents or if AI responses seem outdated.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {["PDF Training", "Text & Markdown", "CSV / Excel", "DOCX Support", "Auto-chunking", "Semantic Search"].map((tag) => (
-                <span key={tag} className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-0.5 text-[10px] font-semibold text-white/40">{tag}</span>
+                <span key={tag} className="rounded-full border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] px-2.5 py-0.5 text-[10px] font-semibold text-gray-500 dark:text-white/40">{tag}</span>
               ))}
             </div>
           </div>
@@ -300,12 +300,12 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
       {/* Retrain inline progress */}
       {retraining && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-4 rounded-2xl border border-white/[0.09] bg-[#0e0e22] p-8 shadow-2xl">
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-gray-200 dark:border-white/[0.09] bg-white dark:bg-[#0e0e22] p-8 shadow-2xl">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-500/15">
-              <RefreshCw className="h-7 w-7 animate-spin text-violet-400" />
+              <RefreshCw className="h-7 w-7 animate-spin text-violet-500 dark:text-violet-400" />
             </div>
-            <p className="font-semibold text-white">Retraining in progress…</p>
-            <p className="text-center text-sm text-white/40">Re-generating embeddings for all chunks.<br />This may take a moment.</p>
+            <p className="font-semibold text-gray-900 dark:text-white">Retraining in progress…</p>
+            <p className="text-center text-sm text-gray-500 dark:text-white/40">Re-generating embeddings for all chunks.<br />This may take a moment.</p>
           </div>
         </div>
       )}
