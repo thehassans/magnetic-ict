@@ -53,11 +53,17 @@ export function CustomerSignInClient({ providerAvailability }: { providerAvailab
 
   useEffect(() => {
     document.body.classList.add("customer-auth-no-chrome");
-
-    return () => {
-      document.body.classList.remove("customer-auth-no-chrome");
-    };
+    return () => { document.body.classList.remove("customer-auth-no-chrome"); };
   }, []);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    if (isExternalCallback(callbackPath)) {
+      window.location.href = callbackPath;
+    } else {
+      router.push(callbackPath as Parameters<typeof router.push>[0]);
+    }
+  }, [status, callbackPath, router]);
 
   async function handleProviderSignIn(provider: "google" | "github" | "apple") {
     setError("");
