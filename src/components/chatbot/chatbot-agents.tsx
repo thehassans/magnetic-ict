@@ -1,15 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Bot, Camera, CheckCircle2, Loader2, MessageCircle, Plus, Trash2, Wand2, X, Zap } from "lucide-react";
+import { Bot, Camera, CheckCircle2, FileText, Loader2, MessageCircle, Plus, Trash2, Wand2, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { SocialBotAgent, SocialChannel } from "@/lib/social-bot-types";
+import type { SocialBotAgent, SocialBotDocument, SocialChannel } from "@/lib/social-bot-types";
 
 const CHANNELS: SocialChannel[] = ["WHATSAPP", "INSTAGRAM", "MESSENGER"];
 
-const emptyForm = { name: "", description: "", instructions: "", avatarDataUrl: "", channels: [] as SocialChannel[], isActive: true };
+const emptyForm = { name: "", description: "", instructions: "", avatarDataUrl: "", channels: [] as SocialChannel[], documentIds: [] as string[], isActive: true };
 
-export function ChatbotAgents({ initialAgents }: { initialAgents: SocialBotAgent[] }) {
+export function ChatbotAgents({ initialAgents, initialDocuments }: { initialAgents: SocialBotAgent[]; initialDocuments: SocialBotDocument[] }) {
   const [agents, setAgents] = useState(initialAgents);
   const [modal, setModal] = useState<{ open: boolean; editing: SocialBotAgent | null }>({ open: false, editing: null });
   const [form, setForm] = useState(emptyForm);
@@ -29,8 +29,12 @@ export function ChatbotAgents({ initialAgents }: { initialAgents: SocialBotAgent
   }
 
   function openEdit(agent: SocialBotAgent) {
-    setForm({ name: agent.name, description: agent.description, instructions: agent.instructions, avatarDataUrl: agent.avatarDataUrl, channels: [...agent.channels], isActive: agent.isActive });
+    setForm({ name: agent.name, description: agent.description, instructions: agent.instructions, avatarDataUrl: agent.avatarDataUrl, channels: [...agent.channels], documentIds: [...(agent.documentIds ?? [])], isActive: agent.isActive });
     setModal({ open: true, editing: agent });
+  }
+
+  function toggleDoc(docId: string) {
+    setForm((f) => ({ ...f, documentIds: f.documentIds.includes(docId) ? f.documentIds.filter((d) => d !== docId) : [...f.documentIds, docId] }));
   }
 
   function handleAvatarFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -66,7 +70,7 @@ export function ChatbotAgents({ initialAgents }: { initialAgents: SocialBotAgent
         });
         const created = await r.json() as SocialBotAgent;
         setAgents((prev) => [created, ...prev]);
-        showToast("ok", "Agent created.");
+        showToast("ok", "Agent created. Assign to a chat to start responding.");
       }
       setModal({ open: false, editing: null });
     } catch {
@@ -162,6 +166,11 @@ export function ChatbotAgents({ initialAgents }: { initialAgents: SocialBotAgent
                     <MessageCircle className="h-2.5 w-2.5" />{ch}
                   </span>
                 ))}
+                {(agent.documentIds?.length ?? 0) > 0 && (
+                  <span className="flex items-center gap-1 rounded-lg border border-violet-500/20 bg-violet-500/10 px-2 py-0.5 text-[10px] font-semibold text-violet-400/80">
+                    <FileText className="h-2.5 w-2.5" />{agent.documentIds.length} trained
+                  </span>
+                )}
               </div>
               <button type="button" onClick={() => void toggleActive(agent)} className={cn("mt-4 w-full rounded-xl py-2 text-xs font-semibold transition", agent.isActive ? "bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/20" : "bg-white/[0.05] text-white/40 hover:bg-white/[0.08] hover:text-white/60")}>
                 {agent.isActive ? <><CheckCircle2 className="inline h-3.5 w-3.5 mr-1" />Active — click to deactivate</> : "Activate agent"}
@@ -221,6 +230,30 @@ export function ChatbotAgents({ initialAgents }: { initialAgents: SocialBotAgent
                   ))}
                 </div>
               </div>
+              {initialDocuments.length > 0 && (
+                <div>
+                  <label className="mb-2 block text-[11px] font-semibold uppercase tracking-wide text-white/40">Training Documents</label>
+                  <p className="mb-2 text-[11px] text-white/25">Select docs this agent will use as knowledge source</p>
+                  <div className="space-y-1.5">
+                    {initialDocuments.map((doc) => (
+                      <button key={doc._id} type="button" onClick={() => toggleDoc(doc._id)}
+                        className={cn("flex w-full items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left text-[12px] transition",
+                          form.documentIds.includes(doc._id)
+                            ? "border-violet-500/40 bg-violet-500/10 text-violet-200"
+                            : "border-white/[0.07] bg-white/[0.02] text-white/50 hover:border-white/[0.12] hover:text-white/70")}>
+                        <FileText className="h-3.5 w-3.5 shrink-0" />
+                        <span className="flex-1 truncate">{doc.fileName}</span>
+                        {doc.status === "READY" ? (
+                          <span className="shrink-0 text-[9px] font-semibold text-emerald-400/70">READY</span>
+                        ) : (
+                          <span className="shrink-0 text-[9px] font-semibold text-amber-400/60">{doc.status}</span>
+                        )}
+                        {form.documentIds.includes(doc._id) && <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-violet-400" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => setForm((f) => ({ ...f, isActive: !f.isActive }))}
                   className={cn("relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors", form.isActive ? "bg-violet-600 shadow-[0_0_10px_rgba(124,58,237,0.4)]" : "bg-white/10")}>

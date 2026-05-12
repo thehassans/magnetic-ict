@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   createSocialBotId,
   deleteMongoDocuments,
+  getSocialBotAgents,
   getSocialBotChunks,
   getSocialBotDocuments,
   getSocialBotIntegrations,
@@ -280,6 +281,9 @@ async function saveThread(thread: SocialBotThread) {
       lastMessagePreview: thread.lastMessagePreview,
       lastMessageAt: thread.lastMessageAt,
       unreadCount: thread.unreadCount,
+      assignedAgentId: thread.assignedAgentId ?? null,
+      assignedAgentName: thread.assignedAgentName ?? null,
+      autoAssign: thread.autoAssign ?? false,
       updatedAt: thread.updatedAt
     },
     {
@@ -288,6 +292,44 @@ async function saveThread(thread: SocialBotThread) {
       createdAt: thread.createdAt
     }
   );
+}
+
+export async function assignAgentToThread(userId: string, threadId: string, agentId: string | null) {
+  const current = await getSocialBotThreadById(userId, threadId);
+  if (!current) return null;
+
+  let agentName: string | null = null;
+  if (agentId) {
+    const agents = await getSocialBotAgents(userId);
+    agentName = agents.find((a) => a._id === agentId)?.name ?? null;
+  }
+
+  await saveThread({
+    ...current,
+    assignedAgentId: agentId,
+    assignedAgentName: agentName,
+    updatedAt: new Date().toISOString()
+  });
+
+  return getSocialBotThreadById(userId, threadId);
+}
+
+export async function autoAssignAgent(userId: string, threadId: string) {
+  const current = await getSocialBotThreadById(userId, threadId);
+  if (!current) return null;
+
+  const agents = await getSocialBotAgents(userId);
+  const match = agents.find((a) => a.isActive && (a.channels.length === 0 || a.channels.includes(current.source)));
+
+  await saveThread({
+    ...current,
+    assignedAgentId: match?._id ?? null,
+    assignedAgentName: match?.name ?? null,
+    autoAssign: true,
+    updatedAt: new Date().toISOString()
+  });
+
+  return getSocialBotThreadById(userId, threadId);
 }
 
 export async function appendMessage(message: SocialBotMessage) {

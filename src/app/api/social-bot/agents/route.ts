@@ -20,6 +20,7 @@ const agentSchema = z.object({
   instructions: z.string().max(4000).default(""),
   avatarDataUrl: z.string().max(200000).default(""),
   channels: z.array(z.enum(socialChannels)).default([]),
+  documentIds: z.array(z.string()).default([]),
   isActive: z.boolean().default(true)
 });
 

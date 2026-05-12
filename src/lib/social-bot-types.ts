@@ -72,6 +72,9 @@ export type SocialBotThread = {
   lastMessagePreview: string;
   lastMessageAt: string;
   unreadCount: number;
+  assignedAgentId?: string | null;
+  assignedAgentName?: string | null;
+  autoAssign?: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -104,6 +107,7 @@ export type SocialBotAgent = {
   instructions: string;
   avatarDataUrl: string;
   channels: SocialChannel[];
+  documentIds: string[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

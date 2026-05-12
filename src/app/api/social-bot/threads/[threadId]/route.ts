@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getRequiredUserSession, userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
-import { getThreadWithMessages, setThreadMode } from "@/lib/social-bot-service";
+import { assignAgentToThread, autoAssignAgent, getThreadWithMessages, setThreadMode } from "@/lib/social-bot-service";
 
 const requestSchema = z.object({
-  mode: z.enum(["AI", "MANUAL"])
+  mode: z.enum(["AI", "MANUAL"]).optional(),
+  assignedAgentId: z.string().nullable().optional(),
+  autoAssign: z.boolean().optional()
 });
 
 export async function GET(_request: Request, { params }: { params: Promise<{ threadId: string }> }) {
@@ -47,7 +49,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ th
     const body = await request.json();
     const parsed = requestSchema.parse(body);
     const { threadId } = await params;
-    const thread = await setThreadMode(session.user.id, threadId, parsed.mode);
+    const userId = session.user.id;
+
+    let thread;
+    if (parsed.autoAssign === true) {
+      thread = await autoAssignAgent(userId, threadId);
+    } else if (parsed.assignedAgentId !== undefined) {
+      thread = await assignAgentToThread(userId, threadId, parsed.assignedAgentId);
+    } else if (parsed.mode) {
+      thread = await setThreadMode(userId, threadId, parsed.mode);
+    }
 
     if (!thread) {
       return NextResponse.json({ error: "Thread not found." }, { status: 404 });
@@ -56,7 +67,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ th
     return NextResponse.json({ ok: true, thread });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to update thread mode." },
+      { error: error instanceof Error ? error.message : "Unable to update thread." },
       { status: 400 }
     );
   }
