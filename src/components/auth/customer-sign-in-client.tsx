@@ -63,7 +63,7 @@ export function CustomerSignInClient({ providerAvailability }: { providerAvailab
     setError("");
     setInfo("");
     setAdminError("");
-    const cbUrl = callbackPath.startsWith("https://") ? callbackPath : `/${locale}${callbackPath}`;
+    const cbUrl = isExternalCallback(callbackPath) ? callbackPath : `/${locale}${callbackPath.startsWith(`/${locale}`) ? callbackPath.slice(locale.length + 1) : callbackPath}`;
     await signIn(provider, { callbackUrl: cbUrl });
   }
 
