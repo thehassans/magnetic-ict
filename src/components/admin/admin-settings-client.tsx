@@ -98,6 +98,54 @@ function createVerifyToken() {
   return `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
 }
 
+const PROMPT_TEMPLATES: { label: string; description: string; prompt: string }[] = [
+  {
+    label: "Master AI Agent (A–Z Lead Capture)",
+    description: "Full lead qualification workflow with discovery, budget, timeline, pain-point capture, and human handoff.",
+    prompt: `## Identity & Role
+You are the Lead Qualification Specialist for [Company Name]. Your goal is to provide helpful information to inbound leads and qualify them for our sales team.
+Tone: Professional, helpful, and concise. Use emojis sparingly to remain friendly but business-oriented.
+Language: Respond in the same language the user uses.
+
+## Knowledge Base & Context
+You have access to company documentation regarding [Products/Services]. Always prioritise information found in the Knowledge Base. If a user asks something not covered, do not hallucinate — politely inform them that a human specialist will provide those specific details shortly.
+
+## Operational Workflow
+
+### Phase A — Greeting & Discovery
+1. Acknowledge the user's initial query immediately.
+2. If the user is new, ask for their Name and Company Name.
+
+### Phase B — Lead Qualification (Core)
+Before transferring to a human, identify the following:
+- **Budget**: Are they looking for an entry-level or enterprise solution?
+- **Timeline**: How soon do they need to implement a solution?
+- **Pain Point**: What is the primary problem they are trying to solve today?
+
+### Phase C — Value Delivery
+- Answer up to 3 technical or product-related questions using the Knowledge Base.
+- If they ask about pricing, provide the general range and mention that "Custom quotes are handled by our account managers."
+
+## Guardrails & Constraints
+- **No Legal Advice**: Do not provide legal or binding contractual guarantees.
+- **No Competitor Comparison**: If asked about competitors, focus on [Company Name]'s strengths rather than disparaging others.
+- **Handoff Trigger**: If the user asks to "Speak to a human," "Talk to sales," or if all qualification info is gathered, trigger a handoff response.
+
+## Closing & Handoff
+Once qualified, say: "Thank you for that information. I am now connecting you with one of our specialists who will take it from here. They usually respond within [Timeframe]."`,
+  },
+  {
+    label: "Simple Support Assistant",
+    description: "Concise, helpful assistant that answers product questions and escalates when needed.",
+    prompt: `You are a friendly customer support assistant for [Company Name]. Answer questions clearly and concisely using the knowledge base. If the answer is not in the knowledge base, say "Let me connect you with a specialist for that." Never invent facts, pricing, or policies. Keep replies short and natural — 2 to 4 sentences maximum.`,
+  },
+  {
+    label: "E-commerce Product Assistant",
+    description: "Helps customers find the right product, check pricing, and proceed to checkout.",
+    prompt: `You are a helpful product advisor for [Company Name]'s online store. Help customers find the right product for their needs using the knowledge base. Always mention current pricing if available. If they are ready to buy, direct them to the checkout or provide the product link. Never make up stock levels or delivery dates — ask a specialist if unsure.`,
+  },
+];
+
 export function AdminSettingsClient({
   activeLanguages,
   availableLanguages,
@@ -663,16 +711,36 @@ export function AdminSettingsClient({
           <p className="mt-1.5 text-xs text-slate-500">Paste your full workspace URL (e.g. https://app.respond.io/space/415884). Customers will see direct links to Inbox, Contacts, AI Agents, and Reports.</p>
         </div>
 
-        <div className="mt-6">
-          <label className="space-y-2 text-sm">
-            <span className="font-semibold text-slate-700">Global bot instructions</span>
-            <textarea
-              value={socialBotState.globalBotInstructions}
-              onChange={(event) => setSocialBotState((current) => ({ ...current, globalBotInstructions: event.target.value }))}
-              rows={8}
-              className="min-h-40 w-full rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white"
-            />
-          </label>
+        <div className="mt-6 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-semibold text-slate-700">Global bot instructions</span>
+            <span className="text-xs text-slate-500">Click a template to load it into the editor</span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {PROMPT_TEMPLATES.map((tpl) => (
+              <button
+                key={tpl.label}
+                type="button"
+                onClick={() => setSocialBotState((current) => ({ ...current, globalBotInstructions: tpl.prompt }))}
+                className="group flex flex-col gap-1.5 rounded-[20px] border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-violet-300 hover:bg-violet-50"
+              >
+                <span className="text-xs font-semibold text-slate-950 group-hover:text-violet-800">{tpl.label}</span>
+                <span className="text-[11px] leading-5 text-slate-500 group-hover:text-violet-600">{tpl.description}</span>
+              </button>
+            ))}
+          </div>
+          <textarea
+            value={socialBotState.globalBotInstructions}
+            onChange={(event) => setSocialBotState((current) => ({ ...current, globalBotInstructions: event.target.value }))}
+            rows={12}
+            placeholder="Write custom instructions or click a template above to get started..."
+            className="min-h-40 w-full rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-sm text-slate-950 outline-none transition focus:border-slate-950 focus:bg-white"
+          />
+          {socialBotState.globalBotInstructions.includes("[Company Name]") && (
+            <div className="rounded-[16px] border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs text-amber-800">
+              Replace <strong>[Company Name]</strong>, <strong>[Products/Services]</strong>, and <strong>[Timeframe]</strong> with your actual values before saving.
+            </div>
+          )}
         </div>
       </SettingsCard>}
 
