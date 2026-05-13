@@ -276,51 +276,59 @@ export async function generateSocialReply({
   const globalInstructions = settings.socialBotConfig.globalBotInstructions.trim() || defaultInstructions;
   const businessContext = profile ? `Business Name: ${profile.businessName || "Unknown"}\nIndustry: ${profile.industry || "Unknown"}` : "Business Name: Unknown\nIndustry: Unknown";
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        system_instruction: {
-          parts: [
-            {
-              text: `${globalInstructions}\n\nUse the last messages to maintain a human-like flow. Keep replies concise and natural for ${thread.source.toLowerCase()} conversations.`
-            }
-          ]
-        },
-        contents: [
+  const requestBody = {
+    system_instruction: {
+      parts: [
+        {
+          text: `${globalInstructions}\n\nUse the last messages to maintain a human-like flow. Keep replies concise and natural for ${thread.source.toLowerCase()} conversations.`
+        }
+      ]
+    },
+    contents: [
+      {
+        role: "user",
+        parts: [
           {
-            role: "user",
-            parts: [
-              {
-                text: `${businessContext}\n\nConversation Memory:\n${memory || "No prior messages."}\n\nKnowledge Base Context:\n${context || "No knowledge base context available."}\n\nLatest Customer Message:\n${question}\n\nWrite the exact reply to send.`
-              }
-            ]
+            text: `${businessContext}\n\nConversation Memory:\n${memory || "No prior messages."}\n\nKnowledge Base Context:\n${context || "No knowledge base context available."}\n\nLatest Customer Message:\n${question}\n\nWrite the exact reply to send.`
           }
         ]
-      })
-    }
-  );
-
-  const payload = (await response.json()) as {
-    candidates?: Array<{
-      content?: {
-        parts?: Array<{ text?: string }>;
-      };
-    }>;
-    error?: { message?: string };
+      }
+    ]
   };
 
-  const text = payload.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("").trim();
+  const generationModels = [
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemini-1.5-flash",
+    "gemini-1.5-pro"
+  ];
 
-  if (!response.ok || !text) {
-    throw new Error(payload.error?.message ?? "Gemini could not generate a response.");
+  let lastError = "Gemini could not generate a response.";
+
+  for (const modelId of generationModels) {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody)
+      }
+    );
+
+    const payload = (await response.json()) as {
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      error?: { message?: string };
+    };
+
+    const text = payload.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim();
+
+    if (response.ok && text) return text;
+
+    lastError = payload.error?.message ?? lastError;
+    if (!lastError.toLowerCase().includes("not found")) break;
   }
 
-  return text;
+  throw new Error(lastError);
 }
 
 export async function sendMetaReply({
