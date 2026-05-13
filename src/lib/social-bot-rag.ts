@@ -162,7 +162,9 @@ export async function embedText(text: string, taskType: "RETRIEVAL_DOCUMENT" | "
     }
 
     lastError = payload.error?.message ?? lastError;
-    if (!lastError.toLowerCase().includes("not found")) break;
+    const isEmbeddingModelUnavailable = ["not found", "no longer available", "not supported", "deprecated"]
+      .some((phrase) => lastError.toLowerCase().includes(phrase));
+    if (!isEmbeddingModelUnavailable) break;
   }
 
   throw new Error(lastError);
@@ -297,10 +299,10 @@ export async function generateSocialReply({
   };
 
   const generationModels = [
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-lite",
     "gemini-1.5-flash",
-    "gemini-1.5-pro"
+    "gemini-1.5-pro",
+    "gemini-2.0-flash-lite",
+    "gemini-2.0-flash"
   ];
 
   let lastError = "Gemini could not generate a response.";
@@ -325,7 +327,9 @@ export async function generateSocialReply({
     if (response.ok && text) return text;
 
     lastError = payload.error?.message ?? lastError;
-    if (!lastError.toLowerCase().includes("not found")) break;
+    const isModelUnavailable = ["not found", "no longer available", "not supported", "deprecated"]
+      .some((phrase) => lastError.toLowerCase().includes(phrase));
+    if (!isModelUnavailable) break;
   }
 
   throw new Error(lastError);
