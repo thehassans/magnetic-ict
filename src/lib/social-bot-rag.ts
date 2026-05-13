@@ -124,33 +124,48 @@ async function getGeminiApiKey() {
 
 export async function embedText(text: string, taskType: "RETRIEVAL_DOCUMENT" | "RETRIEVAL_QUERY") {
   const apiKey = await getGeminiApiKey();
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${apiKey}`,
+
+  const candidates: { modelId: string; body: Record<string, unknown> }[] = [
     {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "models/text-embedding-004",
-        taskType,
-        content: {
-          parts: [{ text }]
-        },
-      })
+      modelId: "text-embedding-004",
+      body: { model: "models/text-embedding-004", taskType, content: { parts: [{ text }] } }
+    },
+    {
+      modelId: "text-embedding-preview-0409",
+      body: { model: "models/text-embedding-preview-0409", taskType, content: { parts: [{ text }] } }
+    },
+    {
+      modelId: "embedding-001",
+      body: { model: "models/embedding-001", content: { parts: [{ text }] } }
     }
-  );
+  ];
 
-  const payload = (await response.json()) as {
-    embedding?: { values?: number[] };
-    error?: { message?: string };
-  };
+  let lastError = "Unable to create embeddings.";
 
-  if (!response.ok || !payload.embedding?.values) {
-    throw new Error(payload.error?.message ?? "Unable to create embeddings.");
+  for (const { modelId, body } of candidates) {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:embedContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      }
+    );
+
+    const payload = (await response.json()) as {
+      embedding?: { values?: number[] };
+      error?: { message?: string };
+    };
+
+    if (response.ok && payload.embedding?.values?.length) {
+      return payload.embedding.values;
+    }
+
+    lastError = payload.error?.message ?? lastError;
+    if (!lastError.toLowerCase().includes("not found")) break;
   }
 
-  return payload.embedding.values;
+  throw new Error(lastError);
 }
 
 function cosineSimilarity(a: number[], b: number[]) {
@@ -206,16 +221,26 @@ export async function retrieveRelevantKnowledge(chunks: SocialBotChunk[], questi
     return [] as SocialBotChunk[];
   }
 
-  const queryEmbedding = await embedText(question, "RETRIEVAL_QUERY");
+  const chunksWithEmbeddings = chunks.filter((c) => c.embedding.length > 0);
 
-  return [...chunks]
-    .map((chunk) => ({
-      chunk,
-      score: cosineSimilarity(queryEmbedding, chunk.embedding)
-    }))
-    .sort((left, right) => right.score - left.score)
-    .slice(0, topKResults)
-    .map((entry) => entry.chunk);
+  if (chunksWithEmbeddings.length === 0) {
+    return chunks.slice(0, topKResults);
+  }
+
+  try {
+    const queryEmbedding = await embedText(question, "RETRIEVAL_QUERY");
+
+    return [...chunksWithEmbeddings]
+      .map((chunk) => ({
+        chunk,
+        score: cosineSimilarity(queryEmbedding, chunk.embedding)
+      }))
+      .sort((left, right) => right.score - left.score)
+      .slice(0, topKResults)
+      .map((entry) => entry.chunk);
+  } catch {
+    return chunksWithEmbeddings.slice(0, topKResults);
+  }
 }
 
 export function formatConversationMemory(messages: SocialBotMessage[]) {
