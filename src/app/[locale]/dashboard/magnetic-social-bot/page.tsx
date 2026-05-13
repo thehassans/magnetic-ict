@@ -1,20 +1,14 @@
-import { Bot, BrainCircuit, Instagram, MessageCircle, Sparkles } from "lucide-react";
+import { Bot, Instagram, MessageCircle, Sparkles } from "lucide-react";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { CustomerSocialBotWorkspace } from "@/components/dashboard/customer-social-bot-workspace";
 import { userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
 import { getPlatformSettings } from "@/lib/platform-settings";
-import { Link } from "@/i18n/navigation";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function MagneticSocialBotDashboardPage({
-  params
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
+export default async function MagneticSocialBotDashboardPage() {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -36,7 +30,7 @@ export default async function MagneticSocialBotDashboardPage({
           <div className="flex flex-wrap items-center gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] uppercase tracking-[0.24em] text-slate-600 dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-300">
               <Sparkles className="h-4 w-4" />
-              Magnetic Social Bot
+              Magnetic Chatbot
             </div>
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] uppercase tracking-[0.24em] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
               <MessageCircle className="h-4 w-4" />
@@ -52,17 +46,17 @@ export default async function MagneticSocialBotDashboardPage({
             </div>
           </div>
 
-          {/* Ask Magnetic CTA */}
-          <Link
-            href="/dashboard/magnetic-social-bot/ask"
-            locale={locale}
+          <a
+            href="https://chatbot.magnetic-ict.com/chatbot/ask"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2.5 rounded-2xl border border-indigo-200/70 bg-gradient-to-r from-indigo-50 to-violet-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 shadow-sm transition hover:border-indigo-300 hover:from-indigo-100 hover:to-violet-100 dark:border-indigo-400/20 dark:from-indigo-500/10 dark:to-violet-500/10 dark:text-indigo-300 dark:hover:border-indigo-400/40"
           >
-            <BrainCircuit className="h-4 w-4" />
+            <Sparkles className="h-4 w-4" />
             Ask Magnetic
-          </Link>
+          </a>
         </div>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">Social Bot workspace</h1>
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">Magnetic Chatbot workspace</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
           Connect channels through a guided Meta flow, upload knowledge, and manage AI or manual replies from one inbox.
         </p>

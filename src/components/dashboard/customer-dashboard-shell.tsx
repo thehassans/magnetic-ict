@@ -102,15 +102,9 @@ export function CustomerDashboardShell({
     if (hasMagneticSocialBotAccess) {
       items.push({
         href: "/dashboard/magnetic-social-bot",
-        label: "Social Bot",
+        label: "Magnetic Chatbot",
         Icon: Bot,
-        match: (value) => value === "/dashboard/magnetic-social-bot" || value.startsWith("/dashboard/magnetic-social-bot/") && !value.startsWith("/dashboard/magnetic-social-bot/ask")
-      });
-      items.push({
-        href: "/dashboard/magnetic-social-bot/ask",
-        label: "Ask Magnetic",
-        Icon: BrainCircuit,
-        match: (value) => value.startsWith("/dashboard/magnetic-social-bot/ask")
+        match: (value) => value.startsWith("/dashboard/magnetic-social-bot")
       });
     }
 

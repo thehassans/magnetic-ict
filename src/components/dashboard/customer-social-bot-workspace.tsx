@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useCallback, useEffect, useState } from "react";
-import { BarChart3, Bot, CheckCircle2, ExternalLink, Instagram, Loader2, MessageCircle, RefreshCw, Send, Sparkles, Trash2, Upload, Users, Wand2, Webhook, Zap } from "lucide-react";
+import { BarChart3, BookOpen, Bot, BrainCircuit, CheckCircle2, ExternalLink, Instagram, Loader2, MessageCircle, RefreshCw, Send, Sparkles, Trash2, Upload, Users, Wand2, Webhook, Zap } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner-1";
 import { cn } from "@/lib/utils";
 import type { SocialBotIntegration, SocialBotMessage, SocialBotThread, SocialBotWorkspace, SocialChannel } from "@/lib/social-bot-types";
@@ -440,6 +440,8 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
     { label: "Inbox", description: "All conversations in one place", icon: MessageCircle, path: "/inbox" },
     { label: "Contacts", description: "CRM-style contact management", icon: Users, path: "/contacts" },
     { label: "AI Agents", description: "Configure automated AI agents", icon: Zap, path: "/agents" },
+    { label: "Knowledge", description: "Train AI on your business docs", icon: BookOpen, path: "/chatbot/knowledge" },
+    { label: "Ask Magnetic", description: "Test your knowledge base live", icon: BrainCircuit, path: "/chatbot/ask" },
     { label: "Reports", description: "Performance and usage analytics", icon: BarChart3, path: "/reports" },
     { label: "Connect", description: "Link WhatsApp, Instagram, Messenger", icon: Webhook, path: "/connect" }
   ];
@@ -519,7 +521,7 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
         </div>
 
         {selectedStep === 1 ? (
-          <div className="mt-6 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="mt-6 grid gap-4 md:grid-cols-[1fr_1fr]">
             <div className="grid gap-4">
               <Field label="Business Name" value={businessName} onChange={setBusinessName} />
               <Field label="Industry" value={industry} onChange={setIndustry} />
@@ -533,33 +535,23 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
                 Save
               </button>
             </div>
-            <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
-              <label className={cn(
-                "flex min-h-40 flex-col items-center justify-center gap-3 rounded-[24px] border border-dashed border-slate-300 px-4 text-center text-sm text-slate-600 transition dark:border-white/15 dark:text-slate-300",
-                isUploadingDocs
-                  ? "cursor-wait border-cyan-300 bg-cyan-50/70 dark:bg-cyan-400/10"
-                  : "cursor-pointer hover:border-cyan-300 hover:bg-cyan-50/60 dark:hover:bg-cyan-400/10"
-              )}>
-                {isUploadingDocs ? (
-                  <>
-                    <Spinner size={50} aria-label="Uploading and training documents" />
-                    <div className="space-y-1">
-                      <div className="font-semibold text-slate-950 dark:text-white">Uploading and training</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">Extracting document text and preparing model knowledge.</div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="h-5 w-5" />
-                    <span>PDF / DOCX / TXT</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Upload files to train your business knowledge base.</span>
-                  </>
-                )}
-                <input type="file" multiple accept=".pdf,.docx,.txt,.md,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="hidden" disabled={isUploadingDocs} onChange={(event) => void uploadDocuments(event.target.files)} />
-              </label>
-              <div className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-                {isUploadingDocs ? "Please wait while your files are uploaded and trained into the AI context." : "Use your business docs as RAG context."}
+            <div className="rounded-[28px] border border-violet-200 bg-violet-50 p-5 dark:border-violet-400/20 dark:bg-violet-400/10">
+              <div className="flex items-center gap-2 text-sm font-semibold text-violet-800 dark:text-violet-200">
+                <BookOpen className="h-4 w-4" />
+                Knowledge Base Training
               </div>
+              <p className="mt-2 text-sm leading-6 text-violet-700 dark:text-violet-300">
+                Upload your business documents, train the AI, and test it — all from the Magnetic Chatbot platform.
+              </p>
+              <a
+                href={`${CHATBOT_SUBDOMAIN}/chatbot/knowledge`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-violet-700 px-5 text-sm font-semibold text-white transition hover:bg-violet-600"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Open Knowledge Base
+              </a>
             </div>
           </div>
         ) : null}
@@ -699,49 +691,6 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
         <InfoCard title="Memory window" text="Replies use the last 10 messages plus retrieved business chunks to keep the flow human-like." />
       </section>
 
-      <section className="rounded-[32px] border border-slate-200 bg-white/90 p-5 shadow-glow dark:border-white/10 dark:bg-slate-950/50">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="text-sm font-semibold text-slate-950 dark:text-white">Knowledge Base</div>
-          {hasKnowledgeBaseTraining ? (
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-900 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-100">
-              <Spinner size={18} aria-label="Knowledge base training in progress" />
-              Training in progress
-            </div>
-          ) : null}
-        </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {knowledgeBaseDocuments.map((document) => (
-            <div key={document._id} className="rounded-[22px] border border-slate-200 bg-slate-50 p-4 text-sm dark:border-white/10 dark:bg-white/5">
-              <div className="font-semibold text-slate-950 dark:text-white">{document.fileName}</div>
-              <div className="mt-1 flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                {document.status === "PROCESSING" ? <Spinner size={16} aria-label={`${document.fileName} is processing`} /> : null}
-                <span>{document.status} · {document.chunkCount} chunks</span>
-              </div>
-              <div className="mt-3 text-slate-600 dark:text-slate-300">{document.textPreview || "No preview available."}</div>
-              <div className="mt-3 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => void retrainDocument(document._id, document.fileName)}
-                  disabled={document.status === "PROCESSING"}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700 transition hover:bg-violet-100 disabled:opacity-50 dark:border-violet-400/20 dark:bg-violet-400/10 dark:text-violet-300"
-                >
-                  <RefreshCw className="h-3 w-3" />
-                  Retrain
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void deleteDocument(document._id)}
-                  disabled={document.status === "PROCESSING"}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-300"
-                >
-                  <Trash2 className="h-3 w-3" />
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
