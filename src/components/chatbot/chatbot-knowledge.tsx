@@ -8,6 +8,7 @@ import {
   Clock,
   FileText,
   FileType,
+  Globe,
   Layers,
   Loader2,
   RefreshCw,
@@ -50,6 +51,9 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
   const [dragOver, setDragOver]     = useState(false);
   const [toast, setToast]           = useState<{ type: "ok" | "err"; msg: string } | null>(null);
   const [progress, setProgress]     = useState<{ current: number; total: number } | null>(null);
+  const [crawlUrl, setCrawlUrl]     = useState("");
+  const [crawlPages, setCrawlPages] = useState(10);
+  const [crawling, setCrawling]     = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   function showToast(type: "ok" | "err", msg: string) {
@@ -122,6 +126,34 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
       showToast("err", "Retraining failed.");
     } finally {
       setRetraining(false);
+    }
+  }
+
+  async function crawlSite() {
+    if (!crawlUrl.trim()) return;
+    setCrawling(true);
+    try {
+      const res = await fetch("/api/social-bot/documents/crawl", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: crawlUrl.trim(), maxPages: crawlPages })
+      });
+      const json = (await res.json().catch(() => ({}))) as { ok?: boolean; message?: string; pagesIndexed?: number; error?: string };
+      if (res.ok && json.ok) {
+        showToast("ok", json.message ?? `${json.pagesIndexed ?? 0} pages indexed.`);
+        setCrawlUrl("");
+        const refreshRes = await fetch("/api/social-bot/workspace").catch(() => null);
+        if (refreshRes?.ok) {
+          const data = (await refreshRes.json().catch(() => null)) as { documents?: SocialBotDocument[] } | null;
+          if (data?.documents) setDocs(data.documents);
+        }
+      } else {
+        showToast("err", json.error ?? "Crawl failed.");
+      }
+    } catch {
+      showToast("err", "Crawl request failed.");
+    } finally {
+      setCrawling(false);
     }
   }
 
@@ -221,6 +253,64 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
         <input ref={fileRef} type="file" accept={ACCEPTED} multiple className="hidden" onChange={(e) => { if (e.target.files) void uploadFiles(e.target.files); e.target.value = ""; }} />
       </div>
 
+      {/* Crawl Website */}
+      <div className="rounded-2xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.03] p-5">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10">
+            <Globe className="h-4 w-4 text-cyan-500 dark:text-cyan-400" />
+          </div>
+          <div>
+            <p className="text-[13px] font-semibold text-gray-800 dark:text-white/90">Crawl Website</p>
+            <p className="text-[11px] text-gray-400 dark:text-white/30">Automatically index pages from any website into your knowledge base</p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="flex-1 space-y-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">Website URL</label>
+            <div className="relative">
+              <Globe className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300 dark:text-white/20" />
+              <input
+                type="url"
+                value={crawlUrl}
+                onChange={(e) => setCrawlUrl(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") void crawlSite(); }}
+                placeholder="https://yourwebsite.com"
+                disabled={crawling}
+                className="h-11 w-full rounded-xl border border-gray-200 dark:border-white/[0.08] bg-gray-50 dark:bg-white/[0.04] pl-10 pr-4 text-sm text-gray-800 dark:text-white/90 placeholder-gray-300 dark:placeholder-white/20 outline-none transition focus:border-violet-400 dark:focus:border-violet-500/60 focus:bg-white dark:focus:bg-white/[0.07] disabled:opacity-50"
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5 sm:w-32">
+            <label className="text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">Max Pages</label>
+            <select
+              value={crawlPages}
+              onChange={(e) => setCrawlPages(Number(e.target.value))}
+              disabled={crawling}
+              className="h-11 w-full rounded-xl border border-gray-200 dark:border-white/[0.08] bg-gray-50 dark:bg-white/[0.04] px-3 text-sm text-gray-800 dark:text-white/90 outline-none transition focus:border-violet-400 dark:focus:border-violet-500/60 disabled:opacity-50"
+            >
+              {[5, 10, 15, 20, 25].map((n) => (
+                <option key={n} value={n}>{n} pages</option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="button"
+            onClick={() => void crawlSite()}
+            disabled={crawling || !crawlUrl.trim()}
+            className="flex h-11 items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 px-5 text-sm font-semibold text-white shadow-[0_0_16px_rgba(6,182,212,0.3)] transition hover:from-cyan-500 hover:to-teal-500 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {crawling ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+            {crawling ? "Crawling…" : "Crawl & Index"}
+          </button>
+        </div>
+        {crawling && (
+          <div className="mt-3 flex items-center gap-2 text-[12px] text-cyan-500 dark:text-cyan-400">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            Crawling website pages and indexing into knowledge base — this may take up to 2 minutes…
+          </div>
+        )}
+      </div>
+
       {/* Documents list */}
       {docs.length === 0 ? (
         <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-gray-200 dark:border-white/[0.1] py-16">
@@ -289,7 +379,7 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
               When you click <strong className="text-gray-700 dark:text-white/50">Retrain AI</strong>, the system re-generates vector embeddings for all your knowledge chunks using the latest Gemini embedding model. This improves retrieval accuracy without re-uploading files. Run after adding new documents or if AI responses seem outdated.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {["PDF Training", "Text & Markdown", "CSV / Excel", "DOCX Support", "Auto-chunking", "Semantic Search"].map((tag) => (
+              {["PDF Training", "Text & Markdown", "CSV / Excel", "DOCX Support", "Website Crawling", "Auto-chunking", "Semantic Search"].map((tag) => (
                 <span key={tag} className="rounded-full border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] px-2.5 py-0.5 text-[10px] font-semibold text-gray-500 dark:text-white/40">{tag}</span>
               ))}
             </div>

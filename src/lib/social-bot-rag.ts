@@ -125,6 +125,118 @@ export async function extractTextFromUploadedFile(file: File) {
   throw new Error("Unsupported file type. Please upload PDF, DOCX, TXT, MD, CSV, or JSON files.");
 }
 
+const CRAWL_SKIP_EXTENSIONS = /\.(jpg|jpeg|png|gif|webp|svg|ico|css|js|woff|woff2|ttf|eot|otf|mp4|mp3|wav|ogg|zip|gz|tar|rar|pdf|doc|docx|xls|xlsx|ppt|pptx)(\?.*)?$/i;
+const CRAWL_SKIP_PATHS = /\/(login|logout|signin|signout|sign-in|sign-out|register|signup|sign-up|cart|checkout|account|admin|wp-admin|wp-login)[\/?#]?/i;
+
+function extractTextFromHtml(html: string): { title: string; text: string } {
+  const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+  const rawTitle = titleMatch ? titleMatch[1] : "";
+  const title = rawTitle.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+
+  const cleaned = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<nav[\s\S]*?<\/nav>/gi, " ")
+    .replace(/<header[\s\S]*?<\/header>/gi, " ")
+    .replace(/<footer[\s\S]*?<\/footer>/gi, " ")
+    .replace(/<aside[\s\S]*?<\/aside>/gi, " ")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&[a-z]{2,8};/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return { title, text: cleaned };
+}
+
+function extractLinks(html: string, baseUrl: string, origin: string): string[] {
+  const links: string[] = [];
+  const regex = /href=["']([^"'#][^"']*?)["']/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    try {
+      const url = new URL(match[1], baseUrl);
+      if (url.origin !== origin) continue;
+      url.hash = "";
+      const href = url.href.replace(/\/$/, "");
+      if (!CRAWL_SKIP_EXTENSIONS.test(href) && !CRAWL_SKIP_PATHS.test(href)) {
+        links.push(href);
+      }
+    } catch {
+      /* skip invalid hrefs */
+    }
+  }
+  return links;
+}
+
+export async function crawlWebsite(
+  startUrl: string,
+  maxPages = 10
+): Promise<{ url: string; title: string; text: string }[]> {
+  let origin: string;
+  let normalized: string;
+  try {
+    const parsed = new URL(startUrl);
+    origin = parsed.origin;
+    parsed.hash = "";
+    normalized = parsed.href.replace(/\/$/, "");
+  } catch {
+    throw new Error("Invalid URL. Please enter a full URL including https://");
+  }
+
+  const results: { url: string; title: string; text: string }[] = [];
+  const visited = new Set<string>();
+  const queue: string[] = [normalized];
+  const limit = Math.min(Math.max(1, maxPages), 25);
+
+  while (queue.length > 0 && results.length < limit) {
+    const url = queue.shift()!;
+    if (visited.has(url)) continue;
+    visited.add(url);
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent": "MagneticChatbot/1.0 (+https://magnetic-ict.com) RAG-Crawler",
+          "Accept": "text/html"
+        },
+        signal: AbortSignal.timeout(10_000)
+      });
+
+      if (!response.ok) continue;
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!contentType.includes("text/html")) continue;
+
+      const html = await response.text();
+      const { title, text } = extractTextFromHtml(html);
+      if (text.length < 80) continue;
+
+      results.push({ url, title: title || url, text });
+
+      const newLinks = extractLinks(html, url, origin);
+      for (const link of newLinks) {
+        if (!visited.has(link) && !queue.includes(link)) {
+          queue.push(link);
+        }
+      }
+    } catch {
+      /* skip pages that fail to load */
+    }
+  }
+
+  if (results.length === 0) {
+    throw new Error("No readable pages found at that URL. Check the address and try again.");
+  }
+
+  return results;
+}
+
 async function getGeminiApiKey() {
   const settings = await getPlatformSettings();
   const apiKey = settings.geminiConfig.apiKey.trim();
