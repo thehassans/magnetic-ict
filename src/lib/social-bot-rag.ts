@@ -128,6 +128,61 @@ export async function extractTextFromUploadedFile(file: File) {
 const CRAWL_SKIP_EXTENSIONS = /\.(jpg|jpeg|png|gif|webp|svg|ico|css|js|woff|woff2|ttf|eot|otf|mp4|mp3|wav|ogg|zip|gz|tar|rar|pdf|doc|docx|xls|xlsx|ppt|pptx)(\?.*)?$/i;
 const CRAWL_SKIP_PATHS = /\/(login|logout|signin|signout|sign-in|sign-out|register|signup|sign-up|cart|checkout|account|admin|wp-admin|wp-login)[\/?#]?/i;
 
+async function fetchSitemapUrls(origin: string, maxUrls = 1000): Promise<string[]> {
+  const collected = new Set<string>();
+
+  async function parseSitemapXml(xmlUrl: string, depth = 0): Promise<void> {
+    if (depth > 3 || collected.size >= maxUrls) return;
+    try {
+      const res = await fetch(xmlUrl, {
+        headers: { "User-Agent": "MagneticChatbot/1.0 RAG-Crawler", "Accept": "application/xml,text/xml,*/*" },
+        signal: AbortSignal.timeout(10_000)
+      });
+      if (!res.ok) return;
+      const xml = await res.text();
+
+      if (xml.includes("<sitemapindex")) {
+        const subMatches = xml.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/gi);
+        for (const m of subMatches) {
+          if (collected.size >= maxUrls) break;
+          const subUrl = m[1].trim();
+          if (/\.xml(\?.*)?$/i.test(subUrl)) {
+            await parseSitemapXml(subUrl, depth + 1);
+          }
+        }
+      } else {
+        const urlMatches = xml.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/gi);
+        for (const m of urlMatches) {
+          if (collected.size >= maxUrls) break;
+          const pageUrl = m[1].trim();
+          try {
+            const parsed = new URL(pageUrl);
+            if (parsed.origin === origin && !CRAWL_SKIP_EXTENSIONS.test(pageUrl)) {
+              collected.add(pageUrl.replace(/\/$/, ""));
+            }
+          } catch { /* skip */ }
+        }
+      }
+    } catch { /* sitemap not found or failed */ }
+  }
+
+  const candidates = [
+    `${origin}/sitemap.xml`,
+    `${origin}/sitemap_index.xml`,
+    `${origin}/sitemap-index.xml`,
+    `${origin}/sitemaps.xml`,
+    `${origin}/wp-sitemap.xml`,
+    `${origin}/sitemap/sitemap-index.xml`
+  ];
+
+  for (const candidate of candidates) {
+    await parseSitemapXml(candidate);
+    if (collected.size > 0) break;
+  }
+
+  return Array.from(collected);
+}
+
 function extractTextFromHtml(html: string): { title: string; text: string } {
   const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
   const rawTitle = titleMatch ? titleMatch[1] : "";
@@ -243,8 +298,9 @@ export async function crawlWebsiteWithCallback(
   startUrl: string,
   maxPages: number,
   onPage: (page: { url: string; title: string; text: string }, index: number) => Promise<void>,
-  onDiscover?: (url: string, queueSize: number) => void
-): Promise<{ totalCrawled: number }> {
+  onDiscover?: (url: string, queueSize: number) => void,
+  onSitemapFound?: (count: number) => void
+): Promise<{ totalCrawled: number; usedSitemap: boolean }> {
   let origin: string;
   let normalized: string;
   try {
@@ -258,49 +314,80 @@ export async function crawlWebsiteWithCallback(
     throw new Error("Invalid URL. Please enter a full URL including https://");
   }
 
+  const unlimited = maxPages === 0;
+  const limit = unlimited ? 1000 : Math.max(1, maxPages);
   const visited = new Set<string>();
-  const queue: string[] = [normalized];
-  const limit = Math.min(Math.max(1, maxPages), 50);
   let totalCrawled = 0;
+  let usedSitemap = false;
 
-  while (queue.length > 0 && totalCrawled < limit) {
-    const url = queue.shift()!;
-    if (visited.has(url)) continue;
-    visited.add(url);
+  const sitemapUrls = await fetchSitemapUrls(origin, limit);
 
-    try {
-      const response = await fetch(url, {
-        headers: {
-          "User-Agent": "MagneticChatbot/1.0 (+https://magnetic-ict.com) RAG-Crawler",
-          "Accept": "text/html"
-        },
-        signal: AbortSignal.timeout(10_000)
-      });
+  if (sitemapUrls.length > 0) {
+    usedSitemap = true;
+    onSitemapFound?.(sitemapUrls.length);
 
-      if (!response.ok) continue;
-      const contentType = response.headers.get("content-type") ?? "";
-      if (!contentType.includes("text/html")) continue;
+    const queue = [normalized, ...sitemapUrls.filter((u) => u !== normalized)];
 
-      const html = await response.text();
-      const { title, text } = extractTextFromHtml(html);
-      if (text.length < 30) continue;
+    for (const url of queue) {
+      if (totalCrawled >= limit) break;
+      if (visited.has(url)) continue;
+      visited.add(url);
 
-      const newLinks = extractLinks(html, url, origin);
-      for (const link of newLinks) {
-        if (!visited.has(link) && !queue.includes(link)) {
-          queue.push(link);
-          onDiscover?.(link, queue.length);
+      onDiscover?.(url, queue.length - visited.size);
+
+      try {
+        const response = await fetch(url, {
+          headers: { "User-Agent": "MagneticChatbot/1.0 RAG-Crawler", "Accept": "text/html" },
+          signal: AbortSignal.timeout(12_000)
+        });
+        if (!response.ok) continue;
+        const contentType = response.headers.get("content-type") ?? "";
+        if (!contentType.includes("text/html")) continue;
+
+        const html = await response.text();
+        const { title, text } = extractTextFromHtml(html);
+        if (text.length < 30) continue;
+
+        await onPage({ url, title: title || url, text }, totalCrawled);
+        totalCrawled++;
+      } catch { /* skip */ }
+    }
+  } else {
+    const queue: string[] = [normalized];
+
+    while (queue.length > 0 && totalCrawled < limit) {
+      const url = queue.shift()!;
+      if (visited.has(url)) continue;
+      visited.add(url);
+
+      try {
+        const response = await fetch(url, {
+          headers: { "User-Agent": "MagneticChatbot/1.0 RAG-Crawler", "Accept": "text/html" },
+          signal: AbortSignal.timeout(12_000)
+        });
+        if (!response.ok) continue;
+        const contentType = response.headers.get("content-type") ?? "";
+        if (!contentType.includes("text/html")) continue;
+
+        const html = await response.text();
+        const { title, text } = extractTextFromHtml(html);
+        if (text.length < 30) continue;
+
+        const newLinks = extractLinks(html, url, origin);
+        for (const link of newLinks) {
+          if (!visited.has(link) && !queue.includes(link)) {
+            queue.push(link);
+            onDiscover?.(link, queue.length);
+          }
         }
-      }
 
-      await onPage({ url, title: title || url, text }, totalCrawled);
-      totalCrawled++;
-    } catch {
-      /* skip pages that fail to load */
+        await onPage({ url, title: title || url, text }, totalCrawled);
+        totalCrawled++;
+      } catch { /* skip */ }
     }
   }
 
-  return { totalCrawled };
+  return { totalCrawled, usedSitemap };
 }
 
 async function getGeminiApiKey() {

@@ -7,11 +7,12 @@ export const maxDuration = 180;
 
 type SseEvent =
   | { type: "start"; origin: string; limit: number }
+  | { type: "sitemap"; count: number }
   | { type: "crawling"; url: string; index: number }
   | { type: "indexed"; url: string; title: string; chunks: number; index: number }
   | { type: "failed"; url: string; reason: string; index: number }
   | { type: "discovered"; url: string; queueSize: number }
-  | { type: "done"; indexed: number; failed: number; total: number; message: string }
+  | { type: "done"; indexed: number; failed: number; total: number; usedSitemap: boolean; message: string }
   | { type: "error"; message: string };
 
 export async function POST(request: Request) {
@@ -51,11 +52,12 @@ export async function POST(request: Request) {
         const raw = url.trim();
         const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
         const origin = new URL(withProtocol).origin;
-        const limit = Math.min(Math.max(1, maxPages ?? 10), 50);
+        const unlimited = !maxPages || maxPages === 0;
+        const limit = unlimited ? 0 : Math.max(1, maxPages);
 
-        send({ type: "start", origin, limit });
+        send({ type: "start", origin, limit: unlimited ? 1000 : limit });
 
-        await crawlWebsiteWithCallback(
+        const result = await crawlWebsiteWithCallback(
           withProtocol,
           limit,
           async (page, index) => {
@@ -71,8 +73,8 @@ export async function POST(request: Request) {
                 sourceUrl: page.url
               });
               indexed++;
-              const doc = page.text.split(" ").length;
-              const approxChunks = Math.max(1, Math.ceil(doc / 100));
+              const wordCount = page.text.split(" ").length;
+              const approxChunks = Math.max(1, Math.ceil(wordCount / 100));
               send({ type: "indexed", url: page.url, title: page.title, chunks: approxChunks, index });
             } catch (err) {
               failed++;
@@ -81,13 +83,16 @@ export async function POST(request: Request) {
           },
           (discoveredUrl, queueSize) => {
             send({ type: "discovered", url: discoveredUrl, queueSize });
+          },
+          (sitemapCount) => {
+            send({ type: "sitemap", count: sitemapCount });
           }
         );
 
         if (indexed === 0) {
           send({ type: "error", message: "Crawl completed but no pages could be indexed. The site may block crawlers or use JavaScript rendering." });
         } else {
-          send({ type: "done", indexed, failed, total, message: `${indexed} page${indexed === 1 ? "" : "s"} indexed from ${new URL(withProtocol).hostname}.` });
+          send({ type: "done", indexed, failed, total, usedSitemap: result.usedSitemap, message: `${indexed} page${indexed === 1 ? "" : "s"} indexed from ${new URL(withProtocol).hostname}.` });
         }
       } catch (error) {
         send({ type: "error", message: error instanceof Error ? error.message : "Failed to crawl website." });

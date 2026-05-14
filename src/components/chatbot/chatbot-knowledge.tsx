@@ -56,7 +56,8 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
   const [crawlPages, setCrawlPages] = useState(10);
   const [crawling, setCrawling]     = useState(false);
   const [crawlLog, setCrawlLog]     = useState<{ url: string; title: string; status: "crawling" | "indexed" | "failed"; chunks?: number }[]>([]);
-  const [crawlSummary, setCrawlSummary] = useState<{ indexed: number; failed: number; total: number } | null>(null);
+  const [crawlSummary, setCrawlSummary] = useState<{ indexed: number; failed: number; total: number; usedSitemap: boolean } | null>(null);
+  const [sitemapInfo, setSitemapInfo] = useState<{ count: number } | null>(null);
   const crawlLogRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -157,6 +158,7 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
     setCrawling(true);
     setCrawlLog([]);
     setCrawlSummary(null);
+    setSitemapInfo(null);
 
     try {
       const res = await fetch("/api/social-bot/documents/crawl", {
@@ -189,7 +191,8 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
             const event = JSON.parse(line.slice(6)) as {
               type: string; url?: string; title?: string; chunks?: number;
               indexed?: number; failed?: number; total?: number;
-              message?: string; reason?: string;
+              message?: string; reason?: string; count?: number;
+              usedSitemap?: boolean;
             };
 
             if (event.type === "crawling" && event.url) {
@@ -202,8 +205,10 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
               setCrawlLog((prev) => prev.map((e) =>
                 e.url === event.url ? { ...e, status: "failed" } : e
               ));
+            } else if (event.type === "sitemap" && event.count) {
+              setSitemapInfo({ count: event.count });
             } else if (event.type === "done") {
-              setCrawlSummary({ indexed: event.indexed ?? 0, failed: event.failed ?? 0, total: event.total ?? 0 });
+              setCrawlSummary({ indexed: event.indexed ?? 0, failed: event.failed ?? 0, total: event.total ?? 0, usedSitemap: event.usedSitemap ?? false });
               showToast("ok", event.message ?? "Crawl complete.");
               const refreshRes = await fetch("/api/social-bot/workspace").catch(() => null);
               if (refreshRes?.ok) {
@@ -349,17 +354,19 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
               />
             </div>
           </div>
-          <div className="space-y-1.5 sm:w-32">
-            <label className="text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">Max Pages</label>
+          <div className="space-y-1.5 sm:w-44">
+            <label className="text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">Depth Limit</label>
             <select
               value={crawlPages}
               onChange={(e) => setCrawlPages(Number(e.target.value))}
               disabled={crawling}
               className="h-11 w-full rounded-xl border border-gray-200 dark:border-white/[0.08] bg-gray-50 dark:bg-white/[0.04] px-3 text-sm text-gray-800 dark:text-white/90 outline-none transition focus:border-violet-400 dark:focus:border-violet-500/60 disabled:opacity-50"
             >
-              {[5, 10, 15, 20, 25].map((n) => (
-                <option key={n} value={n}>{n} pages</option>
-              ))}
+              <option value={0}>All pages (sitemap)</option>
+              <option value={25}>Up to 25 pages</option>
+              <option value={50}>Up to 50 pages</option>
+              <option value={100}>Up to 100 pages</option>
+              <option value={250}>Up to 250 pages</option>
             </select>
           </div>
           <button
@@ -377,11 +384,18 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
           <div className="mt-4 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400 dark:text-white/30">Live crawl feed</span>
-              {crawling && (
-                <span className="flex items-center gap-1.5 text-[11px] text-cyan-500 dark:text-cyan-400">
-                  <Loader2 className="h-3 w-3 animate-spin" /> Indexing pages…
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                {sitemapInfo && (
+                  <span className="rounded-full border border-cyan-500/25 bg-cyan-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-cyan-500 dark:text-cyan-400">
+                    Sitemap: {sitemapInfo.count} URLs
+                  </span>
+                )}
+                {crawling && (
+                  <span className="flex items-center gap-1.5 text-[11px] text-cyan-500 dark:text-cyan-400">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Indexing pages…
+                  </span>
+                )}
+              </div>
             </div>
 
             <div
@@ -417,7 +431,8 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400">✓ Crawl complete</span>
                 <span className="text-gray-500 dark:text-white/40">{crawlSummary.indexed} pages indexed</span>
                 {crawlSummary.failed > 0 && <span className="text-rose-400">{crawlSummary.failed} failed</span>}
-                <span className="text-gray-400 dark:text-white/30">{crawlSummary.total} total discovered</span>
+                <span className="text-gray-400 dark:text-white/30">{crawlSummary.total} total processed</span>
+                {crawlSummary.usedSitemap && <span className="text-cyan-500 dark:text-cyan-400">via sitemap.xml</span>}
               </div>
             )}
           </div>
