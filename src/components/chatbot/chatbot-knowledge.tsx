@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
   BookOpen,
   CheckCircle2,
   Clock,
+  ExternalLink,
   FileText,
   FileType,
   Globe,
@@ -14,7 +15,6 @@ import {
   RefreshCw,
   Trash2,
   UploadCloud,
-  X,
   Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ import type { SocialBotDocument } from "@/lib/social-bot-types";
 const ACCEPTED = ".pdf,.txt,.md,.csv,.docx,.doc,.xlsx,.xls,.json";
 
 function fileIcon(mimeType: string) {
+  if (mimeType.includes("html"))  return { icon: Globe,     color: "text-cyan-400",    bg: "bg-cyan-500/10" };
   if (mimeType.includes("pdf"))   return { icon: FileType,  color: "text-rose-400",    bg: "bg-rose-500/10" };
   if (mimeType.includes("word") || mimeType.includes("doc")) return { icon: FileText, color: "text-blue-400", bg: "bg-blue-500/10" };
   if (mimeType.includes("sheet") || mimeType.includes("excel") || mimeType.includes("xls")) return { icon: Layers, color: "text-emerald-400", bg: "bg-emerald-500/10" };
@@ -54,7 +55,16 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
   const [crawlUrl, setCrawlUrl]     = useState("");
   const [crawlPages, setCrawlPages] = useState(10);
   const [crawling, setCrawling]     = useState(false);
+  const [crawlLog, setCrawlLog]     = useState<{ url: string; title: string; status: "crawling" | "indexed" | "failed"; chunks?: number }[]>([]);
+  const [crawlSummary, setCrawlSummary] = useState<{ indexed: number; failed: number; total: number } | null>(null);
+  const crawlLogRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (crawlLogRef.current) {
+      crawlLogRef.current.scrollTop = crawlLogRef.current.scrollHeight;
+    }
+  }, [crawlLog]);
 
   function showToast(type: "ok" | "err", msg: string) {
     setToast({ type, msg });
@@ -145,23 +155,68 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
     if (!url) return;
     if (url !== crawlUrl) setCrawlUrl(url);
     setCrawling(true);
+    setCrawlLog([]);
+    setCrawlSummary(null);
+
     try {
       const res = await fetch("/api/social-bot/documents/crawl", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url, maxPages: crawlPages })
       });
-      const json = (await res.json().catch(() => ({}))) as { ok?: boolean; message?: string; pagesIndexed?: number; error?: string };
-      if (res.ok && json.ok) {
-        showToast("ok", json.message ?? `${json.pagesIndexed ?? 0} pages indexed.`);
-        setCrawlUrl("");
-        const refreshRes = await fetch("/api/social-bot/workspace").catch(() => null);
-        if (refreshRes?.ok) {
-          const data = (await refreshRes.json().catch(() => null)) as { documents?: SocialBotDocument[] } | null;
-          if (data?.documents) setDocs(data.documents);
+
+      if (!res.ok || !res.body) {
+        const err = await res.json().catch(() => ({}) as { error?: string });
+        showToast("err", (err as { error?: string }).error ?? "Crawl failed.");
+        setCrawling(false);
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          try {
+            const event = JSON.parse(line.slice(6)) as {
+              type: string; url?: string; title?: string; chunks?: number;
+              indexed?: number; failed?: number; total?: number;
+              message?: string; reason?: string;
+            };
+
+            if (event.type === "crawling" && event.url) {
+              setCrawlLog((prev) => [...prev, { url: event.url!, title: "", status: "crawling" }]);
+            } else if (event.type === "indexed" && event.url) {
+              setCrawlLog((prev) => prev.map((e) =>
+                e.url === event.url ? { ...e, title: event.title ?? "", status: "indexed", chunks: event.chunks } : e
+              ));
+            } else if (event.type === "failed" && event.url) {
+              setCrawlLog((prev) => prev.map((e) =>
+                e.url === event.url ? { ...e, status: "failed" } : e
+              ));
+            } else if (event.type === "done") {
+              setCrawlSummary({ indexed: event.indexed ?? 0, failed: event.failed ?? 0, total: event.total ?? 0 });
+              showToast("ok", event.message ?? "Crawl complete.");
+              const refreshRes = await fetch("/api/social-bot/workspace").catch(() => null);
+              if (refreshRes?.ok) {
+                const data = (await refreshRes.json().catch(() => null)) as { documents?: SocialBotDocument[] } | null;
+                if (data?.documents) setDocs(data.documents);
+              }
+            } else if (event.type === "error") {
+              showToast("err", event.message ?? "Crawl failed.");
+            }
+          } catch {
+            /* skip malformed SSE line */
+          }
         }
-      } else {
-        showToast("err", json.error ?? "Crawl failed.");
       }
     } catch {
       showToast("err", "Crawl request failed.");
@@ -317,10 +372,54 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
             {crawling ? "Crawling…" : "Crawl & Index"}
           </button>
         </div>
-        {crawling && (
-          <div className="mt-3 flex items-center gap-2 text-[12px] text-cyan-500 dark:text-cyan-400">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Crawling website pages and indexing into knowledge base — this may take up to 2 minutes…
+        {/* Live crawl log */}
+        {(crawlLog.length > 0 || crawling) && (
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400 dark:text-white/30">Live crawl feed</span>
+              {crawling && (
+                <span className="flex items-center gap-1.5 text-[11px] text-cyan-500 dark:text-cyan-400">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Indexing pages…
+                </span>
+              )}
+            </div>
+
+            <div
+              ref={crawlLogRef}
+              className="max-h-64 space-y-1 overflow-y-auto rounded-xl border border-gray-200 dark:border-white/[0.07] bg-gray-50 dark:bg-black/20 p-3 font-mono text-[11px]"
+            >
+              {crawlLog.map((entry, i) => (
+                <div key={i} className={cn("flex items-start gap-2 py-0.5",
+                  entry.status === "indexed" ? "text-emerald-600 dark:text-emerald-400" :
+                  entry.status === "failed"  ? "text-rose-500 dark:text-rose-400" :
+                  "text-amber-500 dark:text-amber-400"
+                )}>
+                  {entry.status === "indexed"  && <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0" />}
+                  {entry.status === "failed"   && <AlertCircle  className="mt-0.5 h-3 w-3 shrink-0" />}
+                  {entry.status === "crawling" && <Loader2      className="mt-0.5 h-3 w-3 shrink-0 animate-spin" />}
+                  <div className="min-w-0 flex-1">
+                    {entry.title && <span className="block truncate font-semibold text-gray-700 dark:text-white/80">{entry.title}</span>}
+                    <span className="block truncate text-gray-400 dark:text-white/30">{entry.url}</span>
+                    {entry.status === "indexed" && entry.chunks != null && (
+                      <span className="text-[10px] text-emerald-500 dark:text-emerald-500/70">✓ indexed · ~{entry.chunks} chunks</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {crawling && crawlLog.length === 0 && (
+                <span className="text-gray-400 dark:text-white/30">Connecting to website…</span>
+              )}
+            </div>
+
+            {/* Summary */}
+            {crawlSummary && !crawling && (
+              <div className="flex flex-wrap items-center gap-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-[12px]">
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">✓ Crawl complete</span>
+                <span className="text-gray-500 dark:text-white/40">{crawlSummary.indexed} pages indexed</span>
+                {crawlSummary.failed > 0 && <span className="text-rose-400">{crawlSummary.failed} failed</span>}
+                <span className="text-gray-400 dark:text-white/30">{crawlSummary.total} total discovered</span>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -361,7 +460,19 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
                     )}
                     <span className="flex items-center gap-1"><Clock className="h-2.5 w-2.5" />{new Date(doc.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                   </div>
-                  {doc.textPreview && (
+                  {doc.sourceUrl && (
+                    <a
+                      href={doc.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 flex items-center gap-1 truncate text-[11px] text-cyan-500 hover:text-cyan-400 dark:text-cyan-500/70 dark:hover:text-cyan-400"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+                      {doc.sourceUrl}
+                    </a>
+                  )}
+                  {!doc.sourceUrl && doc.textPreview && (
                     <p className="mt-1.5 line-clamp-1 text-[11px] text-gray-400 dark:text-white/20">{doc.textPreview}</p>
                   )}
                 </div>

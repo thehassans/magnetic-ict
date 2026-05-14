@@ -239,6 +239,70 @@ export async function crawlWebsite(
   return results;
 }
 
+export async function crawlWebsiteWithCallback(
+  startUrl: string,
+  maxPages: number,
+  onPage: (page: { url: string; title: string; text: string }, index: number) => Promise<void>,
+  onDiscover?: (url: string, queueSize: number) => void
+): Promise<{ totalCrawled: number }> {
+  let origin: string;
+  let normalized: string;
+  try {
+    const raw = startUrl.trim();
+    const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    const parsed = new URL(withProtocol);
+    origin = parsed.origin;
+    parsed.hash = "";
+    normalized = parsed.href.replace(/\/$/, "");
+  } catch {
+    throw new Error("Invalid URL. Please enter a full URL including https://");
+  }
+
+  const visited = new Set<string>();
+  const queue: string[] = [normalized];
+  const limit = Math.min(Math.max(1, maxPages), 50);
+  let totalCrawled = 0;
+
+  while (queue.length > 0 && totalCrawled < limit) {
+    const url = queue.shift()!;
+    if (visited.has(url)) continue;
+    visited.add(url);
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent": "MagneticChatbot/1.0 (+https://magnetic-ict.com) RAG-Crawler",
+          "Accept": "text/html"
+        },
+        signal: AbortSignal.timeout(10_000)
+      });
+
+      if (!response.ok) continue;
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!contentType.includes("text/html")) continue;
+
+      const html = await response.text();
+      const { title, text } = extractTextFromHtml(html);
+      if (text.length < 30) continue;
+
+      const newLinks = extractLinks(html, url, origin);
+      for (const link of newLinks) {
+        if (!visited.has(link) && !queue.includes(link)) {
+          queue.push(link);
+          onDiscover?.(link, queue.length);
+        }
+      }
+
+      await onPage({ url, title: title || url, text }, totalCrawled);
+      totalCrawled++;
+    } catch {
+      /* skip pages that fail to load */
+    }
+  }
+
+  return { totalCrawled };
+}
+
 async function getGeminiApiKey() {
   const settings = await getPlatformSettings();
   const apiKey = settings.geminiConfig.apiKey.trim();

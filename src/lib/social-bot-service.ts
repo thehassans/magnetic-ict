@@ -180,12 +180,14 @@ export async function addKnowledgeDocument({
   userId,
   fileName,
   mimeType,
-  text
+  text,
+  sourceUrl
 }: {
   userId: string;
   fileName: string;
   mimeType: string;
   text: string;
+  sourceUrl?: string;
 }) {
   const now = new Date().toISOString();
   const preview = text.replace(/\s+/g, " ").trim().slice(0, 240);
@@ -199,6 +201,7 @@ export async function addKnowledgeDocument({
     status: "PROCESSING",
     chunkCount: 0,
     textPreview: preview,
+    sourceUrl: sourceUrl ?? undefined,
     createdAt: now,
     updatedAt: now
   };

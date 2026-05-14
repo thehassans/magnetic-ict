@@ -31,6 +31,7 @@ export type SocialBotDocument = {
   status: SocialDocumentStatus;
   chunkCount: number;
   textPreview: string;
+  sourceUrl?: string;
   createdAt: string;
   updatedAt: string;
 };
