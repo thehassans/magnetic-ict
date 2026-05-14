@@ -182,7 +182,9 @@ export async function crawlWebsite(
   let origin: string;
   let normalized: string;
   try {
-    const parsed = new URL(startUrl);
+    const raw = startUrl.trim();
+    const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    const parsed = new URL(withProtocol);
     origin = parsed.origin;
     parsed.hash = "";
     normalized = parsed.href.replace(/\/$/, "");
@@ -215,7 +217,7 @@ export async function crawlWebsite(
 
       const html = await response.text();
       const { title, text } = extractTextFromHtml(html);
-      if (text.length < 80) continue;
+      if (text.length < 30) continue;
 
       results.push({ url, title: title || url, text });
 
@@ -231,7 +233,7 @@ export async function crawlWebsite(
   }
 
   if (results.length === 0) {
-    throw new Error("No readable pages found at that URL. Check the address and try again.");
+    throw new Error(`No readable pages found at ${origin}. The site may require JavaScript rendering, block crawlers, or return no HTML content. Try a different URL or upload a document instead.`);
   }
 
   return results;

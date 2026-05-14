@@ -129,14 +129,27 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
     }
   }
 
+  function normalizeUrl(raw: string) {
+    const trimmed = raw.trim();
+    if (!trimmed) return trimmed;
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+    return `https://${trimmed}`;
+  }
+
+  function handleUrlBlur() {
+    if (crawlUrl.trim()) setCrawlUrl(normalizeUrl(crawlUrl));
+  }
+
   async function crawlSite() {
-    if (!crawlUrl.trim()) return;
+    const url = normalizeUrl(crawlUrl);
+    if (!url) return;
+    if (url !== crawlUrl) setCrawlUrl(url);
     setCrawling(true);
     try {
       const res = await fetch("/api/social-bot/documents/crawl", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: crawlUrl.trim(), maxPages: crawlPages })
+        body: JSON.stringify({ url, maxPages: crawlPages })
       });
       const json = (await res.json().catch(() => ({}))) as { ok?: boolean; message?: string; pagesIndexed?: number; error?: string };
       if (res.ok && json.ok) {
@@ -273,6 +286,7 @@ export function ChatbotKnowledge({ initialDocuments }: { initialDocuments: Socia
                 type="url"
                 value={crawlUrl}
                 onChange={(e) => setCrawlUrl(e.target.value)}
+                onBlur={handleUrlBlur}
                 onKeyDown={(e) => { if (e.key === "Enter") void crawlSite(); }}
                 placeholder="https://yourwebsite.com"
                 disabled={crawling}
