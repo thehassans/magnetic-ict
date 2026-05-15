@@ -16,6 +16,7 @@ import {
   LogOut,
   Megaphone,
   Menu,
+  Mic,
   MessageSquare,
   MessageSquarePlus,
   Moon,
@@ -34,6 +35,7 @@ const navItems = [
   { href: "/chatbot/contacts", label: "Contacts", icon: Users, exact: false },
   { href: "/chatbot/broadcast", label: "Broadcast", icon: Megaphone, exact: false },
   { href: "/chatbot/agents", label: "AI Agents", icon: Zap, exact: false },
+  { href: "/chatbot/voice", label: "Voice Agent", icon: Mic, exact: false },
   { href: "/chatbot/knowledge", label: "Knowledge", icon: BookOpen, exact: false },
   { href: "/chatbot/ask", label: "Ask Magnetic", icon: BrainCircuit, exact: false },
   { href: "/chatbot/quick-replies", label: "Quick Replies", icon: MessageSquarePlus, exact: false },
@@ -71,7 +73,8 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
   }
 
   function handleSignOut() {
-    startSignOut(() => { void signOut({ redirectTo: "/en" }); });
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://magnetic-ict.com").replace(/\/$/, "");
+    startSignOut(() => { void signOut({ redirectTo: `${appUrl}/en` }); });
   }
 
   const initial = userName.charAt(0).toUpperCase();
