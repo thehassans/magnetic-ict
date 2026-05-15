@@ -29,7 +29,10 @@ export default function middleware(request: NextRequest) {
     url.pathname = cleanPath.startsWith("/chatbot")
       ? cleanPath
       : `/chatbot${cleanPath === "/" ? "" : cleanPath}`;
-    return NextResponse.rewrite(url);
+    const response = NextResponse.rewrite(url);
+    response.headers.set("x-forwarded-host", hostname);
+    response.headers.set("x-chatbot-host", hostname);
+    return response;
   }
 
   if (pathname.startsWith("/chatbot")) {

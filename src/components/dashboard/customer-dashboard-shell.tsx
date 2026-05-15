@@ -193,9 +193,7 @@ export function CustomerDashboardShell({
 
       {hasMagneticSocialBotAccess && (
         <a
-          href="https://chatbot.magnetic-ict.com"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/chatbot"
           className="mt-3 flex w-full items-center gap-3 rounded-[18px] border border-violet-200/70 bg-gradient-to-r from-violet-50 to-indigo-50 px-4 py-3 text-sm font-medium text-violet-700 transition hover:border-violet-300 hover:from-violet-100 hover:to-indigo-100 dark:border-violet-400/20 dark:from-violet-500/10 dark:to-indigo-500/10 dark:text-violet-300 dark:hover:border-violet-400/30"
         >
           <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-violet-100 text-violet-700 dark:bg-violet-400/20 dark:text-violet-300">
@@ -203,7 +201,7 @@ export function CustomerDashboardShell({
           </span>
           <span className="flex-1 text-xs leading-tight">
             <span className="block font-semibold">Chatbot Platform</span>
-            <span className="block text-violet-500 dark:text-violet-400">chatbot.magnetic-ict.com</span>
+            <span className="block text-violet-500 dark:text-violet-400">Open workspace</span>
           </span>
           <ExternalLink className="h-3.5 w-3.5 text-violet-400" />
         </a>
