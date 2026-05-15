@@ -47,7 +47,9 @@ export default async function MagneticSocialBotDashboardPage() {
           </div>
 
           <a
-            href="/chatbot/ask"
+            href="https://chatbot.magnetic-ict.com/chatbot/ask"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2.5 rounded-2xl border border-indigo-200/70 bg-gradient-to-r from-indigo-50 to-violet-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 shadow-sm transition hover:border-indigo-300 hover:from-indigo-100 hover:to-violet-100 dark:border-indigo-400/20 dark:from-indigo-500/10 dark:to-violet-500/10 dark:text-indigo-300 dark:hover:border-indigo-400/40"
           >
             <Sparkles className="h-4 w-4" />

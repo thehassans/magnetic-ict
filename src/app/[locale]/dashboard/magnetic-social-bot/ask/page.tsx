@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function AskMagneticDashboardPage() {
-  redirect("/chatbot/ask");
+  redirect("https://chatbot.magnetic-ict.com/chatbot/ask");
 }

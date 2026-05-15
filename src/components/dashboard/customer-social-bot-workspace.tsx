@@ -432,17 +432,18 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
     );
   }
 
-  const externalWorkspaceUrl = respondIoWorkspaceUrl?.replace(/\/$/, "") || null;
+  const CHATBOT_SUBDOMAIN = "https://chatbot.magnetic-ict.com";
+  const baseUrl = respondIoWorkspaceUrl?.replace(/\/$/, "") || CHATBOT_SUBDOMAIN;
 
   const chatbotLinks = [
-    { label: "Dashboard", description: "Overview and stats", icon: BarChart3, path: "/chatbot" },
-    { label: "Inbox", description: "All conversations in one place", icon: MessageCircle, path: "/chatbot/inbox" },
-    { label: "Contacts", description: "CRM-style contact management", icon: Users, path: "/chatbot/contacts" },
-    { label: "AI Agents", description: "Configure automated AI agents", icon: Zap, path: "/chatbot/agents" },
+    { label: "Dashboard", description: "Overview and stats", icon: BarChart3, path: "" },
+    { label: "Inbox", description: "All conversations in one place", icon: MessageCircle, path: "/inbox" },
+    { label: "Contacts", description: "CRM-style contact management", icon: Users, path: "/contacts" },
+    { label: "AI Agents", description: "Configure automated AI agents", icon: Zap, path: "/agents" },
     { label: "Knowledge", description: "Train AI on your business docs", icon: BookOpen, path: "/chatbot/knowledge" },
     { label: "Ask Magnetic", description: "Test your knowledge base live", icon: BrainCircuit, path: "/chatbot/ask" },
-    { label: "Reports", description: "Performance and usage analytics", icon: BarChart3, path: "/chatbot/reports" },
-    { label: "Connect", description: "Link WhatsApp, Instagram, Messenger", icon: Webhook, path: "/chatbot/connect" }
+    { label: "Reports", description: "Performance and usage analytics", icon: BarChart3, path: "/reports" },
+    { label: "Connect", description: "Link WhatsApp, Instagram, Messenger", icon: Webhook, path: "/connect" }
   ];
 
   return (
@@ -457,9 +458,9 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
               <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Access your omnichannel workspace directly</div>
             </div>
             <a
-              href={externalWorkspaceUrl ?? "/chatbot"}
-              target={externalWorkspaceUrl ? "_blank" : undefined}
-              rel={externalWorkspaceUrl ? "noopener noreferrer" : undefined}
+              href={baseUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-white/10"
             >
               <ExternalLink className="h-3.5 w-3.5" />
@@ -472,7 +473,9 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
               return (
                 <a
                   key={item.label}
-                  href={item.path}
+                  href={`${baseUrl}${item.path}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group flex items-start gap-3 rounded-[22px] border border-slate-200 bg-slate-50 p-4 transition hover:border-violet-200 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:hover:border-violet-400/30 dark:hover:bg-violet-400/10"
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition group-hover:border-violet-200 group-hover:bg-violet-100 group-hover:text-violet-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:group-hover:border-violet-400/30 dark:group-hover:text-violet-300">
@@ -541,7 +544,9 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
                 Upload your business documents, train the AI, and test it — all from the Magnetic Chatbot platform.
               </p>
               <a
-                href="/chatbot/knowledge"
+                href={`${CHATBOT_SUBDOMAIN}/chatbot/knowledge`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-violet-700 px-5 text-sm font-semibold text-white transition hover:bg-violet-600"
               >
                 <ExternalLink className="h-4 w-4" />
