@@ -23,12 +23,27 @@ export default function middleware(request: NextRequest) {
   );
   const pathname = request.nextUrl.pathname;
 
+  // Skip middleware for auth API routes
+  if (pathname.startsWith("/api/auth")) {
+    return NextResponse.next();
+  }
+
+  // Skip chatbot subdomain rewrite for auth callback paths
+  if (hostname.startsWith("chatbot.") && (pathname.includes("sign-in") || pathname.includes("sign-out") || pathname.includes("callback"))) {
+    return NextResponse.next();
+  }
+
   if (hostname.startsWith("chatbot.")) {
     const url = request.nextUrl.clone();
     const cleanPath = stripLocalePrefix(pathname);
-    url.pathname = cleanPath.startsWith("/chatbot")
-      ? cleanPath
-      : `/chatbot${cleanPath === "/" ? "" : cleanPath}`;
+    // Rewrite root to /chatbot, other paths to /chatbot/path
+    if (cleanPath === "/" || cleanPath === "") {
+      url.pathname = "/chatbot";
+    } else if (cleanPath.startsWith("/chatbot")) {
+      url.pathname = cleanPath;
+    } else {
+      url.pathname = `/chatbot${cleanPath}`;
+    }
     return NextResponse.rewrite(url);
   }
 
