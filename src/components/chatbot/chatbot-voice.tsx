@@ -114,6 +114,8 @@ export function ChatbotVoice() {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
   const animFrameRef = useRef<number | null>(null);
+  const apiAudioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const apiAudioCtxRef = useRef<AudioContext | null>(null);
   const conversationEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -174,6 +176,16 @@ export function ChatbotVoice() {
   }, []);
 
   const stopSpeaking = useCallback(() => {
+    // Stop API TTS audio
+    if (apiAudioSourceRef.current) {
+      try { apiAudioSourceRef.current.stop(); } catch { /* already stopped */ }
+      apiAudioSourceRef.current = null;
+    }
+    if (apiAudioCtxRef.current) {
+      apiAudioCtxRef.current.close().catch(() => null);
+      apiAudioCtxRef.current = null;
+    }
+    // Stop browser TTS
     synthRef.current?.cancel();
     setIsSpeaking(false);
   }, []);
@@ -186,11 +198,43 @@ export function ChatbotVoice() {
     stopAmplitudeTracking();
   }, [stopAmplitudeTracking]);
 
-  const speakText = useCallback((text: string, lang: string) => {
-    if (isMuted || !synthRef.current) return;
+  const speakText = useCallback(async (text: string, lang: string) => {
+    if (isMuted) return;
     stopSpeaking();
-    const utter = new SpeechSynthesisUtterance(text);
     const targetLang = lang === "auto" ? "en-US" : lang;
+
+    // ── 1. Try API TTS (ElevenLabs or OpenAI) ────────────────────────────────
+    try {
+      const res = await fetch("/api/social-bot/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, language: targetLang })
+      });
+      if (res.ok) {
+        const arrayBuf = await res.arrayBuffer();
+        const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        const ctx = new AudioCtx();
+        const decoded = await ctx.decodeAudioData(arrayBuf);
+        const source = ctx.createBufferSource();
+        source.buffer = decoded;
+        source.connect(ctx.destination);
+        apiAudioCtxRef.current = ctx;
+        apiAudioSourceRef.current = source;
+        setIsSpeaking(true);
+        source.onended = () => {
+          setIsSpeaking(false);
+          apiAudioSourceRef.current = null;
+          ctx.close().catch(() => null);
+          apiAudioCtxRef.current = null;
+        };
+        source.start(0);
+        return;
+      }
+    } catch { /* API unavailable — fall through to browser TTS */ }
+
+    // ── 2. Browser TTS fallback ───────────────────────────────────────────────
+    if (!synthRef.current) return;
+    const utter = new SpeechSynthesisUtterance(text);
     const voice = getVoiceForLang(targetLang);
     if (voice) utter.voice = voice;
     utter.lang = targetLang;
@@ -237,7 +281,7 @@ export function ChatbotVoice() {
       };
 
       setConversation((prev) => [...prev, assistantEntry]);
-      speakText(data.reply, detectedLang);
+      void speakText(data.reply, detectedLang);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Voice agent error.");
     } finally {

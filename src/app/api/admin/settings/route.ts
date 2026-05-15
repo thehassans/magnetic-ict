@@ -71,6 +71,17 @@ const requestSchema = z.discriminatedUnion("section", [
     })
   }),
   z.object({
+    section: z.literal("tts"),
+    value: z.object({
+      provider: z.enum(["browser", "openai", "elevenlabs"]),
+      elevenlabsApiKey: z.string().default(""),
+      elevenlabsVoiceId: z.string().default("21m00Tcm4TlvDq8ikWAM"),
+      openaiVoice: z.string().default("nova"),
+      openaiModel: z.string().default("tts-1")
+    })
+  }),
+
+  z.object({
     section: z.literal("socialBot"),
     value: z.object({
       globalBotInstructions: z.string(),
@@ -270,6 +281,7 @@ const settingKeyBySection = {
   payments: "payment_integrations",
   oauth: "oauth_config",
   gemini: "gemini_api_key",
+  tts: "tts_config",
   socialBot: "social_bot_config",
   magneticCommerce: "magnetic_commerce_config",
   trustedPartners: "trusted_partners_config",

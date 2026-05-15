@@ -39,6 +39,14 @@ export type GeminiSettings = {
   groqApiKey: string;
 };
 
+export type TTSConfig = {
+  provider: "browser" | "openai" | "elevenlabs";
+  elevenlabsApiKey: string;
+  elevenlabsVoiceId: string;
+  openaiVoice: string;
+  openaiModel: string;
+};
+
 export type SocialBotSettings = {
   globalBotInstructions: string;
   metaAppId: string;
@@ -192,6 +200,7 @@ export type PlatformSettingsBundle = {
   paymentIntegrations: PaymentIntegrationsSettings;
   oauthConfig: OAuthSettings;
   geminiConfig: GeminiSettings;
+  ttsConfig: TTSConfig;
   socialBotConfig: SocialBotSettings;
   magneticCommerceConfig: MagneticCommerceSettings;
   trustedPartnersConfig: TrustedPartnersSettings;
@@ -240,6 +249,14 @@ export const defaultGeminiConfig: GeminiSettings = {
   apiKey: "",
   openAiApiKey: "",
   groqApiKey: ""
+};
+
+export const defaultTTSConfig: TTSConfig = {
+  provider: "browser",
+  elevenlabsApiKey: "",
+  elevenlabsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+  openaiVoice: "nova",
+  openaiModel: "tts-1"
 };
 
 export const defaultSocialBotConfig: SocialBotSettings = {
@@ -2396,6 +2413,18 @@ export function normalizeGeminiConfig(value: unknown): GeminiSettings {
   };
 }
 
+export function normalizeTTSConfig(value: unknown): TTSConfig {
+  if (!isObject(value)) return defaultTTSConfig;
+  const providers = ["browser", "openai", "elevenlabs"];
+  return {
+    provider: providers.includes(value.provider as string) ? (value.provider as TTSConfig["provider"]) : defaultTTSConfig.provider,
+    elevenlabsApiKey: coerceString(value.elevenlabsApiKey, defaultTTSConfig.elevenlabsApiKey),
+    elevenlabsVoiceId: coerceString(value.elevenlabsVoiceId, defaultTTSConfig.elevenlabsVoiceId),
+    openaiVoice: coerceString(value.openaiVoice, defaultTTSConfig.openaiVoice),
+    openaiModel: coerceString(value.openaiModel, defaultTTSConfig.openaiModel)
+  };
+}
+
 export function normalizeSocialBotConfig(value: unknown): SocialBotSettings {
   if (!isObject(value)) {
     return defaultSocialBotConfig;
@@ -2598,6 +2627,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     paymentIntegrations,
     oauthConfig,
     geminiConfig,
+    ttsConfig,
     socialBotConfig,
     magneticCommerceConfig,
     trustedPartnersConfig,
@@ -2614,6 +2644,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     getSettingValue("payment_integrations"),
     getSettingValue("oauth_config"),
     getSettingValue("gemini_api_key"),
+    getSettingValue("tts_config"),
     getSettingValue("social_bot_config"),
     getSettingValue("magnetic_commerce_config"),
     getSettingValue("trusted_partners_config"),
@@ -2632,6 +2663,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     paymentIntegrations: normalizePaymentIntegrations(paymentIntegrations),
     oauthConfig: normalizeOAuthConfig(oauthConfig),
     geminiConfig: normalizeGeminiConfig(geminiConfig),
+    ttsConfig: normalizeTTSConfig(ttsConfig),
     socialBotConfig: normalizeSocialBotConfig(socialBotConfig),
     magneticCommerceConfig: normalizeMagneticCommerceConfig(magneticCommerceConfig),
     trustedPartnersConfig: normalizeTrustedPartnersConfig(trustedPartnersConfig),

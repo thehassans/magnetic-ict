@@ -22,6 +22,7 @@ import type {
   SocialBotSettings,
   TransactionalEmailSettings,
   TrustedPartnersSettings,
+  TTSConfig,
   WelcomeEmailSettings
 } from "@/lib/platform-settings";
 
@@ -32,6 +33,7 @@ type AdminSettingsClientProps = {
   paymentIntegrations: PaymentIntegrationsSettings;
   oauthConfig: OAuthSettings;
   geminiConfig: GeminiSettings;
+  ttsConfig: TTSConfig;
   socialBotConfig: SocialBotSettings;
   magneticCommerceConfig: MagneticCommerceSettings;
   trustedPartnersConfig: TrustedPartnersSettings;
@@ -52,12 +54,41 @@ type ToastState = {
   message: string;
 } | null;
 
-const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting" | "about", string> = {
+const ELEVENLABS_VOICES = [
+  { id: "21m00Tcm4TlvDq8ikWAM", name: "Rachel", desc: "Calm · American female" },
+  { id: "EXAVITQu4vr4xnSDxMaL", name: "Sarah", desc: "Soft · American female" },
+  { id: "XrExE9yKIg1WjnnlVkGX", name: "Matilda", desc: "Warm · American female" },
+  { id: "TX3LPaxmHKxFdv7VOQHJ", name: "Liam", desc: "Neutral · American male" },
+  { id: "pNInz6obpgDQGcFmaJgB", name: "Adam", desc: "Deep · American male" },
+  { id: "TxGEqnHWrfWFTfGW9XjX", name: "Josh", desc: "Deep · American male" },
+  { id: "onwK4e9ZLuTAKqWW03F9", name: "Daniel", desc: "Authoritative · British male" },
+  { id: "ThT5KcBeYPX3keUQqHPh", name: "Dorothy", desc: "Pleasant · British female" },
+  { id: "JBFqnCBsd6RMkjVDRZzb", name: "George", desc: "Warm · British male" },
+  { id: "pFZP5JQG7iQjIQuC4Bku", name: "Lily", desc: "Warm · British female" },
+  { id: "IKne3meq5aSn9XLyUdCD", name: "Charlie", desc: "Natural · Australian male" },
+  { id: "XB0fDUnXU5powFXDhCwa", name: "Charlotte", desc: "Seductive · Swedish-English female" },
+  { id: "ErXwobaYiN019PkySvjV", name: "Antoni", desc: "Well-rounded · American male" },
+  { id: "VR6AewLTigWG4xSOukaG", name: "Arnold", desc: "Crisp · American male" },
+  { id: "iP95p4xoKVk53GoZ742B", name: "Chris", desc: "Casual · American male" },
+  { id: "nPczCjzI2devNBz1zQrb", name: "Brian", desc: "Deep · American male" },
+];
+
+const OPENAI_VOICES = [
+  { id: "nova", desc: "Warm · American female" },
+  { id: "shimmer", desc: "Soft · American female" },
+  { id: "alloy", desc: "Neutral · American" },
+  { id: "echo", desc: "Neutral · American male" },
+  { id: "fable", desc: "Expressive · British male" },
+  { id: "onyx", desc: "Deep · American male" },
+];
+
+const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "tts" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting" | "about", string> = {
   languages: "Language",
   footer: "Footer",
   payments: "Payment",
   oauth: "OAuth",
   gemini: "Gemini",
+  tts: "Voice / TTS",
   socialBot: "Chatbot",
   magneticCommerce: "Magnetic Commerce",
   trustedPartners: "Trusted partners",
@@ -153,6 +184,7 @@ export function AdminSettingsClient({
   paymentIntegrations,
   oauthConfig,
   geminiConfig,
+  ttsConfig,
   socialBotConfig,
   magneticCommerceConfig,
   trustedPartnersConfig,
@@ -172,6 +204,7 @@ export function AdminSettingsClient({
   const [paymentState, setPaymentState] = useState(paymentIntegrations);
   const [oauthState, setOAuthState] = useState(oauthConfig);
   const [geminiState, setGeminiState] = useState(geminiConfig);
+  const [ttsState, setTtsState] = useState(ttsConfig);
   const [socialBotState, setSocialBotState] = useState(socialBotConfig);
   const [magneticCommerceState, setMagneticCommerceState] = useState(magneticCommerceConfig);
   const [trustedPartnersState, setTrustedPartnersState] = useState(trustedPartnersConfig);
@@ -192,7 +225,7 @@ export function AdminSettingsClient({
   );
   const metaWebhookUrl = useMemo(() => (appBaseUrl ? `${appBaseUrl}/api/social-bot/meta/webhook` : ""), [appBaseUrl]);
 
-  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting" | "about", value: unknown) {
+  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "tts" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting" | "about", value: unknown) {
     setLoadingSection(section);
     setToast(null);
 
@@ -343,6 +376,34 @@ export function AdminSettingsClient({
     }
 
     setToast({ type: "success", message: payload.message ?? "Groq connection successful." });
+    setLoadingSection(null);
+  }
+
+  async function handleTtsTest(provider: "elevenlabs" | "openai") {
+    setLoadingSection(`tts-test-${provider}`);
+    setToast(null);
+
+    const response = await fetch("/api/admin/settings/tts-test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        provider,
+        elevenlabsApiKey: ttsState.elevenlabsApiKey,
+        elevenlabsVoiceId: ttsState.elevenlabsVoiceId,
+        openaiVoice: ttsState.openaiVoice,
+        openaiModel: ttsState.openaiModel
+      })
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
+
+    if (!response.ok) {
+      setToast({ type: "error", message: payload.error ?? `${provider === "elevenlabs" ? "ElevenLabs" : "OpenAI TTS"} test failed.` });
+      setLoadingSection(null);
+      return;
+    }
+
+    setToast({ type: "success", message: payload.message ?? "TTS connection successful." });
     setLoadingSection(null);
   }
 
@@ -613,6 +674,78 @@ export function AdminSettingsClient({
             </div>
             <p className="mt-1.5 text-[11px] text-gray-400 dark:text-white/25">Used for generation (llama-3.3-70b-versatile) when both Gemini and OpenAI are unavailable.</p>
           </div>
+        </div>
+      </SettingsCard>}
+
+      {activeTab === "gemini" && <SettingsCard
+        title="Voice / TTS"
+        description="Choose a text-to-speech provider for the Voice Agent. ElevenLabs gives the most realistic multilingual voices (free 10 k chars/month). OpenAI TTS reuses your existing OpenAI key. Browser TTS is always free but quality varies by OS."
+        action={<Button label="Save Voice / TTS" loading={loadingSection === "tts"} onClick={() => saveSection("tts", ttsState)} />}
+      >
+        <div className="space-y-6">
+          <div>
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">Provider</p>
+            <div className="flex flex-wrap gap-2">
+              {(["browser", "openai", "elevenlabs"] as const).map((p) => (
+                <button key={p} type="button" onClick={() => setTtsState((s) => ({ ...s, provider: p }))}
+                  className={`rounded-xl border px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide transition ${ttsState.provider === p ? "border-violet-500/40 bg-violet-50 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300" : "border-gray-200 dark:border-white/[0.07] text-gray-500 dark:text-white/40 hover:border-gray-300 dark:hover:border-white/[0.12]"}`}>
+                  {p === "browser" ? "Browser (free)" : p === "openai" ? "OpenAI TTS" : "ElevenLabs"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {ttsState.provider === "elevenlabs" && <>
+            <div className="border-t border-gray-100 dark:border-white/[0.06] pt-5">
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">ElevenLabs — <a href="https://elevenlabs.io" target="_blank" rel="noopener" className="text-violet-500 normal-case">elevenlabs.io</a> · Free 10k chars/mo</p>
+              <div className="flex items-end gap-3">
+                <div className="flex-1">
+                  <Input label="ElevenLabs API key" value={ttsState.elevenlabsApiKey} onChange={(v) => setTtsState((s) => ({ ...s, elevenlabsApiKey: v }))} type="password" icon={<Key className="h-4 w-4" />} />
+                </div>
+                <Button label="Test" loading={loadingSection === "tts-test-elevenlabs"} variant="secondary" onClick={() => void handleTtsTest("elevenlabs")} />
+              </div>
+            </div>
+            <div>
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">Default Voice</p>
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                {ELEVENLABS_VOICES.map((v) => (
+                  <button key={v.id} type="button" onClick={() => setTtsState((s) => ({ ...s, elevenlabsVoiceId: v.id }))}
+                    className={`rounded-xl border p-3 text-left transition ${ttsState.elevenlabsVoiceId === v.id ? "border-violet-500/40 bg-violet-50 dark:bg-violet-500/15" : "border-gray-200 dark:border-white/[0.07] hover:border-gray-300 dark:hover:border-white/[0.12]"}`}>
+                    <div className="text-[12px] font-bold text-gray-800 dark:text-white">{v.name}</div>
+                    <div className="mt-0.5 text-[10px] text-gray-400 dark:text-white/30">{v.desc}</div>
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-[10px] text-gray-400 dark:text-white/20">All voices use <span className="font-mono">eleven_multilingual_v2</span> — supports Urdu, Arabic, Hindi, English, and 25+ more languages.</p>
+            </div>
+          </>}
+
+          {ttsState.provider === "openai" && <>
+            <div className="border-t border-gray-100 dark:border-white/[0.06] pt-5">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">OpenAI TTS — uses your OpenAI key from above</p>
+              <div className="flex items-end gap-3 mb-4">
+                <SelectInput label="Model" value={ttsState.openaiModel} onChange={(v) => setTtsState((s) => ({ ...s, openaiModel: v }))} options={[{ value: "tts-1", label: "tts-1 (faster, lower cost)" }, { value: "tts-1-hd", label: "tts-1-hd (higher quality)" }]} />
+                <Button label="Test" loading={loadingSection === "tts-test-openai"} variant="secondary" onClick={() => void handleTtsTest("openai")} />
+              </div>
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">Default Voice</p>
+              <div className="grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
+                {OPENAI_VOICES.map((v) => (
+                  <button key={v.id} type="button" onClick={() => setTtsState((s) => ({ ...s, openaiVoice: v.id }))}
+                    className={`rounded-xl border p-3 text-left transition ${ttsState.openaiVoice === v.id ? "border-violet-500/40 bg-violet-50 dark:bg-violet-500/15" : "border-gray-200 dark:border-white/[0.07] hover:border-gray-300 dark:hover:border-white/[0.12]"}`}>
+                    <div className="text-[12px] font-bold text-gray-800 dark:text-white capitalize">{v.id}</div>
+                    <div className="mt-0.5 text-[10px] text-gray-400 dark:text-white/30">{v.desc}</div>
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-[10px] text-gray-400 dark:text-white/20">$15 / 1M chars (tts-1) · $30 / 1M chars (tts-1-hd). Supports all major languages automatically.</p>
+            </div>
+          </>}
+
+          {ttsState.provider === "browser" && (
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-[12px] text-amber-700 dark:text-amber-400/80">
+              Browser TTS uses the OS speech synthesizer — quality varies by device. Urdu and less-common languages may not have good voices. Consider ElevenLabs or OpenAI TTS for consistent multilingual voice quality.
+            </div>
+          )}
         </div>
       </SettingsCard>}
 

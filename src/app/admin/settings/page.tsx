@@ -31,6 +31,7 @@ export default async function AdminSettingsPage() {
         paymentIntegrations={settings.paymentIntegrations}
         oauthConfig={settings.oauthConfig}
         geminiConfig={settings.geminiConfig}
+        ttsConfig={settings.ttsConfig}
         socialBotConfig={settings.socialBotConfig}
         magneticCommerceConfig={settings.magneticCommerceConfig}
         trustedPartnersConfig={settings.trustedPartnersConfig}
