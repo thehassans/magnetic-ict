@@ -432,7 +432,6 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
     );
   }
 
-  const CHATBOT_SUBDOMAIN = "https://chatbot.magnetic-ict.com";
   const externalWorkspaceUrl = respondIoWorkspaceUrl?.replace(/\/$/, "") || null;
 
   const chatbotLinks = [
