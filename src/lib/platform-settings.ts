@@ -35,6 +35,8 @@ export type OAuthSettings = {
 
 export type GeminiSettings = {
   apiKey: string;
+  openAiApiKey: string;
+  groqApiKey: string;
 };
 
 export type SocialBotSettings = {
@@ -235,7 +237,9 @@ export const defaultOAuthConfig: OAuthSettings = {
 };
 
 export const defaultGeminiConfig: GeminiSettings = {
-  apiKey: ""
+  apiKey: "",
+  openAiApiKey: "",
+  groqApiKey: ""
 };
 
 export const defaultSocialBotConfig: SocialBotSettings = {
@@ -2386,7 +2390,9 @@ export function normalizeGeminiConfig(value: unknown): GeminiSettings {
   }
 
   return {
-    apiKey: coerceString(value.apiKey, defaultGeminiConfig.apiKey)
+    apiKey: coerceString(value.apiKey, defaultGeminiConfig.apiKey),
+    openAiApiKey: coerceString(value.openAiApiKey, defaultGeminiConfig.openAiApiKey),
+    groqApiKey: coerceString(value.groqApiKey, defaultGeminiConfig.groqApiKey)
   };
 }
 

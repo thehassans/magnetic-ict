@@ -390,63 +390,83 @@ export async function crawlWebsiteWithCallback(
   return { totalCrawled, usedSitemap };
 }
 
-async function getGeminiApiKey() {
+async function getAIConfig() {
   const settings = await getPlatformSettings();
-  const apiKey = settings.geminiConfig.apiKey.trim();
-
-  if (!apiKey) {
-    throw new Error("Add a Gemini API key in Admin Settings.");
-  }
-
-  return apiKey;
+  return {
+    geminiKey: settings.geminiConfig.apiKey.trim(),
+    openAiKey: settings.geminiConfig.openAiApiKey.trim(),
+    groqKey: settings.geminiConfig.groqApiKey.trim()
+  };
 }
 
 export async function embedText(text: string, taskType: "RETRIEVAL_DOCUMENT" | "RETRIEVAL_QUERY") {
-  const apiKey = await getGeminiApiKey();
+  const { geminiKey, openAiKey } = await getAIConfig();
 
-  const candidates: { modelId: string; body: Record<string, unknown> }[] = [
-    {
-      modelId: "text-embedding-004",
-      body: { model: "models/text-embedding-004", taskType, content: { parts: [{ text }] } }
-    },
-    {
-      modelId: "text-embedding-preview-0409",
-      body: { model: "models/text-embedding-preview-0409", taskType, content: { parts: [{ text }] } }
-    },
-    {
-      modelId: "embedding-001",
-      body: { model: "models/embedding-001", content: { parts: [{ text }] } }
-    }
-  ];
-
-  let lastError = "Unable to create embeddings.";
-
-  for (const { modelId, body } of candidates) {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:embedContent?key=${apiKey}`,
+  // ── 1. Gemini embeddings ──────────────────────────────────────────────────
+  if (geminiKey) {
+    const geminiModels: { modelId: string; body: Record<string, unknown> }[] = [
       {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
+        modelId: "text-embedding-004",
+        body: { model: "models/text-embedding-004", taskType, content: { parts: [{ text }] } }
+      },
+      {
+        modelId: "text-embedding-preview-0409",
+        body: { model: "models/text-embedding-preview-0409", taskType, content: { parts: [{ text }] } }
+      },
+      {
+        modelId: "embedding-001",
+        body: { model: "models/embedding-001", content: { parts: [{ text }] } }
       }
-    );
+    ];
+
+    for (const { modelId, body } of geminiModels) {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:embedContent?key=${geminiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        }
+      );
+
+      const payload = (await response.json()) as {
+        embedding?: { values?: number[] };
+        error?: { message?: string };
+      };
+
+      if (response.ok && payload.embedding?.values?.length) {
+        return payload.embedding.values;
+      }
+
+      const errMsg = (payload.error?.message ?? "").toLowerCase();
+      const modelGone = ["not found", "no longer available", "not supported", "deprecated"]
+        .some((phrase) => errMsg.includes(phrase));
+      if (!modelGone) break;
+    }
+  }
+
+  // ── 2. OpenAI embeddings fallback ────────────────────────────────────────
+  if (openAiKey) {
+    const response = await fetch("https://api.openai.com/v1/embeddings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${openAiKey}`
+      },
+      body: JSON.stringify({ model: "text-embedding-3-small", input: text })
+    });
 
     const payload = (await response.json()) as {
-      embedding?: { values?: number[] };
+      data?: Array<{ embedding?: number[] }>;
       error?: { message?: string };
     };
 
-    if (response.ok && payload.embedding?.values?.length) {
-      return payload.embedding.values;
+    if (response.ok && payload.data?.[0]?.embedding?.length) {
+      return payload.data[0].embedding;
     }
-
-    lastError = payload.error?.message ?? lastError;
-    const isEmbeddingModelUnavailable = ["not found", "no longer available", "not supported", "deprecated"]
-      .some((phrase) => lastError.toLowerCase().includes(phrase));
-    if (!isEmbeddingModelUnavailable) break;
   }
 
-  throw new Error(lastError);
+  throw new Error("Unable to create embeddings. Add a Gemini or OpenAI API key in Admin › AI Settings.");
 }
 
 function cosineSimilarity(a: number[], b: number[]) {
@@ -544,74 +564,115 @@ export async function generateSocialReply({
   chunks: SocialBotChunk[];
   question: string;
 }) {
+  const { geminiKey, openAiKey, groqKey } = await getAIConfig();
   const settings = await getPlatformSettings();
-  const apiKey = settings.geminiConfig.apiKey.trim();
 
-  if (!apiKey) {
-    throw new Error("Add a Gemini API key in Admin Settings.");
+  if (!geminiKey && !openAiKey && !groqKey) {
+    throw new Error("Add a Gemini, OpenAI, or Groq API key in Admin › AI Settings.");
   }
 
   const memory = formatConversationMemory(messages);
   const relevant = await retrieveRelevantKnowledge(chunks, question);
   const context = relevant.map((chunk) => `[Source: ${chunk.fileName}]\n${chunk.content}`).join("\n\n");
   const globalInstructions = settings.socialBotConfig.globalBotInstructions.trim() || defaultInstructions;
-  const businessContext = profile ? `Business Name: ${profile.businessName || "Unknown"}\nIndustry: ${profile.industry || "Unknown"}` : "Business Name: Unknown\nIndustry: Unknown";
+  const businessContext = profile
+    ? `Business Name: ${profile.businessName || "Unknown"}\nIndustry: ${profile.industry || "Unknown"}`
+    : "Business Name: Unknown\nIndustry: Unknown";
 
-  const requestBody = {
-    system_instruction: {
-      parts: [
+  const promptText = `${businessContext}\n\nConversation Memory:\n${memory || "No prior messages."}\n\nKnowledge Base Context:\n${context || "No knowledge base context available."}\n\nLatest Customer Message:\n${question}\n\nWrite the exact reply to send.`;
+  const systemText = `${globalInstructions}\n\nUse the last messages to maintain a human-like flow. Keep replies concise and natural for ${thread.source.toLowerCase()} conversations.`;
+
+  // ── 1. Gemini ─────────────────────────────────────────────────────────────
+  if (geminiKey) {
+    const requestBody = {
+      system_instruction: { parts: [{ text: systemText }] },
+      contents: [{ role: "user", parts: [{ text: promptText }] }]
+    };
+
+    const generationModels = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash", "gemini-1.5-pro"];
+
+    for (const modelId of generationModels) {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${geminiKey}`,
         {
-          text: `${globalInstructions}\n\nUse the last messages to maintain a human-like flow. Keep replies concise and natural for ${thread.source.toLowerCase()} conversations.`
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody)
         }
-      ]
-    },
-    contents: [
-      {
-        role: "user",
-        parts: [
-          {
-            text: `${businessContext}\n\nConversation Memory:\n${memory || "No prior messages."}\n\nKnowledge Base Context:\n${context || "No knowledge base context available."}\n\nLatest Customer Message:\n${question}\n\nWrite the exact reply to send.`
-          }
-        ]
-      }
-    ]
-  };
+      );
 
-  const generationModels = [
-    "gemini-1.5-flash",
-    "gemini-1.5-pro",
-    "gemini-2.0-flash-lite",
-    "gemini-2.0-flash"
-  ];
+      const payload = (await response.json()) as {
+        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+        error?: { message?: string };
+      };
 
-  let lastError = "Gemini could not generate a response.";
+      const text = payload.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim();
+      if (response.ok && text) return text;
 
-  for (const modelId of generationModels) {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody)
-      }
-    );
+      const errMsg = (payload.error?.message ?? "").toLowerCase();
+      const modelGone = ["not found", "no longer available", "not supported", "deprecated"]
+        .some((phrase) => errMsg.includes(phrase));
+      if (!modelGone) break;
+    }
+  }
+
+  // ── 2. OpenAI fallback ────────────────────────────────────────────────────
+  if (openAiKey) {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${openAiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemText },
+          { role: "user", content: promptText }
+        ],
+        max_tokens: 512,
+        temperature: 0.7
+      })
+    });
 
     const payload = (await response.json()) as {
-      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      choices?: Array<{ message?: { content?: string } }>;
       error?: { message?: string };
     };
 
-    const text = payload.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim();
-
+    const text = payload.choices?.[0]?.message?.content?.trim();
     if (response.ok && text) return text;
-
-    lastError = payload.error?.message ?? lastError;
-    const isModelUnavailable = ["not found", "no longer available", "not supported", "deprecated"]
-      .some((phrase) => lastError.toLowerCase().includes(phrase));
-    if (!isModelUnavailable) break;
   }
 
-  throw new Error(lastError);
+  // ── 3. Groq fallback ──────────────────────────────────────────────────────
+  if (groqKey) {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${groqKey}`
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemText },
+          { role: "user", content: promptText }
+        ],
+        max_tokens: 512,
+        temperature: 0.7
+      })
+    });
+
+    const payload = (await response.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+      error?: { message?: string };
+    };
+
+    const text = payload.choices?.[0]?.message?.content?.trim();
+    if (response.ok && text) return text;
+  }
+
+  throw new Error("All AI providers failed. Check your Gemini, OpenAI, and Groq keys in Admin › AI Settings.");
 }
 
 export async function sendMetaReply({
