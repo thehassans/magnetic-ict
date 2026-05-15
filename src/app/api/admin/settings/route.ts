@@ -65,7 +65,9 @@ const requestSchema = z.discriminatedUnion("section", [
   z.object({
     section: z.literal("gemini"),
     value: z.object({
-      apiKey: z.string()
+      apiKey: z.string(),
+      openAiApiKey: z.string().optional().default(""),
+      groqApiKey: z.string().optional().default("")
     })
   }),
   z.object({

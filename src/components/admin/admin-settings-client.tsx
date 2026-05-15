@@ -302,6 +302,50 @@ export function AdminSettingsClient({
     setLoadingSection(null);
   }
 
+  async function handleOpenAiTest() {
+    setLoadingSection("openai-test");
+    setToast(null);
+
+    const response = await fetch("/api/admin/settings/openai-test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ apiKey: geminiState.openAiApiKey })
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
+
+    if (!response.ok) {
+      setToast({ type: "error", message: payload.error ?? "OpenAI connection failed." });
+      setLoadingSection(null);
+      return;
+    }
+
+    setToast({ type: "success", message: payload.message ?? "OpenAI connection successful." });
+    setLoadingSection(null);
+  }
+
+  async function handleGroqTest() {
+    setLoadingSection("groq-test");
+    setToast(null);
+
+    const response = await fetch("/api/admin/settings/groq-test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ apiKey: geminiState.groqApiKey })
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
+
+    if (!response.ok) {
+      setToast({ type: "error", message: payload.error ?? "Groq connection failed." });
+      setLoadingSection(null);
+      return;
+    }
+
+    setToast({ type: "success", message: payload.message ?? "Groq connection successful." });
+    setLoadingSection(null);
+  }
+
   return (
     <div className="space-y-0">
       {toast ? (
@@ -536,25 +580,37 @@ export function AdminSettingsClient({
         title="AI integration"
         description="Configure AI providers. Gemini is the primary provider. OpenAI and Groq are used as automatic fallbacks if Gemini fails — for both embeddings and reply generation."
         action={
-          <div className="flex flex-wrap gap-3">
-            <Button label="Save AI keys" loading={loadingSection === "gemini"} onClick={() => saveSection("gemini", geminiState)} />
-            <Button label="Test Gemini" loading={loadingSection === "gemini-test"} variant="secondary" onClick={handleGeminiTest} />
-          </div>
+          <Button label="Save AI keys" loading={loadingSection === "gemini"} onClick={() => saveSection("gemini", geminiState)} />
         }
       >
         <div className="space-y-5">
           <div>
             <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">Primary — Gemini</p>
-            <Input label="Gemini API key" value={geminiState.apiKey} onChange={(value) => setGeminiState((s) => ({ ...s, apiKey: value }))} type="password" icon={<Sparkles className="h-4 w-4" />} />
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <Input label="Gemini API key" value={geminiState.apiKey} onChange={(value) => setGeminiState((s) => ({ ...s, apiKey: value }))} type="password" icon={<Sparkles className="h-4 w-4" />} />
+              </div>
+              <Button label="Test" loading={loadingSection === "gemini-test"} variant="secondary" onClick={handleGeminiTest} />
+            </div>
           </div>
           <div className="border-t border-gray-100 dark:border-white/[0.06] pt-5">
             <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">Backup #1 — OpenAI</p>
-            <Input label="OpenAI API key" value={geminiState.openAiApiKey} onChange={(value) => setGeminiState((s) => ({ ...s, openAiApiKey: value }))} type="password" icon={<Key className="h-4 w-4" />} />
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <Input label="OpenAI API key" value={geminiState.openAiApiKey} onChange={(value) => setGeminiState((s) => ({ ...s, openAiApiKey: value }))} type="password" icon={<Key className="h-4 w-4" />} />
+              </div>
+              <Button label="Test" loading={loadingSection === "openai-test"} variant="secondary" onClick={handleOpenAiTest} />
+            </div>
             <p className="mt-1.5 text-[11px] text-gray-400 dark:text-white/25">Used for embeddings (text-embedding-3-small) and generation (gpt-4o-mini) when Gemini is unavailable.</p>
           </div>
           <div className="border-t border-gray-100 dark:border-white/[0.06] pt-5">
             <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">Backup #2 — Groq</p>
-            <Input label="Groq API key" value={geminiState.groqApiKey} onChange={(value) => setGeminiState((s) => ({ ...s, groqApiKey: value }))} type="password" icon={<Key className="h-4 w-4" />} />
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <Input label="Groq API key" value={geminiState.groqApiKey} onChange={(value) => setGeminiState((s) => ({ ...s, groqApiKey: value }))} type="password" icon={<Key className="h-4 w-4" />} />
+              </div>
+              <Button label="Test" loading={loadingSection === "groq-test"} variant="secondary" onClick={handleGroqTest} />
+            </div>
             <p className="mt-1.5 text-[11px] text-gray-400 dark:text-white/25">Used for generation (llama-3.3-70b-versatile) when both Gemini and OpenAI are unavailable.</p>
           </div>
         </div>
