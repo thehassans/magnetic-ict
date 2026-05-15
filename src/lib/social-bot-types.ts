@@ -120,6 +120,8 @@ export type SocialBotAgent = {
   channels: SocialChannel[];
   documentIds: string[];
   isActive: boolean;
+  language: string;
+  voiceId: string;
   createdAt: string;
   updatedAt: string;
 };

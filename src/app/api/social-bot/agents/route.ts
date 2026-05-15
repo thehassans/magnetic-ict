@@ -21,7 +21,9 @@ const agentSchema = z.object({
   avatarDataUrl: z.string().max(200000).default(""),
   channels: z.array(z.enum(socialChannels)).default([]),
   documentIds: z.array(z.string()).default([]),
-  isActive: z.boolean().default(true)
+  isActive: z.boolean().default(true),
+  language: z.string().max(20).default("en-US"),
+  voiceId: z.string().max(20).default("en-US")
 });
 
 async function requireAccess() {

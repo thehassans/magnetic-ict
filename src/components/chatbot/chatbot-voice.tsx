@@ -66,14 +66,33 @@ const SUPPORTED_LANGUAGES = [
 function getVoiceForLang(lang: string): SpeechSynthesisVoice | null {
   if (typeof window === "undefined") return null;
   const voices = window.speechSynthesis.getVoices();
-  const code = lang === "auto" ? "en-US" : lang;
+  if (!voices.length) return null;
+  const code = (lang === "auto" ? "en-US" : lang).toLowerCase();
   const langPrefix = code.split("-")[0];
-  return (
-    voices.find((v) => v.lang === code) ||
-    voices.find((v) => v.lang.startsWith(langPrefix)) ||
-    voices[0] ||
-    null
-  );
+  // Exact match first
+  const exact = voices.find((v) => v.lang.toLowerCase() === code);
+  if (exact) return exact;
+  // Prefix match (e.g. "ur" matches "ur-PK")
+  const prefix = voices.find((v) => v.lang.toLowerCase().startsWith(langPrefix + "-") || v.lang.toLowerCase() === langPrefix);
+  if (prefix) return prefix;
+  // Language-specific fallbacks (e.g. Urdu -> Hindi as last resort for TTS only)
+  const ttsFamily: Record<string, string[]> = {
+    ur: ["hi", "hi-IN"],
+    bn: ["hi", "hi-IN"],
+    pa: ["hi", "hi-IN"],
+    ms: ["id", "id-ID"]
+  };
+  const fallbacks = ttsFamily[langPrefix];
+  if (fallbacks) {
+    for (const fb of fallbacks) {
+      const fbPrefix = fb.split("-")[0];
+      const fbVoice = voices.find((v) => v.lang.toLowerCase() === fb.toLowerCase())
+        || voices.find((v) => v.lang.toLowerCase().startsWith(fbPrefix + "-"));
+      if (fbVoice) return fbVoice;
+    }
+  }
+  // Return null — do NOT fall back to voices[0] which would speak wrong language
+  return null;
 }
 
 export function ChatbotVoice() {
@@ -269,8 +288,12 @@ export function ChatbotVoice() {
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      if (event.error !== "no-speech" && event.error !== "aborted") {
-        setError(`Microphone error: ${event.error}. Please check browser permissions.`);
+      if (event.error === "language-not-supported") {
+        // Language not available for recognition — switch to auto-detect and retry
+        setSelectedLang("auto");
+        setError(`"${SUPPORTED_LANGUAGES.find((l) => l.code === selectedLang)?.label ?? selectedLang}" is not supported for voice recognition in this browser. Switched to auto-detect.`);
+      } else if (event.error !== "no-speech" && event.error !== "aborted") {
+        setError(`Microphone error: ${event.error}. Please check browser permissions and language settings.`);
       }
       setIsListening(false);
       stopAmplitudeTracking();
