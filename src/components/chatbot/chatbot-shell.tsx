@@ -23,6 +23,7 @@ import {
   Plug,
   Settings,
   Sun,
+  TestTube2,
   Users,
   X,
   Zap
@@ -38,6 +39,7 @@ const navItems = [
   { href: "/chatbot/voice", label: "Voice Agent", icon: Mic, exact: false },
   { href: "/chatbot/knowledge", label: "Knowledge", icon: BookOpen, exact: false },
   { href: "/chatbot/ask", label: "Ask Magnetic", icon: BrainCircuit, exact: false },
+  { href: "/chatbot/test", label: "Test Bot", icon: TestTube2, exact: false },
   { href: "/chatbot/quick-replies", label: "Quick Replies", icon: MessageSquarePlus, exact: false },
   { href: "/chatbot/reports", label: "Reports", icon: BarChart3, exact: false },
   { href: "/chatbot/connect", label: "Connect", icon: Plug, exact: false }
