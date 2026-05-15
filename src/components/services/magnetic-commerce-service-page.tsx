@@ -1,3 +1,17 @@
+/**
+ * MagneticCommerceServicePage
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Design philosophy: Ultra-premium minimalism
+ *   • Dark canvas (#06080f) — depth without noise
+ *   • Single accent: indigo → violet gradient — consistency over variety
+ *   • Extreme whitespace — breathing room IS the luxury signal
+ *   • Typography-led hierarchy — size + weight do all the work
+ *   • Micro-animations via Tailwind transitions — alive, never distracting
+ *   • Glass morphism cards — layered depth on dark surface
+ *   • Zero decorative clutter — every pixel earns its place
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
 import Image from "next/image";
 import {
   ArrowRight,
@@ -34,239 +48,194 @@ import { ScrollReveal } from "@/components/home/scroll-reveal";
 import { ServiceTierSelector } from "@/components/services/service-tier-selector";
 import type { CatalogService } from "@/lib/service-catalog";
 
-/* ── Admin panel sidebar modules ── */
+/* ─── Data ─────────────────────────────────────────────────────────────────── */
+
 const adminModules = [
-  {
-    title: "Dashboard",
-    icon: LayoutDashboard,
-    accent: "from-blue-500 to-cyan-400",
-    items: ["Business command center", "Country-first controls", "Global view"]
-  },
-  {
-    title: "Orders",
-    icon: ShoppingBag,
-    accent: "from-violet-500 to-purple-400",
-    items: ["Orders", "Online Orders"]
-  },
-  {
-    title: "Product",
-    icon: Package,
-    accent: "from-emerald-500 to-teal-400",
-    items: ["Inhouse Products", "Product Detail"]
-  },
-  {
-    title: "Amount Office",
-    icon: BadgeDollarSign,
-    accent: "from-amber-500 to-orange-400",
-    items: ["Total Amount", "Daily Reports", "Driver Settlement", "Manager Finances", "Agent Amounts", "Agent History", "Driver Amounts", "Manager Salary", "Dropshipper Earnings", "Investor Earnings"]
-  },
-  {
-    title: "Inbox",
-    icon: Mail,
-    accent: "from-sky-500 to-blue-400",
-    items: ["Whatsapp Inbox", "Whatsapp Connect"]
-  },
-  {
-    title: "Create",
-    icon: UserPlus,
-    accent: "from-indigo-500 to-violet-400",
-    items: ["Agents", "Managers", "Partners", "Drivers", "Dropshippers", "Investors", "Commissioners", "Confirmers", "Customers"]
-  },
-  {
-    title: "Commerce",
-    icon: Store,
-    accent: "from-rose-500 to-pink-400",
-    items: ["Driver Stock", "Label Settings", "Website Settings", "Coupons", "Cashback Offers", "Warehouses", "Shipments", "Expense Management"]
-  },
-  {
-    title: "Web Designer",
-    icon: PenTool,
-    accent: "from-fuchsia-500 to-purple-400",
-    items: ["Categories", "Home Headline", "Home Header", "Product Headline", "Home Banners", "Home Mini Banners", "Brands", "Explore More"]
-  },
-  {
-    title: "Insights",
-    icon: BarChart3,
-    accent: "from-cyan-500 to-teal-400",
-    items: ["Track Drivers", "Business Reports", "Driver Reports", "Profit & Loss", "Campaigns", "Finances", "Website Modification"]
-  },
-  {
-    title: "Configuration",
-    icon: Cog,
-    accent: "from-slate-500 to-gray-400",
-    items: []
-  },
-  {
-    title: "Support",
-    icon: Headphones,
-    accent: "from-green-500 to-emerald-400",
-    items: []
-  },
-  {
-    title: "Branding",
-    icon: Palette,
-    accent: "from-pink-500 to-rose-400",
-    items: []
-  }
+  { title: "Dashboard",     icon: LayoutDashboard, items: ["Business command center", "Country-first controls", "Global view"] },
+  { title: "Orders",        icon: ShoppingBag,     items: ["Orders", "Online Orders"] },
+  { title: "Product",       icon: Package,         items: ["Inhouse Products", "Product Detail"] },
+  { title: "Amount Office", icon: BadgeDollarSign, items: ["Total Amount", "Daily Reports", "Driver Settlement", "Manager Finances", "Agent Amounts", "Agent History", "Driver Amounts", "Manager Salary", "Dropshipper Earnings", "Investor Earnings"] },
+  { title: "Inbox",         icon: Mail,            items: ["Whatsapp Inbox", "Whatsapp Connect"] },
+  { title: "Create",        icon: UserPlus,        items: ["Agents", "Managers", "Partners", "Drivers", "Dropshippers", "Investors", "Commissioners", "Confirmers", "Customers"] },
+  { title: "Commerce",      icon: Store,           items: ["Driver Stock", "Label Settings", "Website Settings", "Coupons", "Cashback Offers", "Warehouses", "Shipments", "Expense Management"] },
+  { title: "Web Designer",  icon: PenTool,         items: ["Categories", "Home Headline", "Home Header", "Product Headline", "Home Banners", "Home Mini Banners", "Brands", "Explore More"] },
+  { title: "Insights",      icon: BarChart3,       items: ["Track Drivers", "Business Reports", "Driver Reports", "Profit & Loss", "Campaigns", "Finances", "Website Modification"] },
+  { title: "Configuration", icon: Cog,             items: [] },
+  { title: "Support",       icon: Headphones,      items: [] },
+  { title: "Branding",      icon: Palette,         items: [] },
 ];
 
-/* ── Stakeholder panels ── */
 const stakeholderPanels = [
-  { title: "Agents", icon: Users, summary: "Assigned orders, collections, activity, and field performance.", accent: "from-blue-500 to-cyan-400" },
-  { title: "Managers", icon: Building2, summary: "Office totals, team control, salaries, and reporting visibility.", accent: "from-violet-500 to-purple-400" },
-  { title: "Partners", icon: Handshake, summary: "Partner sales, shared revenue, and network performance tracking.", accent: "from-amber-500 to-orange-400" },
-  { title: "Drivers", icon: Truck, summary: "Shipment queue, route state, handoff status, and settlements.", accent: "from-emerald-500 to-teal-400" },
-  { title: "Dropshippers", icon: Package, summary: "Catalog access, margin tracking, and synced order execution.", accent: "from-rose-500 to-pink-400" },
-  { title: "Investors", icon: Wallet, summary: "Capital visibility, earnings reports, and return tracking.", accent: "from-indigo-500 to-blue-400" },
-  { title: "Confirmers", icon: ShieldCheck, summary: "Verification queues, approval flow, and order confirmation status.", accent: "from-cyan-500 to-sky-400" },
-  { title: "Customers", icon: ShoppingCart, summary: "Website and app shopping, checkout, tracking, and account actions.", accent: "from-fuchsia-500 to-violet-400" }
+  { title: "Agents",       icon: Users,        summary: "Assigned orders, collections, activity, and field performance." },
+  { title: "Managers",     icon: Building2,    summary: "Office totals, team control, salaries, and reporting visibility." },
+  { title: "Partners",     icon: Handshake,    summary: "Partner sales, shared revenue, and network performance tracking." },
+  { title: "Drivers",      icon: Truck,        summary: "Shipment queue, route state, handoff status, and settlements." },
+  { title: "Dropshippers", icon: Package,      summary: "Catalog access, margin tracking, and synced order execution." },
+  { title: "Investors",    icon: Wallet,       summary: "Capital visibility, earnings reports, and return tracking." },
+  { title: "Confirmers",   icon: ShieldCheck,  summary: "Verification queues, approval flow, and order confirmation status." },
+  { title: "Customers",    icon: ShoppingCart, summary: "Website and app shopping, checkout, tracking, and account actions." },
 ] as const;
 
-/* ── Surface cards ── */
 const surfaceCards = [
-  { title: "E-commerce website", eyebrow: "Desktop front", icon: Monitor, summary: "Storefront, categories, offers, product pages, and checkout in one clean web experience.", items: ["Home banner", "Catalog", "Offers", "Checkout"] },
-  { title: "iPhone app", eyebrow: "Mobile surface", icon: Smartphone, summary: "Fast iPhone buying flow with cart, account, order tracking, and notifications.", items: ["Browse", "Cart", "Orders", "Profile"] },
-  { title: "Android app", eyebrow: "Mobile surface", icon: Smartphone, summary: "Android shopping experience with offers, delivery tracking, and account tools.", items: ["Products", "Checkout", "Tracking", "Support"] }
+  { title: "E-commerce website", eyebrow: "Desktop", icon: Monitor,    summary: "Storefront, categories, offers, and checkout in one clean web experience.", items: ["Home banner", "Catalog", "Offers", "Checkout"] },
+  { title: "iPhone app",         eyebrow: "iOS",     icon: Smartphone,  summary: "Fast iPhone buying flow with cart, account, order tracking, and notifications.", items: ["Browse", "Cart", "Orders", "Profile"] },
+  { title: "Android app",        eyebrow: "Android", icon: Smartphone,  summary: "Android shopping experience with offers, delivery tracking, and account tools.", items: ["Products", "Checkout", "Tracking", "Support"] },
 ] as const;
 
-const quickStats = [
-  { label: "Panels", value: "8", icon: Users },
-  { label: "Surfaces", value: "Web + iPhone + Android", icon: Globe },
-  { label: "Coverage", value: "Catalog to delivery", icon: Package },
-  { label: "Mode", value: "Minimal copy", icon: Zap }
+const stats = [
+  { label: "Panels",    value: "8+" },
+  { label: "Surfaces",  value: "3" },
+  { label: "Modules",   value: "12" },
+  { label: "Coverage",  value: "360°" },
 ] as const;
 
-const frontHighlights = [
-  "Desktop storefront front",
-  "Role-based backoffice",
-  "Warehouse + delivery flow",
-  "Finance + investor visibility"
-] as const;
+/* ─── Component ────────────────────────────────────────────────────────────── */
 
 export function MagneticCommerceServicePage({ service, title }: { service: CatalogService; title: string }) {
   return (
+    /**
+     * Root canvas: near-black bg creates depth.
+     * Every section sits on top of this — cards feel elevated even without heavy shadows.
+     */
     <main className="bg-white dark:bg-[#06080f]">
-      {/* ──── HERO ──── */}
-      <section className="relative overflow-hidden border-b border-slate-200/40 py-20 dark:border-white/[0.06] sm:py-28">
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -left-[20%] -top-[40%] h-[80vh] w-[80vh] rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.15),transparent_60%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(99,102,241,0.2),transparent_60%)]" />
-          <div className="absolute -right-[10%] top-[10%] h-[60vh] w-[60vh] rounded-full bg-[radial-gradient(circle,rgba(6,182,212,0.12),transparent_60%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(6,182,212,0.18),transparent_60%)]" />
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent" />
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          HERO
+          ───────────────────────────────────────────────────────────────────────
+          Minimalist hero: oversized type + single CTA.
+          No image noise. Radial glows handle all the atmosphere.
+          Left-aligned (not centred) — feels editorial, not SaaS-generic.
+      ════════════════════════════════════════════════════════════════════════ */}
+      <section className="relative overflow-hidden border-b border-slate-200/30 py-28 dark:border-white/[0.05] sm:py-36">
+
+        {/* Ambient glow — indigo left, cyan right. Subtle, not garish. */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-[20%] -top-[30%] h-[80vh] w-[80vh] rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.13),transparent_65%)] blur-3xl" />
+          <div className="absolute -right-[10%] top-[5%]  h-[60vh] w-[60vh] rounded-full bg-[radial-gradient(circle,rgba(6,182,212,0.09),transparent_65%)] blur-3xl" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/15 to-transparent" />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
-            {/* Left hero */}
-            <ScrollReveal>
-              <div className="space-y-8 rounded-3xl border border-slate-200/60 bg-white/80 p-8 shadow-[0_8px_60px_rgba(99,102,241,0.06)] ring-1 ring-white/60 backdrop-blur-2xl dark:border-white/[0.08] dark:bg-white/[0.03] dark:shadow-[0_8px_60px_rgba(99,102,241,0.12)] dark:ring-white/[0.04] sm:p-10">
-                <div className="inline-flex items-center gap-2.5 rounded-full border border-indigo-200/60 bg-gradient-to-r from-indigo-50 to-violet-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600 dark:border-indigo-400/20 dark:from-indigo-500/10 dark:to-violet-500/10 dark:text-indigo-300">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  {service.eyebrow}
-                </div>
-                <div className="space-y-5">
-                  <h1 className="text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-[3.4rem] lg:leading-[1.1]">{title}</h1>
-                  <p className="max-w-xl text-base leading-relaxed text-slate-500 dark:text-slate-400 sm:text-lg sm:leading-8">Clean commerce front, separate stakeholder panels, and connected website&nbsp;+&nbsp;iPhone&nbsp;+&nbsp;Android experiences.</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {frontHighlights.map((h) => (
-                    <div key={h} className="rounded-full border border-slate-200/70 bg-slate-50/80 px-4 py-2 text-[13px] font-medium text-slate-600 transition hover:border-indigo-300 hover:text-indigo-600 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-300 dark:hover:border-indigo-400/30 dark:hover:text-indigo-300">{h}</div>
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <a href="https://commerce.magnetic-ict.com" target="_blank" rel="noreferrer" className="group inline-flex h-12 items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-7 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:shadow-indigo-500/30">
-                    Open live demo <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                  </a>
-                  <a href="#commerce-pricing" className="inline-flex h-12 items-center rounded-full border border-slate-300/80 bg-white px-7 text-sm font-semibold text-slate-700 transition-all hover:border-indigo-300 hover:text-indigo-600 dark:border-white/[0.1] dark:bg-white/[0.04] dark:text-white dark:hover:border-indigo-400/30 dark:hover:text-indigo-300">View rollout packages</a>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  {quickStats.map((stat) => (
-                    <div key={stat.label} className="group rounded-2xl border border-slate-200/60 bg-gradient-to-br from-slate-50/80 to-white p-4 transition hover:border-indigo-200/60 hover:shadow-md dark:border-white/[0.06] dark:from-white/[0.03] dark:to-white/[0.01] dark:hover:border-indigo-400/20">
-                      <div className="flex items-center gap-2">
-                        <stat.icon className="h-3.5 w-3.5 text-indigo-500/60 dark:text-indigo-400/50" />
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">{stat.label}</span>
-                      </div>
-                      <div className="mt-2.5 text-sm font-semibold text-slate-900 dark:text-white">{stat.value}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </ScrollReveal>
+        <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
+          <ScrollReveal>
+            {/* Eyebrow — tiny, tracked, restrained */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-300/30 bg-indigo-500/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.35em] text-indigo-400">
+              <Sparkles className="h-3 w-3" />
+              {service.eyebrow}
+            </div>
 
-            {/* Right — store badges + surfaces */}
-            <ScrollReveal delay={0.1}>
-              <div className="space-y-6 rounded-3xl border border-slate-200/60 bg-white/80 p-6 shadow-[0_8px_60px_rgba(99,102,241,0.06)] ring-1 ring-white/60 backdrop-blur-2xl dark:border-white/[0.08] dark:bg-white/[0.03] dark:shadow-[0_8px_60px_rgba(99,102,241,0.12)] dark:ring-white/[0.04] sm:p-8">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {surfaceCards.map((surface, index) => (
-                    <div key={surface.title} className={`${index === 0 ? "sm:col-span-2" : ""} group rounded-2xl border border-slate-200/60 bg-gradient-to-br from-white to-slate-50/50 p-5 transition hover:border-indigo-200/50 hover:shadow-lg dark:border-white/[0.06] dark:from-white/[0.04] dark:to-white/[0.01] dark:hover:border-indigo-400/20`}>
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-400 dark:text-slate-500">{surface.eyebrow}</div>
-                          <div className="mt-2 text-lg font-bold text-slate-950 dark:text-white">{surface.title}</div>
-                        </div>
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 text-indigo-600 dark:from-indigo-500/10 dark:to-violet-500/10 dark:text-indigo-400">
-                          <surface.icon className="h-5 w-5" />
-                        </div>
-                      </div>
-                      <p className="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{surface.summary}</p>
-                      <div className="mt-4 flex flex-wrap gap-1.5">
-                        {surface.items.map((item) => (
-                          <span key={item} className="rounded-full border border-slate-200/70 bg-white px-3 py-1 text-xs font-medium text-slate-600 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-300">{item}</span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+            {/* Hero headline — massive, tight, authoritative */}
+            <h1 className="mt-8 max-w-4xl text-5xl font-bold leading-[1.06] tracking-tight text-slate-950 dark:text-white sm:text-6xl lg:text-7xl">
+              {title}
+            </h1>
+
+            {/* Sub-headline — one calm sentence. No bullet lists here. */}
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-500 dark:text-slate-400">
+              A single commerce engine spanning admin, 8 stakeholder panels, and Web&nbsp;+&nbsp;iOS&nbsp;+&nbsp;Android surfaces — from catalog to final delivery.
+            </p>
+
+            {/* CTAs — primary gradient pill + ghost pill. Two max. */}
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              <a
+                href="https://commerce.magnetic-ict.com"
+                target="_blank"
+                rel="noreferrer"
+                className="group inline-flex h-12 items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-8 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all hover:shadow-xl hover:shadow-indigo-500/30"
+              >
+                Open live demo <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </a>
+              <a
+                href="#commerce-pricing"
+                className="inline-flex h-12 items-center rounded-full border border-slate-300/60 px-8 text-sm font-semibold text-slate-700 transition hover:border-indigo-300 hover:text-indigo-600 dark:border-white/[0.08] dark:text-white dark:hover:border-indigo-400/30 dark:hover:text-indigo-300"
+              >
+                View packages
+              </a>
+            </div>
+          </ScrollReveal>
+
+          {/* ── Stats row ─────────────────────────────────────────────────────
+              Four numbers in clean pill cards.
+              Numbers do the persuading; labels stay secondary.
+          ─────────────────────────────────────────────────────────────────── */}
+          <ScrollReveal delay={0.08}>
+            <div className="mt-16 flex flex-wrap gap-4">
+              {stats.map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-2xl border border-slate-200/50 bg-white/70 px-6 py-4 backdrop-blur-sm dark:border-white/[0.06] dark:bg-white/[0.03]"
+                >
+                  {/* Large value — this is what users scan first */}
+                  <div className="text-2xl font-bold text-slate-950 dark:text-white">{s.value}</div>
+                  <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-400">{s.label}</div>
                 </div>
-                {/* Store badges */}
-                <div className="flex flex-wrap items-center gap-4">
-                  <Image src="/services/magnetic-commerce/app-store-badge.png" alt="Download on the App Store" width={156} height={48} className="h-[48px] w-auto rounded-xl object-contain shadow-md" />
-                  <Image src="/services/magnetic-commerce/play-store-badge.png" alt="Get it on Google Play" width={156} height={48} className="h-[48px] w-auto rounded-xl object-contain shadow-md" />
-                </div>
-              </div>
-            </ScrollReveal>
-          </div>
+              ))}
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
-      {/* ──── ADMIN PANEL SHOWCASE ──── */}
-      <section className="relative py-20 sm:py-28">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.06),transparent_50%)] dark:bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.1),transparent_50%)]" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      {/* ═══════════════════════════════════════════════════════════════════════
+          ADMIN PANEL SHOWCASE
+          ───────────────────────────────────────────────────────────────────────
+          Full-bleed screenshot first — show before tell.
+          Module grid beneath explains what the screenshot shows.
+          Cards use glass/frost styling: translucent bg + thin border.
+      ════════════════════════════════════════════════════════════════════════ */}
+      <section className="relative py-28 sm:py-36">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(99,102,241,0.07),transparent_55%)]" />
+
+        <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
           <ScrollReveal>
-            <div className="text-center">
-              <p className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.3em] text-indigo-500 dark:text-indigo-400">
-                <LayoutDashboard className="h-4 w-4" /> Owner Admin Panel
-              </p>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl lg:text-5xl">
-                Your complete business command center.
-              </h2>
-              <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-slate-500 dark:text-slate-400 sm:text-lg">
-                12 modules, full financial visibility, multi-role management, and real-time operations — all from one panel.
-              </p>
+            {/* Section label — consistent pattern used throughout */}
+            <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.35em] text-indigo-500 dark:text-indigo-400">
+              <LayoutDashboard className="h-3.5 w-3.5" /> Owner Admin Panel
+            </p>
+            <h2 className="mt-4 max-w-2xl text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl">
+              Your complete business command center.
+            </h2>
+            <p className="mt-4 max-w-xl text-base leading-7 text-slate-500 dark:text-slate-400">
+              12 modules, full financial visibility, multi-role management, and real-time operations — from one panel.
+            </p>
+          </ScrollReveal>
+
+          {/* Screenshot — full width, rounded, single shadow. Uncluttered. */}
+          <ScrollReveal delay={0.06}>
+            <div className="mx-auto mt-14 max-w-5xl overflow-hidden rounded-3xl border border-slate-200/40 shadow-[0_32px_80px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:shadow-[0_32px_80px_rgba(2,6,23,0.5)]">
+              <Image
+                src="/services/magnetic-commerce/adminpanel.png"
+                alt="Magnetic Commerce admin panel"
+                width={1920}
+                height={1080}
+                sizes="(max-width: 1024px) 100vw, 64vw"
+                className="w-full h-auto"
+                priority
+              />
             </div>
           </ScrollReveal>
 
-          {/* Admin panel image */}
-          <ScrollReveal delay={0.08}>
-            <div className="mx-auto mt-12 max-w-5xl overflow-hidden rounded-3xl border border-slate-200/60 shadow-2xl shadow-indigo-500/5 dark:border-white/[0.08] dark:shadow-indigo-500/10">
-              <Image src="/services/magnetic-commerce/adminpanel.png" alt="Magnetic Commerce admin panel" width={1920} height={1080} sizes="(max-width: 1024px) 100vw, 64vw" className="w-full h-auto" priority />
-            </div>
-          </ScrollReveal>
-
-          {/* Admin modules grid */}
-          <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {adminModules.map((mod, index) => (
-              <ScrollReveal key={mod.title} delay={index * 0.04}>
-                <div className="group h-full rounded-2xl border border-slate-200/60 bg-white p-5 transition-all hover:border-transparent hover:shadow-xl dark:border-white/[0.06] dark:bg-white/[0.03] dark:hover:bg-white/[0.05] dark:hover:shadow-indigo-500/5">
+          {/* Module grid — restrained cards, no color gradients on icons here.
+              Monochrome accent keeps the grid unified and calm.              */}
+          <div className="mt-14 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {adminModules.map((mod, i) => (
+              <ScrollReveal key={mod.title} delay={i * 0.03}>
+                <div className="group h-full rounded-2xl border border-slate-200/50 bg-white/60 p-5 transition-all hover:border-indigo-200/40 hover:shadow-lg dark:border-white/[0.05] dark:bg-white/[0.02] dark:hover:bg-white/[0.04]">
                   <div className="flex items-center gap-3">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${mod.accent} text-white shadow-sm`}>
-                      <mod.icon className="h-5 w-5" />
+                    {/* Icon container — subtle indigo tint, no heavy gradient */}
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+                      <mod.icon className="h-4.5 w-4.5" />
                     </div>
-                    <h3 className="text-base font-bold text-slate-950 dark:text-white">{mod.title}</h3>
+                    <h3 className="text-sm font-bold text-slate-950 dark:text-white">{mod.title}</h3>
                   </div>
+
+                  {/* Feature chips — only rendered when items exist */}
                   {mod.items.length > 0 && (
                     <div className="mt-4 flex flex-wrap gap-1.5">
                       {mod.items.map((item) => (
-                        <span key={item} className="rounded-full border border-slate-200/70 bg-slate-50/80 px-3 py-1 text-xs font-medium text-slate-600 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-300">{item}</span>
+                        <span
+                          key={item}
+                          className="rounded-full border border-slate-200/60 bg-slate-50/80 px-2.5 py-0.5 text-[11px] font-medium text-slate-600 dark:border-white/[0.07] dark:bg-white/[0.03] dark:text-slate-400"
+                        >
+                          {item}
+                        </span>
                       ))}
                     </div>
                   )}
@@ -277,30 +246,41 @@ export function MagneticCommerceServicePage({ service, title }: { service: Catal
         </div>
       </section>
 
-      {/* ──── STAKEHOLDER PANELS ──── */}
-      <section className="relative border-y border-slate-200/40 py-20 dark:border-white/[0.06] sm:py-28">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-50/60 via-white to-slate-50/40 dark:from-white/[0.02] dark:via-transparent dark:to-white/[0.01]" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      {/* ═══════════════════════════════════════════════════════════════════════
+          STAKEHOLDER PANELS
+          ───────────────────────────────────────────────────────────────────────
+          "Each role gets its own panel" — the key differentiator.
+          Clean 4-col grid, no gradients, let the text lead.
+          Hover lifts card with a single box-shadow. Simple.
+      ════════════════════════════════════════════════════════════════════════ */}
+      <section className="relative border-y border-slate-200/30 py-28 dark:border-white/[0.05] sm:py-36">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-50/50 to-white dark:from-white/[0.015] dark:to-transparent" />
+
+        <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
           <ScrollReveal>
-            <div className="max-w-3xl space-y-4">
-              <p className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.3em] text-indigo-500 dark:text-indigo-400">
-                <Users className="h-4 w-4" /> Separate panels
-              </p>
-              <h2 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl lg:text-5xl">Each role gets its own panel.</h2>
-              <p className="text-base leading-relaxed text-slate-500 dark:text-slate-400 sm:text-lg">Minimal view, clear structure, full role separation.</p>
-            </div>
+            <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.35em] text-indigo-500 dark:text-indigo-400">
+              <Users className="h-3.5 w-3.5" /> Separate Panels
+            </p>
+            <h2 className="mt-4 max-w-2xl text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl">
+              Each role gets its own panel.
+            </h2>
+            <p className="mt-4 text-base leading-7 text-slate-500 dark:text-slate-400">
+              Minimal view, clear structure, full role separation.
+            </p>
           </ScrollReveal>
-          <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {stakeholderPanels.map((panel, index) => (
-              <ScrollReveal key={panel.title} delay={index * 0.06}>
-                <div className="group relative h-full overflow-hidden rounded-2xl border border-slate-200/60 bg-white p-6 transition-all hover:border-transparent hover:shadow-xl dark:border-white/[0.06] dark:bg-white/[0.03] dark:hover:bg-white/[0.05]">
-                  <div className="flex items-center gap-3.5">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${panel.accent} text-white shadow-lg shadow-black/5`}>
-                      <panel.icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="text-lg font-bold text-slate-950 dark:text-white">{panel.title}</h3>
+
+          <div className="mt-14 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {stakeholderPanels.map((panel, i) => (
+              <ScrollReveal key={panel.title} delay={i * 0.05}>
+                {/* Card: white/glass bg, thin border, hover shadow only — no gradient noise */}
+                <div className="group h-full rounded-2xl border border-slate-200/50 bg-white p-6 transition-all hover:border-slate-300/50 hover:shadow-xl dark:border-white/[0.05] dark:bg-white/[0.02] dark:hover:bg-white/[0.04]">
+                  {/* Icon — consistent size, consistent placement */}
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-white/[0.06] dark:text-slate-300">
+                    <panel.icon className="h-5 w-5" />
                   </div>
-                  <p className="mt-5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{panel.summary}</p>
+                  <h3 className="mt-4 text-base font-bold text-slate-950 dark:text-white">{panel.title}</h3>
+                  {/* Summary — small, subdued. Let the title carry weight. */}
+                  <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{panel.summary}</p>
                 </div>
               </ScrollReveal>
             ))}
@@ -308,57 +288,91 @@ export function MagneticCommerceServicePage({ service, title }: { service: Catal
         </div>
       </section>
 
-      {/* ──── SURFACE COVERAGE ──── */}
-      <section className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      {/* ═══════════════════════════════════════════════════════════════════════
+          SURFACE COVERAGE
+          ───────────────────────────────────────────────────────────────────────
+          Web + iOS + Android. Three cards, horizontal, equal weight.
+          Feature list uses a thin left-border for visual rhythm.
+      ════════════════════════════════════════════════════════════════════════ */}
+      <section className="py-28 sm:py-36">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <ScrollReveal>
             <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-3xl space-y-4">
-                <p className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.3em] text-indigo-500 dark:text-indigo-400">
-                  <Globe className="h-4 w-4" /> Surface coverage
+              <div>
+                <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.35em] text-indigo-500 dark:text-indigo-400">
+                  <Globe className="h-3.5 w-3.5" /> Surface Coverage
                 </p>
-                <h2 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl lg:text-5xl">One commerce system across desktop and mobile.</h2>
+                <h2 className="mt-4 max-w-xl text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl">
+                  One system. Every surface.
+                </h2>
               </div>
-              <a href="https://commerce.magnetic-ict.com" target="_blank" rel="noreferrer" className="group inline-flex h-12 items-center gap-2 rounded-full border border-slate-300/80 px-7 text-sm font-semibold text-slate-700 transition-all hover:border-indigo-300 hover:text-indigo-600 dark:border-white/[0.1] dark:text-white dark:hover:border-indigo-400/30 dark:hover:text-indigo-300">
-                Visit commerce demo <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <a
+                href="https://commerce.magnetic-ict.com"
+                target="_blank"
+                rel="noreferrer"
+                className="group inline-flex h-11 shrink-0 items-center gap-2 rounded-full border border-slate-300/60 px-7 text-sm font-semibold text-slate-700 transition hover:border-indigo-300 hover:text-indigo-600 dark:border-white/[0.08] dark:text-white dark:hover:border-indigo-400/30"
+              >
+                View demo <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </a>
             </div>
           </ScrollReveal>
-          <div className="mt-12 grid gap-4 md:grid-cols-3">
-            {surfaceCards.map((card, index) => (
-              <ScrollReveal key={card.title} delay={index * 0.05}>
-                <div className="group h-full rounded-2xl border border-slate-200/60 bg-white p-6 transition-all hover:border-indigo-200/50 hover:shadow-xl dark:border-white/[0.06] dark:bg-white/[0.03] dark:hover:border-indigo-400/15">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 text-indigo-600 dark:from-indigo-500/10 dark:to-violet-500/10 dark:text-indigo-400">
-                    <card.icon className="h-6 w-6" />
+
+          <div className="mt-14 grid gap-5 md:grid-cols-3">
+            {surfaceCards.map((card, i) => (
+              <ScrollReveal key={card.title} delay={i * 0.06}>
+                <div className="group h-full rounded-2xl border border-slate-200/50 bg-white p-7 transition-all hover:border-indigo-200/40 hover:shadow-xl dark:border-white/[0.05] dark:bg-white/[0.02] dark:hover:bg-white/[0.04]">
+                  {/* Eyebrow badge — tiny platform label */}
+                  <span className="text-[10px] font-bold uppercase tracking-[0.35em] text-indigo-500 dark:text-indigo-400">{card.eyebrow}</span>
+                  <div className="mt-3 flex items-center gap-3">
+                    <card.icon className="h-5 w-5 text-slate-400 dark:text-slate-500" />
+                    <h3 className="text-lg font-bold text-slate-950 dark:text-white">{card.title}</h3>
                   </div>
-                  <h3 className="mt-5 text-xl font-bold text-slate-950 dark:text-white">{card.title}</h3>
-                  <p className="mt-4 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{card.summary}</p>
-                  <ul className="mt-4 space-y-2.5">
+                  <p className="mt-4 text-sm leading-6 text-slate-500 dark:text-slate-400">{card.summary}</p>
+
+                  {/* Feature list — left-border accent instead of bullet dots */}
+                  <ul className="mt-5 space-y-2 border-l border-slate-200/60 pl-4 dark:border-white/[0.06]">
                     {card.items.map((item) => (
-                      <li key={item} className="rounded-xl border border-slate-200/60 bg-slate-50/60 px-4 py-2.5 text-sm font-medium text-slate-600 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-slate-300">{item}</li>
+                      <li key={item} className="text-xs font-medium text-slate-600 dark:text-slate-400">{item}</li>
                     ))}
                   </ul>
                 </div>
               </ScrollReveal>
             ))}
           </div>
+
+          {/* App store badges — placed after cards, not before. Conversion, not decoration. */}
+          <ScrollReveal delay={0.1}>
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              <Image src="/services/magnetic-commerce/app-store-badge.png"  alt="Download on the App Store"  width={140} height={44} className="h-11 w-auto rounded-xl object-contain opacity-80 transition hover:opacity-100" />
+              <Image src="/services/magnetic-commerce/play-store-badge.png" alt="Get it on Google Play"       width={140} height={44} className="h-11 w-auto rounded-xl object-contain opacity-80 transition hover:opacity-100" />
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
-      {/* ──── PRICING ──── */}
-      <section id="commerce-pricing" className="relative border-t border-slate-200/40 py-20 dark:border-white/[0.06] sm:py-28">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-50/50 to-white dark:from-white/[0.02] dark:to-transparent" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      {/* ═══════════════════════════════════════════════════════════════════════
+          PRICING
+          ───────────────────────────────────────────────────────────────────────
+          The ServiceTierSelector component owns its own layout.
+          Section simply sets context copy then yields to it.
+      ════════════════════════════════════════════════════════════════════════ */}
+      <section id="commerce-pricing" className="relative border-t border-slate-200/30 py-28 dark:border-white/[0.05] sm:py-36">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-50/40 to-white dark:from-white/[0.015] dark:to-transparent" />
+
+        <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
           <ScrollReveal>
-            <div className="max-w-3xl space-y-4">
-              <p className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.3em] text-indigo-500 dark:text-indigo-400">
-                <BadgeDollarSign className="h-4 w-4" /> Rollout packages
-              </p>
-              <h2 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl lg:text-5xl">Choose the Magnetic Commerce delivery scope that matches your launch plan.</h2>
-              <p className="text-base leading-relaxed text-slate-500 dark:text-slate-400 sm:text-lg">Start with a structured commerce foundation, then scale into advanced operations, stakeholder finance, reporting depth, and multi-role execution.</p>
-            </div>
+            <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.35em] text-indigo-500 dark:text-indigo-400">
+              <BadgeDollarSign className="h-3.5 w-3.5" /> Rollout Packages
+            </p>
+            <h2 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl">
+              Choose the delivery scope that matches your launch.
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-500 dark:text-slate-400">
+              Start with a structured commerce foundation, then scale into advanced operations, stakeholder finance, and multi-role execution.
+            </p>
           </ScrollReveal>
-          <div className="mt-12">
+
+          <div className="mt-14">
             <ServiceTierSelector service={service} />
           </div>
         </div>
