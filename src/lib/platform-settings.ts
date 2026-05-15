@@ -47,6 +47,37 @@ export type TTSConfig = {
   openaiModel: string;
 };
 
+export type VoiceProviderConfig = {
+  activeProvider: "none" | "twilio" | "vonage" | "plivo" | "telnyx";
+  twilio: {
+    accountSid: string;
+    authToken: string;
+    phoneNumber: string;
+    twimlAppSid: string;
+    webhookUrl: string;
+  };
+  vonage: {
+    apiKey: string;
+    apiSecret: string;
+    applicationId: string;
+    phoneNumber: string;
+    webhookUrl: string;
+  };
+  plivo: {
+    authId: string;
+    authToken: string;
+    phoneNumber: string;
+    appId: string;
+    webhookUrl: string;
+  };
+  telnyx: {
+    apiKey: string;
+    phoneNumber: string;
+    connectionId: string;
+    webhookUrl: string;
+  };
+};
+
 export type SocialBotSettings = {
   globalBotInstructions: string;
   metaAppId: string;
@@ -201,6 +232,7 @@ export type PlatformSettingsBundle = {
   oauthConfig: OAuthSettings;
   geminiConfig: GeminiSettings;
   ttsConfig: TTSConfig;
+  voiceProviderConfig: VoiceProviderConfig;
   socialBotConfig: SocialBotSettings;
   magneticCommerceConfig: MagneticCommerceSettings;
   trustedPartnersConfig: TrustedPartnersSettings;
@@ -257,6 +289,14 @@ export const defaultTTSConfig: TTSConfig = {
   elevenlabsVoiceId: "21m00Tcm4TlvDq8ikWAM",
   openaiVoice: "nova",
   openaiModel: "tts-1"
+};
+
+export const defaultVoiceProviderConfig: VoiceProviderConfig = {
+  activeProvider: "none",
+  twilio: { accountSid: "", authToken: "", phoneNumber: "", twimlAppSid: "", webhookUrl: "" },
+  vonage: { apiKey: "", apiSecret: "", applicationId: "", phoneNumber: "", webhookUrl: "" },
+  plivo: { authId: "", authToken: "", phoneNumber: "", appId: "", webhookUrl: "" },
+  telnyx: { apiKey: "", phoneNumber: "", connectionId: "", webhookUrl: "" }
 };
 
 export const defaultSocialBotConfig: SocialBotSettings = {
@@ -2413,6 +2453,48 @@ export function normalizeGeminiConfig(value: unknown): GeminiSettings {
   };
 }
 
+export function normalizeVoiceProviderConfig(value: unknown): VoiceProviderConfig {
+  if (!isObject(value)) return defaultVoiceProviderConfig;
+  const activeProviders = ["none", "twilio", "vonage", "plivo", "telnyx"];
+  const d = defaultVoiceProviderConfig;
+  const tw = isObject(value.twilio) ? value.twilio : {};
+  const vo = isObject(value.vonage) ? value.vonage : {};
+  const pl = isObject(value.plivo) ? value.plivo : {};
+  const te = isObject(value.telnyx) ? value.telnyx : {};
+  return {
+    activeProvider: activeProviders.includes(value.activeProvider as string)
+      ? (value.activeProvider as VoiceProviderConfig["activeProvider"])
+      : d.activeProvider,
+    twilio: {
+      accountSid: coerceString(tw.accountSid, d.twilio.accountSid),
+      authToken: coerceString(tw.authToken, d.twilio.authToken),
+      phoneNumber: coerceString(tw.phoneNumber, d.twilio.phoneNumber),
+      twimlAppSid: coerceString(tw.twimlAppSid, d.twilio.twimlAppSid),
+      webhookUrl: coerceString(tw.webhookUrl, d.twilio.webhookUrl)
+    },
+    vonage: {
+      apiKey: coerceString(vo.apiKey, d.vonage.apiKey),
+      apiSecret: coerceString(vo.apiSecret, d.vonage.apiSecret),
+      applicationId: coerceString(vo.applicationId, d.vonage.applicationId),
+      phoneNumber: coerceString(vo.phoneNumber, d.vonage.phoneNumber),
+      webhookUrl: coerceString(vo.webhookUrl, d.vonage.webhookUrl)
+    },
+    plivo: {
+      authId: coerceString(pl.authId, d.plivo.authId),
+      authToken: coerceString(pl.authToken, d.plivo.authToken),
+      phoneNumber: coerceString(pl.phoneNumber, d.plivo.phoneNumber),
+      appId: coerceString(pl.appId, d.plivo.appId),
+      webhookUrl: coerceString(pl.webhookUrl, d.plivo.webhookUrl)
+    },
+    telnyx: {
+      apiKey: coerceString(te.apiKey, d.telnyx.apiKey),
+      phoneNumber: coerceString(te.phoneNumber, d.telnyx.phoneNumber),
+      connectionId: coerceString(te.connectionId, d.telnyx.connectionId),
+      webhookUrl: coerceString(te.webhookUrl, d.telnyx.webhookUrl)
+    }
+  };
+}
+
 export function normalizeTTSConfig(value: unknown): TTSConfig {
   if (!isObject(value)) return defaultTTSConfig;
   const providers = ["browser", "openai", "elevenlabs"];
@@ -2628,6 +2710,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     oauthConfig,
     geminiConfig,
     ttsConfig,
+    voiceProviderConfig,
     socialBotConfig,
     magneticCommerceConfig,
     trustedPartnersConfig,
@@ -2645,6 +2728,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     getSettingValue("oauth_config"),
     getSettingValue("gemini_api_key"),
     getSettingValue("tts_config"),
+    getSettingValue("voice_provider_config"),
     getSettingValue("social_bot_config"),
     getSettingValue("magnetic_commerce_config"),
     getSettingValue("trusted_partners_config"),
@@ -2664,6 +2748,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     oauthConfig: normalizeOAuthConfig(oauthConfig),
     geminiConfig: normalizeGeminiConfig(geminiConfig),
     ttsConfig: normalizeTTSConfig(ttsConfig),
+    voiceProviderConfig: normalizeVoiceProviderConfig(voiceProviderConfig),
     socialBotConfig: normalizeSocialBotConfig(socialBotConfig),
     magneticCommerceConfig: normalizeMagneticCommerceConfig(magneticCommerceConfig),
     trustedPartnersConfig: normalizeTrustedPartnersConfig(trustedPartnersConfig),

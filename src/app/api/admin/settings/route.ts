@@ -80,6 +80,39 @@ const requestSchema = z.discriminatedUnion("section", [
       openaiModel: z.string().default("tts-1")
     })
   }),
+  z.object({
+    section: z.literal("voiceProvider"),
+    value: z.object({
+      activeProvider: z.enum(["none", "twilio", "vonage", "plivo", "telnyx"]),
+      twilio: z.object({
+        accountSid: z.string().default(""),
+        authToken: z.string().default(""),
+        phoneNumber: z.string().default(""),
+        twimlAppSid: z.string().default(""),
+        webhookUrl: z.string().default("")
+      }),
+      vonage: z.object({
+        apiKey: z.string().default(""),
+        apiSecret: z.string().default(""),
+        applicationId: z.string().default(""),
+        phoneNumber: z.string().default(""),
+        webhookUrl: z.string().default("")
+      }),
+      plivo: z.object({
+        authId: z.string().default(""),
+        authToken: z.string().default(""),
+        phoneNumber: z.string().default(""),
+        appId: z.string().default(""),
+        webhookUrl: z.string().default("")
+      }),
+      telnyx: z.object({
+        apiKey: z.string().default(""),
+        phoneNumber: z.string().default(""),
+        connectionId: z.string().default(""),
+        webhookUrl: z.string().default("")
+      })
+    })
+  }),
 
   z.object({
     section: z.literal("socialBot"),
@@ -282,6 +315,7 @@ const settingKeyBySection = {
   oauth: "oauth_config",
   gemini: "gemini_api_key",
   tts: "tts_config",
+  voiceProvider: "voice_provider_config",
   socialBot: "social_bot_config",
   magneticCommerce: "magnetic_commerce_config",
   trustedPartners: "trusted_partners_config",

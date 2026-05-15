@@ -23,6 +23,7 @@ import type {
   TransactionalEmailSettings,
   TrustedPartnersSettings,
   TTSConfig,
+  VoiceProviderConfig,
   WelcomeEmailSettings
 } from "@/lib/platform-settings";
 
@@ -34,6 +35,7 @@ type AdminSettingsClientProps = {
   oauthConfig: OAuthSettings;
   geminiConfig: GeminiSettings;
   ttsConfig: TTSConfig;
+  voiceProviderConfig: VoiceProviderConfig;
   socialBotConfig: SocialBotSettings;
   magneticCommerceConfig: MagneticCommerceSettings;
   trustedPartnersConfig: TrustedPartnersSettings;
@@ -82,13 +84,49 @@ const OPENAI_VOICES = [
   { id: "onyx", desc: "Deep · American male" },
 ];
 
-const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "tts" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting" | "about", string> = {
+const VOICE_PROVIDERS = [
+  {
+    id: "twilio" as const,
+    name: "Twilio",
+    url: "https://twilio.com",
+    tier: "Free trial $15 credit",
+    badge: "bg-red-50 text-red-700 border-red-200",
+    desc: "Industry-leading voice API. Supports inbound/outbound calls, IVR, and conferencing. Widest language support."
+  },
+  {
+    id: "vonage" as const,
+    name: "Vonage",
+    url: "https://vonage.com",
+    tier: "Free €2 trial credit",
+    badge: "bg-blue-50 text-blue-700 border-blue-200",
+    desc: "Formerly Nexmo. Excellent global coverage, reliable WebSocket streaming, competitive per-minute pricing."
+  },
+  {
+    id: "plivo" as const,
+    name: "Plivo",
+    url: "https://plivo.com",
+    tier: "Free $0.50 trial",
+    badge: "bg-green-50 text-green-700 border-green-200",
+    desc: "Cost-effective voice API with low per-minute rates. Good for high-volume deployments."
+  },
+  {
+    id: "telnyx" as const,
+    name: "Telnyx",
+    url: "https://telnyx.com",
+    tier: "Free $10 credit",
+    badge: "bg-violet-50 text-violet-700 border-violet-200",
+    desc: "Modern cloud communications platform with own global network. Very competitive pricing and WebRTC support."
+  }
+];
+
+const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "tts" | "voiceProvider" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting" | "about", string> = {
   languages: "Language",
   footer: "Footer",
   payments: "Payment",
   oauth: "OAuth",
   gemini: "Gemini",
   tts: "Voice / TTS",
+  voiceProvider: "Voice Provider",
   socialBot: "Chatbot",
   magneticCommerce: "Magnetic Commerce",
   trustedPartners: "Trusted partners",
@@ -185,6 +223,7 @@ export function AdminSettingsClient({
   oauthConfig,
   geminiConfig,
   ttsConfig,
+  voiceProviderConfig,
   socialBotConfig,
   magneticCommerceConfig,
   trustedPartnersConfig,
@@ -205,6 +244,7 @@ export function AdminSettingsClient({
   const [oauthState, setOAuthState] = useState(oauthConfig);
   const [geminiState, setGeminiState] = useState(geminiConfig);
   const [ttsState, setTtsState] = useState(ttsConfig);
+  const [voiceProviderState, setVoiceProviderState] = useState(voiceProviderConfig);
   const [socialBotState, setSocialBotState] = useState(socialBotConfig);
   const [magneticCommerceState, setMagneticCommerceState] = useState(magneticCommerceConfig);
   const [trustedPartnersState, setTrustedPartnersState] = useState(trustedPartnersConfig);
@@ -225,7 +265,7 @@ export function AdminSettingsClient({
   );
   const metaWebhookUrl = useMemo(() => (appBaseUrl ? `${appBaseUrl}/api/social-bot/meta/webhook` : ""), [appBaseUrl]);
 
-  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "tts" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting" | "about", value: unknown) {
+  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "tts" | "voiceProvider" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting" | "about", value: unknown) {
     setLoadingSection(section);
     setToast(null);
 
@@ -376,6 +416,35 @@ export function AdminSettingsClient({
     }
 
     setToast({ type: "success", message: payload.message ?? "Groq connection successful." });
+    setLoadingSection(null);
+  }
+
+  async function handleVoiceProviderTest(provider: "twilio" | "vonage" | "plivo" | "telnyx") {
+    setLoadingSection(`vp-test-${provider}`);
+    setToast(null);
+
+    const p = voiceProviderState;
+    const body: Record<string, string> = { provider };
+    if (provider === "twilio") { body.accountSid = p.twilio.accountSid; body.authToken = p.twilio.authToken; }
+    if (provider === "vonage") { body.apiKey = p.vonage.apiKey; body.apiSecret = p.vonage.apiSecret; }
+    if (provider === "plivo") { body.authId = p.plivo.authId; body.authToken = p.plivo.authToken; }
+    if (provider === "telnyx") { body.apiKey = p.telnyx.apiKey; }
+
+    const response = await fetch("/api/admin/settings/voice-provider-test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
+
+    if (!response.ok) {
+      setToast({ type: "error", message: payload.error ?? `${provider} connection test failed.` });
+      setLoadingSection(null);
+      return;
+    }
+
+    setToast({ type: "success", message: payload.message ?? `${provider} connected.` });
     setLoadingSection(null);
   }
 
@@ -943,6 +1012,129 @@ export function AdminSettingsClient({
           {socialBotState.globalBotInstructions.includes("[Company Name]") && (
             <div className="rounded-[16px] border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs text-amber-800">
               Replace <strong>[Company Name]</strong>, <strong>[Products/Services]</strong>, and <strong>[Timeframe]</strong> with your actual values before saving.
+            </div>
+          )}
+        </div>
+      </SettingsCard>}
+
+      {activeTab === "socialBot" && <SettingsCard
+        title="Voice Service Provider"
+        description="Connect a telephony API so the AI Voice Agent can receive and make live phone calls. All four providers offer free trial credits — configure credentials, select the active provider, save, then click Test Connection."
+        action={<Button label="Save Voice Provider" loading={loadingSection === "voiceProvider"} onClick={() => saveSection("voiceProvider", voiceProviderState)} />}
+      >
+        <div className="space-y-6">
+          {/* Provider selector */}
+          <div>
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">Active Provider</p>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <button
+                type="button"
+                onClick={() => setVoiceProviderState((s) => ({ ...s, activeProvider: "none" }))}
+                className={`rounded-xl border p-3 text-left transition ${voiceProviderState.activeProvider === "none" ? "border-slate-400/40 bg-slate-100 dark:bg-white/[0.06]" : "border-gray-200 dark:border-white/[0.07] hover:border-gray-300"}`}
+              >
+                <div className="text-[12px] font-bold text-gray-800 dark:text-white">None</div>
+                <div className="mt-0.5 text-[10px] text-gray-400">Browser-only voice agent</div>
+              </button>
+              {VOICE_PROVIDERS.map((vp) => (
+                <button
+                  key={vp.id}
+                  type="button"
+                  onClick={() => setVoiceProviderState((s) => ({ ...s, activeProvider: vp.id }))}
+                  className={`rounded-xl border p-3 text-left transition ${voiceProviderState.activeProvider === vp.id ? "border-violet-500/40 bg-violet-50 dark:bg-violet-500/15" : "border-gray-200 dark:border-white/[0.07] hover:border-gray-300 dark:hover:border-white/[0.12]"}`}
+                >
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[12px] font-bold text-gray-800 dark:text-white">{vp.name}</span>
+                    <span className={`rounded-full border px-1.5 py-0.5 text-[9px] font-bold ${vp.badge}`}>{vp.tier}</span>
+                  </div>
+                  <div className="text-[10px] text-gray-400 dark:text-white/30 leading-4">{vp.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Twilio */}
+          <div className="rounded-[22px] border border-gray-200 dark:border-white/[0.07] p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="font-semibold text-[13px] text-gray-900 dark:text-white">Twilio</span>
+                <a href="https://console.twilio.com" target="_blank" rel="noopener" className="ml-2 text-[10px] text-violet-500">console.twilio.com ↗</a>
+              </div>
+              <Button label="Test" loading={loadingSection === "vp-test-twilio"} variant="secondary" onClick={() => void handleVoiceProviderTest("twilio")} />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input label="Account SID" value={voiceProviderState.twilio.accountSid} onChange={(v) => setVoiceProviderState((s) => ({ ...s, twilio: { ...s.twilio, accountSid: v } }))} />
+              <Input label="Auth Token" value={voiceProviderState.twilio.authToken} onChange={(v) => setVoiceProviderState((s) => ({ ...s, twilio: { ...s.twilio, authToken: v } }))} type="password" />
+              <Input label="Phone Number (+E.164)" value={voiceProviderState.twilio.phoneNumber} onChange={(v) => setVoiceProviderState((s) => ({ ...s, twilio: { ...s.twilio, phoneNumber: v } }))} />
+              <Input label="TwiML App SID (optional)" value={voiceProviderState.twilio.twimlAppSid} onChange={(v) => setVoiceProviderState((s) => ({ ...s, twilio: { ...s.twilio, twimlAppSid: v } }))} />
+              <div className="sm:col-span-2">
+                <Input label="Voice Webhook URL" value={voiceProviderState.twilio.webhookUrl} onChange={(v) => setVoiceProviderState((s) => ({ ...s, twilio: { ...s.twilio, webhookUrl: v } }))} />
+                <p className="mt-1 text-[10px] text-gray-400">Set this URL in the Twilio phone number&apos;s Voice configuration webhook field.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Vonage */}
+          <div className="rounded-[22px] border border-gray-200 dark:border-white/[0.07] p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="font-semibold text-[13px] text-gray-900 dark:text-white">Vonage</span>
+                <a href="https://dashboard.nexmo.com" target="_blank" rel="noopener" className="ml-2 text-[10px] text-violet-500">dashboard.nexmo.com ↗</a>
+              </div>
+              <Button label="Test" loading={loadingSection === "vp-test-vonage"} variant="secondary" onClick={() => void handleVoiceProviderTest("vonage")} />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input label="API Key" value={voiceProviderState.vonage.apiKey} onChange={(v) => setVoiceProviderState((s) => ({ ...s, vonage: { ...s.vonage, apiKey: v } }))} />
+              <Input label="API Secret" value={voiceProviderState.vonage.apiSecret} onChange={(v) => setVoiceProviderState((s) => ({ ...s, vonage: { ...s.vonage, apiSecret: v } }))} type="password" />
+              <Input label="Application ID" value={voiceProviderState.vonage.applicationId} onChange={(v) => setVoiceProviderState((s) => ({ ...s, vonage: { ...s.vonage, applicationId: v } }))} />
+              <Input label="Virtual Phone Number" value={voiceProviderState.vonage.phoneNumber} onChange={(v) => setVoiceProviderState((s) => ({ ...s, vonage: { ...s.vonage, phoneNumber: v } }))} />
+              <div className="sm:col-span-2">
+                <Input label="Answer Webhook URL" value={voiceProviderState.vonage.webhookUrl} onChange={(v) => setVoiceProviderState((s) => ({ ...s, vonage: { ...s.vonage, webhookUrl: v } }))} />
+                <p className="mt-1 text-[10px] text-gray-400">Paste as the Answer URL in your Vonage Application voice settings.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Plivo */}
+          <div className="rounded-[22px] border border-gray-200 dark:border-white/[0.07] p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="font-semibold text-[13px] text-gray-900 dark:text-white">Plivo</span>
+                <a href="https://console.plivo.com" target="_blank" rel="noopener" className="ml-2 text-[10px] text-violet-500">console.plivo.com ↗</a>
+              </div>
+              <Button label="Test" loading={loadingSection === "vp-test-plivo"} variant="secondary" onClick={() => void handleVoiceProviderTest("plivo")} />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input label="Auth ID" value={voiceProviderState.plivo.authId} onChange={(v) => setVoiceProviderState((s) => ({ ...s, plivo: { ...s.plivo, authId: v } }))} />
+              <Input label="Auth Token" value={voiceProviderState.plivo.authToken} onChange={(v) => setVoiceProviderState((s) => ({ ...s, plivo: { ...s.plivo, authToken: v } }))} type="password" />
+              <Input label="Phone Number (+E.164)" value={voiceProviderState.plivo.phoneNumber} onChange={(v) => setVoiceProviderState((s) => ({ ...s, plivo: { ...s.plivo, phoneNumber: v } }))} />
+              <Input label="App ID (optional)" value={voiceProviderState.plivo.appId} onChange={(v) => setVoiceProviderState((s) => ({ ...s, plivo: { ...s.plivo, appId: v } }))} />
+              <div className="sm:col-span-2">
+                <Input label="Answer URL" value={voiceProviderState.plivo.webhookUrl} onChange={(v) => setVoiceProviderState((s) => ({ ...s, plivo: { ...s.plivo, webhookUrl: v } }))} />
+                <p className="mt-1 text-[10px] text-gray-400">Set as the Answer URL on your Plivo application.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Telnyx */}
+          <div className="rounded-[22px] border border-gray-200 dark:border-white/[0.07] p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="font-semibold text-[13px] text-gray-900 dark:text-white">Telnyx</span>
+                <a href="https://portal.telnyx.com" target="_blank" rel="noopener" className="ml-2 text-[10px] text-violet-500">portal.telnyx.com ↗</a>
+              </div>
+              <Button label="Test" loading={loadingSection === "vp-test-telnyx"} variant="secondary" onClick={() => void handleVoiceProviderTest("telnyx")} />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input label="API Key (v2)" value={voiceProviderState.telnyx.apiKey} onChange={(v) => setVoiceProviderState((s) => ({ ...s, telnyx: { ...s.telnyx, apiKey: v } }))} type="password" />
+              <Input label="Phone Number (+E.164)" value={voiceProviderState.telnyx.phoneNumber} onChange={(v) => setVoiceProviderState((s) => ({ ...s, telnyx: { ...s.telnyx, phoneNumber: v } }))} />
+              <Input label="Connection ID (optional)" value={voiceProviderState.telnyx.connectionId} onChange={(v) => setVoiceProviderState((s) => ({ ...s, telnyx: { ...s.telnyx, connectionId: v } }))} />
+              <Input label="Webhook URL" value={voiceProviderState.telnyx.webhookUrl} onChange={(v) => setVoiceProviderState((s) => ({ ...s, telnyx: { ...s.telnyx, webhookUrl: v } }))} />
+            </div>
+          </div>
+
+          {voiceProviderState.activeProvider === "none" && (
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-[12px] text-amber-700 dark:text-amber-400/80">
+              No voice provider is active. The Voice Agent will only work in browser-based mode. Select a provider above to enable inbound/outbound phone calls.
             </div>
           )}
         </div>

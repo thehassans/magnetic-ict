@@ -32,6 +32,7 @@ export default async function AdminSettingsPage() {
         oauthConfig={settings.oauthConfig}
         geminiConfig={settings.geminiConfig}
         ttsConfig={settings.ttsConfig}
+        voiceProviderConfig={settings.voiceProviderConfig}
         socialBotConfig={settings.socialBotConfig}
         magneticCommerceConfig={settings.magneticCommerceConfig}
         trustedPartnersConfig={settings.trustedPartnersConfig}
