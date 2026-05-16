@@ -725,3 +725,43 @@ export async function sendMetaReply({
     throw new Error(payload.error?.message ?? `Unable to send reply to ${integration.channel}.`);
   }
 }
+
+export async function sendInfobipReply({
+  to,
+  messageText,
+  apiKey,
+  baseUrl,
+  senderNumber
+}: {
+  to: string;
+  messageText: string;
+  apiKey: string;
+  baseUrl: string;
+  senderNumber: string;
+}) {
+  const cleanBase = baseUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const url = `https://${cleanBase}/whatsapp/1/message/text`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `App ${apiKey}`,
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify({
+      from: senderNumber,
+      to,
+      content: { text: messageText }
+    })
+  });
+
+  const data = (await response.json().catch(() => ({}))) as {
+    requestError?: { serviceException?: { text?: string } };
+  };
+
+  if (!response.ok) {
+    const msg = data.requestError?.serviceException?.text ?? "Infobip WhatsApp send failed.";
+    throw new Error(msg);
+  }
+}

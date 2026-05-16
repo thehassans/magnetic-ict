@@ -78,6 +78,15 @@ export type VoiceProviderConfig = {
   };
 };
 
+export type InfobipConfig = {
+  enabled: boolean;
+  apiKey: string;
+  baseUrl: string;
+  senderNumber: string;
+  webhookSecret: string;
+  botUserId: string;
+};
+
 export type SocialBotSettings = {
   globalBotInstructions: string;
   metaAppId: string;
@@ -233,6 +242,7 @@ export type PlatformSettingsBundle = {
   geminiConfig: GeminiSettings;
   ttsConfig: TTSConfig;
   voiceProviderConfig: VoiceProviderConfig;
+  infobipConfig: InfobipConfig;
   socialBotConfig: SocialBotSettings;
   magneticCommerceConfig: MagneticCommerceSettings;
   trustedPartnersConfig: TrustedPartnersSettings;
@@ -289,6 +299,15 @@ export const defaultTTSConfig: TTSConfig = {
   elevenlabsVoiceId: "21m00Tcm4TlvDq8ikWAM",
   openaiVoice: "nova",
   openaiModel: "tts-1"
+};
+
+export const defaultInfobipConfig: InfobipConfig = {
+  enabled: false,
+  apiKey: "",
+  baseUrl: "",
+  senderNumber: "",
+  webhookSecret: "",
+  botUserId: ""
 };
 
 export const defaultVoiceProviderConfig: VoiceProviderConfig = {
@@ -2453,6 +2472,18 @@ export function normalizeGeminiConfig(value: unknown): GeminiSettings {
   };
 }
 
+export function normalizeInfobipConfig(value: unknown): InfobipConfig {
+  if (!isObject(value)) return defaultInfobipConfig;
+  return {
+    enabled: value.enabled === true,
+    apiKey: coerceString(value.apiKey, defaultInfobipConfig.apiKey),
+    baseUrl: coerceString(value.baseUrl, defaultInfobipConfig.baseUrl),
+    senderNumber: coerceString(value.senderNumber, defaultInfobipConfig.senderNumber),
+    webhookSecret: coerceString(value.webhookSecret, defaultInfobipConfig.webhookSecret),
+    botUserId: coerceString(value.botUserId, defaultInfobipConfig.botUserId)
+  };
+}
+
 export function normalizeVoiceProviderConfig(value: unknown): VoiceProviderConfig {
   if (!isObject(value)) return defaultVoiceProviderConfig;
   const activeProviders = ["none", "twilio", "vonage", "plivo", "telnyx"];
@@ -2711,6 +2742,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     geminiConfig,
     ttsConfig,
     voiceProviderConfig,
+    infobipConfig,
     socialBotConfig,
     magneticCommerceConfig,
     trustedPartnersConfig,
@@ -2729,6 +2761,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     getSettingValue("gemini_api_key"),
     getSettingValue("tts_config"),
     getSettingValue("voice_provider_config"),
+    getSettingValue("infobip_config"),
     getSettingValue("social_bot_config"),
     getSettingValue("magnetic_commerce_config"),
     getSettingValue("trusted_partners_config"),
@@ -2749,6 +2782,7 @@ export async function getPlatformSettings(): Promise<PlatformSettingsBundle> {
     geminiConfig: normalizeGeminiConfig(geminiConfig),
     ttsConfig: normalizeTTSConfig(ttsConfig),
     voiceProviderConfig: normalizeVoiceProviderConfig(voiceProviderConfig),
+    infobipConfig: normalizeInfobipConfig(infobipConfig),
     socialBotConfig: normalizeSocialBotConfig(socialBotConfig),
     magneticCommerceConfig: normalizeMagneticCommerceConfig(magneticCommerceConfig),
     trustedPartnersConfig: normalizeTrustedPartnersConfig(trustedPartnersConfig),

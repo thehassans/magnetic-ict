@@ -16,6 +16,7 @@ import type {
   EmailNotificationsSettings,
   FooterSettings,
   GeminiSettings,
+  InfobipConfig,
   MagneticCommerceSettings,
   OAuthSettings,
   PaymentIntegrationsSettings,
@@ -36,7 +37,9 @@ type AdminSettingsClientProps = {
   geminiConfig: GeminiSettings;
   ttsConfig: TTSConfig;
   voiceProviderConfig: VoiceProviderConfig;
+  infobipConfig: InfobipConfig;
   socialBotConfig: SocialBotSettings;
+  adminUserId: string;
   magneticCommerceConfig: MagneticCommerceSettings;
   trustedPartnersConfig: TrustedPartnersSettings;
   welcomeEmailConfig: WelcomeEmailSettings;
@@ -119,13 +122,14 @@ const VOICE_PROVIDERS = [
   }
 ];
 
-const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "tts" | "voiceProvider" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting" | "about", string> = {
+const settingsSectionLabel: Record<"languages" | "footer" | "payments" | "oauth" | "gemini" | "tts" | "infobip" | "voiceProvider" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting" | "about", string> = {
   languages: "Language",
   footer: "Footer",
   payments: "Payment",
   oauth: "OAuth",
   gemini: "Gemini",
   tts: "Voice / TTS",
+  infobip: "Infobip WhatsApp",
   voiceProvider: "Voice Provider",
   socialBot: "Chatbot",
   magneticCommerce: "Magnetic Commerce",
@@ -224,7 +228,9 @@ export function AdminSettingsClient({
   geminiConfig,
   ttsConfig,
   voiceProviderConfig,
+  infobipConfig,
   socialBotConfig,
+  adminUserId,
   magneticCommerceConfig,
   trustedPartnersConfig,
   welcomeEmailConfig,
@@ -245,6 +251,7 @@ export function AdminSettingsClient({
   const [geminiState, setGeminiState] = useState(geminiConfig);
   const [ttsState, setTtsState] = useState(ttsConfig);
   const [voiceProviderState, setVoiceProviderState] = useState(voiceProviderConfig);
+  const [infobipState, setInfobipState] = useState(infobipConfig);
   const [socialBotState, setSocialBotState] = useState(socialBotConfig);
   const [magneticCommerceState, setMagneticCommerceState] = useState(magneticCommerceConfig);
   const [trustedPartnersState, setTrustedPartnersState] = useState(trustedPartnersConfig);
@@ -265,7 +272,7 @@ export function AdminSettingsClient({
   );
   const metaWebhookUrl = useMemo(() => (appBaseUrl ? `${appBaseUrl}/api/social-bot/meta/webhook` : ""), [appBaseUrl]);
 
-  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "tts" | "voiceProvider" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting" | "about", value: unknown) {
+  async function saveSection(section: "languages" | "footer" | "payments" | "oauth" | "gemini" | "tts" | "infobip" | "voiceProvider" | "socialBot" | "magneticCommerce" | "trustedPartners" | "welcomeEmail" | "transactionalEmail" | "emailNotifications" | "domain" | "hosting" | "about", value: unknown) {
     setLoadingSection(section);
     setToast(null);
 
@@ -416,6 +423,28 @@ export function AdminSettingsClient({
     }
 
     setToast({ type: "success", message: payload.message ?? "Groq connection successful." });
+    setLoadingSection(null);
+  }
+
+  async function handleInfobipTest() {
+    setLoadingSection("infobip-test");
+    setToast(null);
+
+    const response = await fetch("/api/admin/settings/infobip-test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ apiKey: infobipState.apiKey, baseUrl: infobipState.baseUrl })
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
+
+    if (!response.ok) {
+      setToast({ type: "error", message: payload.error ?? "Infobip connection test failed." });
+      setLoadingSection(null);
+      return;
+    }
+
+    setToast({ type: "success", message: payload.message ?? "Infobip connected." });
     setLoadingSection(null);
   }
 
@@ -1014,6 +1043,65 @@ export function AdminSettingsClient({
               Replace <strong>[Company Name]</strong>, <strong>[Products/Services]</strong>, and <strong>[Timeframe]</strong> with your actual values before saving.
             </div>
           )}
+        </div>
+      </SettingsCard>}
+
+      {activeTab === "socialBot" && <SettingsCard
+        title="Infobip WhatsApp API"
+        description="Connect Infobip as a WhatsApp Business Solution Provider. Messages received on your Infobip sender number are routed to the AI bot and replies are sent back via Infobip. Free trial: 60 days / 100 messages to verified numbers."
+        action={<Button label="Save Infobip config" loading={loadingSection === "infobip"} onClick={() => saveSection("infobip", infobipState)} />}
+      >
+        <div className="space-y-5">
+          <div className="flex items-center gap-3">
+            <div className={`h-2.5 w-2.5 rounded-full ${infobipState.enabled ? "bg-green-500" : "bg-gray-300"}`} />
+            <ToggleCard label="Infobip enabled" checked={infobipState.enabled} onChange={(v) => setInfobipState((s) => ({ ...s, enabled: v }))} />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Input label="API Key" value={infobipState.apiKey} onChange={(v) => setInfobipState((s) => ({ ...s, apiKey: v }))} type="password" icon={<Key className="h-4 w-4" />} />
+              <p className="mt-1 text-[10px] text-gray-400">From portal.infobip.com → Guide → API key</p>
+            </div>
+            <div>
+              <Input label="API Base URL" value={infobipState.baseUrl} onChange={(v) => setInfobipState((s) => ({ ...s, baseUrl: v }))} />
+              <p className="mt-1 text-[10px] text-gray-400">e.g. <span className="font-mono">x1ewv4.api.infobip.com</span> (no https://)</p>
+            </div>
+            <div>
+              <Input label="WhatsApp Sender Number (+E.164)" value={infobipState.senderNumber} onChange={(v) => setInfobipState((s) => ({ ...s, senderNumber: v }))} />
+              <p className="mt-1 text-[10px] text-gray-400">Registered number from Channels and Numbers → WhatsApp</p>
+            </div>
+            <div>
+              <Input label="Webhook HMAC Secret (optional)" value={infobipState.webhookSecret} onChange={(v) => setInfobipState((s) => ({ ...s, webhookSecret: v }))} type="password" />
+              <p className="mt-1 text-[10px] text-gray-400">If set, verifies Infobip webhook signatures for security</p>
+            </div>
+          </div>
+
+          <div className="rounded-[18px] border border-gray-200 dark:border-white/[0.07] p-4 space-y-3">
+            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">Bot User Routing</p>
+            <Input label="Bot User ID" value={infobipState.botUserId} onChange={(v) => setInfobipState((s) => ({ ...s, botUserId: v }))} />
+            <div className="flex items-center justify-between rounded-xl border border-gray-100 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.03] px-3 py-2">
+              <span className="text-[11px] text-gray-500 dark:text-white/40">Your admin user ID (copy → paste above if routing to yourself):</span>
+              <span className="font-mono text-[11px] text-gray-800 dark:text-white/70 select-all">{adminUserId}</span>
+            </div>
+            <p className="text-[10px] text-gray-400 dark:text-white/20">Incoming Infobip messages are routed to this user&apos;s chatbot knowledge base and agent configuration.</p>
+          </div>
+
+          <div className="rounded-[18px] border border-gray-200 dark:border-white/[0.07] p-4 space-y-3">
+            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">Infobip Webhook URL</p>
+            <div className="flex items-center gap-2">
+              <span className="flex-1 truncate rounded-xl border border-gray-100 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.03] px-3 py-2 font-mono text-[11px] text-gray-700 dark:text-white/60 select-all">
+                {appBaseUrl}/api/infobip/webhook
+              </span>
+            </div>
+            <p className="text-[10px] text-gray-400 dark:text-white/20">
+              In Infobip portal: Channels and Numbers → WhatsApp → your sender → Incoming messages → set this as the <strong>Incoming message URL</strong> (POST).
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button label="Test Connection" loading={loadingSection === "infobip-test"} variant="secondary" onClick={() => void handleInfobipTest()} />
+            <span className="text-[11px] text-gray-400">Verifies API Key + Base URL by calling the Infobip account info endpoint</span>
+          </div>
         </div>
       </SettingsCard>}
 

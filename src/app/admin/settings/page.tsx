@@ -3,6 +3,7 @@ import { AdminShell } from "@/components/admin/admin-shell";
 import { requireAdmin } from "@/lib/admin";
 import { getEmailLogs } from "@/lib/email-logs";
 import { getPlatformSettings, supportedActiveLanguages } from "@/lib/platform-settings";
+import { auth } from "@/auth";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
@@ -16,7 +17,11 @@ function getCanonicalAppUrl() {
 export default async function AdminSettingsPage() {
   await requireAdmin("/admin/settings");
 
-  const [settings, emailLogs] = await Promise.all([getPlatformSettings(), hasDatabase ? getEmailLogs(80) : Promise.resolve([])]);
+  const [session, settings, emailLogs] = await Promise.all([
+    auth(),
+    getPlatformSettings(),
+    hasDatabase ? getEmailLogs(80) : Promise.resolve([])
+  ]);
 
   return (
     <AdminShell
@@ -33,7 +38,9 @@ export default async function AdminSettingsPage() {
         geminiConfig={settings.geminiConfig}
         ttsConfig={settings.ttsConfig}
         voiceProviderConfig={settings.voiceProviderConfig}
+        infobipConfig={settings.infobipConfig}
         socialBotConfig={settings.socialBotConfig}
+        adminUserId={session?.user?.id ?? ""}
         magneticCommerceConfig={settings.magneticCommerceConfig}
         trustedPartnersConfig={settings.trustedPartnersConfig}
         welcomeEmailConfig={settings.welcomeEmailConfig}

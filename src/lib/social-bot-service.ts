@@ -479,7 +479,10 @@ export async function sendAgentMessage(userId: string, input: unknown) {
   return getThreadWithMessages(userId, thread._id);
 }
 
-export async function maybeGenerateAiReply(thread: SocialBotThread) {
+export async function maybeGenerateAiReply(
+  thread: SocialBotThread,
+  overrideSend?: (replyText: string) => Promise<void>
+) {
   if (thread.mode !== "AI") {
     return null;
   }
@@ -505,14 +508,21 @@ export async function maybeGenerateAiReply(thread: SocialBotThread) {
     question: latestInbound.text
   });
 
-  const integration = integrations.find((item) => item.channel === thread.source);
   let deliveryStatus: SocialBotMessage["deliveryStatus"] = thread.externalThreadId.startsWith("demo_") ? "SENT" : "PENDING";
   const metadata: Record<string, unknown> = {};
 
-  if (integration?.status === "CONNECTED" && !thread.externalThreadId.startsWith("demo_")) {
+  if (!thread.externalThreadId.startsWith("demo_")) {
     try {
-      await sendMetaReply({ integration, thread, messageText: replyText });
-      deliveryStatus = "SENT";
+      if (overrideSend) {
+        await overrideSend(replyText);
+        deliveryStatus = "SENT";
+      } else {
+        const integration = integrations.find((item) => item.channel === thread.source);
+        if (integration?.status === "CONNECTED") {
+          await sendMetaReply({ integration, thread, messageText: replyText });
+          deliveryStatus = "SENT";
+        }
+      }
     } catch (error) {
       deliveryStatus = "FAILED";
       metadata.error = error instanceof Error ? error.message : "Send failed.";
@@ -552,7 +562,8 @@ export async function ingestInboundMessage({
   contactName,
   contactHandle,
   text,
-  metadata
+  metadata,
+  overrideSend
 }: {
   userId: string;
   source: SocialChannel;
@@ -561,6 +572,7 @@ export async function ingestInboundMessage({
   contactHandle: string;
   text: string;
   metadata?: Record<string, unknown>;
+  overrideSend?: (replyText: string) => Promise<void>;
 }) {
   const now = new Date().toISOString();
   const existing = await getSocialBotThreadByExternalId(userId, source, externalThreadId);
@@ -601,6 +613,6 @@ export async function ingestInboundMessage({
     metadata: metadata ?? {}
   });
 
-  await maybeGenerateAiReply(thread);
+  await maybeGenerateAiReply(thread, overrideSend);
   return getThreadWithMessages(userId, thread._id);
 }

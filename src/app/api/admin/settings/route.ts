@@ -81,6 +81,17 @@ const requestSchema = z.discriminatedUnion("section", [
     })
   }),
   z.object({
+    section: z.literal("infobip"),
+    value: z.object({
+      enabled: z.boolean(),
+      apiKey: z.string().default(""),
+      baseUrl: z.string().default(""),
+      senderNumber: z.string().default(""),
+      webhookSecret: z.string().default(""),
+      botUserId: z.string().default("")
+    })
+  }),
+  z.object({
     section: z.literal("voiceProvider"),
     value: z.object({
       activeProvider: z.enum(["none", "twilio", "vonage", "plivo", "telnyx"]),
@@ -315,6 +326,7 @@ const settingKeyBySection = {
   oauth: "oauth_config",
   gemini: "gemini_api_key",
   tts: "tts_config",
+  infobip: "infobip_config",
   voiceProvider: "voice_provider_config",
   socialBot: "social_bot_config",
   magneticCommerce: "magnetic_commerce_config",
