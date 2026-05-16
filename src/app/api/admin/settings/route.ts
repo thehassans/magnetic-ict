@@ -88,7 +88,11 @@ const requestSchema = z.discriminatedUnion("section", [
       baseUrl: z.string().default(""),
       senderNumber: z.string().default(""),
       webhookSecret: z.string().default(""),
-      botUserId: z.string().default("")
+      botUserId: z.string().default(""),
+      templateName: z.string().default("test_whatsapp_template_en"),
+      templateLanguage: z.string().default("en"),
+      templateBodyPlaceholder: z.string().default(""),
+      useTemplateForFirstMessage: z.boolean().default(false)
     })
   }),
   z.object({

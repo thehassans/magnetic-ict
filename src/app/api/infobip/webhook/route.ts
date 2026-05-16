@@ -2,7 +2,8 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getPlatformSettings } from "@/lib/platform-settings";
 import { ingestInboundMessage } from "@/lib/social-bot-service";
-import { sendInfobipReply } from "@/lib/social-bot-rag";
+import { getSocialBotThreadByExternalId } from "@/lib/social-bot-db";
+import { sendInfobipReply, sendInfobipTemplate } from "@/lib/social-bot-rag";
 
 export const runtime = "nodejs";
 
@@ -69,6 +70,10 @@ export async function POST(request: Request) {
       const text = result.message?.text?.trim();
       if (!from || !text || result.message?.type !== "TEXT") continue;
 
+      // Check whether this is a brand-new thread (no prior conversation)
+      const existingThread = await getSocialBotThreadByExternalId(cfg.botUserId, "WHATSAPP", from);
+      const isFirstMessage = !existingThread;
+
       await ingestInboundMessage({
         userId: cfg.botUserId,
         source: "WHATSAPP",
@@ -78,13 +83,27 @@ export async function POST(request: Request) {
         text,
         metadata: { webhook: "infobip", messageId: result.messageId, receivedAt: result.receivedAt },
         overrideSend: async (replyText) => {
-          await sendInfobipReply({
-            to: from,
-            messageText: replyText,
-            apiKey: cfg.apiKey,
-            baseUrl: cfg.baseUrl,
-            senderNumber: cfg.senderNumber
-          });
+          if (isFirstMessage && cfg.useTemplateForFirstMessage && cfg.templateName) {
+            // First message to this contact → use approved WhatsApp template
+            await sendInfobipTemplate({
+              to: from,
+              apiKey: cfg.apiKey,
+              baseUrl: cfg.baseUrl,
+              senderNumber: cfg.senderNumber,
+              templateName: cfg.templateName,
+              templateLanguage: cfg.templateLanguage || "en",
+              bodyPlaceholders: cfg.templateBodyPlaceholder ? [cfg.templateBodyPlaceholder] : [replyText.slice(0, 100)]
+            });
+          } else {
+            // Within 24-hour customer service window → free-text reply
+            await sendInfobipReply({
+              to: from,
+              messageText: replyText,
+              apiKey: cfg.apiKey,
+              baseUrl: cfg.baseUrl,
+              senderNumber: cfg.senderNumber
+            });
+          }
         }
       });
     }

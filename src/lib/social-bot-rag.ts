@@ -765,3 +765,66 @@ export async function sendInfobipReply({
     throw new Error(msg);
   }
 }
+
+export async function sendInfobipTemplate({
+  to,
+  apiKey,
+  baseUrl,
+  senderNumber,
+  templateName,
+  templateLanguage,
+  bodyPlaceholders
+}: {
+  to: string;
+  apiKey: string;
+  baseUrl: string;
+  senderNumber: string;
+  templateName: string;
+  templateLanguage: string;
+  bodyPlaceholders: string[];
+}) {
+  const cleanBase = baseUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const url = `https://${cleanBase}/whatsapp/1/message/template`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `App ${apiKey}`,
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify({
+      messages: [
+        {
+          from: senderNumber,
+          to,
+          content: {
+            templateName,
+            templateData: {
+              body: { placeholders: bodyPlaceholders }
+            },
+            language: templateLanguage
+          }
+        }
+      ]
+    })
+  });
+
+  const data = (await response.json().catch(() => ({}))) as {
+    messages?: Array<{ status?: { groupName?: string; description?: string } }>;
+    requestError?: { serviceException?: { text?: string } };
+  };
+
+  if (!response.ok) {
+    const msg =
+      data.messages?.[0]?.status?.description ??
+      data.requestError?.serviceException?.text ??
+      "Infobip template send failed.";
+    throw new Error(msg);
+  }
+
+  const status = data.messages?.[0]?.status;
+  if (status && status.groupName !== "PENDING" && status.groupName !== "ACCEPTED" && status.groupName !== "DELIVERED") {
+    throw new Error(`Infobip template status: ${status.groupName} — ${status.description ?? ""}`);
+  }
+}

@@ -85,6 +85,10 @@ export type InfobipConfig = {
   senderNumber: string;
   webhookSecret: string;
   botUserId: string;
+  templateName: string;
+  templateLanguage: string;
+  templateBodyPlaceholder: string;
+  useTemplateForFirstMessage: boolean;
 };
 
 export type SocialBotSettings = {
@@ -307,7 +311,11 @@ export const defaultInfobipConfig: InfobipConfig = {
   baseUrl: "",
   senderNumber: "",
   webhookSecret: "",
-  botUserId: ""
+  botUserId: "",
+  templateName: "test_whatsapp_template_en",
+  templateLanguage: "en",
+  templateBodyPlaceholder: "",
+  useTemplateForFirstMessage: false
 };
 
 export const defaultVoiceProviderConfig: VoiceProviderConfig = {
@@ -2474,13 +2482,18 @@ export function normalizeGeminiConfig(value: unknown): GeminiSettings {
 
 export function normalizeInfobipConfig(value: unknown): InfobipConfig {
   if (!isObject(value)) return defaultInfobipConfig;
+  const d = defaultInfobipConfig;
   return {
     enabled: value.enabled === true,
-    apiKey: coerceString(value.apiKey, defaultInfobipConfig.apiKey),
-    baseUrl: coerceString(value.baseUrl, defaultInfobipConfig.baseUrl),
-    senderNumber: coerceString(value.senderNumber, defaultInfobipConfig.senderNumber),
-    webhookSecret: coerceString(value.webhookSecret, defaultInfobipConfig.webhookSecret),
-    botUserId: coerceString(value.botUserId, defaultInfobipConfig.botUserId)
+    apiKey: coerceString(value.apiKey, d.apiKey),
+    baseUrl: coerceString(value.baseUrl, d.baseUrl),
+    senderNumber: coerceString(value.senderNumber, d.senderNumber),
+    webhookSecret: coerceString(value.webhookSecret, d.webhookSecret),
+    botUserId: coerceString(value.botUserId, d.botUserId),
+    templateName: coerceString(value.templateName, d.templateName),
+    templateLanguage: coerceString(value.templateLanguage, d.templateLanguage),
+    templateBodyPlaceholder: coerceString(value.templateBodyPlaceholder, d.templateBodyPlaceholder),
+    useTemplateForFirstMessage: value.useTemplateForFirstMessage === true
   };
 }
 

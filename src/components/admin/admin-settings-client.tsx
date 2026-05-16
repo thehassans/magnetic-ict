@@ -252,6 +252,7 @@ export function AdminSettingsClient({
   const [ttsState, setTtsState] = useState(ttsConfig);
   const [voiceProviderState, setVoiceProviderState] = useState(voiceProviderConfig);
   const [infobipState, setInfobipState] = useState(infobipConfig);
+  const [infobipTestTo, setInfobipTestTo] = useState("");
   const [socialBotState, setSocialBotState] = useState(socialBotConfig);
   const [magneticCommerceState, setMagneticCommerceState] = useState(magneticCommerceConfig);
   const [trustedPartnersState, setTrustedPartnersState] = useState(trustedPartnersConfig);
@@ -445,6 +446,40 @@ export function AdminSettingsClient({
     }
 
     setToast({ type: "success", message: payload.message ?? "Infobip connected." });
+    setLoadingSection(null);
+  }
+
+  async function handleInfobipSendTest() {
+    if (!infobipTestTo.trim()) {
+      setToast({ type: "error", message: "Enter a recipient phone number first." });
+      return;
+    }
+    setLoadingSection("infobip-send-test");
+    setToast(null);
+
+    const response = await fetch("/api/admin/settings/infobip-send-test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: infobipTestTo.trim(),
+        apiKey: infobipState.apiKey,
+        baseUrl: infobipState.baseUrl,
+        senderNumber: infobipState.senderNumber,
+        templateName: infobipState.templateName,
+        templateLanguage: infobipState.templateLanguage,
+        templateBodyPlaceholder: infobipState.templateBodyPlaceholder
+      })
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
+
+    if (!response.ok) {
+      setToast({ type: "error", message: payload.error ?? "Template send failed." });
+      setLoadingSection(null);
+      return;
+    }
+
+    setToast({ type: "success", message: payload.message ?? "Template sent." });
     setLoadingSection(null);
   }
 
@@ -1098,9 +1133,45 @@ export function AdminSettingsClient({
             </p>
           </div>
 
+          <div className="rounded-[18px] border border-gray-200 dark:border-white/[0.07] p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">WhatsApp Template Message</p>
+              <ToggleCard label="Use template for first reply" checked={infobipState.useTemplateForFirstMessage} onChange={(v) => setInfobipState((s) => ({ ...s, useTemplateForFirstMessage: v }))} />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="sm:col-span-2">
+                <Input label="Template Name" value={infobipState.templateName} onChange={(v) => setInfobipState((s) => ({ ...s, templateName: v }))} />
+                <p className="mt-1 text-[10px] text-gray-400">e.g. <span className="font-mono">test_whatsapp_template_en</span></p>
+              </div>
+              <div>
+                <Input label="Language" value={infobipState.templateLanguage} onChange={(v) => setInfobipState((s) => ({ ...s, templateLanguage: v }))} />
+                <p className="mt-1 text-[10px] text-gray-400">e.g. <span className="font-mono">en</span></p>
+              </div>
+              <div className="sm:col-span-3">
+                <Input label="Body Placeholder (e.g. your brand name)" value={infobipState.templateBodyPlaceholder} onChange={(v) => setInfobipState((s) => ({ ...s, templateBodyPlaceholder: v }))} />
+                <p className="mt-1 text-[10px] text-gray-400">Value injected into the template body placeholder. Leave empty to use the AI-generated reply text as the placeholder (truncated to 100 chars).</p>
+              </div>
+            </div>
+
+            <div className="pt-1 border-t border-gray-100 dark:border-white/[0.05] space-y-3">
+              <p className="text-[11px] font-semibold text-gray-600 dark:text-white/50">Send a test template to a verified number</p>
+              <div className="flex gap-3 items-end">
+                <div className="flex-1">
+                  <Input
+                    label="Recipient number (+E.164)"
+                    value={infobipTestTo}
+                    onChange={setInfobipTestTo}
+                  />
+                </div>
+                <Button label="Send Test Template" loading={loadingSection === "infobip-send-test"} variant="secondary" onClick={() => void handleInfobipSendTest()} />
+              </div>
+              <p className="text-[10px] text-gray-400">Free trial: only sends to your verified signup number. The template must exist in your Infobip account.</p>
+            </div>
+          </div>
+
           <div className="flex items-center gap-3">
             <Button label="Test Connection" loading={loadingSection === "infobip-test"} variant="secondary" onClick={() => void handleInfobipTest()} />
-            <span className="text-[11px] text-gray-400">Verifies API Key + Base URL by calling the Infobip account info endpoint</span>
+            <span className="text-[11px] text-gray-400">Verifies API Key + Base URL via Infobip account info endpoint</span>
           </div>
         </div>
       </SettingsCard>}
