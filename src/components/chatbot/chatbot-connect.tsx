@@ -62,9 +62,9 @@ const steps = [
 type FbPage = { id: string; name: string; access_token: string };
 type PagePicker = { channel: SocialChannel; pages: FbPage[] };
 
-type Props = { integrations: SocialBotIntegration[]; metaAppId: string; metaConfigId: string; metaMessengerConfigId: string; metaInstagramConfigId: string };
+type Props = { integrations: SocialBotIntegration[]; metaAppId: string; metaConfigId: string; metaMessengerConfigId: string; metaInstagramConfigId: string; oauthCallbackBase?: string };
 
-export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMessengerConfigId, metaInstagramConfigId }: Props) {
+export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMessengerConfigId, metaInstagramConfigId, oauthCallbackBase }: Props) {
   const [list, setList] = useState(integrations);
   const [connecting, setConnecting] = useState<SocialChannel | null>(null);
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
@@ -97,7 +97,8 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
 
   function openMetaPopup(channel: SocialChannel): Promise<FbPage[]> {
     return new Promise((resolve, reject) => {
-      const callbackUrl = `${window.location.origin}/api/social-bot/meta/oauth-callback`;
+      const base = oauthCallbackBase?.trim() || window.location.origin;
+      const callbackUrl = `${base}/api/social-bot/meta/oauth-callback`;
 
       let fbUrl: string;
       if (channel === "WHATSAPP" && metaConfigId.trim()) {

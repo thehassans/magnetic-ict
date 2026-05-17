@@ -87,7 +87,7 @@ export async function GET(request: Request) {
       if (window.opener) {
         window.opener.postMessage(
           { type: "fb-connect", ok: finalOk, channel: ${JSON.stringify(state)}, error: finalError, pages: ${JSON.stringify(pages)} },
-          window.location.origin
+          "*"
         );
       }
     } catch (_) {}
