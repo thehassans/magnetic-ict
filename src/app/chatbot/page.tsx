@@ -1,4 +1,3 @@
-import { BarChart3, Bot, FileText, MessageCircle, TrendingUp, Users, Webhook, Zap } from "lucide-react";
 import { auth } from "@/auth";
 import {
   getSocialBotAgents,
@@ -6,17 +5,15 @@ import {
   getSocialBotIntegrations,
   getSocialBotThreads
 } from "@/lib/social-bot-db";
+import { Bot, FileText, MessageCircle, Users, Webhook, Zap } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-const STAT_CFG = [
-  { key: "conversations", label: "Total Conversations", icon: MessageCircle, from: "from-violet-500/20", to: "to-violet-900/10", border: "border-violet-500/20", icon_cls: "bg-violet-500/20 text-violet-300" },
-  { key: "unread", label: "Unread Messages", icon: TrendingUp, from: "from-rose-500/20", to: "to-rose-900/10", border: "border-rose-500/20", icon_cls: "bg-rose-500/20 text-rose-300" },
-  { key: "aiThreads", label: "AI-Handled Threads", icon: Zap, from: "from-emerald-500/20", to: "to-emerald-900/10", border: "border-emerald-500/20", icon_cls: "bg-emerald-500/20 text-emerald-300" },
-  { key: "channels", label: "Connected Channels", icon: Webhook, from: "from-sky-500/20", to: "to-sky-900/10", border: "border-sky-500/20", icon_cls: "bg-sky-500/20 text-sky-300" },
-  { key: "agents", label: "Active Agents", icon: Bot, from: "from-purple-500/20", to: "to-purple-900/10", border: "border-purple-500/20", icon_cls: "bg-purple-500/20 text-purple-300" },
-  { key: "docs", label: "Knowledge Docs", icon: FileText, from: "from-amber-500/20", to: "to-amber-900/10", border: "border-amber-500/20", icon_cls: "bg-amber-500/20 text-amber-300" }
-];
+const CHANNEL_ICON: Record<string, string> = {
+  WHATSAPP: "💬",
+  INSTAGRAM: "📸",
+  MESSENGER: "💙"
+};
 
 export default async function ChatbotDashboardPage() {
   const session = await auth();
@@ -30,104 +27,131 @@ export default async function ChatbotDashboardPage() {
     getSocialBotAgents(uid)
   ]);
 
-  const values: Record<string, number> = {
-    conversations: threads.length,
-    unread: threads.reduce((s, t) => s + (t.unreadCount ?? 0), 0),
-    aiThreads: threads.filter((t) => t.mode === "AI").length,
-    channels: integrations.filter((i) => i.status === "CONNECTED").length,
-    agents: agents.filter((a) => a.isActive).length,
-    docs: documents.filter((d) => d.status === "READY").length
-  };
+  const stats = [
+    { label: "Conversations", value: threads.length, sub: "All time", accent: "text-violet-500 dark:text-violet-400", icon: MessageCircle },
+    { label: "Unread", value: threads.reduce((s, t) => s + (t.unreadCount ?? 0), 0), sub: "Awaiting reply", accent: "text-rose-500 dark:text-rose-400", icon: Users },
+    { label: "AI Threads", value: threads.filter((t) => t.mode === "AI").length, sub: "Handled by AI", accent: "text-emerald-600 dark:text-emerald-400", icon: Zap },
+    { label: "Channels", value: integrations.filter((i) => i.status === "CONNECTED").length, sub: "Connected", accent: "text-sky-500 dark:text-sky-400", icon: Webhook },
+    { label: "Agents", value: agents.filter((a) => a.isActive).length, sub: "Active", accent: "text-amber-500 dark:text-amber-400", icon: Bot },
+    { label: "Knowledge", value: documents.filter((d) => d.status === "READY").length, sub: "Docs ready", accent: "text-fuchsia-500 dark:text-fuchsia-400", icon: FileText }
+  ];
 
   return (
-    <div className="min-h-full space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Dashboard</h1>
-          <p className="mt-0.5 text-sm text-gray-500 dark:text-white/40">Your omnichannel workspace overview</p>
-        </div>
-        <div className="flex items-center gap-2 rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] px-3 py-1.5">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
-          <span className="text-xs font-medium text-gray-500 dark:text-white/50">Live</span>
+    <div className="min-h-full bg-gray-50/40 dark:bg-transparent">
+
+      {/* ── Header ─────────────────────────────────────────────────────── */}
+      <div className="border-b border-gray-100 dark:border-white/[0.05] bg-white dark:bg-transparent px-7 pt-7 pb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-[1.5rem] font-bold tracking-tight text-gray-950 dark:text-white">Dashboard</h1>
+            <p className="mt-0.5 text-[13px] text-gray-400 dark:text-white/30">Omnichannel workspace overview</p>
+          </div>
+          <div className="flex items-center gap-2 rounded-full border border-emerald-200 dark:border-emerald-500/20 bg-emerald-50 dark:bg-emerald-500/10 px-3.5 py-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+            <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">Live</span>
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {STAT_CFG.map((cfg) => {
-          const Icon = cfg.icon;
-          return (
-            <div key={cfg.key} className={`relative overflow-hidden rounded-2xl border ${cfg.border} bg-gradient-to-br ${cfg.from} ${cfg.to} p-5`}>
-              <div className="flex items-start justify-between">
-                <p className="text-[13px] text-gray-600 dark:text-white/50">{cfg.label}</p>
-                <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${cfg.icon_cls}`}>
-                  <Icon className="h-4 w-4" />
-                </div>
-              </div>
-              <p className="mt-4 text-4xl font-bold text-gray-900 dark:text-white">{values[cfg.key]}</p>
-              <div className="mt-2 flex items-center gap-1.5">
-                <TrendingUp className="h-3 w-3 text-gray-300 dark:text-white/20" />
-                <span className="text-[11px] text-gray-400 dark:text-white/25">All time</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <div className="px-7 py-6 space-y-5">
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.03]">
-          <div className="flex items-center justify-between border-b border-gray-200 dark:border-white/[0.06] px-5 py-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-violet-500 dark:text-violet-400" />
-              <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Recent Conversations</h2>
-            </div>
-            <span className="rounded-full bg-violet-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-violet-300">{threads.length}</span>
-          </div>
-          {threads.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 py-14 text-center">
-              <MessageCircle className="h-8 w-8 text-gray-300 dark:text-white/10" />
-              <p className="text-sm text-gray-400 dark:text-white/25">No conversations yet</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-100 dark:divide-white/[0.04]">
-              {threads.slice(0, 5).map((t) => (
-                <div key={t._id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-white/[0.02]">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/30 to-purple-600/20 text-sm font-bold text-violet-200">
-                    {t.contactName.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-900 dark:text-white">{t.contactName}</p>
-                    <p className="truncate text-xs text-gray-400 dark:text-white/30">{t.lastMessagePreview}</p>
-                  </div>
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${t.mode === "AI" ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300" : "bg-gray-100 dark:bg-white/[0.08] text-gray-500 dark:text-white/40"}`}>{t.mode}</span>
+        {/* ── Stats ────────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
+          {stats.map((s) => {
+            const Icon = s.icon;
+            return (
+              <div
+                key={s.label}
+                className="group relative overflow-hidden rounded-[20px] border border-gray-100 dark:border-white/[0.06] bg-white dark:bg-white/[0.025] p-5 shadow-[0_1px_4px_rgba(0,0,0,0.04)] dark:shadow-none transition hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] dark:hover:bg-white/[0.04]"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400 dark:text-white/25">{s.label}</p>
+                  <Icon className={`h-3.5 w-3.5 ${s.accent} opacity-60`} />
                 </div>
-              ))}
-            </div>
-          )}
+                <p className={`text-[3rem] font-black leading-none tracking-tight ${s.accent}`}>{s.value}</p>
+                <p className="mt-2.5 text-[11px] text-gray-400 dark:text-white/25">{s.sub}</p>
+              </div>
+            );
+          })}
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.03]">
-          <div className="flex items-center border-b border-gray-200 dark:border-white/[0.06] px-5 py-4">
-            <BarChart3 className="mr-2 h-4 w-4 text-violet-500 dark:text-violet-400" />
-            <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Channel Status</h2>
-          </div>
-          {integrations.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 py-14 text-center">
-              <Webhook className="h-8 w-8 text-gray-300 dark:text-white/10" />
-              <p className="text-sm text-gray-400 dark:text-white/25">No channels configured</p>
+        {/* ── Bottom panels ────────────────────────────────────────────── */}
+        <div className="grid gap-4 lg:grid-cols-2">
+
+          {/* Recent Conversations */}
+          <div className="overflow-hidden rounded-[20px] border border-gray-100 dark:border-white/[0.06] bg-white dark:bg-white/[0.025] shadow-[0_1px_4px_rgba(0,0,0,0.04)] dark:shadow-none">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/[0.05] px-5 py-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400 dark:text-white/25">Recent Conversations</p>
+              {threads.length > 0 && (
+                <span className="rounded-full bg-violet-100 dark:bg-violet-500/15 px-2 py-0.5 text-[10px] font-bold text-violet-600 dark:text-violet-300">{threads.length}</span>
+              )}
             </div>
-          ) : (
-            <div className="divide-y divide-gray-100 dark:divide-white/[0.04]">
-              {integrations.map((i) => (
-                <div key={i._id} className="flex items-center justify-between px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <span className={`h-2 w-2 rounded-full ${i.status === "CONNECTED" ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" : i.status === "PENDING" ? "bg-amber-400" : "bg-white/20"}`} />
-                    <span className="text-sm text-gray-600 dark:text-white/60">{i.channel}</span>
+            {threads.length === 0 ? (
+              <div className="flex flex-col items-center gap-2.5 py-12">
+                <MessageCircle className="h-7 w-7 text-gray-200 dark:text-white/[0.08]" />
+                <p className="text-[12px] text-gray-400 dark:text-white/25">No conversations yet</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-50 dark:divide-white/[0.04]">
+                {threads.slice(0, 5).map((t) => (
+                  <div key={t._id} className="flex items-center gap-3 px-5 py-3.5 transition hover:bg-gray-50/70 dark:hover:bg-white/[0.02]">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-white/[0.07] text-sm font-bold text-gray-600 dark:text-white/50">
+                      {t.contactName.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-semibold text-gray-900 dark:text-white">{t.contactName}</p>
+                      <p className="truncate text-[11px] text-gray-400 dark:text-white/30">{t.lastMessagePreview ?? "—"}</p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] ${
+                      t.mode === "AI"
+                        ? "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                        : "bg-gray-100 dark:bg-white/[0.07] text-gray-500 dark:text-white/35"
+                    }`}>{t.mode}</span>
                   </div>
-                  <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${i.status === "CONNECTED" ? "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : i.status === "PENDING" ? "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300" : "bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-white/30"}`}>{i.status}</span>
-                </div>
-              ))}
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Channel Status */}
+          <div className="overflow-hidden rounded-[20px] border border-gray-100 dark:border-white/[0.06] bg-white dark:bg-white/[0.025] shadow-[0_1px_4px_rgba(0,0,0,0.04)] dark:shadow-none">
+            <div className="border-b border-gray-100 dark:border-white/[0.05] px-5 py-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400 dark:text-white/25">Channel Status</p>
             </div>
-          )}
+            {integrations.length === 0 ? (
+              <div className="flex flex-col items-center gap-2.5 py-12">
+                <Webhook className="h-7 w-7 text-gray-200 dark:text-white/[0.08]" />
+                <p className="text-[12px] text-gray-400 dark:text-white/25">No channels configured</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-50 dark:divide-white/[0.04]">
+                {integrations.map((i) => (
+                  <div key={i._id} className="flex items-center justify-between px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-base leading-none">{CHANNEL_ICON[i.channel] ?? "📡"}</span>
+                      <span className="text-[13px] font-medium text-gray-700 dark:text-white/60 capitalize">{i.channel.charAt(0) + i.channel.slice(1).toLowerCase()}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`h-1.5 w-1.5 rounded-full ${
+                        i.status === "CONNECTED"
+                          ? "bg-emerald-500 shadow-[0_0_6px_rgba(52,211,153,0.7)]"
+                          : i.status === "PENDING"
+                            ? "bg-amber-400"
+                            : "bg-gray-300 dark:bg-white/20"
+                      }`} />
+                      <span className={`text-[11px] font-semibold ${
+                        i.status === "CONNECTED"
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : i.status === "PENDING"
+                            ? "text-amber-600 dark:text-amber-400"
+                            : "text-gray-400 dark:text-white/25"
+                      }`}>{i.status.charAt(0) + i.status.slice(1).toLowerCase()}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
