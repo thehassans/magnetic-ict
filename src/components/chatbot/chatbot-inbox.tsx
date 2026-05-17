@@ -264,6 +264,152 @@ function DemoChat() {
   );
 }
 
+/* ─── Demo threads (one per platform) ─────────────────────────────── */
+type DemoThread = {
+  id: string;
+  name: string;
+  handle: string;
+  source: keyof typeof platformConfig;
+  preview: string;
+  time: string;
+  msgs: Array<{ id: number; dir: "in" | "out"; text: string; time: string }>;
+};
+
+const DEMO_THREADS: DemoThread[] = [
+  {
+    id: "demo-wa",
+    name: "Sarah Johnson",
+    handle: "+1 (555) 234-5678",
+    source: "WHATSAPP",
+    preview: "Amazing! Thank you so much \uD83D\uDE4F",
+    time: "10:26 AM",
+    msgs: [
+      { id: 1, dir: "in", text: "Hi! I need help tracking my order. It's been 5 days and it hasn't arrived yet.", time: "10:23 AM" },
+      { id: 2, dir: "out", text: "Hello! Happy to help. Could you please share your order number?", time: "10:24 AM" },
+      { id: 3, dir: "in", text: "Sure \u2014 it's #MAG-78291", time: "10:24 AM" },
+      { id: 4, dir: "out", text: "Got it! Your order is in transit and arrives tomorrow between 2\u20136 PM. I'm sending the live tracking link now. \uD83D\uDCE6", time: "10:25 AM" },
+      { id: 5, dir: "in", text: "Amazing! Thank you so much for the quick help \uD83D\uDE4F", time: "10:26 AM" },
+      { id: 6, dir: "out", text: "You're very welcome, Sarah! Is there anything else I can help you with today?", time: "10:26 AM" },
+    ]
+  },
+  {
+    id: "demo-ig",
+    name: "Alex Rivera",
+    handle: "@alexrivera_official",
+    source: "INSTAGRAM",
+    preview: "Do you ship internationally? \uD83C\uDF0D",
+    time: "Yesterday",
+    msgs: [
+      { id: 1, dir: "in", text: "Hey! I saw your product on Instagram. When will the new summer collection be available? \uD83C\uDF0A", time: "Yesterday" },
+      { id: 2, dir: "out", text: "Hi Alex! Our summer collection drops June 1st. Pre-order now for 15% off \uD83C\uDF89", time: "Yesterday" },
+      { id: 3, dir: "in", text: "Nice! Do you have blue options?", time: "Yesterday" },
+      { id: 4, dir: "out", text: "Yes! Ocean Blue, Sky Blue, and Midnight Navy. Want me to send you the lookbook?", time: "Yesterday" },
+      { id: 5, dir: "in", text: "Yes please! Also do you ship internationally? \uD83C\uDF0D", time: "Yesterday" },
+      { id: 6, dir: "out", text: "We ship to 45+ countries! Standard (5-7 days) and Express (2-3 days) options available. \uD83C\uDF10", time: "Yesterday" },
+    ]
+  },
+  {
+    id: "demo-ms",
+    name: "James Williams",
+    handle: "James Williams",
+    source: "MESSENGER",
+    preview: "Looking forward to Thursday! \uD83D\uDE0A",
+    time: "Mon",
+    msgs: [
+      { id: 1, dir: "in", text: "Hello, I need to reschedule my Tuesday appointment. Is that possible?", time: "Mon 2:15 PM" },
+      { id: 2, dir: "out", text: "Hi James! Of course. What date and time works best for you?", time: "Mon 2:16 PM" },
+      { id: 3, dir: "in", text: "Can we move it to Thursday afternoon around 3 PM?", time: "Mon 2:17 PM" },
+      { id: 4, dir: "out", text: "Thursday at 3 PM is confirmed! You'll receive a confirmation email shortly. \u2705", time: "Mon 2:18 PM" },
+      { id: 5, dir: "in", text: "Great, thank you! Anything I need to bring?", time: "Mon 2:19 PM" },
+      { id: 6, dir: "out", text: "Just your ID and the confirmation email. Looking forward to seeing you Thursday! \uD83D\uDE0A", time: "Mon 2:19 PM" },
+    ]
+  }
+];
+
+function DemoChatView({ demo }: { demo: DemoThread }) {
+  const { Icon, color } = platformConfig[demo.source];
+  return (
+    <div className="flex min-w-0 flex-1 flex-col bg-gray-50 dark:bg-[#07070f]">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1e] px-5 py-3.5">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/40 to-purple-600/30 text-sm font-bold text-violet-700 dark:text-violet-200">
+              {demo.name.charAt(0)}
+            </div>
+            <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white dark:border-[#0c0c1e]" style={{ background: color }}>
+              <Icon className="h-2 w-2 text-white" />
+            </span>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="text-[14px] font-semibold text-gray-900 dark:text-white">{demo.name}</p>
+              <span className="rounded-md bg-amber-100 dark:bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Demo</span>
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-[11px] text-gray-500 dark:text-white/30">{demo.handle}</p>
+              <PlatformBadge source={demo.source} size="xs" />
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-1.5">
+          <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_0_14px_rgba(124,58,237,0.35)]">
+            <Zap className="h-3 w-3" />AI
+          </div>
+          <div className="flex items-center gap-1.5 rounded-full border border-gray-200 dark:border-white/[0.08] px-3 py-1.5 text-[11px] font-semibold text-gray-500 dark:text-white/35">
+            <UserCheck className="h-3 w-3" />MANUAL
+          </div>
+        </div>
+      </div>
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto space-y-3 px-5 py-5">
+        {demo.msgs.map((msg, i) => {
+          const out = msg.dir === "out";
+          const showSender = i === 0 || demo.msgs[i - 1]?.dir !== msg.dir;
+          return (
+            <div key={msg.id} className={cn("flex gap-2.5", out ? "justify-end" : "justify-start")}>
+              {!out && showSender && (
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gray-200 dark:bg-white/[0.07] text-[11px] font-bold text-gray-600 dark:text-white/50">
+                  {demo.name.charAt(0)}
+                </div>
+              )}
+              {!out && !showSender && <div className="w-7 shrink-0" />}
+              <div className="flex max-w-[65%] flex-col gap-0.5">
+                {out && showSender && (
+                  <p className="text-right text-[10px] text-violet-600 dark:text-violet-400/60">Magnetic AI</p>
+                )}
+                <div className={cn("rounded-2xl px-4 py-2.5 text-[13px] leading-[1.7]",
+                  out
+                    ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700 text-white shadow-[0_4px_24px_rgba(124,58,237,0.3)]"
+                    : "rounded-tl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05] text-gray-800 dark:text-white/80")}>
+                  {msg.text}
+                </div>
+                <p className={cn("text-[10px] text-gray-400 dark:text-white/20", out ? "text-right" : "text-left")}>{msg.time}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {/* Input — disabled for demo */}
+      <div className="border-t border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1e] p-4">
+        <div className="mb-2.5 flex items-center justify-center">
+          <span className="rounded-full border border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-500/10 px-3 py-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+            \u2726 Demo preview \u2014 connect a channel to start real conversations
+          </span>
+        </div>
+        <div className="flex gap-3">
+          <div className="flex-1 rounded-xl border border-gray-200 dark:border-white/[0.08] bg-gray-100/50 dark:bg-white/[0.02] px-4 py-2.5 text-[13px] text-gray-300 dark:text-white/15 cursor-not-allowed select-none">
+            Type a reply\u2026
+          </div>
+          <div className="flex items-center gap-2 self-end rounded-xl bg-gradient-to-r from-violet-600/50 to-purple-600/50 px-4 py-2.5 text-[13px] font-semibold text-white cursor-not-allowed opacity-50">
+            <Send className="h-4 w-4" />Send
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main component ──────────────────────────────────────────────── */
 export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads: SocialBotThread[]; initialAgents: SocialBotAgent[] }) {
   const [threads, setThreads] = useState(initialThreads);
@@ -275,6 +421,9 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
   const [assigning, setAssigning] = useState(false);
   const [filter, setFilter] = useState<Filter>("ALL");
   const [search, setSearch] = useState("");
+  const [selectedDemoId, setSelectedDemoId] = useState<string>("demo-wa");
+  const isDemoMode = threads.length === 0;
+  const selectedDemo = (DEMO_THREADS.find((d) => d.id === selectedDemoId) ?? DEMO_THREADS[0]) as DemoThread;
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -404,7 +553,45 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
 
         {/* Thread list */}
         <div className="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-white/[0.04]">
-          {filtered.length === 0 ? (
+          {isDemoMode ? (
+            <>
+              <div className="flex items-center justify-between px-4 py-2 bg-amber-50/60 dark:bg-amber-500/[0.05]">
+                <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-amber-600 dark:text-amber-400/70">Live Preview</p>
+                <span className="rounded-full bg-amber-100 dark:bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-amber-600 dark:text-amber-400">3 channels</span>
+              </div>
+              {DEMO_THREADS.map((dt) => {
+                const { Icon, color } = platformConfig[dt.source];
+                const isActive = selectedDemoId === dt.id;
+                return (
+                  <button key={dt.id} type="button" onClick={() => setSelectedDemoId(dt.id)}
+                    className={cn("relative flex w-full items-start gap-3 px-4 py-3.5 text-left transition-all",
+                      isActive ? "bg-violet-50 dark:bg-violet-500/[0.12]" : "hover:bg-gray-50 dark:hover:bg-white/[0.025]")}>
+                    {isActive && <span className="absolute left-0 top-3 bottom-3 w-0.5 rounded-r bg-violet-500" />}
+                    <div className="relative mt-0.5 shrink-0">
+                      <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold",
+                        isActive ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-[0_0_12px_rgba(124,58,237,0.4)]" : "bg-gray-100 dark:bg-white/[0.06] text-gray-600 dark:text-white/50")}>
+                        {dt.name.charAt(0)}
+                      </div>
+                      <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-white dark:border-[#0d0d20] bg-white dark:bg-[#0d0d20]">
+                        <Icon className="h-2.5 w-2.5" style={{ color }} />
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <p className={cn("truncate text-[13px] font-semibold", isActive ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-white/80")}>{dt.name}</p>
+                        <span className="shrink-0 text-[10px] text-gray-400 dark:text-white/20">{dt.time}</span>
+                      </div>
+                      <p className="mt-0.5 truncate text-[11px] text-gray-400 dark:text-white/30">{dt.preview}</p>
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        <PlatformBadge source={dt.source} size="xs" />
+                        <span className="rounded-md bg-amber-100 dark:bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-amber-600 dark:text-amber-400">Demo</span>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </>
+          ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-14">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-dashed border-gray-200 dark:border-white/[0.08]">
                 <Bot className="h-5 w-5 text-gray-300 dark:text-white/10" />
@@ -576,6 +763,8 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
             assigning={assigning}
           />
         </>
+      ) : isDemoMode ? (
+        <DemoChatView demo={selectedDemo} />
       ) : (
         <DemoChat />
       )}
