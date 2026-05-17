@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bot, CheckCircle2, Instagram, Loader2, MessageCircle, RefreshCw, ShieldCheck, Zap } from "lucide-react";
+import { Bot, CheckCircle2, Instagram, Key, Loader2, MessageCircle, RefreshCw, Save, ShieldCheck, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SocialBotIntegration, SocialChannel } from "@/lib/social-bot-types";
 
@@ -65,6 +65,10 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
   const [list, setList] = useState(integrations);
   const [connecting, setConnecting] = useState<SocialChannel | null>(null);
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
+  const [tokenDrafts, setTokenDrafts] = useState<Record<string, string>>(
+    Object.fromEntries(integrations.map((i) => [i._id, ""]))
+  );
+  const [savingToken, setSavingToken] = useState<string | null>(null);
 
   const metaReady = Boolean(metaAppId.trim() && metaConfigId.trim());
 
@@ -116,6 +120,26 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
       const pollTimer = setInterval(() => { if (popup.closed) settle(false); }, 500);
       window.addEventListener("message", onMessage);
     });
+  }
+
+  async function saveToken(integration: SocialBotIntegration) {
+    const token = (tokenDrafts[integration._id] ?? "").trim();
+    if (!token) { showToast("err", "Paste the Page Access Token first."); return; }
+    setSavingToken(integration._id);
+    try {
+      const res = await fetch("/api/social-bot/integrations", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channel: integration.channel, enabled: integration.status !== "DISCONNECTED", label: integration.label, pageId: integration.pageId, phoneNumberId: integration.phoneNumberId, accountId: integration.accountId, accessToken: token })
+      });
+      if (!res.ok) throw new Error("Save failed.");
+      await reload();
+      showToast("ok", `${integration.channel} page token saved.`);
+    } catch (e) {
+      showToast("err", e instanceof Error ? e.message : "Save failed.");
+    } finally {
+      setSavingToken(null);
+    }
   }
 
   async function connect(integration: SocialBotIntegration) {
@@ -242,7 +266,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
                 </div>
 
                 {/* connect button */}
-                <div className="mt-6">
+                <div className="mt-6 space-y-3">
                   {isConnected ? (
                     <div className={cn("flex items-center justify-center gap-2 rounded-xl border bg-gradient-to-r px-4 py-3 text-sm font-semibold", m.connectedBg)}>
                       <CheckCircle2 className="h-4 w-4" />
@@ -266,6 +290,39 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
                         <>Connect {m.label}</>
                       )}
                     </button>
+                  )}
+
+                  {/* Page Access Token input (shown once connected or pending) */}
+                  {(isConnected || isPending) && (
+                    <div className="rounded-xl border border-gray-100 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.03] p-3 space-y-2">
+                      <div className="flex items-center gap-1.5">
+                        <Key className="h-3 w-3 text-gray-400 dark:text-white/25" />
+                        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 dark:text-white/25">Page Access Token</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="password"
+                          value={tokenDrafts[integration._id] ?? ""}
+                          onChange={(e) => setTokenDrafts((d) => ({ ...d, [integration._id]: e.target.value }))}
+                          placeholder="EAAHt…"
+                          className="flex-1 min-w-0 rounded-lg border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] px-2.5 py-1.5 text-[11px] font-mono text-gray-700 dark:text-white/70 placeholder:text-gray-300 dark:placeholder:text-white/15 outline-none focus:border-violet-400 dark:focus:border-violet-500/50 transition"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void saveToken(integration)}
+                          disabled={savingToken === integration._id}
+                          className="shrink-0 flex items-center gap-1.5 rounded-lg bg-gray-900 dark:bg-white/[0.08] px-2.5 py-1.5 text-[11px] font-semibold text-white dark:text-white/70 transition hover:bg-violet-700 dark:hover:bg-white/[0.14] disabled:opacity-40"
+                        >
+                          {savingToken === integration._id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                          Save
+                        </button>
+                      </div>
+                      {integration.accessTokenEncrypted ? (
+                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400">✓ Token stored</p>
+                      ) : (
+                        <p className="text-[10px] text-gray-400 dark:text-white/25">Paste from Facebook → Messenger API Settings → Token Generation</p>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
