@@ -1,19 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Bot, CheckCircle2, Instagram, Loader2, MessageCircle, Plug, RefreshCw, Wifi, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SocialBotIntegration, SocialChannel } from "@/lib/social-bot-types";
-
-declare global {
-  interface Window {
-    FB?: {
-      init: (o: { appId: string; cookie: boolean; xfbml: boolean; version: string }) => void;
-      login: (cb: (r: { authResponse?: { code?: string } } | undefined) => void, opts: { config_id: string; response_type: string; override_default_response_type: boolean; extras: { sessionInfoVersion: number } }) => void;
-    };
-    fbAsyncInit?: () => void;
-  }
-}
 
 const channelMeta: Record<SocialChannel, { label: string; icon: typeof MessageCircle; color: string; glow: string }> = {
   WHATSAPP: { label: "WhatsApp", icon: MessageCircle, color: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/25", glow: "rgba(52,211,153,0.6)" },
@@ -25,22 +15,10 @@ type Props = { integrations: SocialBotIntegration[]; metaAppId: string; metaConf
 
 export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props) {
   const [list, setList] = useState(integrations);
-  const [sdkReady, setSdkReady] = useState(false);
   const [connecting, setConnecting] = useState<SocialChannel | null>(null);
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
 
   const metaReady = Boolean(metaAppId.trim() && metaConfigId.trim());
-
-  useEffect(() => {
-    if (!metaReady || typeof window === "undefined") return;
-    if (window.FB) { setSdkReady(true); return; }
-    window.fbAsyncInit = () => { window.FB?.init({ appId: metaAppId, cookie: true, xfbml: false, version: "v19.0" }); setSdkReady(true); };
-    if (!document.getElementById("facebook-jssdk")) {
-      const s = document.createElement("script");
-      s.id = "facebook-jssdk"; s.src = "https://connect.facebook.net/en_US/sdk.js"; s.async = true;
-      document.body.appendChild(s);
-    }
-  }, [metaAppId, metaReady]);
 
   function showToast(type: "ok" | "err", msg: string) {
     setToast({ type, msg });
@@ -52,15 +30,50 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
     if (r.ok) { const ws = await r.json() as { integrations?: SocialBotIntegration[] }; setList(ws.integrations ?? []); }
   }
 
+  function openMetaPopup(channel: SocialChannel): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const callbackUrl = `${window.location.origin}/api/social-bot/meta/oauth-callback`;
+      const extras = JSON.stringify({ sessionInfoVersion: 2 });
+      const fbUrl =
+        `https://www.facebook.com/v19.0/dialog/oauth` +
+        `?client_id=${encodeURIComponent(metaAppId)}` +
+        `&config_id=${encodeURIComponent(metaConfigId)}` +
+        `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
+        `&response_type=code` +
+        `&override_default_response_type=true` +
+        `&extras=${encodeURIComponent(extras)}` +
+        `&state=${encodeURIComponent(channel)}`;
+
+      const popup = window.open(fbUrl, "fb-signup", "width=620,height=700,scrollbars=yes,resizable=yes");
+      if (!popup) {
+        reject(new Error("Popup was blocked. Allow popups for this site and try again."));
+        return;
+      }
+
+      let settled = false;
+      function settle(ok: boolean, error?: string) {
+        if (settled) return;
+        settled = true;
+        window.removeEventListener("message", onMessage);
+        clearInterval(pollTimer);
+        ok ? resolve() : reject(new Error(error ?? "Connection cancelled."));
+      }
+
+      function onMessage(ev: MessageEvent) {
+        if (ev.origin !== window.location.origin) return;
+        const d = ev.data as { type?: string; ok?: boolean; error?: string | null };
+        if (d?.type === "fb-connect") settle(d.ok === true, d.error ?? undefined);
+      }
+
+      const pollTimer = setInterval(() => { if (popup.closed) settle(false); }, 500);
+      window.addEventListener("message", onMessage);
+    });
+  }
+
   async function connect(integration: SocialBotIntegration) {
-    if (!window.FB) { showToast("err", "Meta SDK is still loading. Try again."); return; }
     setConnecting(integration.channel);
     try {
-      await new Promise<void>((res, rej) => {
-        window.FB?.login((resp) => {
-          resp?.authResponse?.code ? res() : rej(new Error("Connection cancelled."));
-        }, { config_id: metaConfigId, response_type: "code", override_default_response_type: true, extras: { sessionInfoVersion: 2 } });
-      });
+      await openMetaPopup(integration.channel);
       await fetch("/api/social-bot/integrations", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -127,7 +140,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
               {integration.label ? <p className="mt-1 text-xs text-gray-400 dark:text-white/30">{integration.label}</p> : null}
               <button
                 type="button"
-                disabled={!metaReady || !sdkReady || isLoading || isConnected}
+                disabled={!metaReady || isLoading || isConnected}
                 onClick={() => void connect(integration)}
                 className={cn(
                   "mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition",

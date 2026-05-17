@@ -17,23 +17,6 @@ type CustomerSocialBotWorkspaceProps = {
   respondIoWorkspaceUrl?: string;
 };
 
-declare global {
-  interface Window {
-    FB?: {
-      init: (options: { appId: string; cookie: boolean; xfbml: boolean; version: string }) => void;
-      login: (
-        callback: (response: { authResponse?: { code?: string } } | undefined) => void,
-        options: {
-          config_id: string;
-          response_type: string;
-          override_default_response_type: boolean;
-          extras: { sessionInfoVersion: number };
-        }
-      ) => void;
-    };
-    fbAsyncInit?: () => void;
-  }
-}
 
 const sourceIconMap = {
   WHATSAPP: MessageCircle,
@@ -56,7 +39,6 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
   const [demoThread, setDemoThread] = useState({ source: "WHATSAPP" as SocialChannel, contactName: "", contactHandle: "", firstMessage: "" });
   const [toast, setToast] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [sdkReady, setSdkReady] = useState(false);
   const [connectingChannel, setConnectingChannel] = useState<SocialChannel | null>(null);
 
   const integrations = workspace?.integrations ?? [];
@@ -126,41 +108,6 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
     };
   }, [selectedThreadId]);
 
-  useEffect(() => {
-    if (!metaConnectReady || typeof window === "undefined") {
-      return;
-    }
-
-    if (window.FB) {
-      setSdkReady(true);
-      return;
-    }
-
-    window.fbAsyncInit = () => {
-      if (!window.FB) {
-        return;
-      }
-
-      window.FB.init({
-        appId: metaAppId,
-        cookie: true,
-        xfbml: false,
-        version: "v19.0"
-      });
-      setSdkReady(true);
-    };
-
-    const existing = document.getElementById("facebook-jssdk");
-    if (existing) {
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.id = "facebook-jssdk";
-    script.src = "https://connect.facebook.net/en_US/sdk.js";
-    script.async = true;
-    document.body.appendChild(script);
-  }, [metaAppId, metaConnectReady]);
 
   const selectedThread = threadPayload?.thread ?? null;
   const selectedMessages = threadPayload?.messages ?? [];
@@ -296,34 +243,47 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
     await loadWorkspace();
   }
 
-  async function launchMetaSignup() {
+  function openMetaPopup(channel: SocialChannel): Promise<void> {
     if (!metaConnectReady) {
-      throw new Error("Meta guided connect is not available yet. Please contact support.");
+      return Promise.reject(new Error("Meta guided connect is not available yet. Please contact support."));
     }
 
-    if (!window.FB) {
-      throw new Error("Meta connect is still loading. Please try again in a moment.");
-    }
+    return new Promise((resolve, reject) => {
+      const callbackUrl = `${window.location.origin}/api/social-bot/meta/oauth-callback`;
+      const extras = JSON.stringify({ sessionInfoVersion: 2 });
+      const fbUrl =
+        `https://www.facebook.com/v19.0/dialog/oauth` +
+        `?client_id=${encodeURIComponent(metaAppId)}` +
+        `&config_id=${encodeURIComponent(metaConfigId)}` +
+        `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
+        `&response_type=code` +
+        `&override_default_response_type=true` +
+        `&extras=${encodeURIComponent(extras)}` +
+        `&state=${encodeURIComponent(channel)}`;
 
-    return await new Promise<void>((resolve, reject) => {
-      window.FB?.login(
-        (response) => {
-          if (response?.authResponse?.code) {
-            resolve();
-            return;
-          }
+      const popup = window.open(fbUrl, "fb-signup", "width=620,height=700,scrollbars=yes,resizable=yes");
+      if (!popup) {
+        reject(new Error("Popup was blocked. Allow popups for this site and try again."));
+        return;
+      }
 
-          reject(new Error("Meta connection was canceled or not completed."));
-        },
-        {
-          config_id: metaConfigId,
-          response_type: "code",
-          override_default_response_type: true,
-          extras: {
-            sessionInfoVersion: 2
-          }
-        }
-      );
+      let settled = false;
+      function settle(ok: boolean, error?: string) {
+        if (settled) return;
+        settled = true;
+        window.removeEventListener("message", onMessage);
+        clearInterval(pollTimer);
+        ok ? resolve() : reject(new Error(error ?? "Connection cancelled."));
+      }
+
+      function onMessage(ev: MessageEvent) {
+        if (ev.origin !== window.location.origin) return;
+        const d = ev.data as { type?: string; ok?: boolean; error?: string | null };
+        if (d?.type === "fb-connect") settle(d.ok === true, d.error ?? undefined);
+      }
+
+      const pollTimer = setInterval(() => { if (popup.closed) settle(false); }, 500);
+      window.addEventListener("message", onMessage);
     });
   }
 
@@ -332,7 +292,7 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
     setError(null);
 
     try {
-      await launchMetaSignup();
+      await openMetaPopup(integration.channel);
       await saveIntegration(integration, { enabled: true });
       setToast(`${integration.channel} connection request sent. Our team can finish activation without asking you for raw tokens.`);
       setSelectedStep(3);
@@ -571,7 +531,6 @@ export function CustomerSocialBotWorkspace({ metaAppId, metaConfigId, respondIoW
                 <CustomerChannelCard
                   key={integration._id}
                   integration={integration}
-                  sdkReady={sdkReady}
                   metaConnectReady={metaConnectReady}
                   loading={connectingChannel === integration.channel}
                   onConnect={() => void handleConnectChannel(integration)}
@@ -716,18 +675,16 @@ function Field({ label, value, onChange, compact = false }: { label: string; val
 
 function CustomerChannelCard({
   integration,
-  sdkReady,
   metaConnectReady,
   loading,
   onConnect
 }: {
   integration: SocialBotIntegration;
-  sdkReady: boolean;
   metaConnectReady: boolean;
   loading: boolean;
   onConnect: () => void;
 }) {
-  const buttonDisabled = loading || !metaConnectReady || !sdkReady;
+  const buttonDisabled = loading || !metaConnectReady;
   const statusTone = integration.status === "CONNECTED"
     ? "border-emerald-200 bg-emerald-50 text-emerald-800"
     : integration.status === "PENDING"
@@ -758,7 +715,6 @@ function CustomerChannelCard({
         {loading ? "Opening Meta..." : integration.status === "CONNECTED" ? "Reconnect with Meta" : integration.status === "PENDING" ? "Continue Meta connect" : "Connect with Meta"}
       </button>
       {!metaConnectReady ? <div className="mt-3 text-xs text-amber-700">Waiting for platform Meta settings.</div> : null}
-      {metaConnectReady && !sdkReady ? <div className="mt-3 text-xs text-slate-500">Loading Meta connect…</div> : null}
     </div>
   );
 }
