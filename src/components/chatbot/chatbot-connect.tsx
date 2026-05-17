@@ -169,8 +169,14 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
           accessToken: page.access_token
         })
       });
+      // Subscribe page to webhook so Facebook delivers messages to inbox
+      await fetch("/api/social-bot/meta/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pageId: page.id })
+      }).catch(() => { /* non-fatal */ });
       await reload();
-      showToast("ok", `${page.name} connected successfully!`);
+      showToast("ok", `${page.name} connected — messages will appear in your Inbox.`);
       setPagePicker(null);
     } catch {
       showToast("err", "Failed to complete connection.");
@@ -355,8 +361,8 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
                     </button>
                   )}
 
-                  {/* Page Access Token input (shown once connected or pending) */}
-                  {(isConnected || isPending) && (
+                  {/* Page Access Token input — hidden for Messenger (auto-handled by page picker) */}
+                  {(isConnected || isPending) && integration.channel !== "MESSENGER" && (
                     <div className="rounded-xl border border-gray-100 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.03] p-3 space-y-2">
                       <div className="flex items-center gap-1.5">
                         <Key className="h-3 w-3 text-gray-400 dark:text-white/25" />
