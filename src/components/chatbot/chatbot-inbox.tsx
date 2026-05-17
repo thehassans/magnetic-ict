@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bot, ChevronDown, FileText, Loader2, RefreshCw, Search, Send, UserCheck, Users, X, Zap } from "lucide-react";
+import { Bot, ChevronDown, FileText, Loader2, Mic, RefreshCw, Search, Send, Smile, StopCircle, Trash2, UserCheck, Users, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SocialBotAgent, SocialBotMessage, SocialBotThread } from "@/lib/social-bot-types";
 import { WhatsAppIcon, InstagramIcon, MessengerIcon } from "@/components/chatbot/social-icons";
@@ -174,6 +174,39 @@ function AgentPanel({
           <PlatformBadge source={thread.source} size="sm" />
           <p className="text-[11px] text-gray-500 dark:text-white/30">{thread.contactHandle}</p>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Emoji picker ───────────────────────────────────────── */
+const EMOJI_CATS = [
+  { icon: "\uD83D\uDE00", emojis: ["\uD83D\uDE00","\uD83D\uDE02","\uD83E\uDD79","\uD83D\uDE0A","\uD83D\uDE0D","\uD83D\uDE0E","\uD83E\uDD70","\uD83D\uDE0F","\uD83D\uDE12","\uD83D\uDE2D","\uD83D\uDE21","\uD83E\uDD14","\uD83E\uDD29","\uD83D\uDE34","\uD83D\uDE08","\uD83E\uDD17","\uD83D\uDE44","\uD83D\uDE2C","\uD83D\uDE31","\uD83E\uDD73","\uD83D\uDE14","\uD83E\uDD11","\uD83E\uDEE1","\uD83E\uDEE2","\uD83E\uDD2B"] },
+  { icon: "\uD83D\uDC4B", emojis: ["\uD83D\uDC4B","\uD83E\uDD1D","\uD83D\uDC4D","\uD83D\uDC4E","\u2764\uFE0F","\uD83D\uDE4F","\uD83D\uDCAA","\uD83D\uDC4F","\uD83E\uDEF6","\uD83E\uDD1E","\u270C\uFE0F","\uD83E\uDD19","\uD83D\uDC4C","\uD83E\uDEB6","\uD83D\uDC94","\uD83D\uDC95","\uD83D\uDD90\uFE0F","\uD83D\uDC4A","\uD83E\uDD1C","\uD83E\uDEF5","\uD83E\uDD32","\uD83D\uDE4C","\uD83E\uDEF0","\uD83E\uDD1F","\u261D\uFE0F"] },
+  { icon: "\uD83C\uDF1F", emojis: ["\uD83C\uDF1F","\u2B50","\uD83D\uDD25","\uD83D\uDCAF","\u2705","\u274C","\u26A1","\uD83C\uDF89","\uD83C\uDF8A","\uD83C\uDF08","\uD83D\uDCA1","\uD83D\uDE80","\uD83C\uDFC6","\uD83C\uDFAF","\uD83D\uDCB0","\uD83D\uDD14","\uD83D\uDCCC","\u267E\uFE0F","\uD83D\uDD34","\uD83D\uDFE2","\uD83D\uDFE1","\uD83D\uDC8E","\uD83C\uDF19","\uD83D\uDC4B\uD83C\uDFFF","\uD83D\uDD1D"] },
+  { icon: "\uD83C\uDF55", emojis: ["\uD83C\uDF55","\uD83C\uDF54","\u2615","\uD83C\uDF66","\uD83C\uDF82","\uD83C\uDF5C","\uD83E\uDD57","\uD83C\uDF7A","\uD83C\uDF63","\uD83E\uDD50","\uD83C\uDF4E","\uD83C\uDF53","\uD83C\uDF49","\uD83E\uDD64","\uD83E\uDDC1","\uD83E\uDD69","\uD83C\uDF71","\uD83C\uDF5D","\uD83C\uDFF7\uFE0F","\uD83E\uDDC3","\uD83E\uDED6","\uD83C\uDF69","\uD83C\uDF6A","\uD83E\uDD5E","\uD83C\uDF2E"] },
+];
+
+function EmojiPicker({ onSelect }: { onSelect: (e: string) => void }) {
+  const [tab, setTab] = useState(0);
+  const emojis = EMOJI_CATS[tab]?.emojis ?? [];
+  return (
+    <div className="w-[272px] rounded-2xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#0e0e22] shadow-[0_-8px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_-8px_40px_rgba(0,0,0,0.55)] overflow-hidden">
+      <div className="flex border-b border-gray-100 dark:border-white/[0.05]">
+        {EMOJI_CATS.map((c, i) => (
+          <button key={i} type="button" onClick={() => setTab(i)}
+            className={cn("flex-1 py-2.5 text-[17px] transition hover:bg-gray-50 dark:hover:bg-white/[0.03]", tab === i ? "bg-violet-50 dark:bg-violet-500/10" : "")}>
+            {c.icon}
+          </button>
+        ))}
+      </div>
+      <div className="grid grid-cols-8 p-2 gap-px max-h-[152px] overflow-y-auto">
+        {emojis.map((emoji, i) => (
+          <button key={i} type="button" onClick={() => onSelect(emoji)}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-[17px] hover:bg-gray-100 dark:hover:bg-white/[0.06] transition">
+            {emoji}
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -426,6 +459,74 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
   const selectedDemo = (DEMO_THREADS.find((d) => d.id === selectedDemoId) ?? DEMO_THREADS[0]) as DemoThread;
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [showEmoji, setShowEmoji] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSec, setRecordingSec] = useState(0);
+  const [pendingAudio, setPendingAudio] = useState<{ url: string; durationSec: number } | null>(null);
+  const [localVoiceMsgs, setLocalVoiceMsgs] = useState<Array<{ id: string; url: string; durationSec: number; time: string }>>([]);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recordingSecRef = useRef(0);
+  const cancelRecordRef = useRef(false);
+
+  function fmtSec(s: number) {
+    return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
+  }
+
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      cancelRecordRef.current = false;
+      mr.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      mr.onstop = () => {
+        if (cancelRecordRef.current) { stream.getTracks().forEach((t) => t.stop()); return; }
+        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        setPendingAudio({ url: URL.createObjectURL(blob), durationSec: recordingSecRef.current });
+        stream.getTracks().forEach((t) => t.stop());
+      };
+      mr.start(100);
+      mediaRecorderRef.current = mr;
+      recordingSecRef.current = 0;
+      setRecordingSec(0);
+      setIsRecording(true);
+      recordingTimerRef.current = setInterval(() => {
+        recordingSecRef.current += 1;
+        setRecordingSec(recordingSecRef.current);
+      }, 1000);
+    } catch { /* mic permission denied */ }
+  }
+
+  function stopRecording() {
+    mediaRecorderRef.current?.stop();
+    if (recordingTimerRef.current) { clearInterval(recordingTimerRef.current); recordingTimerRef.current = null; }
+    setIsRecording(false);
+  }
+
+  function cancelAudio() {
+    cancelRecordRef.current = true;
+    if (isRecording) { mediaRecorderRef.current?.stop(); }
+    if (recordingTimerRef.current) { clearInterval(recordingTimerRef.current); recordingTimerRef.current = null; }
+    if (pendingAudio) URL.revokeObjectURL(pendingAudio.url);
+    setIsRecording(false);
+    setPendingAudio(null);
+    setRecordingSec(0);
+    recordingSecRef.current = 0;
+  }
+
+  function sendAudio() {
+    if (!pendingAudio) return;
+    setLocalVoiceMsgs((prev) => [...prev, {
+      id: `vm-${Date.now()}`,
+      url: pendingAudio.url,
+      durationSec: pendingAudio.durationSec,
+      time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+    }]);
+    setPendingAudio(null);
+    recordingSecRef.current = 0;
+  }
 
   const loadThread = useCallback(async (id: string) => {
     const r = await fetch(`/api/social-bot/threads/${id}`, { cache: "no-store" });
@@ -649,125 +750,192 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
         </div>
       </div>
 
-      {/* ── Chat area ── */}
-      {selected ? (
-        <>
-          <div className="flex min-w-0 flex-1 flex-col bg-gray-50 dark:bg-[#07070f]">
-            {/* Chat header */}
-            <div className="flex items-center justify-between border-b border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1e] px-5 py-3.5">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/40 to-purple-600/30 text-sm font-bold text-violet-200">
-                    {selected.contactName.charAt(0)}
-                  </div>
-                  <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white dark:border-[#0c0c1e]" style={{ background: platformConfig[selected.source].color }}>
-                    {(() => { const { Icon } = platformConfig[selected.source]; return <Icon className="h-2 w-2 text-white" />; })()}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-[14px] font-semibold text-gray-900 dark:text-white">{selected.contactName}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-[11px] text-gray-500 dark:text-white/30">{selected.contactHandle}</p>
-                    <PlatformBadge source={selected.source} size="xs" />
-                    {selected.assignedAgentName && (
-                      <span className="flex items-center gap-1 text-[10px] text-violet-600 dark:text-violet-400/70">
-                        <UserCheck className="h-2.5 w-2.5" />
-                        {selected.assignedAgentName}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              {/* Mode toggles */}
-              <div className="flex gap-1.5">
-                {(["AI", "MANUAL"] as const).map((m) => (
-                  <button key={m} type="button" onClick={() => void patchThread({ mode: m })}
-                    className={cn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition",
-                      selected.mode === m
-                        ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-[0_0_14px_rgba(124,58,237,0.45)]"
-                        : "border border-gray-200 dark:border-white/[0.08] text-gray-500 dark:text-white/35 hover:border-violet-400 dark:hover:border-violet-500/30 hover:text-gray-800 dark:hover:text-white/70")}>
-                    {m === "AI" ? <Zap className="h-3 w-3" /> : <UserCheck className="h-3 w-3" />}
-                    {m}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto space-y-3 px-5 py-5">
-              {(payload?.messages ?? []).map((msg, i) => {
-                const out = msg.direction === "OUTBOUND";
-                const prevMsg = i > 0 ? payload?.messages[i - 1] : null;
-                const showSender = !prevMsg || prevMsg.direction !== msg.direction;
-                return (
-                  <div key={msg._id} className={cn("flex gap-2.5", out ? "justify-end" : "justify-start")}>
-                    {!out && showSender && (
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gray-200 dark:bg-white/[0.07] text-[11px] font-bold text-gray-600 dark:text-white/50">
+          {/* ── Chat area ── */}
+          {selected ? (
+            <>
+              <div className="flex min-w-0 flex-1 flex-col bg-gray-50 dark:bg-[#07070f]">
+                {/* Chat header */}
+                <div className="flex items-center justify-between border-b border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1e] px-5 py-3.5">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/40 to-purple-600/30 text-sm font-bold text-violet-200">
                         {selected.contactName.charAt(0)}
                       </div>
-                    )}
-                    {!out && !showSender && <div className="w-7 shrink-0" />}
-                    <div className="flex max-w-[65%] flex-col gap-0.5">
-                      {out && showSender && selected.assignedAgentName && (
-                        <p className="text-right text-[10px] text-violet-600 dark:text-violet-400/60">{selected.assignedAgentName}</p>
-                      )}
-                      <div className={cn("rounded-2xl px-4 py-2.5 text-[13px] leading-[1.7]",
-                        out
-                          ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700 text-white shadow-[0_4px_24px_rgba(124,58,237,0.3)]"
-                          : "rounded-tl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05] text-gray-800 dark:text-white/80")}>
-                        {msg.text}
+                      <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white dark:border-[#0c0c1e]" style={{ background: platformConfig[selected.source].color }}>
+                        {(() => { const { Icon } = platformConfig[selected.source]; return <Icon className="h-2 w-2 text-white" />; })()}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-[14px] font-semibold text-gray-900 dark:text-white">{selected.contactName}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-[11px] text-gray-500 dark:text-white/30">{selected.contactHandle}</p>
+                        <PlatformBadge source={selected.source} size="xs" />
+                        {selected.assignedAgentName && (
+                          <span className="flex items-center gap-1 text-[10px] text-violet-600 dark:text-violet-400/70">
+                            <UserCheck className="h-2.5 w-2.5" />
+                            {selected.assignedAgentName}
+                          </span>
+                        )}
                       </div>
-                      <p className={cn("text-[10px] text-gray-400 dark:text-white/20", out ? "text-right" : "text-left")}>
-                        {formatTime(msg.timestamp)}
-                      </p>
                     </div>
                   </div>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input */}
-            <div className="border-t border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1e] p-4">
-              {selected.assignedAgentName && (
-                <div className="mb-2.5 flex items-center gap-1.5">
-                  <UserCheck className="h-3 w-3 text-violet-500 dark:text-violet-400/60" />
-                  <span className="text-[11px] text-violet-600 dark:text-violet-400/60">Replying as <strong className="font-semibold text-violet-700 dark:text-violet-300/80">{selected.assignedAgentName}</strong></span>
+                  {/* Mode toggles */}
+                  <div className="flex gap-1.5">
+                    {(["AI", "MANUAL"] as const).map((m) => (
+                      <button key={m} type="button" onClick={() => void patchThread({ mode: m })}
+                        className={cn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition",
+                          selected.mode === m
+                            ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-[0_0_14px_rgba(124,58,237,0.45)]"
+                            : "border border-gray-200 dark:border-white/[0.08] text-gray-500 dark:text-white/35 hover:border-violet-400 dark:hover:border-violet-500/30 hover:text-gray-800 dark:hover:text-white/70")}>
+                        {m === "AI" ? <Zap className="h-3 w-3" /> : <UserCheck className="h-3 w-3" />}
+                        {m}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              )}
-              <div className="flex gap-3">
-                <textarea
-                  ref={textareaRef}
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  onKeyDown={handleKey}
-                  rows={2}
-                  placeholder={selected.mode === "AI" ? "AI is handling this conversation…" : "Type a reply… (Enter to send)"}
-                  className="flex-1 resize-none rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] px-4 py-2.5 text-[13px] text-gray-900 dark:text-white outline-none placeholder:text-gray-400 dark:placeholder:text-white/20 focus:border-violet-400 dark:focus:border-violet-500/50 focus:ring-1 focus:ring-violet-400/20 dark:focus:ring-0 transition"
-                />
-                <button type="button" onClick={() => void send()} disabled={sending || !text.trim()}
-                  className="flex items-center gap-2 self-end rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_0_20px_rgba(124,58,237,0.35)] transition hover:from-violet-500 hover:to-purple-500 disabled:opacity-40">
-                  {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  Send
-                </button>
-              </div>
-            </div>
-          </div>
 
-          {/* ── Agent panel ── */}
-          <AgentPanel
-            agents={agents}
-            thread={selected}
-            onAssign={(id) => void assignAgent(id)}
-            onAutoAssign={() => void triggerAutoAssign()}
-            assigning={assigning}
-          />
-        </>
-      ) : isDemoMode ? (
-        <DemoChatView demo={selectedDemo} />
-      ) : (
-        <DemoChat />
-      )}
-    </div>
-  );
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto space-y-3 px-5 py-5">
+                  {(payload?.messages ?? []).map((msg, i) => {
+                    const out = msg.direction === "OUTBOUND";
+                    const prevMsg = i > 0 ? payload?.messages[i - 1] : null;
+                    const showSender = !prevMsg || prevMsg.direction !== msg.direction;
+                    return (
+                      <div key={msg._id} className={cn("flex gap-2.5", out ? "justify-end" : "justify-start")}>
+                        {!out && showSender && (
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gray-200 dark:bg-white/[0.07] text-[11px] font-bold text-gray-600 dark:text-white/50">
+                            {selected.contactName.charAt(0)}
+                          </div>
+                        )}
+                        {!out && !showSender && <div className="w-7 shrink-0" />}
+                        <div className="flex max-w-[65%] flex-col gap-0.5">
+                          {out && showSender && selected.assignedAgentName && (
+                            <p className="text-right text-[10px] text-violet-600 dark:text-violet-400/60">{selected.assignedAgentName}</p>
+                          )}
+                          <div className={cn("rounded-2xl px-4 py-2.5 text-[13px] leading-[1.7]",
+                            out
+                              ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700 text-white shadow-[0_4px_24px_rgba(124,58,237,0.3)]"
+                              : "rounded-tl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05] text-gray-800 dark:text-white/80")}>
+                            {msg.text}
+                          </div>
+                          <p className={cn("text-[10px] text-gray-400 dark:text-white/20", out ? "text-right" : "text-left")}>
+                            {formatTime(msg.timestamp)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {localVoiceMsgs.map((vm) => (
+                    <div key={vm.id} className="flex justify-end">
+                      <div className="flex max-w-[65%] flex-col gap-0.5">
+                        <div className="flex items-center gap-2 rounded-2xl rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700 px-3 py-2.5 shadow-[0_4px_24px_rgba(124,58,237,0.3)]">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20">
+                            <Mic className="h-3 w-3 text-white" />
+                          </div>
+                          <audio src={vm.url} controls className="h-7 w-28" />
+                          <span className="shrink-0 text-[10px] text-white/60">{fmtSec(vm.durationSec)}</span>
+                        </div>
+                        <p className="text-right text-[10px] text-gray-400 dark:text-white/20">{vm.time}</p>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Input */}
+                <div className="border-t border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1e] p-4">
+                  {selected.assignedAgentName && (
+                    <div className="mb-2.5 flex items-center gap-1.5">
+                      <UserCheck className="h-3 w-3 text-violet-500 dark:text-violet-400/60" />
+                      <span className="text-[11px] text-violet-600 dark:text-violet-400/60">Replying as <strong className="font-semibold text-violet-700 dark:text-violet-300/80">{selected.assignedAgentName}</strong></span>
+                    </div>
+                  )}
+                  {/* Recording state */}
+                  {isRecording ? (
+                    <div className="flex items-center gap-3 rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/[0.06] px-4 py-3">
+                      <span className="relative flex h-3 w-3 shrink-0">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                        <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500" />
+                      </span>
+                      <span className="flex-1 text-[13px] font-semibold tabular-nums text-red-600 dark:text-red-400">Recording… {fmtSec(recordingSec)}</span>
+                      <button type="button" onClick={cancelAudio} className="rounded-lg p-1.5 text-gray-400 dark:text-white/30 hover:text-gray-700 dark:hover:text-white/60 transition">
+                        <X className="h-4 w-4" />
+                      </button>
+                      <button type="button" onClick={stopRecording}
+                        className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2 text-[12px] font-semibold text-white shadow-[0_0_14px_rgba(124,58,237,0.4)] transition hover:from-violet-500 hover:to-purple-500">
+                        <StopCircle className="h-4 w-4" />Stop
+                      </button>
+                    </div>
+                  ) : pendingAudio ? (
+                    /* Audio preview */
+                    <div className="flex items-center gap-3 rounded-xl border border-violet-200 dark:border-violet-500/20 bg-violet-50 dark:bg-violet-500/[0.06] px-4 py-3">
+                      <Mic className="h-4 w-4 shrink-0 text-violet-500" />
+                      <audio src={pendingAudio.url} controls className="h-8 flex-1 max-w-[220px]" />
+                      <span className="text-[11px] text-violet-600 dark:text-violet-400/70 tabular-nums">{fmtSec(pendingAudio.durationSec)}</span>
+                      <button type="button" onClick={cancelAudio} className="rounded-lg p-1.5 text-gray-400 dark:text-white/30 hover:text-red-500 dark:hover:text-red-400 transition">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      <button type="button" onClick={sendAudio}
+                        className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2 text-[12px] font-semibold text-white shadow-[0_0_14px_rgba(124,58,237,0.4)] transition hover:from-violet-500 hover:to-purple-500">
+                        <Send className="h-3.5 w-3.5" />Send
+                      </button>
+                    </div>
+                  ) : (
+                    /* Normal input */
+                    <div className="flex items-end gap-2">
+                      <div className="relative flex flex-1 items-end rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] focus-within:border-violet-400 dark:focus-within:border-violet-500/50 focus-within:ring-1 focus-within:ring-violet-400/20 transition">
+                        {showEmoji && (
+                          <>
+                            <div className="fixed inset-0 z-40" onClick={() => setShowEmoji(false)} />
+                            <div className="absolute bottom-full left-0 mb-2 z-50">
+                              <EmojiPicker onSelect={(e) => { setText((t) => t + e); setShowEmoji(false); }} />
+                            </div>
+                          </>
+                        )}
+                        <button type="button" onClick={() => setShowEmoji((v) => !v)}
+                          title="Emoji"
+                          className={cn("shrink-0 self-end p-2.5 pb-[11px] transition", showEmoji ? "text-violet-500" : "text-gray-400 dark:text-white/25 hover:text-violet-500 dark:hover:text-violet-400")}>
+                          <Smile className="h-[18px] w-[18px]" />
+                        </button>
+                        <textarea
+                          ref={textareaRef}
+                          value={text}
+                          onChange={(e) => setText(e.target.value)}
+                          onKeyDown={handleKey}
+                          rows={1}
+                          placeholder={selected.mode === "AI" ? "AI is handling this…" : "Type a reply… (Enter to send)"}
+                          className="flex-1 resize-none bg-transparent py-2.5 pr-2 text-[13px] text-gray-900 dark:text-white outline-none placeholder:text-gray-400 dark:placeholder:text-white/20 min-h-[40px] max-h-[120px] overflow-y-auto"
+                        />
+                        <button type="button" onClick={() => void startRecording()}
+                          title="Voice message"
+                          className="shrink-0 self-end p-2.5 pb-[11px] text-gray-400 dark:text-white/25 hover:text-violet-500 dark:hover:text-violet-400 transition">
+                          <Mic className="h-[18px] w-[18px]" />
+                        </button>
+                      </div>
+                      <button type="button" onClick={() => void send()} disabled={sending || !text.trim()}
+                        className="flex items-center gap-2 self-end rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_0_20px_rgba(124,58,237,0.35)] transition hover:from-violet-500 hover:to-purple-500 disabled:opacity-40">
+                        {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                        Send
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* ── Agent panel ── */}
+              <AgentPanel
+                agents={agents}
+                thread={selected}
+                onAssign={(id) => void assignAgent(id)}
+                onAutoAssign={() => void triggerAutoAssign()}
+                assigning={assigning}
+              />
+            </>
+          ) : isDemoMode ? (
+            <DemoChatView demo={selectedDemo} />
+          ) : (
+            <DemoChat />
+          )}
+        </div>
+      );
 }
