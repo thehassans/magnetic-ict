@@ -6,6 +6,8 @@ import { ingestInboundMessage } from "@/lib/social-bot-service";
 import { sendMetaReply } from "@/lib/social-bot-rag";
 import type { SocialBotIntegration } from "@/lib/social-bot-types";
 
+export const dynamic = "force-dynamic";
+
 function normalizeText(value: unknown) {
   return typeof value === "string" ? value : "";
 }
@@ -31,6 +33,9 @@ export async function GET(request: Request) {
     return new Response(challenge ?? "", { status: 200 });
   }
 
+  console.warn(
+    `[webhook] verify-token mismatch. received=${token?.slice(0, 8) ?? "(none)"}... expected=${expectedToken ? expectedToken.slice(0, 8) + "..." : "(empty — not saved?)"}`,
+  );
   return new Response("Forbidden", { status: 403 });
 }
 
