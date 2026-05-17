@@ -91,16 +91,50 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
   function openMetaPopup(channel: SocialChannel): Promise<FbPage[]> {
     return new Promise((resolve, reject) => {
       const callbackUrl = `${window.location.origin}/api/social-bot/meta/oauth-callback`;
-      const extras = JSON.stringify({ sessionInfoVersion: 2 });
-      const fbUrl =
-        `https://www.facebook.com/v19.0/dialog/oauth` +
-        `?client_id=${encodeURIComponent(metaAppId)}` +
-        `&config_id=${encodeURIComponent(metaConfigId)}` +
-        `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
-        `&response_type=code` +
-        `&override_default_response_type=true` +
-        `&extras=${encodeURIComponent(extras)}` +
-        `&state=${encodeURIComponent(channel)}`;
+
+      let fbUrl: string;
+      if (channel === "WHATSAPP" && metaConfigId.trim()) {
+        const extras = JSON.stringify({ sessionInfoVersion: 2 });
+        fbUrl =
+          `https://www.facebook.com/v19.0/dialog/oauth` +
+          `?client_id=${encodeURIComponent(metaAppId)}` +
+          `&config_id=${encodeURIComponent(metaConfigId)}` +
+          `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
+          `&response_type=code` +
+          `&override_default_response_type=true` +
+          `&extras=${encodeURIComponent(extras)}` +
+          `&state=${encodeURIComponent(channel)}`;
+      } else if (channel === "INSTAGRAM") {
+        const scope = [
+          "pages_show_list",
+          "instagram_basic",
+          "instagram_manage_messages",
+          "pages_read_engagement",
+          "business_management"
+        ].join(",");
+        fbUrl =
+          `https://www.facebook.com/v19.0/dialog/oauth` +
+          `?client_id=${encodeURIComponent(metaAppId)}` +
+          `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
+          `&response_type=code` +
+          `&scope=${encodeURIComponent(scope)}` +
+          `&state=${encodeURIComponent(channel)}`;
+      } else {
+        const scope = [
+          "pages_show_list",
+          "pages_messaging",
+          "pages_manage_metadata",
+          "pages_read_engagement",
+          "business_management"
+        ].join(",");
+        fbUrl =
+          `https://www.facebook.com/v19.0/dialog/oauth` +
+          `?client_id=${encodeURIComponent(metaAppId)}` +
+          `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
+          `&response_type=code` +
+          `&scope=${encodeURIComponent(scope)}` +
+          `&state=${encodeURIComponent(channel)}`;
+      }
 
       const popup = window.open(fbUrl, "fb-signup", "width=620,height=700,scrollbars=yes,resizable=yes");
       if (!popup) {
