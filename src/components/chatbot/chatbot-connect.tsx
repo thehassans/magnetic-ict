@@ -226,11 +226,31 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
       if (!res.ok) throw new Error("Save failed.");
       await reload();
       showToast("ok", `${integration.channel} page token saved.`);
+      // Auto-subscribe page to webhook after manual token save
+      await fetch("/api/social-bot/meta/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channel: integration.channel, pageId: integration.pageId })
+      }).catch(() => { /* non-fatal */ });
     } catch (e) {
       showToast("err", e instanceof Error ? e.message : "Save failed.");
     } finally {
       setSavingToken(null);
     }
+  }
+
+  async function resubscribe(integration: SocialBotIntegration) {
+    if (!integration.pageId) { showToast("err", "No Page ID stored. Please reconnect."); return; }
+    try {
+      const res = await fetch("/api/social-bot/meta/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pageId: integration.pageId })
+      });
+      const data = await res.json() as { ok?: boolean; error?: string };
+      if (!res.ok) showToast("err", data.error ?? "Subscription failed.");
+      else showToast("ok", "Webhook subscribed — messages will now appear in your Inbox.");
+    } catch { showToast("err", "Subscribe request failed."); }
   }
 
   async function disconnect(channel: SocialChannel) {
@@ -389,6 +409,16 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
                         <CheckCircle2 className="h-4 w-4" />
                         Connected
                       </div>
+                      {(integration.channel === "MESSENGER" || integration.channel === "INSTAGRAM") && (
+                        <button
+                          type="button"
+                          onClick={() => void resubscribe(integration)}
+                          className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-sky-200 dark:border-sky-500/20 bg-sky-50 dark:bg-sky-500/10 px-4 py-2 text-xs font-semibold text-sky-600 dark:text-sky-400 transition hover:bg-sky-100 dark:hover:bg-sky-500/20"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" />
+                          Re-subscribe webhook
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => void disconnect(integration.channel)}
