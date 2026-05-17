@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
+import { userHasMagneticSocialBotAccess, getSocialBotSubscriptionInfo } from "@/lib/social-bot-access";
 import { ChatbotShell } from "@/components/chatbot/chatbot-shell";
 import { getPlatformSettings } from "@/lib/platform-settings";
 
@@ -39,16 +39,18 @@ export default async function ChatbotLayout({ children }: { children: ReactNode 
     );
   }
 
-  const settings = await getPlatformSettings();
+  const [settings, subscription] = await Promise.all([
+    getPlatformSettings(),
+    getSocialBotSubscriptionInfo(session.user.id)
+  ]);
 
   return (
     <ChatbotShell
       userName={session.user.name ?? session.user.email ?? "User"}
       userEmail={session.user.email ?? ""}
-      metaAppId={settings.socialBotConfig.metaAppId}
-      metaConfigId={settings.socialBotConfig.metaConfigId}
       logoLight={settings.brandingConfig.chatbotLogoLight || undefined}
       logoDark={settings.brandingConfig.chatbotLogoDark || undefined}
+      subscription={subscription}
     >
       {children}
     </ChatbotShell>

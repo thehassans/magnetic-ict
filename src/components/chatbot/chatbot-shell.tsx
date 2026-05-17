@@ -11,6 +11,8 @@ import {
   BookOpen,
   Bot,
   BrainCircuit,
+  ChevronDown,
+  Crown,
   Inbox,
   LayoutDashboard,
   LogOut,
@@ -29,37 +31,65 @@ import {
   Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { SocialBotSubscriptionInfo } from "@/lib/social-bot-access";
 
-const navItems = [
-  { href: "/chatbot", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/chatbot/inbox", label: "Inbox", icon: Inbox, exact: false },
-  { href: "/chatbot/contacts", label: "Contacts", icon: Users, exact: false },
-  { href: "/chatbot/broadcast", label: "Broadcast", icon: Megaphone, exact: false },
-  { href: "/chatbot/agents", label: "AI Agents", icon: Zap, exact: false },
-  { href: "/chatbot/voice", label: "Voice Agent", icon: Mic, exact: false },
-  { href: "/chatbot/knowledge", label: "Knowledge", icon: BookOpen, exact: false },
-  { href: "/chatbot/ask", label: "Ask Magnetic", icon: BrainCircuit, exact: false },
-  { href: "/chatbot/test", label: "Test Bot", icon: TestTube2, exact: false },
-  { href: "/chatbot/quick-replies", label: "Quick Replies", icon: MessageSquarePlus, exact: false },
-  { href: "/chatbot/reports", label: "Reports", icon: BarChart3, exact: false },
-  { href: "/chatbot/connect", label: "Connect", icon: Plug, exact: false }
+type NavItem = { href: string; label: string; icon: React.ElementType; exact?: boolean };
+type NavGroup = { id?: string; label?: string; icon?: React.ElementType; collapsible?: boolean; items: NavItem[] };
+
+const navGroups: NavGroup[] = [
+  { items: [{ href: "/chatbot", label: "Dashboard", icon: LayoutDashboard, exact: true }] },
+  {
+    id: "inbox", label: "Inbox", icon: MessageSquare, collapsible: true,
+    items: [
+      { href: "/chatbot/inbox", label: "Inbox", icon: Inbox },
+      { href: "/chatbot/connect", label: "Connect", icon: Plug }
+    ]
+  },
+  {
+    items: [
+      { href: "/chatbot/contacts", label: "Contacts", icon: Users },
+      { href: "/chatbot/broadcast", label: "Broadcast", icon: Megaphone }
+    ]
+  },
+  {
+    id: "agents", label: "Agents", icon: Bot, collapsible: true,
+    items: [
+      { href: "/chatbot/agents", label: "AI Agents", icon: Zap },
+      { href: "/chatbot/voice", label: "Voice Agents", icon: Mic }
+    ]
+  },
+  {
+    id: "training", label: "Training", icon: BookOpen, collapsible: true,
+    items: [
+      { href: "/chatbot/knowledge", label: "Knowledge", icon: BookOpen },
+      { href: "/chatbot/test", label: "Test Bot", icon: TestTube2 },
+      { href: "/chatbot/ask", label: "Ask Magnetic", icon: BrainCircuit }
+    ]
+  },
+  {
+    items: [
+      { href: "/chatbot/quick-replies", label: "Quick Replies", icon: MessageSquarePlus },
+      { href: "/chatbot/reports", label: "Reports", icon: BarChart3 }
+    ]
+  }
 ];
 
 type Props = {
   children: ReactNode;
   userName: string;
   userEmail: string;
-  metaAppId: string;
-  metaConfigId: string;
   logoLight?: string;
   logoDark?: string;
+  subscription: SocialBotSubscriptionInfo;
 };
 
-export function ChatbotShell({ children, userName, userEmail, logoLight, logoDark }: Props) {
+export function ChatbotShell({ children, userName, userEmail, logoLight, logoDark, subscription }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [signingOut, startSignOut] = useTransition();
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const pathname = usePathname();
+
+  const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set(["inbox", "agents", "training"]));
 
   useEffect(() => {
     try {
@@ -79,106 +109,168 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
     startSignOut(() => { void signOut({ redirectTo: `${appUrl}/en` }); });
   }
 
+  function toggleGroup(id: string) {
+    setOpenGroups((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  }
+
   const initial = userName.charAt(0).toUpperCase();
   const settingsActive = pathname.startsWith("/chatbot/settings");
   const isDark = theme === "dark";
-
   const logoSrc = isDark ? (logoDark || logoLight || null) : (logoLight || logoDark || null);
 
+  const planGradient = subscription.planType === "MANUAL"
+    ? "from-amber-500 to-orange-500"
+    : subscription.planName.toLowerCase().includes("ent") ? "from-sky-500 to-blue-600"
+    : subscription.planName.toLowerCase().includes("start") ? "from-emerald-500 to-teal-500"
+    : "from-violet-500 to-purple-600";
+
+  function NavLink({ item, indent }: { item: NavItem; indent?: boolean }) {
+    const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+    const Icon = item.icon;
+    return (
+      <Link
+        href={item.href}
+        onClick={() => setSidebarOpen(false)}
+        className={cn(
+          "group relative flex items-center gap-2.5 rounded-[10px] py-2 text-[13px] font-medium transition-all duration-150",
+          indent ? "pl-7 pr-3" : "px-3",
+          active
+            ? "bg-violet-50 dark:bg-gradient-to-r dark:from-violet-500/[0.18] dark:to-violet-500/[0.03] text-violet-700 dark:text-white"
+            : "text-gray-500 dark:text-white/40 hover:bg-gray-100/80 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white/70"
+        )}
+      >
+        {active && <span className="absolute left-0 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-r-full bg-violet-500 dark:bg-violet-400" />}
+        <Icon className={cn("h-3.5 w-3.5 shrink-0 transition", active ? "text-violet-600 dark:text-violet-400" : "opacity-50 group-hover:opacity-80")} />
+        <span className="truncate">{item.label}</span>
+        {active && <span className="ml-auto h-1 w-1 rounded-full bg-violet-500 dark:bg-violet-400 shrink-0" />}
+      </Link>
+    );
+  }
+
   return (
-    <div className={cn("flex h-screen overflow-hidden bg-gray-100 dark:bg-[#070710]", isDark && "dark")}>
+    <div className={cn("flex h-screen overflow-hidden", isDark ? "dark bg-[#070710]" : "bg-gray-100")}>
       {sidebarOpen && (
         <div className="fixed inset-0 z-20 bg-black/70 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-30 flex w-[220px] flex-col border-r border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1d] transition-transform duration-300 lg:static lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
+      <aside className={cn(
+        "fixed inset-y-0 left-0 z-30 flex w-[240px] flex-col border-r border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0d0d1f] transition-transform duration-300 lg:static lg:translate-x-0",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
         {isDark && (
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute -top-20 -left-20 h-56 w-56 rounded-full bg-violet-700/15 blur-3xl" />
-            <div className="absolute bottom-20 right-0 h-40 w-40 rounded-full bg-indigo-700/10 blur-3xl" />
+            <div className="absolute -top-16 -left-16 h-48 w-48 rounded-full bg-violet-600/10 blur-3xl" />
+            <div className="absolute bottom-24 right-0 h-32 w-32 rounded-full bg-indigo-600/8 blur-3xl" />
           </div>
         )}
 
+        {/* Logo */}
         <div className="relative flex h-[60px] shrink-0 items-center justify-between px-4">
           {logoSrc ? (
-            <div className="flex h-9 w-full max-w-[148px] items-center">
-              <Image src={logoSrc} alt="Logo" width={148} height={36} className="h-auto w-full object-contain" priority unoptimized={logoSrc.startsWith("/uploads/") || logoSrc.toLowerCase().endsWith(".svg")} />
+            <div className="flex h-9 w-full max-w-[152px] items-center">
+              <Image src={logoSrc} alt="Logo" width={152} height={36} className="h-auto w-full object-contain" priority unoptimized={logoSrc.startsWith("/uploads/") || logoSrc.toLowerCase().endsWith(".svg")} />
             </div>
           ) : (
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-600/40">
+              <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-violet-500 to-purple-600 shadow-[0_4px_12px_rgba(139,92,246,0.4)]">
                 <MessageSquare className="h-4 w-4 text-white" />
               </div>
-              <span className="text-[15px] font-bold tracking-tight text-gray-900 dark:text-white">Magnetic <span className="text-violet-600 dark:text-violet-400">Chat</span></span>
+              <span className="text-[14px] font-bold tracking-tight text-gray-900 dark:text-white">Magnetic <span className="text-violet-600 dark:text-violet-400">Chat</span></span>
             </div>
           )}
-          <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-1 text-gray-400 dark:text-white/50 hover:text-gray-700 dark:hover:text-white/70 lg:hidden">
+          <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-1 text-gray-400 dark:text-white/40 hover:text-gray-700 dark:hover:text-white/70 lg:hidden">
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="relative mx-4 mb-2 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-white/10 to-transparent" />
+        <div className="mx-4 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-white/8 to-transparent" />
 
-        <nav className="relative flex-1 overflow-y-auto px-2.5 py-3 space-y-0.5">
-          {navItems.map((item) => {
-            const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
-            const Icon = item.icon;
+        {/* Nav */}
+        <nav className="relative flex-1 overflow-y-auto px-2.5 py-2.5 space-y-px">
+          {navGroups.map((group, gi) => {
+            if (group.collapsible && group.id) {
+              const GroupIcon = group.icon ?? Bot;
+              const isOpen = openGroups.has(group.id);
+              const hasActive = group.items.some((item) => pathname.startsWith(item.href));
+              return (
+                <div key={group.id} className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(group.id!)}
+                    className={cn(
+                      "flex w-full items-center gap-2 rounded-[10px] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] transition-all duration-150",
+                      hasActive ? "text-violet-600 dark:text-violet-400" : "text-gray-400 dark:text-white/25 hover:text-gray-600 dark:hover:text-white/45"
+                    )}
+                  >
+                    <GroupIcon className="h-3 w-3 shrink-0" />
+                    {group.label}
+                    <ChevronDown className={cn("ml-auto h-3 w-3 shrink-0 transition-transform duration-200", isOpen ? "rotate-0" : "-rotate-90")} />
+                  </button>
+                  <div className={cn("overflow-hidden transition-all duration-200", isOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0")}>
+                    <div className="space-y-px pb-0.5 pl-2">
+                      {group.items.map((item) => <NavLink key={item.href} item={item} indent />)}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setSidebarOpen(false)}
-                className={cn(
-                  "relative flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-[13px] font-medium transition-all duration-150",
-                  active
-                    ? "bg-violet-50 dark:bg-gradient-to-r dark:from-violet-500/20 dark:to-purple-600/5 text-violet-700 dark:text-white"
-                    : "text-gray-500 dark:text-white/40 hover:bg-gray-100 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white/70"
-                )}
-              >
-                {active && <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-violet-500 dark:bg-violet-400" />}
-                <Icon className={cn("h-4 w-4 shrink-0", active ? "text-violet-600 dark:text-violet-400" : "")} />
-                {item.label}
-                {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-violet-500 dark:bg-violet-400" />}
-              </Link>
+              <div key={gi} className={cn("space-y-px", gi > 0 ? "pt-1" : "")}>
+                {group.items.map((item) => <NavLink key={item.href} item={item} />)}
+              </div>
             );
           })}
         </nav>
 
-        <div className="relative mx-2.5 mb-1">
-          <div className="mx-1 mb-1.5 h-px bg-gray-200 dark:bg-white/[0.05]" />
+        {/* Settings + theme */}
+        <div className="mx-2.5 mb-1 space-y-px">
+          <div className="mx-1 mb-1 h-px bg-gray-200 dark:bg-white/[0.05]" />
           <Link
             href="/chatbot/settings"
             onClick={() => setSidebarOpen(false)}
             className={cn(
-              "relative flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-[13px] font-medium transition-all duration-150",
-              settingsActive
-                ? "bg-violet-50 dark:bg-gradient-to-r dark:from-violet-500/20 dark:to-purple-600/5 text-violet-700 dark:text-white"
-                : "text-gray-500 dark:text-white/40 hover:bg-gray-100 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white/70"
+              "relative flex items-center gap-2.5 rounded-[10px] px-3 py-2 text-[13px] font-medium transition-all",
+              settingsActive ? "bg-violet-50 dark:bg-violet-500/[0.15] text-violet-700 dark:text-white" : "text-gray-500 dark:text-white/40 hover:bg-gray-100 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white/70"
             )}
           >
-            {settingsActive && <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-violet-500 dark:bg-violet-400" />}
-            <Settings className={cn("h-4 w-4 shrink-0", settingsActive ? "text-violet-600 dark:text-violet-400" : "")} />
+            {settingsActive && <span className="absolute left-0 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-r-full bg-violet-500 dark:bg-violet-400" />}
+            <Settings className={cn("h-3.5 w-3.5 shrink-0", settingsActive ? "text-violet-600 dark:text-violet-400" : "opacity-50")} />
             Settings
-            {settingsActive && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-violet-500 dark:bg-violet-400" />}
           </Link>
           <button
             type="button"
             onClick={toggleTheme}
-            className="flex w-full items-center gap-3 rounded-[10px] px-3 py-2 text-[13px] font-medium text-gray-500 dark:text-white/40 transition hover:bg-gray-100 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white/70"
+            className="flex w-full items-center gap-2.5 rounded-[10px] px-3 py-2 text-[13px] font-medium text-gray-500 dark:text-white/40 transition hover:bg-gray-100 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white/70"
           >
-            {isDark ? <Sun className="h-4 w-4 shrink-0" /> : <Moon className="h-4 w-4 shrink-0" />}
+            {isDark ? <Sun className="h-3.5 w-3.5 shrink-0 opacity-50" /> : <Moon className="h-3.5 w-3.5 shrink-0 opacity-50" />}
             {isDark ? "Light mode" : "Dark mode"}
           </button>
         </div>
 
-        <div className="relative mx-3 mb-4 rounded-[14px] border border-gray-200 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.03] p-3 backdrop-blur-sm">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/50 to-purple-700/40 text-sm font-bold text-white ring-1 ring-gray-200 dark:ring-white/10">
+        {/* Subscription card */}
+        {subscription.hasAccess && (
+          <div className="relative mx-3 mb-2 overflow-hidden rounded-[14px] border border-gray-100 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.025] p-3">
+            <div className={cn("absolute right-0 inset-y-0 w-0.5 bg-gradient-to-b", planGradient)} />
+            <div className="flex items-center gap-2">
+              <div className={cn("flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-gradient-to-br", planGradient)}>
+                <Crown className="h-2.5 w-2.5 text-white" />
+              </div>
+              <p className="text-[12px] font-bold text-gray-900 dark:text-white truncate flex-1">{subscription.planName}</p>
+              <span className="flex items-center gap-1 shrink-0">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">Active</span>
+              </span>
+            </div>
+            <p className="mt-1 text-[10px] text-gray-400 dark:text-white/25 pl-7">
+              {subscription.planType === "MANUAL" ? "Admin access" : subscription.startDate ? `Since ${new Date(subscription.startDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}` : "Subscription active"}
+            </p>
+          </div>
+        )}
+
+        {/* User card */}
+        <div className="relative mx-3 mb-4 rounded-[14px] border border-gray-200 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.03] p-3">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/60 to-purple-700/50 text-[13px] font-bold text-white ring-1 ring-gray-200 dark:ring-white/10">
               {initial}
             </div>
             <div className="min-w-0 flex-1">
@@ -190,7 +282,7 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
             type="button"
             onClick={handleSignOut}
             disabled={signingOut}
-            className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg py-1.5 text-[11px] font-medium text-gray-400 dark:text-white/35 transition hover:bg-gray-100 dark:hover:bg-white/[0.06] hover:text-gray-600 dark:hover:text-white/60 disabled:opacity-40"
+            className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg py-1.5 text-[11px] font-medium text-gray-400 dark:text-white/30 transition hover:bg-gray-100 dark:hover:bg-white/[0.06] hover:text-gray-600 dark:hover:text-white/60 disabled:opacity-40"
           >
             <LogOut className="h-3 w-3" />
             {signingOut ? "Signing out…" : "Sign out"}
@@ -199,7 +291,7 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center gap-4 border-b border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1d] px-4 lg:hidden">
+        <header className="flex h-14 shrink-0 items-center gap-4 border-b border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0d0d1f] px-4 lg:hidden">
           <button type="button" onClick={() => setSidebarOpen(true)} className="text-gray-500 dark:text-white/50 hover:text-gray-900 dark:hover:text-white">
             <Menu className="h-5 w-5" />
           </button>
@@ -217,7 +309,6 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
             {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
         </header>
-
         <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-[#070710]">
           {children}
         </main>
