@@ -30,6 +30,29 @@ export async function POST(request: Request) {
   const settings = await getPlatformSettings();
   const tts = settings.ttsConfig;
 
+  // ── 0. Voicebox (local-first, cloned voices) ────────────────────────────────
+  if (tts.provider === "voicebox" && tts.voiceboxEndpoint.trim()) {
+    const endpoint = tts.voiceboxEndpoint.replace(/\/$/, "");
+    const profile = voiceId ?? tts.voiceboxProfileId;
+    try {
+      const body: Record<string, unknown> = { text, language };
+      if (profile) body.profile_id = profile;
+      const res = await fetch(`${endpoint}/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(20000)
+      });
+      if (res.ok) {
+        const audio = await res.arrayBuffer();
+        const ct = res.headers.get("content-type") ?? "audio/webm";
+        return new Response(audio, {
+          headers: { "Content-Type": ct, "Cache-Control": "no-store", "X-TTS-Provider": "voicebox" }
+        });
+      }
+    } catch { /* Voicebox offline — fall through */ }
+  }
+
   // ── 1. ElevenLabs ──────────────────────────────────────────────────────────
   if (tts.provider === "elevenlabs" && tts.elevenlabsApiKey.trim()) {
     const useVoice = voiceId || tts.elevenlabsVoiceId;

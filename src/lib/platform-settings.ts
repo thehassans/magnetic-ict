@@ -40,11 +40,14 @@ export type GeminiSettings = {
 };
 
 export type TTSConfig = {
-  provider: "browser" | "openai" | "elevenlabs";
+  provider: "browser" | "openai" | "elevenlabs" | "voicebox";
   elevenlabsApiKey: string;
   elevenlabsVoiceId: string;
   openaiVoice: string;
   openaiModel: string;
+  voiceboxEndpoint: string;
+  voiceboxProfileId: string;
+  voiceCloneStudioEndpoint: string;
 };
 
 export type VoiceProviderConfig = {
@@ -310,7 +313,10 @@ export const defaultTTSConfig: TTSConfig = {
   elevenlabsApiKey: "",
   elevenlabsVoiceId: "21m00Tcm4TlvDq8ikWAM",
   openaiVoice: "nova",
-  openaiModel: "tts-1"
+  openaiModel: "tts-1",
+  voiceboxEndpoint: "http://127.0.0.1:17493",
+  voiceboxProfileId: "",
+  voiceCloneStudioEndpoint: "http://127.0.0.1:7860"
 };
 
 export const defaultInfobipConfig: InfobipConfig = {
@@ -2556,13 +2562,16 @@ export function normalizeVoiceProviderConfig(value: unknown): VoiceProviderConfi
 
 export function normalizeTTSConfig(value: unknown): TTSConfig {
   if (!isObject(value)) return defaultTTSConfig;
-  const providers = ["browser", "openai", "elevenlabs"];
+  const providers = ["browser", "openai", "elevenlabs", "voicebox"];
   return {
     provider: providers.includes(value.provider as string) ? (value.provider as TTSConfig["provider"]) : defaultTTSConfig.provider,
     elevenlabsApiKey: coerceString(value.elevenlabsApiKey, defaultTTSConfig.elevenlabsApiKey),
     elevenlabsVoiceId: coerceString(value.elevenlabsVoiceId, defaultTTSConfig.elevenlabsVoiceId),
     openaiVoice: coerceString(value.openaiVoice, defaultTTSConfig.openaiVoice),
-    openaiModel: coerceString(value.openaiModel, defaultTTSConfig.openaiModel)
+    openaiModel: coerceString(value.openaiModel, defaultTTSConfig.openaiModel),
+    voiceboxEndpoint: coerceString(value.voiceboxEndpoint, defaultTTSConfig.voiceboxEndpoint),
+    voiceboxProfileId: coerceString(value.voiceboxProfileId, defaultTTSConfig.voiceboxProfileId),
+    voiceCloneStudioEndpoint: coerceString(value.voiceCloneStudioEndpoint, defaultTTSConfig.voiceCloneStudioEndpoint)
   };
 }
 

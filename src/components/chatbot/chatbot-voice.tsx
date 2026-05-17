@@ -107,6 +107,10 @@ export function ChatbotVoice() {
   const [speechSupported, setSpeechSupported] = useState(true);
   const [voicesLoaded, setVoicesLoaded] = useState(false);
   const [amplitude, setAmplitude] = useState(0);
+  const [voiceboxStatus, setVoiceboxStatus] = useState<"checking" | "connected" | "disconnected">("checking");
+  const [voiceboxProfiles, setVoiceboxProfiles] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedProfileId, setSelectedProfileId] = useState("");
+  const [useVoiceboxSTT, setUseVoiceboxSTT] = useState(false);
 
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
@@ -117,6 +121,8 @@ export function ChatbotVoice() {
   const apiAudioSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const apiAudioCtxRef = useRef<AudioContext | null>(null);
   const conversationEndRef = useRef<HTMLDivElement>(null);
+  const vbMediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const vbChunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -134,6 +140,7 @@ export function ChatbotVoice() {
       speechSynthesis.removeEventListener("voiceschanged", loadVoices);
       stopListening();
       stopSpeaking();
+      if (vbMediaRecorderRef.current?.state === "recording") vbMediaRecorderRef.current.stop();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -141,6 +148,21 @@ export function ChatbotVoice() {
   useEffect(() => {
     conversationEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation, isThinking]);
+
+  useEffect(() => {
+    fetch("/api/social-bot/tts/profiles")
+      .then((r) => r.json())
+      .then((d: { profiles?: Array<{ id: string; name: string }>; connected?: boolean }) => {
+        if (d.connected && d.profiles && d.profiles.length > 0) {
+          setVoiceboxProfiles(d.profiles);
+          setSelectedProfileId(d.profiles[0]?.id ?? "");
+          setVoiceboxStatus("connected");
+        } else {
+          setVoiceboxStatus("disconnected");
+        }
+      })
+      .catch(() => setVoiceboxStatus("disconnected"));
+  }, []);
 
   const startAmplitudeTracking = useCallback(async () => {
     try {
@@ -208,7 +230,7 @@ export function ChatbotVoice() {
       const res = await fetch("/api/social-bot/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, language: targetLang })
+        body: JSON.stringify({ text, language: targetLang, voiceId: selectedProfileId || undefined })
       });
       if (res.ok) {
         const arrayBuf = await res.arrayBuffer();
@@ -244,7 +266,7 @@ export function ChatbotVoice() {
     utter.onend = () => setIsSpeaking(false);
     utter.onerror = () => setIsSpeaking(false);
     synthRef.current.speak(utter);
-  }, [isMuted, stopSpeaking]);
+  }, [isMuted, stopSpeaking, selectedProfileId]);
 
   const sendToAI = useCallback(async (text: string, detectedLang: string) => {
     setIsThinking(true);
@@ -358,16 +380,64 @@ export function ChatbotVoice() {
     }
   }, [selectedLang, stopSpeaking, startAmplitudeTracking, stopAmplitudeTracking, sendToAI]);
 
+  async function startVoiceboxListening() {
+    setError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      vbChunksRef.current = [];
+      const mr = new MediaRecorder(stream);
+      mr.ondataavailable = (e) => { if (e.data.size > 0) vbChunksRef.current.push(e.data); };
+      mr.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        stopAmplitudeTracking();
+        const blob = new Blob(vbChunksRef.current, { type: "audio/webm" });
+        const fd = new FormData();
+        fd.append("audio", blob, "recording.webm");
+        setIsListening(false);
+        setIsThinking(true);
+        try {
+          const res = await fetch("/api/social-bot/transcribe", { method: "POST", body: fd });
+          const d = await res.json() as { transcript?: string; error?: string };
+          if (d.transcript?.trim()) {
+            const entry: ConversationEntry = {
+              id: `u-${Date.now()}`, role: "user",
+              text: d.transcript.trim(), language: selectedLang, timestamp: new Date()
+            };
+            setConversation((prev) => [...prev, entry]);
+            void sendToAI(d.transcript.trim(), selectedLang);
+          } else {
+            setIsThinking(false);
+            setError(d.error ?? "No speech detected — try again.");
+          }
+        } catch {
+          setIsThinking(false);
+          setError("Transcription failed. Make sure Voicebox is running.");
+        }
+      };
+      mr.start();
+      vbMediaRecorderRef.current = mr;
+      setIsListening(true);
+      void startAmplitudeTracking();
+    } catch {
+      setError("Could not access microphone.");
+    }
+  }
+
+  function stopVoiceboxListening() {
+    if (vbMediaRecorderRef.current?.state === "recording") vbMediaRecorderRef.current.stop();
+    vbMediaRecorderRef.current = null;
+  }
+
   function toggleListening() {
     if (isListening) {
-      stopListening();
+      if (useVoiceboxSTT) stopVoiceboxListening(); else stopListening();
     } else {
-      void startListening();
+      if (useVoiceboxSTT) void startVoiceboxListening(); else void startListening();
     }
   }
 
   function clearConversation() {
-    stopListening();
+    if (useVoiceboxSTT) stopVoiceboxListening(); else stopListening();
     stopSpeaking();
     setConversation([]);
     setInterimText("");
@@ -435,6 +505,72 @@ export function ChatbotVoice() {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Voice Engine panel */}
+      <div className="rounded-2xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.02] px-4 py-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <span className={cn(
+              "h-2 w-2 shrink-0 rounded-full",
+              voiceboxStatus === "connected" ? "bg-emerald-500" :
+              voiceboxStatus === "checking" ? "bg-amber-400 animate-pulse" :
+              "bg-gray-300 dark:bg-white/20"
+            )} />
+            <span className="text-[12px] font-semibold text-gray-700 dark:text-white/70">
+              Voicebox{" "}
+              {voiceboxStatus === "connected" ? "· connected" : voiceboxStatus === "checking" ? "· connecting…" : "· offline"}
+            </span>
+            {voiceboxStatus === "connected" && voiceboxProfiles.length > 0 && (
+              <select
+                value={selectedProfileId}
+                onChange={(e) => setSelectedProfileId(e.target.value)}
+                className="rounded-lg border border-gray-200 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.04] px-2 py-0.5 text-[11px] text-gray-700 dark:text-white/60 outline-none"
+              >
+                {voiceboxProfiles.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            {voiceboxStatus === "connected" && (
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <span className="text-[11px] text-gray-400 dark:text-white/30">Whisper STT</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={useVoiceboxSTT}
+                  onClick={() => setUseVoiceboxSTT((v) => !v)}
+                  className={cn(
+                    "relative h-5 w-9 rounded-full transition-colors",
+                    useVoiceboxSTT ? "bg-violet-500" : "bg-gray-200 dark:bg-white/10"
+                  )}
+                >
+                  <span className={cn(
+                    "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all duration-200",
+                    useVoiceboxSTT ? "left-[18px]" : "left-0.5"
+                  )} />
+                </button>
+              </label>
+            )}
+            <a
+              href="http://127.0.0.1:7860"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] font-medium text-violet-500 dark:text-violet-400/70 hover:underline"
+            >
+              Clone Studio ↗
+            </a>
+          </div>
+        </div>
+        {voiceboxStatus === "disconnected" && (
+          <p className="mt-2 text-[11px] leading-relaxed text-gray-400 dark:text-white/25">
+            Install{" "}
+            <a href="https://voicebox.sh" target="_blank" rel="noopener noreferrer" className="text-violet-500 dark:text-violet-400 underline">Voicebox</a>
+            {" "}for cloned-voice TTS + Whisper STT. Use{" "}
+            <a href="https://github.com/FranckyB/Voice-Clone-Studio" target="_blank" rel="noopener noreferrer" className="text-violet-500 dark:text-violet-400 underline">Voice Clone Studio</a>
+            {" "}to create voice profiles from any audio sample.
+          </p>
+        )}
       </div>
 
       {/* Microphone orb */}
@@ -603,10 +739,10 @@ export function ChatbotVoice() {
 
       {/* Info strip */}
       <div className="rounded-2xl border border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.02] px-4 py-3 text-xs text-gray-400 dark:text-white/25 space-y-1">
-        <p>• <strong className="text-gray-500 dark:text-white/40">Browser STT + Gemini AI</strong> — no extra API needed</p>
-        <p>• Supports 18+ languages including Arabic, Urdu, Hindi, Bengali and more</p>
-        <p>• AI automatically detects and replies in the customer&apos;s language</p>
-        <p>• Uses your trained knowledge base for accurate responses</p>
+        <p>• <strong className="text-gray-500 dark:text-white/40">Voicebox</strong> — 7 TTS engines (Qwen3-TTS, Chatterbox, Kokoro, LuxTTS…) + Whisper STT ·{" "}<a href="https://voicebox.sh" target="_blank" rel="noopener noreferrer" className="text-violet-500 dark:text-violet-400 underline">voicebox.sh</a></p>
+        <p>• <strong className="text-gray-500 dark:text-white/40">Voice Clone Studio</strong> — zero-shot voice cloning from any audio sample ·{" "}<a href="https://github.com/FranckyB/Voice-Clone-Studio" target="_blank" rel="noopener noreferrer" className="text-violet-500 dark:text-violet-400 underline">github.com/FranckyB/Voice-Clone-Studio</a></p>
+        <p>• Falls back to browser TTS / browser STT when Voicebox is offline</p>
+        <p>• Supports 18+ languages · AI replies in the customer&apos;s language using your knowledge base</p>
       </div>
     </div>
   );
