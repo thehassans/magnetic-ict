@@ -114,15 +114,12 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
           `&state=${encodeURIComponent(channel)}`;
       } else if (channel === "INSTAGRAM") {
         if (metaInstagramConfigId.trim()) {
-          const extras = JSON.stringify({ sessionInfoVersion: 2 });
           fbUrl =
             `https://www.facebook.com/v19.0/dialog/oauth` +
             `?client_id=${encodeURIComponent(metaAppId)}` +
             `&config_id=${encodeURIComponent(metaInstagramConfigId)}` +
             `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
             `&response_type=code` +
-            `&override_default_response_type=true` +
-            `&extras=${encodeURIComponent(extras)}` +
             `&state=${encodeURIComponent(channel)}`;
         } else {
           const scope = "pages_show_list,pages_manage_metadata";
@@ -136,15 +133,12 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
         }
       } else {
         if (metaMessengerConfigId.trim()) {
-          const extras = JSON.stringify({ sessionInfoVersion: 2 });
           fbUrl =
             `https://www.facebook.com/v19.0/dialog/oauth` +
             `?client_id=${encodeURIComponent(metaAppId)}` +
             `&config_id=${encodeURIComponent(metaMessengerConfigId)}` +
             `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
             `&response_type=code` +
-            `&override_default_response_type=true` +
-            `&extras=${encodeURIComponent(extras)}` +
             `&state=${encodeURIComponent(channel)}`;
         } else {
           const scope = "pages_show_list,pages_messaging,pages_manage_metadata";
