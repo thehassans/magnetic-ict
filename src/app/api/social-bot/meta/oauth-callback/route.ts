@@ -21,6 +21,7 @@ export async function GET(request: Request) {
   const errMsg = errorDesc ?? error ?? null;
 
   let pages: FbPage[] = [];
+  let fetchError: string | null = null;
 
   if (ok && code) {
     try {
@@ -28,7 +29,9 @@ export async function GET(request: Request) {
       const { metaAppId, metaAppSecret } = settings.socialBotConfig;
       const redirectUri = `${url.protocol}//${url.host}/api/social-bot/meta/oauth-callback`;
 
-      if (metaAppId && metaAppSecret) {
+      if (!metaAppId || !metaAppSecret) {
+        fetchError = "Meta App ID or App Secret is not configured in admin settings.";
+      } else {
         const tokenRes = await fetch(
           `https://graph.facebook.com/v19.0/oauth/access_token` +
           `?client_id=${encodeURIComponent(metaAppId)}` +
@@ -37,23 +40,31 @@ export async function GET(request: Request) {
           `&code=${encodeURIComponent(code)}`,
           { signal: AbortSignal.timeout(8000) }
         );
-        if (tokenRes.ok) {
-          const { access_token: userToken } = await tokenRes.json() as { access_token?: string };
-          if (userToken) {
-            const pagesRes = await fetch(
-              `https://graph.facebook.com/v19.0/me/accounts` +
-              `?fields=id,name,access_token` +
-              `&access_token=${encodeURIComponent(userToken)}`,
-              { signal: AbortSignal.timeout(8000) }
-            );
-            if (pagesRes.ok) {
-              const pagesData = await pagesRes.json() as { data?: FbPage[] };
-              pages = pagesData.data ?? [];
+        const tokenData = await tokenRes.json() as { access_token?: string; error?: { message?: string } };
+        if (!tokenRes.ok || !tokenData.access_token) {
+          fetchError = tokenData.error?.message ?? "Token exchange failed. Check Meta App credentials and OAuth redirect URI.";
+        } else {
+          const userToken = tokenData.access_token;
+          const pagesRes = await fetch(
+            `https://graph.facebook.com/v19.0/me/accounts` +
+            `?fields=id,name,access_token` +
+            `&access_token=${encodeURIComponent(userToken)}`,
+            { signal: AbortSignal.timeout(8000) }
+          );
+          const pagesData = await pagesRes.json() as { data?: FbPage[]; error?: { message?: string } };
+          if (!pagesRes.ok) {
+            fetchError = pagesData.error?.message ?? "Failed to fetch Facebook Pages.";
+          } else {
+            pages = pagesData.data ?? [];
+            if (pages.length === 0) {
+              fetchError = "No Facebook Pages found. Create a Facebook Page and ensure it is linked to this account.";
             }
           }
         }
       }
-    } catch { /* ignore — still mark ok so the connect flow can proceed */ }
+    } catch (e) {
+      fetchError = e instanceof Error ? e.message : "Unexpected error during OAuth.";
+    }
   }
 
   const html = `<!DOCTYPE html>
@@ -68,17 +79,19 @@ export async function GET(request: Request) {
   </style>
 </head>
 <body>
-  <p>${ok ? "Connected! Closing window\u2026" : `Error: ${errMsg ?? "Cancelled"}`}</p>
+  <p>${fetchError ? `Error: ${fetchError}` : ok ? "Connected! Closing window\u2026" : `Error: ${errMsg ?? "Cancelled"}`}</p>
   <script>
+    var finalError = ${JSON.stringify(fetchError ?? errMsg)};
+    var finalOk = ${ok} && !finalError;
     try {
       if (window.opener) {
         window.opener.postMessage(
-          { type: "fb-connect", ok: ${ok}, channel: ${JSON.stringify(state)}, error: ${JSON.stringify(errMsg)}, pages: ${JSON.stringify(pages)} },
+          { type: "fb-connect", ok: finalOk, channel: ${JSON.stringify(state)}, error: finalError, pages: ${JSON.stringify(pages)} },
           window.location.origin
         );
       }
     } catch (_) {}
-    setTimeout(function () { window.close(); }, 800);
+    setTimeout(function () { window.close(); }, finalError ? 3000 : 800);
   </script>
 </body>
 </html>`;
