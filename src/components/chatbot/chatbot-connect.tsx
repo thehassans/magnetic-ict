@@ -76,6 +76,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
   const [selectedPageId, setSelectedPageId] = useState("");
   const [completingPage, setCompletingPage] = useState(false);
   const [disconnecting, setDisconnecting] = useState<SocialChannel | null>(null);
+  const [manualOpen, setManualOpen] = useState<SocialChannel | null>(null);
 
   // WhatsApp needs config_id too; Instagram/Messenger only need the app ID
   function channelReady(channel: SocialChannel) {
@@ -168,7 +169,6 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
       }
 
       function onMessage(ev: MessageEvent) {
-        if (ev.origin !== window.location.origin) return;
         const d = ev.data as { type?: string; ok?: boolean; error?: string | null; pages?: FbPage[] };
         if (d?.type === "fb-connect") settle(d.ok === true, d.pages ?? [], d.error ?? undefined);
       }
@@ -419,35 +419,43 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
                     </button>
                   )}
 
-                  {/* Page Access Token input — hidden for Messenger (auto-handled by page picker) */}
-                  {(isConnected || isPending) && integration.channel !== "MESSENGER" && (
+                  {/* Manual Page Access Token — expandable for all channels */}
+                  {(isConnected || isPending) && (
                     <div className="rounded-xl border border-gray-100 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.03] p-3 space-y-2">
-                      <div className="flex items-center gap-1.5">
-                        <Key className="h-3 w-3 text-gray-400 dark:text-white/25" />
-                        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 dark:text-white/25">Page Access Token</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <input
-                          type="password"
-                          value={tokenDrafts[integration._id] ?? ""}
-                          onChange={(e) => setTokenDrafts((d) => ({ ...d, [integration._id]: e.target.value }))}
-                          placeholder="EAAHt…"
-                          className="flex-1 min-w-0 rounded-lg border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] px-2.5 py-1.5 text-[11px] font-mono text-gray-700 dark:text-white/70 placeholder:text-gray-300 dark:placeholder:text-white/15 outline-none focus:border-violet-400 dark:focus:border-violet-500/50 transition"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => void saveToken(integration)}
-                          disabled={savingToken === integration._id}
-                          className="shrink-0 flex items-center gap-1.5 rounded-lg bg-gray-900 dark:bg-white/[0.08] px-2.5 py-1.5 text-[11px] font-semibold text-white dark:text-white/70 transition hover:bg-violet-700 dark:hover:bg-white/[0.14] disabled:opacity-40"
-                        >
-                          {savingToken === integration._id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
-                          Save
-                        </button>
-                      </div>
-                      {integration.accessTokenEncrypted ? (
-                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400">✓ Token stored</p>
-                      ) : (
-                        <p className="text-[10px] text-gray-400 dark:text-white/25">Paste from Facebook → Messenger API Settings → Token Generation</p>
+                      <button
+                        type="button"
+                        onClick={() => setManualOpen(manualOpen === integration.channel ? null : integration.channel)}
+                        className="flex w-full items-center justify-between gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 dark:text-white/25 hover:text-gray-600 dark:hover:text-white/50 transition"
+                      >
+                        <span className="flex items-center gap-1.5"><Key className="h-3 w-3" />Enter token manually</span>
+                        <ChevronDown className={cn("h-3 w-3 transition-transform", manualOpen === integration.channel && "rotate-180")} />
+                      </button>
+                      {manualOpen === integration.channel && (
+                        <>
+                          <div className="flex gap-2">
+                            <input
+                              type="password"
+                              value={tokenDrafts[integration._id] ?? ""}
+                              onChange={(e) => setTokenDrafts((d) => ({ ...d, [integration._id]: e.target.value }))}
+                              placeholder="EAAHt…"
+                              className="flex-1 min-w-0 rounded-lg border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] px-2.5 py-1.5 text-[11px] font-mono text-gray-700 dark:text-white/70 placeholder:text-gray-300 dark:placeholder:text-white/15 outline-none focus:border-violet-400 dark:focus:border-violet-500/50 transition"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => void saveToken(integration)}
+                              disabled={savingToken === integration._id}
+                              className="shrink-0 flex items-center gap-1.5 rounded-lg bg-gray-900 dark:bg-white/[0.08] px-2.5 py-1.5 text-[11px] font-semibold text-white dark:text-white/70 transition hover:bg-violet-700 dark:hover:bg-white/[0.14] disabled:opacity-40"
+                            >
+                              {savingToken === integration._id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                              Save
+                            </button>
+                          </div>
+                          {integration.accessTokenEncrypted ? (
+                            <p className="text-[10px] text-emerald-600 dark:text-emerald-400">✓ Token stored</p>
+                          ) : (
+                            <p className="text-[10px] text-gray-400 dark:text-white/25">Get token: Meta for Developers → your app → Messenger API Settings → Token Generation</p>
+                          )}
+                        </>
                       )}
                     </div>
                   )}
