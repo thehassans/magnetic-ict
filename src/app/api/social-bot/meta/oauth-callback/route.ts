@@ -27,7 +27,10 @@ export async function GET(request: Request) {
     try {
       const settings = await getPlatformSettings();
       const { metaAppId, metaAppSecret } = settings.socialBotConfig;
-      const redirectUri = `${url.protocol}//${url.host}/api/social-bot/meta/oauth-callback`;
+      const canonicalBase = (
+        process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? `${url.protocol}//${url.host}`
+      ).replace(/\/$/, "");
+      const redirectUri = `${canonicalBase}/api/social-bot/meta/oauth-callback`;
 
       if (!metaAppId || !metaAppSecret) {
         fetchError = "Meta App ID or App Secret is not configured in admin settings.";
