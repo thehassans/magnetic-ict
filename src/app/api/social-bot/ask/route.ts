@@ -13,9 +13,10 @@ export async function POST(request: Request) {
   if (!hasAccess) return NextResponse.json({ error: "Access denied." }, { status: 403 });
 
   try {
-    const { message, history } = (await request.json()) as {
+    const { message, history, documentIds } = (await request.json()) as {
       message?: string;
       history?: { role: "user" | "assistant"; text: string }[];
+      documentIds?: string[];
     };
 
     if (!message?.trim()) {
@@ -56,11 +57,15 @@ export async function POST(request: Request) {
       metadata: {}
     }));
 
+    const filteredChunks = documentIds?.length
+      ? chunks.filter((c) => documentIds.includes(c.documentId))
+      : chunks;
+
     const reply = await generateSocialReply({
       profile,
       thread: mockThread,
       messages: historyMessages,
-      chunks,
+      chunks: filteredChunks,
       question: message.trim()
     });
 

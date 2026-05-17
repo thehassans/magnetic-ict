@@ -2,8 +2,18 @@ import { NextResponse } from "next/server";
 import { getRequiredUserSession, userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
 import { addKnowledgeDocument, deleteKnowledgeDocument } from "@/lib/social-bot-service";
 import { extractTextFromUploadedFile } from "@/lib/social-bot-rag";
+import { getSocialBotDocuments } from "@/lib/social-bot-db";
 
 export const runtime = "nodejs";
+
+export async function GET() {
+  const session = await getRequiredUserSession();
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  const hasAccess = await userHasMagneticSocialBotAccess(session.user.id);
+  if (!hasAccess) return NextResponse.json({ error: "Access denied." }, { status: 403 });
+  const documents = await getSocialBotDocuments(session.user.id);
+  return NextResponse.json(documents);
+}
 
 export async function POST(request: Request) {
   const session = await getRequiredUserSession();

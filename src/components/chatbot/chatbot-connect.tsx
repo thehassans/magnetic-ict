@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bot, CheckCircle2, Instagram, Key, Loader2, MessageCircle, RefreshCw, Save, ShieldCheck, Zap } from "lucide-react";
+import { Bot, CheckCircle2, ChevronDown, Instagram, Key, Loader2, MessageCircle, RefreshCw, Save, ShieldCheck, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SocialBotIntegration, SocialChannel } from "@/lib/social-bot-types";
 
@@ -59,6 +59,9 @@ const steps = [
   { n: "03", title: "Go live", body: "Our team maps your number or page and your AI bot is live — no tokens to copy." }
 ];
 
+type FbPage = { id: string; name: string; access_token: string };
+type PagePicker = { channel: SocialChannel; pages: FbPage[] };
+
 type Props = { integrations: SocialBotIntegration[]; metaAppId: string; metaConfigId: string };
 
 export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props) {
@@ -69,6 +72,9 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
     Object.fromEntries(integrations.map((i) => [i._id, ""]))
   );
   const [savingToken, setSavingToken] = useState<string | null>(null);
+  const [pagePicker, setPagePicker] = useState<PagePicker | null>(null);
+  const [selectedPageId, setSelectedPageId] = useState("");
+  const [completingPage, setCompletingPage] = useState(false);
 
   const metaReady = Boolean(metaAppId.trim() && metaConfigId.trim());
 
@@ -82,7 +88,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
     if (r.ok) { const ws = await r.json() as { integrations?: SocialBotIntegration[] }; setList(ws.integrations ?? []); }
   }
 
-  function openMetaPopup(channel: SocialChannel): Promise<void> {
+  function openMetaPopup(channel: SocialChannel): Promise<FbPage[]> {
     return new Promise((resolve, reject) => {
       const callbackUrl = `${window.location.origin}/api/social-bot/meta/oauth-callback`;
       const extras = JSON.stringify({ sessionInfoVersion: 2 });
@@ -103,23 +109,52 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
       }
 
       let settled = false;
-      function settle(ok: boolean, error?: string) {
+      function settle(ok: boolean, pages: FbPage[], error?: string) {
         if (settled) return;
         settled = true;
         window.removeEventListener("message", onMessage);
         clearInterval(pollTimer);
-        ok ? resolve() : reject(new Error(error ?? "Connection cancelled."));
+        ok ? resolve(pages) : reject(new Error(error ?? "Connection cancelled."));
       }
 
       function onMessage(ev: MessageEvent) {
         if (ev.origin !== window.location.origin) return;
-        const d = ev.data as { type?: string; ok?: boolean; error?: string | null };
-        if (d?.type === "fb-connect") settle(d.ok === true, d.error ?? undefined);
+        const d = ev.data as { type?: string; ok?: boolean; error?: string | null; pages?: FbPage[] };
+        if (d?.type === "fb-connect") settle(d.ok === true, d.pages ?? [], d.error ?? undefined);
       }
 
-      const pollTimer = setInterval(() => { if (popup.closed) settle(false); }, 500);
+      const pollTimer = setInterval(() => { if (popup.closed) settle(false, []); }, 500);
       window.addEventListener("message", onMessage);
     });
+  }
+
+  async function completePage() {
+    if (!pagePicker) return;
+    const page = pagePicker.pages.find((p) => p.id === selectedPageId) ?? pagePicker.pages[0];
+    if (!page) return;
+    setCompletingPage(true);
+    try {
+      await fetch("/api/social-bot/integrations", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: pagePicker.channel,
+          enabled: true,
+          label: page.name,
+          pageId: page.id,
+          phoneNumberId: "",
+          accountId: "",
+          accessToken: page.access_token
+        })
+      });
+      await reload();
+      showToast("ok", `${page.name} connected successfully!`);
+      setPagePicker(null);
+    } catch {
+      showToast("err", "Failed to complete connection.");
+    } finally {
+      setCompletingPage(false);
+    }
   }
 
   async function saveToken(integration: SocialBotIntegration) {
@@ -145,14 +180,20 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
   async function connect(integration: SocialBotIntegration) {
     setConnecting(integration.channel);
     try {
-      await openMetaPopup(integration.channel);
+      const pages = await openMetaPopup(integration.channel);
+      if (integration.channel === "MESSENGER" && pages.length > 0) {
+        setPagePicker({ channel: integration.channel, pages });
+        setSelectedPageId(pages[0]?.id ?? "");
+        setConnecting(null);
+        return;
+      }
       await fetch("/api/social-bot/integrations", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ channel: integration.channel, enabled: true, label: integration.label, pageId: integration.pageId, phoneNumberId: integration.phoneNumberId, accountId: integration.accountId, accessToken: "" })
       });
       await reload();
-      showToast("ok", `${integration.channel} connected — our team will finish activation within 24 hours.`);
+      showToast("ok", `${integration.channel} connected.`);
     } catch (e) {
       showToast("err", e instanceof Error ? e.message : "Connection failed.");
     } finally {
@@ -349,6 +390,59 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
         </div>
       </div>
 
-    </div>
+    {/* ── Facebook Page Picker modal ─────────────────────────────────────── */}
+    {pagePicker && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setPagePicker(null)} />
+        <div className="relative w-full max-w-sm rounded-2xl border border-sky-500/20 bg-[#0c0c1e] shadow-2xl overflow-hidden">
+          <div className="flex items-center gap-3 border-b border-white/[0.07] px-5 py-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-blue-500 shadow-lg">
+              <Bot className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-white text-sm">Connect Facebook Messenger</p>
+              <p className="text-[11px] text-white/40 mt-0.5">We found Facebook page(s) managed by you.</p>
+            </div>
+            <button type="button" onClick={() => setPagePicker(null)} className="rounded-lg p-1.5 text-white/30 hover:bg-white/[0.06] hover:text-white/60">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="p-5 space-y-4">
+            <div className="relative">
+              <select
+                value={selectedPageId}
+                onChange={(e) => setSelectedPageId(e.target.value)}
+                className="w-full appearance-none rounded-xl border border-white/[0.10] bg-white/[0.05] px-4 py-3 pr-9 text-sm text-white outline-none focus:border-sky-500/50"
+              >
+                {pagePicker.pages.map((p) => (
+                  <option key={p.id} value={p.id} className="bg-gray-900">{p.name}</option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => void reload()}
+                className="flex items-center gap-1.5 rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2 text-xs font-medium text-white/40 hover:bg-white/[0.07] hover:text-white/70 transition"
+              >
+                <RefreshCw className="h-3 w-3" /> Refresh List
+              </button>
+              <button
+                type="button"
+                onClick={() => void completePage()}
+                disabled={completingPage}
+                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-500 px-5 py-2 text-sm font-semibold text-white shadow-[0_4px_24px_rgba(14,165,233,0.35)] hover:from-sky-400 hover:to-blue-400 disabled:opacity-50 transition"
+              >
+                {completingPage && <Loader2 className="h-4 w-4 animate-spin" />}
+                Complete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+
+  </div>
   );
 }
