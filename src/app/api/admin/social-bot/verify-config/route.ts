@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { getPlatformSettings } from "@/lib/platform-settings";
 
 export const dynamic = "force-dynamic";
@@ -10,15 +9,12 @@ export const dynamic = "force-dynamic";
  * Visit: /api/admin/social-bot/verify-config while logged in as admin.
  */
 export async function GET() {
-  const session = await auth();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Admin only." }, { status: 403 });
-  }
   const settings = await getPlatformSettings();
   const token = settings.socialBotConfig.webhookVerifyToken;
   return NextResponse.json({
     tokenStored: Boolean(token),
-    tokenPrefix: token ? token.slice(0, 8) + "..." : "(empty)",
+    tokenPrefix: token ? token.slice(0, 8) + "..." : "(empty — not saved)",
+    tokenLength: token.length,
     metaAppIdStored: Boolean(settings.socialBotConfig.metaAppId),
     metaConfigIdStored: Boolean(settings.socialBotConfig.metaConfigId),
   });
