@@ -254,6 +254,8 @@ export function AdminSettingsClient({
   const [infobipState, setInfobipState] = useState(infobipConfig);
   const [infobipTestTo, setInfobipTestTo] = useState("");
   const [socialBotState, setSocialBotState] = useState(socialBotConfig);
+  const [metaTestTo, setMetaTestTo] = useState("");
+  const [metaTestChannel, setMetaTestChannel] = useState<"WHATSAPP" | "MESSENGER" | "INSTAGRAM">("WHATSAPP");
   const [magneticCommerceState, setMagneticCommerceState] = useState(magneticCommerceConfig);
   const [trustedPartnersState, setTrustedPartnersState] = useState(trustedPartnersConfig);
   const [welcomeEmailState, setWelcomeEmailState] = useState(welcomeEmailConfig);
@@ -357,6 +359,25 @@ export function AdminSettingsClient({
     }
 
     await saveSection("socialBot", nextState);
+  }
+
+  async function handleMetaSendTest() {
+    if (!metaTestTo.trim()) { setToast({ type: "error", message: "Enter a recipient number or PSID." }); return; }
+    setLoadingSection("meta-send-test");
+    setToast(null);
+    const token = metaTestChannel === "WHATSAPP"
+      ? socialBotState.metaWhatsAppSystemToken
+      : metaTestChannel === "MESSENGER"
+        ? socialBotState.metaMessengerPageToken
+        : socialBotState.metaInstagramPageToken;
+    const res = await fetch("/api/admin/settings/meta-send-test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ channel: metaTestChannel, to: metaTestTo.trim(), token, phoneNumberId: socialBotState.metaWhatsAppPhoneNumberId })
+    });
+    const data = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+    setToast(res.ok ? { type: "success", message: data.message ?? "Test message sent." } : { type: "error", message: data.error ?? "Test failed." });
+    setLoadingSection(null);
   }
 
   async function handleGeminiTest() {
@@ -1001,37 +1022,84 @@ export function AdminSettingsClient({
           />
         </div>
 
-        <div className="mt-6 grid gap-4 xl:grid-cols-3">
-          <MetaChannelCard
-            title="Instagram API"
-            description="Use Instagram API setup with Instagram Login. Add messaging permissions, connect the Instagram account, configure the webhook callback URL and verify token above, then use the saved account or page identifiers in the customer social-bot workspace."
-            checklist={[
-              "Set Meta App ID, App Secret, Config ID, and webhook verify token here.",
-              "Paste the webhook callback URL and verify token into developers.facebook.com.",
-              "Enable Instagram messaging permissions and add the Instagram business account.",
-              "Use the connected account ID and access token in the workspace integration card."
-            ]}
-          />
-          <MetaChannelCard
-            title="Messenger"
-            description="Messenger requires the same webhook endpoint plus a Facebook Page connection. Generate the page access token in Meta, subscribe the page to messaging events, then store the page ID and page access token in the workspace integration card."
-            checklist={[
-              "Subscribe the app webhook using the callback URL and verify token above.",
-              "Generate the Facebook Page access token from the Messenger setup flow.",
-              "Add the Page ID in the workspace integration settings.",
-              "Use the Page access token as the workspace integration access token."
-            ]}
-          />
-          <MetaChannelCard
-            title="WhatsApp Cloud API"
-            description="WhatsApp uses the same webhook URL and verify token, plus a phone number ID and permanent access token. After webhook verification, manage phone numbers in Meta and save the phone number ID and permanent token in the workspace integration card."
-            checklist={[
-              "Verify the webhook in the WhatsApp configuration screen with the callback URL above.",
-              "Create or rotate a permanent access token in Meta.",
-              "Manage phone numbers and copy the phone number ID into the workspace integration.",
-              "Use the permanent token as the workspace integration access token."
-            ]}
-          />
+        {/* ── Bot routing ────────────────────────────────────────────── */}
+        <div className="mt-6 rounded-[18px] border border-gray-200 dark:border-white/[0.07] p-4 space-y-3">
+          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-white/30">Bot User Routing</p>
+          <Input label="Bot User ID" value={socialBotState.metaBotUserId} onChange={(v) => setSocialBotState((s) => ({ ...s, metaBotUserId: v }))} />
+          <div className="flex items-center justify-between rounded-xl border border-gray-100 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.03] px-3 py-2">
+            <span className="text-[11px] text-gray-500 dark:text-white/40">Admin user ID (copy → paste above to route to yourself):</span>
+            <span className="font-mono text-[11px] text-gray-800 dark:text-white/70 select-all">{adminUserId}</span>
+          </div>
+          <p className="text-[10px] text-gray-400 dark:text-white/20">System-level Meta messages route to this user&apos;s chatbot. Leave blank to disable system-level routing.</p>
+        </div>
+
+        {/* ── WhatsApp Cloud API ─────────────────────────────────────── */}
+        <div className="mt-6 rounded-[18px] border border-emerald-100 dark:border-emerald-500/20 p-4 space-y-3">
+          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-emerald-600 dark:text-emerald-400">WhatsApp Cloud API</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Input label="Phone Number ID" value={socialBotState.metaWhatsAppPhoneNumberId} onChange={(v) => setSocialBotState((s) => ({ ...s, metaWhatsAppPhoneNumberId: v }))} />
+              <p className="mt-1 text-[10px] text-gray-400">Meta → WhatsApp → API Setup → Phone Number ID</p>
+            </div>
+            <div>
+              <Input label="System User Access Token" value={socialBotState.metaWhatsAppSystemToken} onChange={(v) => setSocialBotState((s) => ({ ...s, metaWhatsAppSystemToken: v }))} type="password" />
+              <p className="mt-1 text-[10px] text-gray-400">Meta → Business Settings → System Users → Generate token</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Messenger ──────────────────────────────────────────────── */}
+        <div className="mt-4 rounded-[18px] border border-sky-100 dark:border-sky-500/20 p-4 space-y-3">
+          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-sky-600 dark:text-sky-400">Messenger</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Input label="Facebook Page ID" value={socialBotState.metaMessengerPageId} onChange={(v) => setSocialBotState((s) => ({ ...s, metaMessengerPageId: v }))} />
+              <p className="mt-1 text-[10px] text-gray-400">The numeric Page ID shown in About › Page ID</p>
+            </div>
+            <div>
+              <Input label="Page Access Token" value={socialBotState.metaMessengerPageToken} onChange={(v) => setSocialBotState((s) => ({ ...s, metaMessengerPageToken: v }))} type="password" />
+              <p className="mt-1 text-[10px] text-gray-400">Meta → Messenger API Settings → Token Generation</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Instagram ──────────────────────────────────────────────── */}
+        <div className="mt-4 rounded-[18px] border border-pink-100 dark:border-pink-500/20 p-4 space-y-3">
+          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-pink-600 dark:text-pink-400">Instagram</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Input label="Instagram Account ID" value={socialBotState.metaInstagramAccountId} onChange={(v) => setSocialBotState((s) => ({ ...s, metaInstagramAccountId: v }))} />
+              <p className="mt-1 text-[10px] text-gray-400">Instagram Business Account ID from Meta Business Suite</p>
+            </div>
+            <div>
+              <Input label="Page Access Token" value={socialBotState.metaInstagramPageToken} onChange={(v) => setSocialBotState((s) => ({ ...s, metaInstagramPageToken: v }))} type="password" />
+              <p className="mt-1 text-[10px] text-gray-400">Same long-lived token as Messenger if using the same Page</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Test send ──────────────────────────────────────────────── */}
+        <div className="mt-4 rounded-[18px] border border-violet-100 dark:border-violet-500/20 p-4 space-y-3">
+          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-violet-600 dark:text-violet-400">Test Send</p>
+          <div className="flex flex-wrap gap-3 items-end">
+            <div className="flex-1 min-w-[160px]">
+              <Input label="Recipient (phone / PSID)" value={metaTestTo} onChange={(v) => setMetaTestTo(v)} />
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-gray-500 dark:text-white/40 mb-1.5">Channel</p>
+              <div className="flex gap-2">
+                {(["WHATSAPP", "MESSENGER", "INSTAGRAM"] as const).map((ch) => (
+                  <button key={ch} type="button" onClick={() => setMetaTestChannel(ch)} className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold border transition ${
+                    metaTestChannel === ch
+                      ? "bg-violet-600 text-white border-violet-600"
+                      : "bg-white dark:bg-white/[0.04] text-gray-500 dark:text-white/40 border-gray-200 dark:border-white/[0.08] hover:border-gray-300"
+                  }`}>{ch}</button>
+                ))}
+              </div>
+            </div>
+            <Button label="Send test" loading={loadingSection === "meta-send-test"} variant="secondary" onClick={() => void handleMetaSendTest()} />
+          </div>
+          <p className="text-[10px] text-gray-400 dark:text-white/20">Sends a test message using the system token for the selected channel. Save settings first.</p>
         </div>
 
         <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">

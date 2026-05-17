@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { findOneMongoDocument, socialBotCollections } from "@/lib/social-bot-db";
 import { getPlatformSettings } from "@/lib/platform-settings";
 import { ingestInboundMessage } from "@/lib/social-bot-service";
+import { sendMetaReply } from "@/lib/social-bot-rag";
 import type { SocialBotIntegration } from "@/lib/social-bot-types";
 
 function normalizeText(value: unknown) {
@@ -10,18 +11,11 @@ function normalizeText(value: unknown) {
 }
 
 function isValidMetaSignature(signature: string | null, rawBody: string, appSecret: string) {
-  if (!signature || !appSecret) {
-    return false;
-  }
-
+  if (!signature || !appSecret) return false;
   const expected = `sha256=${createHmac("sha256", appSecret).update(rawBody, "utf8").digest("hex")}`;
   const left = Buffer.from(signature, "utf8");
   const right = Buffer.from(expected, "utf8");
-
-  if (left.length !== right.length) {
-    return false;
-  }
-
+  if (left.length !== right.length) return false;
   return timingSafeEqual(left, right);
 }
 
@@ -43,10 +37,10 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const settings = await getPlatformSettings();
+    const cfg = settings.socialBotConfig;
     const rawBody = await request.text();
-    const appSecret = settings.socialBotConfig.metaAppSecret.trim();
 
-    if (appSecret && !isValidMetaSignature(request.headers.get("x-hub-signature-256"), rawBody, appSecret)) {
+    if (cfg.metaAppSecret && !isValidMetaSignature(request.headers.get("x-hub-signature-256"), rawBody, cfg.metaAppSecret)) {
       return NextResponse.json({ error: "Invalid Meta webhook signature." }, { status: 403 });
     }
 
@@ -54,15 +48,20 @@ export async function POST(request: Request) {
       entry?: Array<{
         id?: string;
         changes?: Array<{
+          field?: string;
           value?: {
             metadata?: { phone_number_id?: string };
             contacts?: Array<{ wa_id?: string; profile?: { name?: string } }>;
-            messages?: Array<{ from?: string; text?: { body?: string } }>;
+            messages?: Array<{ from?: string; type?: string; text?: { body?: string } }>;
             messaging?: Array<{
               sender?: { id?: string };
               message?: { text?: string };
             }>;
           };
+        }>;
+        messaging?: Array<{
+          sender?: { id?: string };
+          message?: { text?: string; is_echo?: boolean };
         }>;
       }>;
     };
@@ -72,60 +71,113 @@ export async function POST(request: Request) {
     for (const entry of entries) {
       const entryId = normalizeText(entry.id);
 
+      // ── WhatsApp Cloud API messages ────────────────────────────────────
       for (const change of entry.changes ?? []) {
-        const value = change.value;
-        if (!value) {
-          continue;
-        }
+        const val = change.value;
+        if (!val) continue;
 
-        const phoneNumberId = value.metadata?.phone_number_id;
-        const whatsappMessage = value.messages?.[0];
-        const whatsappContact = value.contacts?.[0];
+        const phoneNumberId = val.metadata?.phone_number_id?.trim() ?? "";
+        const waMsg = val.messages?.[0];
+        const waContact = val.contacts?.[0];
 
-        if (phoneNumberId && whatsappMessage?.from && whatsappMessage.text?.body) {
-          const integration = await findOneMongoDocument<SocialBotIntegration>(socialBotCollections.integrations, {
-            channel: "WHATSAPP",
-            phoneNumberId
-          });
+        if (phoneNumberId && waMsg?.from && waMsg.text?.body && waMsg.type === "text") {
+          // 1. Try per-user integration
+          const integration = await findOneMongoDocument<SocialBotIntegration>(
+            socialBotCollections.integrations,
+            { channel: "WHATSAPP", phoneNumberId }
+          );
 
           if (integration?.userId) {
             await ingestInboundMessage({
               userId: integration.userId,
               source: "WHATSAPP",
-              externalThreadId: whatsappMessage.from,
-              contactName: normalizeText(whatsappContact?.profile?.name) || whatsappMessage.from,
-              contactHandle: whatsappMessage.from,
-              text: whatsappMessage.text.body,
-              metadata: { webhook: "meta" }
+              externalThreadId: waMsg.from,
+              contactName: normalizeText(waContact?.profile?.name) || waMsg.from,
+              contactHandle: waMsg.from,
+              text: waMsg.text.body,
+              metadata: { webhook: "meta", phoneNumberId }
+            });
+          } else if (
+            cfg.metaBotUserId &&
+            cfg.metaWhatsAppSystemToken &&
+            cfg.metaWhatsAppPhoneNumberId &&
+            phoneNumberId === cfg.metaWhatsAppPhoneNumberId
+          ) {
+            // 2. Fall back to system-level admin credentials
+            const systemToken = cfg.metaWhatsAppSystemToken;
+            await ingestInboundMessage({
+              userId: cfg.metaBotUserId,
+              source: "WHATSAPP",
+              externalThreadId: waMsg.from,
+              contactName: normalizeText(waContact?.profile?.name) || waMsg.from,
+              contactHandle: waMsg.from,
+              text: waMsg.text.body,
+              metadata: { webhook: "meta", phoneNumberId, system: true },
+              overrideSend: async (replyText) => {
+                await sendMetaReply({
+                  integration: null,
+                  thread: { externalThreadId: waMsg.from, source: "WHATSAPP" } as never,
+                  messageText: replyText,
+                  systemToken,
+                  systemPhoneNumberId: phoneNumberId
+                });
+              }
             });
           }
         }
+      }
 
-        const pageMessage = value.messaging?.[0];
-        if (pageMessage?.sender?.id && pageMessage.message?.text) {
-          const messengerIntegration = entryId
-            ? await findOneMongoDocument<SocialBotIntegration>(socialBotCollections.integrations, {
-                channel: "MESSENGER",
-                pageId: entryId
-              })
-            : null;
-          const instagramIntegration = entryId
-            ? await findOneMongoDocument<SocialBotIntegration>(socialBotCollections.integrations, {
-                channel: "INSTAGRAM",
-                accountId: entryId
-              })
-            : null;
-          const integration = messengerIntegration ?? instagramIntegration;
+      // ── Messenger & Instagram messages (page-level) ───────────────────
+      for (const msg of entry.messaging ?? []) {
+        if (!msg.sender?.id || !msg.message?.text || msg.message.is_echo) continue;
+        const senderId = msg.sender.id;
+        const text = msg.message.text;
 
-          if (integration?.userId) {
+        // 1. Try per-user integration (Messenger)
+        const messengerInt = entryId
+          ? await findOneMongoDocument<SocialBotIntegration>(socialBotCollections.integrations, { channel: "MESSENGER", pageId: entryId })
+          : null;
+        // 2. Try per-user integration (Instagram)
+        const instagramInt = entryId
+          ? await findOneMongoDocument<SocialBotIntegration>(socialBotCollections.integrations, { channel: "INSTAGRAM", accountId: entryId })
+          : null;
+
+        const perUserInt = messengerInt ?? instagramInt;
+
+        if (perUserInt?.userId) {
+          await ingestInboundMessage({
+            userId: perUserInt.userId,
+            source: perUserInt.channel,
+            externalThreadId: senderId,
+            contactName: senderId,
+            contactHandle: senderId,
+            text,
+            metadata: { webhook: "meta" }
+          });
+        } else if (cfg.metaBotUserId) {
+          // 3. Fall back to system-level admin credentials
+          const isMessenger = cfg.metaMessengerPageId && entryId === cfg.metaMessengerPageId;
+          const isInstagram = cfg.metaInstagramAccountId && entryId === cfg.metaInstagramAccountId;
+          const channel = isMessenger ? "MESSENGER" : isInstagram ? "INSTAGRAM" : null;
+          const systemToken = isMessenger ? cfg.metaMessengerPageToken : isInstagram ? cfg.metaInstagramPageToken : "";
+
+          if (channel && systemToken) {
             await ingestInboundMessage({
-              userId: integration.userId,
-              source: integration.channel,
-              externalThreadId: pageMessage.sender.id,
-              contactName: pageMessage.sender.id,
-              contactHandle: pageMessage.sender.id,
-              text: pageMessage.message.text,
-              metadata: { webhook: "meta" }
+              userId: cfg.metaBotUserId,
+              source: channel,
+              externalThreadId: senderId,
+              contactName: senderId,
+              contactHandle: senderId,
+              text,
+              metadata: { webhook: "meta", system: true },
+              overrideSend: async (replyText) => {
+                await sendMetaReply({
+                  integration: null,
+                  thread: { externalThreadId: senderId, source: channel } as never,
+                  messageText: replyText,
+                  systemToken
+                });
+              }
             });
           }
         }

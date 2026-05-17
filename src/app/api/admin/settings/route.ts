@@ -133,10 +133,18 @@ const requestSchema = z.discriminatedUnion("section", [
     section: z.literal("socialBot"),
     value: z.object({
       globalBotInstructions: z.string(),
-      metaAppId: z.string(),
-      metaAppSecret: z.string(),
-      metaConfigId: z.string(),
-      webhookVerifyToken: z.string()
+      metaAppId: z.string().default(""),
+      metaAppSecret: z.string().default(""),
+      metaConfigId: z.string().default(""),
+      webhookVerifyToken: z.string().default(""),
+      respondIoWorkspaceUrl: z.string().default(""),
+      metaBotUserId: z.string().default(""),
+      metaWhatsAppPhoneNumberId: z.string().default(""),
+      metaWhatsAppSystemToken: z.string().default(""),
+      metaMessengerPageId: z.string().default(""),
+      metaMessengerPageToken: z.string().default(""),
+      metaInstagramAccountId: z.string().default(""),
+      metaInstagramPageToken: z.string().default("")
     })
   }),
   z.object({

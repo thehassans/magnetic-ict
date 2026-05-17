@@ -98,6 +98,14 @@ export type SocialBotSettings = {
   metaConfigId: string;
   webhookVerifyToken: string;
   respondIoWorkspaceUrl: string;
+  // System-level Meta Cloud API credentials (admin-owned channels)
+  metaBotUserId: string;
+  metaWhatsAppPhoneNumberId: string;
+  metaWhatsAppSystemToken: string;
+  metaMessengerPageId: string;
+  metaMessengerPageToken: string;
+  metaInstagramAccountId: string;
+  metaInstagramPageToken: string;
 };
 
 export type MagneticCommerceSettings = {
@@ -332,7 +340,14 @@ export const defaultSocialBotConfig: SocialBotSettings = {
   metaAppSecret: "",
   respondIoWorkspaceUrl: "",
   metaConfigId: "",
-  webhookVerifyToken: ""
+  webhookVerifyToken: "",
+  metaBotUserId: "",
+  metaWhatsAppPhoneNumberId: "",
+  metaWhatsAppSystemToken: "",
+  metaMessengerPageId: "",
+  metaMessengerPageToken: "",
+  metaInstagramAccountId: "",
+  metaInstagramPageToken: ""
 };
 
 export const defaultAboutConfig: AboutSettings = {
@@ -2562,7 +2577,14 @@ export function normalizeSocialBotConfig(value: unknown): SocialBotSettings {
     metaAppSecret: coerceString(value.metaAppSecret, defaultSocialBotConfig.metaAppSecret),
     metaConfigId: coerceString(value.metaConfigId, defaultSocialBotConfig.metaConfigId),
     webhookVerifyToken: coerceString(value.webhookVerifyToken, defaultSocialBotConfig.webhookVerifyToken),
-    respondIoWorkspaceUrl: coerceString(value.respondIoWorkspaceUrl, defaultSocialBotConfig.respondIoWorkspaceUrl)
+    respondIoWorkspaceUrl: coerceString(value.respondIoWorkspaceUrl, defaultSocialBotConfig.respondIoWorkspaceUrl),
+    metaBotUserId: coerceString(value.metaBotUserId, defaultSocialBotConfig.metaBotUserId),
+    metaWhatsAppPhoneNumberId: coerceString(value.metaWhatsAppPhoneNumberId, defaultSocialBotConfig.metaWhatsAppPhoneNumberId),
+    metaWhatsAppSystemToken: coerceString(value.metaWhatsAppSystemToken, defaultSocialBotConfig.metaWhatsAppSystemToken),
+    metaMessengerPageId: coerceString(value.metaMessengerPageId, defaultSocialBotConfig.metaMessengerPageId),
+    metaMessengerPageToken: coerceString(value.metaMessengerPageToken, defaultSocialBotConfig.metaMessengerPageToken),
+    metaInstagramAccountId: coerceString(value.metaInstagramAccountId, defaultSocialBotConfig.metaInstagramAccountId),
+    metaInstagramPageToken: coerceString(value.metaInstagramPageToken, defaultSocialBotConfig.metaInstagramPageToken)
   };
 }
 

@@ -678,25 +678,31 @@ export async function generateSocialReply({
 export async function sendMetaReply({
   integration,
   thread,
-  messageText
+  messageText,
+  systemToken,
+  systemPhoneNumberId
 }: {
-  integration: SocialBotIntegration;
-  thread: SocialBotThread;
+  integration: SocialBotIntegration | null;
+  thread: { externalThreadId: string; source: string };
   messageText: string;
+  systemToken?: string;
+  systemPhoneNumberId?: string;
 }) {
-  const accessToken = decryptSecret(integration.accessTokenEncrypted);
+  const channel = integration?.channel ?? thread.source;
+  const phoneId = integration?.phoneNumberId ?? systemPhoneNumberId ?? "";
+  const accessToken = integration ? decryptSecret(integration.accessTokenEncrypted) : (systemToken ?? "");
 
   if (!accessToken) {
-    throw new Error(`No access token stored for ${integration.channel}.`);
+    throw new Error(`No access token available for ${channel}.`);
   }
 
   const url =
-    integration.channel === "WHATSAPP"
-      ? `https://graph.facebook.com/v22.0/${integration.phoneNumberId}/messages`
+    channel === "WHATSAPP"
+      ? `https://graph.facebook.com/v22.0/${phoneId}/messages`
       : "https://graph.facebook.com/v22.0/me/messages";
 
   const body =
-    integration.channel === "WHATSAPP"
+    channel === "WHATSAPP"
       ? {
           messaging_product: "whatsapp",
           recipient_type: "individual",
@@ -722,7 +728,7 @@ export async function sendMetaReply({
   const payload = (await response.json().catch(() => ({}))) as { error?: { message?: string } };
 
   if (!response.ok) {
-    throw new Error(payload.error?.message ?? `Unable to send reply to ${integration.channel}.`);
+    throw new Error(payload.error?.message ?? `Unable to send reply to ${channel}.`);
   }
 }
 
