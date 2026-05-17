@@ -129,8 +129,9 @@ export async function saveSocialBotIntegration(userId: string, input: unknown) {
   const payload = integrationSchema.parse(input);
   const current = (await ensureDefaultIntegrations(userId)).find((integration) => integration.channel === payload.channel);
   const now = new Date().toISOString();
-  const accessTokenEncrypted = payload.accessToken ? encryptSecret(payload.accessToken) : current?.accessTokenEncrypted ?? "";
-  const connected = payload.enabled && Boolean(payload.accessToken || current?.accessTokenEncrypted);
+  const clearing = payload.accessToken === "__CLEAR__";
+  const accessTokenEncrypted = clearing ? "" : payload.accessToken ? encryptSecret(payload.accessToken) : current?.accessTokenEncrypted ?? "";
+  const connected = payload.enabled && !clearing && Boolean(payload.accessToken || current?.accessTokenEncrypted);
 
   await upsertMongoDocument(
     socialBotCollections.integrations,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bot, CheckCircle2, ChevronDown, Instagram, Key, Loader2, MessageCircle, RefreshCw, Save, ShieldCheck, X, Zap } from "lucide-react";
+import { Bot, CheckCircle2, ChevronDown, Instagram, Key, Loader2, MessageCircle, PlugZap, RefreshCw, Save, ShieldCheck, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SocialBotIntegration, SocialChannel } from "@/lib/social-bot-types";
 
@@ -75,8 +75,15 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
   const [pagePicker, setPagePicker] = useState<PagePicker | null>(null);
   const [selectedPageId, setSelectedPageId] = useState("");
   const [completingPage, setCompletingPage] = useState(false);
+  const [disconnecting, setDisconnecting] = useState<SocialChannel | null>(null);
 
-  const metaReady = Boolean(metaAppId.trim() && metaConfigId.trim());
+  // WhatsApp needs config_id too; Instagram/Messenger only need the app ID
+  function channelReady(channel: SocialChannel) {
+    if (!metaAppId.trim()) return false;
+    if (channel === "WHATSAPP") return Boolean(metaConfigId.trim());
+    return true;
+  }
+  const metaReady = Boolean(metaAppId.trim());
 
   function showToast(type: "ok" | "err", msg: string) {
     setToast({ type, msg });
@@ -105,7 +112,9 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
           `&extras=${encodeURIComponent(extras)}` +
           `&state=${encodeURIComponent(channel)}`;
       } else if (channel === "INSTAGRAM") {
-        const scope = "pages_show_list,instagram_manage_messages,pages_manage_metadata";
+        // instagram_manage_messages requires the Instagram product to be added in Meta Dev Console
+        // Use minimal scopes that always work under the Messenger use case
+        const scope = "pages_show_list,pages_manage_metadata";
         fbUrl =
           `https://www.facebook.com/v19.0/dialog/oauth` +
           `?client_id=${encodeURIComponent(metaAppId)}` +
@@ -202,6 +211,23 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
       showToast("err", e instanceof Error ? e.message : "Save failed.");
     } finally {
       setSavingToken(null);
+    }
+  }
+
+  async function disconnect(channel: SocialChannel) {
+    setDisconnecting(channel);
+    try {
+      await fetch("/api/social-bot/integrations", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channel })
+      });
+      await reload();
+      showToast("ok", `${channelMeta[channel].label} disconnected.`);
+    } catch {
+      showToast("err", "Disconnect failed.");
+    } finally {
+      setDisconnecting(null);
     }
   }
 
@@ -337,14 +363,25 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
                 {/* connect button */}
                 <div className="mt-6 space-y-3">
                   {isConnected ? (
-                    <div className={cn("flex items-center justify-center gap-2 rounded-xl border bg-gradient-to-r px-4 py-3 text-sm font-semibold", m.connectedBg)}>
-                      <CheckCircle2 className="h-4 w-4" />
-                      Connected
+                    <div className="space-y-2">
+                      <div className={cn("flex items-center justify-center gap-2 rounded-xl border bg-gradient-to-r px-4 py-3 text-sm font-semibold", m.connectedBg)}>
+                        <CheckCircle2 className="h-4 w-4" />
+                        Connected
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void disconnect(integration.channel)}
+                        disabled={disconnecting === integration.channel}
+                        className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-600 dark:text-red-400 transition hover:bg-red-100 dark:hover:bg-red-500/20 disabled:opacity-40"
+                      >
+                        {disconnecting === integration.channel ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <PlugZap className="h-3.5 w-3.5" />}
+                        Disconnect
+                      </button>
                     </div>
                   ) : (
                     <button
                       type="button"
-                      disabled={!metaReady || isLoading}
+                      disabled={!channelReady(integration.channel) || isLoading}
                       onClick={() => void connect(integration)}
                       className={cn(
                         "relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r py-3 text-sm font-semibold text-white transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed",
