@@ -1,15 +1,63 @@
 "use client";
 
 import { useState } from "react";
-import { Bot, CheckCircle2, Instagram, Loader2, MessageCircle, Plug, RefreshCw, Wifi, WifiOff } from "lucide-react";
+import { Bot, CheckCircle2, Instagram, Loader2, MessageCircle, RefreshCw, ShieldCheck, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SocialBotIntegration, SocialChannel } from "@/lib/social-bot-types";
 
-const channelMeta: Record<SocialChannel, { label: string; icon: typeof MessageCircle; color: string; glow: string }> = {
-  WHATSAPP: { label: "WhatsApp", icon: MessageCircle, color: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/25", glow: "rgba(52,211,153,0.6)" },
-  INSTAGRAM: { label: "Instagram", icon: Instagram, color: "bg-pink-50 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-500/25", glow: "rgba(236,72,153,0.6)" },
-  MESSENGER: { label: "Messenger", icon: Bot, color: "bg-sky-50 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-500/25", glow: "rgba(14,165,233,0.6)" }
+type ChannelDef = {
+  label: string;
+  description: string;
+  icon: typeof MessageCircle;
+  gradient: string;
+  glow: string;
+  glowDark: string;
+  ring: string;
+  btnGradient: string;
+  connectedBg: string;
 };
+
+const channelMeta: Record<SocialChannel, ChannelDef> = {
+  WHATSAPP: {
+    label: "WhatsApp",
+    description: "Reach customers on the world's most-used messaging app with AI-powered replies.",
+    icon: MessageCircle,
+    gradient: "from-emerald-400 to-teal-500",
+    glow: "rgba(52,211,153,0.18)",
+    glowDark: "rgba(52,211,153,0.28)",
+    ring: "ring-emerald-500/30",
+    btnGradient: "from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 shadow-[0_4px_24px_rgba(52,211,153,0.35)]",
+    connectedBg: "from-emerald-500/10 to-teal-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-300"
+  },
+  INSTAGRAM: {
+    label: "Instagram",
+    description: "Handle DMs and story replies automatically with your AI brand voice.",
+    icon: Instagram,
+    gradient: "from-pink-500 via-fuchsia-500 to-violet-500",
+    glow: "rgba(236,72,153,0.18)",
+    glowDark: "rgba(236,72,153,0.28)",
+    ring: "ring-pink-500/30",
+    btnGradient: "from-pink-500 via-fuchsia-500 to-violet-500 hover:from-pink-400 hover:via-fuchsia-400 hover:to-violet-400 shadow-[0_4px_24px_rgba(236,72,153,0.35)]",
+    connectedBg: "from-pink-500/10 to-violet-500/10 border-pink-500/20 text-pink-600 dark:text-pink-300"
+  },
+  MESSENGER: {
+    label: "Messenger",
+    description: "Automate Facebook Page conversations and support threads at scale.",
+    icon: Bot,
+    gradient: "from-sky-400 to-blue-500",
+    glow: "rgba(14,165,233,0.18)",
+    glowDark: "rgba(14,165,233,0.28)",
+    ring: "ring-sky-500/30",
+    btnGradient: "from-sky-500 to-blue-500 hover:from-sky-400 hover:to-blue-400 shadow-[0_4px_24px_rgba(14,165,233,0.35)]",
+    connectedBg: "from-sky-500/10 to-blue-500/10 border-sky-500/20 text-sky-600 dark:text-sky-300"
+  }
+};
+
+const steps = [
+  { n: "01", title: "Choose a channel", body: "Select WhatsApp, Instagram, or Messenger to begin the guided Meta business login." },
+  { n: "02", title: "Approve access", body: "Meta's secure popup walks you through granting only the permissions your AI bot needs." },
+  { n: "03", title: "Go live", body: "Our team maps your number or page and your AI bot is live — no tokens to copy." }
+];
 
 type Props = { integrations: SocialBotIntegration[]; metaAppId: string; metaConfigId: string };
 
@@ -22,7 +70,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
 
   function showToast(type: "ok" | "err", msg: string) {
     setToast({ type, msg });
-    setTimeout(() => setToast(null), 4000);
+    setTimeout(() => setToast(null), 5000);
   }
 
   async function reload() {
@@ -80,7 +128,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
         body: JSON.stringify({ channel: integration.channel, enabled: true, label: integration.label, pageId: integration.pageId, phoneNumberId: integration.phoneNumberId, accountId: integration.accountId, accessToken: "" })
       });
       await reload();
-      showToast("ok", `${integration.channel} connection request sent. Admin will finish activation.`);
+      showToast("ok", `${integration.channel} connected — our team will finish activation within 24 hours.`);
     } catch (e) {
       showToast("err", e instanceof Error ? e.message : "Connection failed.");
     } finally {
@@ -89,78 +137,161 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
   }
 
   return (
-    <div className="min-h-full space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Connect Channels</h1>
-          <p className="mt-0.5 text-sm text-gray-500 dark:text-white/40">Link messaging channels through Meta&#39;s guided flow</p>
+    <div className="min-h-full">
+
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden border-b border-gray-100 dark:border-white/[0.06] bg-white dark:bg-[#0a0a0f] px-6 pb-8 pt-8">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(124,58,237,0.07),transparent)]" />
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-violet-500/5 blur-3xl" />
+        <div className="pointer-events-none absolute -left-10 top-10 h-40 w-40 rounded-full bg-fuchsia-500/5 blur-3xl" />
+        <div className="relative flex items-start justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-violet-500/20 bg-violet-50 dark:bg-violet-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-violet-600 dark:text-violet-300 mb-3">
+              <Zap className="h-3 w-3" />
+              Meta Business
+            </div>
+            <h1 className="text-[1.6rem] font-bold tracking-tight text-gray-950 dark:text-white">Connect Channels</h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-white/35 max-w-md">
+              Link your messaging channels in seconds with Meta&#39;s secure guided flow — no API keys required.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => void reload()}
+            className="mt-1 flex items-center gap-2 rounded-xl border border-gray-200 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.03] px-3 py-2 text-xs font-medium text-gray-500 dark:text-white/40 transition hover:bg-gray-100 dark:hover:bg-white/[0.06] hover:text-gray-700 dark:hover:text-white/70"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            Refresh
+          </button>
         </div>
-        <button type="button" onClick={() => void reload()} className="flex items-center gap-2 rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] px-3 py-2 text-sm text-gray-500 dark:text-white/50 transition hover:bg-gray-50 dark:hover:bg-white/[0.07] hover:text-gray-700 dark:hover:text-white/80">
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </button>
+
+        {toast && (
+          <div className={cn(
+            "relative mt-4 flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium",
+            toast.type === "ok"
+              ? "border-emerald-200 dark:border-emerald-500/20 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+              : "border-rose-200 dark:border-rose-500/20 bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300"
+          )}>
+            {toast.type === "ok" ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <ShieldCheck className="h-4 w-4 shrink-0" />}
+            {toast.msg}
+          </div>
+        )}
+
+        {!metaReady && (
+          <div className="mt-4 flex items-center gap-2 rounded-2xl border border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+            Meta connect is not configured yet. Contact support to complete setup.
+          </div>
+        )}
       </div>
 
-      {toast && (
-        <div className={cn("rounded-xl border px-4 py-3 text-sm", toast.type === "ok" ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300" : "border-rose-500/20 bg-rose-500/10 text-rose-300")}>
-          {toast.msg}
-        </div>
-      )}
+      {/* ── Channel cards ────────────────────────────────────────────────── */}
+      <div className="px-6 py-6">
+        <div className="grid gap-4 sm:grid-cols-3">
+          {list.map((integration) => {
+            const m = channelMeta[integration.channel];
+            const Icon = m.icon;
+            const isConnected = integration.status === "CONNECTED";
+            const isPending = integration.status === "PENDING";
+            const isLoading = connecting === integration.channel;
 
-      {!metaReady && (
-        <div className="rounded-xl border border-amber-500/20 bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
-          Meta connect is not configured yet. Contact support to complete setup.
-        </div>
-      )}
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        {list.map((integration) => {
-          const meta = channelMeta[integration.channel];
-          const Icon = meta.icon;
-          const isConnected = integration.status === "CONNECTED";
-          const isPending = integration.status === "PENDING";
-          const isLoading = connecting === integration.channel;
-          return (
-            <div key={integration._id} className="group relative overflow-hidden rounded-2xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.03] p-5 shadow-sm transition hover:border-gray-300 dark:hover:border-white/[0.12] hover:bg-gray-50 dark:hover:bg-white/[0.05]">
-              <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl opacity-20"
-                style={{ background: meta.glow ?? "rgba(124,58,237,0.5)" }} />
-              <div className="flex items-start justify-between gap-3">
-                <div className={cn("flex h-12 w-12 items-center justify-center rounded-xl border", meta.color)}>
-                  <Icon className="h-5 w-5" />
-                </div>
-                {isConnected
-                  ? <Wifi className="h-5 w-5 text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
-                  : <WifiOff className="h-5 w-5 text-gray-300 dark:text-white/15" />}
-              </div>
-              <h3 className="mt-4 font-semibold text-gray-900 dark:text-white">{meta.label}</h3>
-              <div className="mt-1 flex items-center gap-1.5">
-                <span className={cn("h-2 w-2 rounded-full", isConnected ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" : isPending ? "bg-amber-400" : "bg-gray-300 dark:bg-white/20")} />
-                <span className="text-xs text-gray-500 dark:text-white/40">{integration.status}</span>
-              </div>
-              {integration.label ? <p className="mt-1 text-xs text-gray-400 dark:text-white/30">{integration.label}</p> : null}
-              <button
-                type="button"
-                disabled={!metaReady || isLoading || isConnected}
-                onClick={() => void connect(integration)}
+            return (
+              <div
+                key={integration._id}
                 className={cn(
-                  "mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition",
+                  "group relative flex flex-col overflow-hidden rounded-[22px] border bg-white dark:bg-white/[0.025] p-6 transition-all duration-300",
                   isConnected
-                    ? "bg-emerald-500/15 text-emerald-300 cursor-default"
-                    : "bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-[0_0_16px_rgba(124,58,237,0.35)] hover:from-violet-500 hover:to-purple-500 disabled:opacity-40"
+                    ? "border-emerald-200 dark:border-emerald-500/20 shadow-[0_0_0_1px_rgba(52,211,153,0.08),0_4px_24px_rgba(52,211,153,0.08)]"
+                    : "border-gray-200/80 dark:border-white/[0.07] hover:border-gray-300 dark:hover:border-white/[0.12] hover:shadow-lg dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
                 )}
               >
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : isConnected ? <CheckCircle2 className="h-4 w-4" /> : <Plug className="h-4 w-4" />}
-                {isConnected ? "Connected" : isPending ? "Pending activation" : "Connect"}
-              </button>
-            </div>
-          );
-        })}
+                {/* ambient glow */}
+                <div
+                  className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full blur-3xl transition-opacity duration-500 opacity-0 group-hover:opacity-100"
+                  style={{ background: m.glowDark }}
+                />
+                <div
+                  className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full blur-3xl opacity-60 dark:opacity-0"
+                  style={{ background: m.glow }}
+                />
+
+                {/* icon + status */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className={cn("flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg", m.gradient)}>
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <div className={cn(
+                    "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]",
+                    isConnected
+                      ? "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                      : isPending
+                        ? "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300"
+                        : "bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-white/35"
+                  )}>
+                    <span className={cn("h-1.5 w-1.5 rounded-full", isConnected ? "bg-emerald-500 animate-pulse" : isPending ? "bg-amber-500" : "bg-gray-400 dark:bg-white/25")} />
+                    {isConnected ? "Live" : isPending ? "Pending" : "Off"}
+                  </div>
+                </div>
+
+                {/* label + description */}
+                <div className="mt-5 flex-1">
+                  <h3 className="text-base font-bold tracking-tight text-gray-950 dark:text-white">{m.label}</h3>
+                  <p className="mt-1.5 text-[13px] leading-[1.6] text-gray-500 dark:text-white/35">{m.description}</p>
+                  {integration.label && (
+                    <p className="mt-2 text-[11px] font-mono text-gray-400 dark:text-white/25 truncate">{integration.label}</p>
+                  )}
+                </div>
+
+                {/* connect button */}
+                <div className="mt-6">
+                  {isConnected ? (
+                    <div className={cn("flex items-center justify-center gap-2 rounded-xl border bg-gradient-to-r px-4 py-3 text-sm font-semibold", m.connectedBg)}>
+                      <CheckCircle2 className="h-4 w-4" />
+                      Connected
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={!metaReady || isLoading}
+                      onClick={() => void connect(integration)}
+                      className={cn(
+                        "relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r py-3 text-sm font-semibold text-white transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed",
+                        m.btnGradient
+                      )}
+                    >
+                      {isLoading ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" />Connecting…</>
+                      ) : isPending ? (
+                        <>Continue setup</>
+                      ) : (
+                        <>Connect {m.label}</>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.03] p-5">
-        <p className="text-sm font-semibold text-gray-700 dark:text-white/80">How it works</p>
-        <p className="mt-2 text-sm leading-7 text-gray-500 dark:text-white/35">Click <strong className="text-gray-700 dark:text-white/60">Connect</strong> to open Meta&#39;s guided business login. You don&#39;t need to copy tokens — our team receives the authorization and activates your channel within 24 hours.</p>
+      {/* ── How it works ─────────────────────────────────────────────────── */}
+      <div className="px-6 pb-8">
+        <div className="rounded-[22px] border border-gray-100 dark:border-white/[0.05] bg-gray-50/60 dark:bg-white/[0.02] p-6">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400 dark:text-white/25 mb-5">How it works</p>
+          <div className="grid gap-5 sm:grid-cols-3">
+            {steps.map((s) => (
+              <div key={s.n} className="flex gap-3">
+                <span className="mt-0.5 shrink-0 text-[11px] font-black tracking-tight text-gray-200 dark:text-white/10 select-none tabular-nums">{s.n}</span>
+                <div>
+                  <p className="text-[13px] font-semibold text-gray-800 dark:text-white/70">{s.title}</p>
+                  <p className="mt-0.5 text-[12px] leading-[1.65] text-gray-400 dark:text-white/30">{s.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
+
     </div>
   );
 }
