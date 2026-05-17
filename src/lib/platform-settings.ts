@@ -99,6 +99,8 @@ export type SocialBotSettings = {
   metaAppId: string;
   metaAppSecret: string;
   metaConfigId: string;
+  metaMessengerConfigId: string;
+  metaInstagramConfigId: string;
   webhookVerifyToken: string;
   respondIoWorkspaceUrl: string;
   // System-level Meta Cloud API credentials (admin-owned channels)
@@ -346,6 +348,8 @@ export const defaultSocialBotConfig: SocialBotSettings = {
   metaAppSecret: "",
   respondIoWorkspaceUrl: "",
   metaConfigId: "",
+  metaMessengerConfigId: "",
+  metaInstagramConfigId: "",
   webhookVerifyToken: "",
   metaBotUserId: "",
   metaWhatsAppPhoneNumberId: "",
@@ -2585,6 +2589,8 @@ export function normalizeSocialBotConfig(value: unknown): SocialBotSettings {
     metaAppId: coerceString(value.metaAppId, defaultSocialBotConfig.metaAppId),
     metaAppSecret: coerceString(value.metaAppSecret, defaultSocialBotConfig.metaAppSecret),
     metaConfigId: coerceString(value.metaConfigId, defaultSocialBotConfig.metaConfigId),
+    metaMessengerConfigId: coerceString(value.metaMessengerConfigId, defaultSocialBotConfig.metaMessengerConfigId),
+    metaInstagramConfigId: coerceString(value.metaInstagramConfigId, defaultSocialBotConfig.metaInstagramConfigId),
     webhookVerifyToken: coerceString(value.webhookVerifyToken, defaultSocialBotConfig.webhookVerifyToken),
     respondIoWorkspaceUrl: coerceString(value.respondIoWorkspaceUrl, defaultSocialBotConfig.respondIoWorkspaceUrl),
     metaBotUserId: coerceString(value.metaBotUserId, defaultSocialBotConfig.metaBotUserId),

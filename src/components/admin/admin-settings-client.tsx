@@ -1000,8 +1000,10 @@ export function AdminSettingsClient({
         <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           <Input label="Meta App ID" value={socialBotState.metaAppId} onChange={(value) => setSocialBotState((current) => ({ ...current, metaAppId: value }))} />
           <Input label="Meta App Secret" value={socialBotState.metaAppSecret} onChange={(value) => setSocialBotState((current) => ({ ...current, metaAppSecret: value }))} type="password" />
-          <Input label="Meta Config ID" value={socialBotState.metaConfigId} onChange={(value) => setSocialBotState((current) => ({ ...current, metaConfigId: value }))} />
+          <Input label="Meta Config ID (WhatsApp)" value={socialBotState.metaConfigId} onChange={(value) => setSocialBotState((current) => ({ ...current, metaConfigId: value }))} />
           <Input label="Webhook verify token" value={socialBotState.webhookVerifyToken} onChange={(value) => setSocialBotState((current) => ({ ...current, webhookVerifyToken: value }))} type="password" />
+          <Input label="Messenger Config ID" value={socialBotState.metaMessengerConfigId} onChange={(value) => setSocialBotState((current) => ({ ...current, metaMessengerConfigId: value }))} />
+          <Input label="Instagram Config ID" value={socialBotState.metaInstagramConfigId} onChange={(value) => setSocialBotState((current) => ({ ...current, metaInstagramConfigId: value }))} />
         </div>
 
         <div className="mt-4 flex flex-wrap gap-3">

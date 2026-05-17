@@ -136,6 +136,8 @@ const requestSchema = z.discriminatedUnion("section", [
       metaAppId: z.string().default(""),
       metaAppSecret: z.string().default(""),
       metaConfigId: z.string().default(""),
+      metaMessengerConfigId: z.string().default(""),
+      metaInstagramConfigId: z.string().default(""),
       webhookVerifyToken: z.string().default(""),
       respondIoWorkspaceUrl: z.string().default(""),
       metaBotUserId: z.string().default(""),

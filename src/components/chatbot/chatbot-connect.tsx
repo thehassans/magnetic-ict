@@ -62,9 +62,9 @@ const steps = [
 type FbPage = { id: string; name: string; access_token: string };
 type PagePicker = { channel: SocialChannel; pages: FbPage[] };
 
-type Props = { integrations: SocialBotIntegration[]; metaAppId: string; metaConfigId: string };
+type Props = { integrations: SocialBotIntegration[]; metaAppId: string; metaConfigId: string; metaMessengerConfigId: string; metaInstagramConfigId: string };
 
-export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props) {
+export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMessengerConfigId, metaInstagramConfigId }: Props) {
   const [list, setList] = useState(integrations);
   const [connecting, setConnecting] = useState<SocialChannel | null>(null);
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
@@ -112,25 +112,49 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId }: Props)
           `&extras=${encodeURIComponent(extras)}` +
           `&state=${encodeURIComponent(channel)}`;
       } else if (channel === "INSTAGRAM") {
-        // instagram_manage_messages requires the Instagram product to be added in Meta Dev Console
-        // Use minimal scopes that always work under the Messenger use case
-        const scope = "pages_show_list,pages_manage_metadata";
-        fbUrl =
-          `https://www.facebook.com/v19.0/dialog/oauth` +
-          `?client_id=${encodeURIComponent(metaAppId)}` +
-          `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
-          `&response_type=code` +
-          `&scope=${encodeURIComponent(scope)}` +
-          `&state=${encodeURIComponent(channel)}`;
+        if (metaInstagramConfigId.trim()) {
+          const extras = JSON.stringify({ sessionInfoVersion: 2 });
+          fbUrl =
+            `https://www.facebook.com/v19.0/dialog/oauth` +
+            `?client_id=${encodeURIComponent(metaAppId)}` +
+            `&config_id=${encodeURIComponent(metaInstagramConfigId)}` +
+            `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
+            `&response_type=code` +
+            `&override_default_response_type=true` +
+            `&extras=${encodeURIComponent(extras)}` +
+            `&state=${encodeURIComponent(channel)}`;
+        } else {
+          const scope = "pages_show_list,pages_manage_metadata";
+          fbUrl =
+            `https://www.facebook.com/v19.0/dialog/oauth` +
+            `?client_id=${encodeURIComponent(metaAppId)}` +
+            `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
+            `&response_type=code` +
+            `&scope=${encodeURIComponent(scope)}` +
+            `&state=${encodeURIComponent(channel)}`;
+        }
       } else {
-        const scope = "pages_show_list,pages_messaging,pages_manage_metadata";
-        fbUrl =
-          `https://www.facebook.com/v19.0/dialog/oauth` +
-          `?client_id=${encodeURIComponent(metaAppId)}` +
-          `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
-          `&response_type=code` +
-          `&scope=${encodeURIComponent(scope)}` +
-          `&state=${encodeURIComponent(channel)}`;
+        if (metaMessengerConfigId.trim()) {
+          const extras = JSON.stringify({ sessionInfoVersion: 2 });
+          fbUrl =
+            `https://www.facebook.com/v19.0/dialog/oauth` +
+            `?client_id=${encodeURIComponent(metaAppId)}` +
+            `&config_id=${encodeURIComponent(metaMessengerConfigId)}` +
+            `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
+            `&response_type=code` +
+            `&override_default_response_type=true` +
+            `&extras=${encodeURIComponent(extras)}` +
+            `&state=${encodeURIComponent(channel)}`;
+        } else {
+          const scope = "pages_show_list,pages_messaging,pages_manage_metadata";
+          fbUrl =
+            `https://www.facebook.com/v19.0/dialog/oauth` +
+            `?client_id=${encodeURIComponent(metaAppId)}` +
+            `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
+            `&response_type=code` +
+            `&scope=${encodeURIComponent(scope)}` +
+            `&state=${encodeURIComponent(channel)}`;
+        }
       }
 
       const popup = window.open(fbUrl, "fb-signup", "width=620,height=700,scrollbars=yes,resizable=yes");

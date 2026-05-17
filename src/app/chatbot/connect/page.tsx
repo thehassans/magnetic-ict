@@ -19,6 +19,8 @@ export default async function ChatbotConnectPage() {
       integrations={integrations}
       metaAppId={settings.socialBotConfig.metaAppId}
       metaConfigId={settings.socialBotConfig.metaConfigId}
+      metaMessengerConfigId={settings.socialBotConfig.metaMessengerConfigId}
+      metaInstagramConfigId={settings.socialBotConfig.metaInstagramConfigId}
     />
   );
 }
