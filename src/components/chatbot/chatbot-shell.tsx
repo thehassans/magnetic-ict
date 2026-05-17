@@ -12,7 +12,6 @@ import {
   Bot,
   BrainCircuit,
   ChevronDown,
-  Crown,
   Inbox,
   LayoutDashboard,
   LogOut,
@@ -24,6 +23,7 @@ import {
   Moon,
   Plug,
   Settings,
+  Sparkles,
   Sun,
   TestTube2,
   Users,
@@ -46,12 +46,6 @@ const navGroups: NavGroup[] = [
     ]
   },
   {
-    items: [
-      { href: "/chatbot/contacts", label: "Contacts", icon: Users },
-      { href: "/chatbot/broadcast", label: "Broadcast", icon: Megaphone }
-    ]
-  },
-  {
     id: "agents", label: "Agents", icon: Bot, collapsible: true,
     items: [
       { href: "/chatbot/agents", label: "AI Agents", icon: Zap },
@@ -67,8 +61,15 @@ const navGroups: NavGroup[] = [
     ]
   },
   {
+    id: "shortcuts", label: "Shortcuts", icon: Sparkles, collapsible: true,
     items: [
-      { href: "/chatbot/quick-replies", label: "Quick Replies", icon: MessageSquarePlus },
+      { href: "/chatbot/contacts", label: "Contacts", icon: Users },
+      { href: "/chatbot/broadcast", label: "Broadcast", icon: Megaphone },
+      { href: "/chatbot/quick-replies", label: "Quick Replies", icon: MessageSquarePlus }
+    ]
+  },
+  {
+    items: [
       { href: "/chatbot/reports", label: "Reports", icon: BarChart3 }
     ]
   }
@@ -89,7 +90,7 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const pathname = usePathname();
 
-  const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set(["inbox", "agents", "training"]));
+  const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set(["inbox", "agents", "training", "shortcuts"]));
 
   useEffect(() => {
     try {
@@ -117,12 +118,6 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
   const settingsActive = pathname.startsWith("/chatbot/settings");
   const isDark = theme === "dark";
   const logoSrc = isDark ? (logoDark || logoLight || null) : (logoLight || logoDark || null);
-
-  const planGradient = subscription.planType === "MANUAL"
-    ? "from-amber-500 to-orange-500"
-    : subscription.planName.toLowerCase().includes("ent") ? "from-sky-500 to-blue-600"
-    : subscription.planName.toLowerCase().includes("start") ? "from-emerald-500 to-teal-500"
-    : "from-violet-500 to-purple-600";
 
   function NavLink({ item, indent }: { item: NavItem; indent?: boolean }) {
     const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
@@ -178,9 +173,14 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
               <span className="text-[14px] font-bold tracking-tight text-gray-900 dark:text-white">Magnetic <span className="text-violet-600 dark:text-violet-400">Chat</span></span>
             </div>
           )}
-          <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-1 text-gray-400 dark:text-white/40 hover:text-gray-700 dark:hover:text-white/70 lg:hidden">
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-0.5">
+            <button type="button" onClick={toggleTheme} title={isDark ? "Light mode" : "Dark mode"} className="rounded-lg p-1.5 text-gray-400 dark:text-white/40 hover:bg-gray-100 dark:hover:bg-white/[0.06] hover:text-gray-700 dark:hover:text-white/70 transition">
+              {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+            </button>
+            <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-1 text-gray-400 dark:text-white/40 hover:text-gray-700 dark:hover:text-white/70 lg:hidden">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         <div className="mx-4 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-white/8 to-transparent" />
@@ -222,7 +222,7 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
           })}
         </nav>
 
-        {/* Settings + theme */}
+        {/* Settings */}
         <div className="mx-2.5 mb-1 space-y-px">
           <div className="mx-1 mb-1 h-px bg-gray-200 dark:bg-white/[0.05]" />
           <Link
@@ -237,35 +237,7 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
             <Settings className={cn("h-3.5 w-3.5 shrink-0", settingsActive ? "text-violet-600 dark:text-violet-400" : "opacity-50")} />
             Settings
           </Link>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="flex w-full items-center gap-2.5 rounded-[10px] px-3 py-2 text-[13px] font-medium text-gray-500 dark:text-white/40 transition hover:bg-gray-100 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white/70"
-          >
-            {isDark ? <Sun className="h-3.5 w-3.5 shrink-0 opacity-50" /> : <Moon className="h-3.5 w-3.5 shrink-0 opacity-50" />}
-            {isDark ? "Light mode" : "Dark mode"}
-          </button>
         </div>
-
-        {/* Subscription card */}
-        {subscription.hasAccess && (
-          <div className="relative mx-3 mb-2 overflow-hidden rounded-[14px] border border-gray-100 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.025] p-3">
-            <div className={cn("absolute right-0 inset-y-0 w-0.5 bg-gradient-to-b", planGradient)} />
-            <div className="flex items-center gap-2">
-              <div className={cn("flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-gradient-to-br", planGradient)}>
-                <Crown className="h-2.5 w-2.5 text-white" />
-              </div>
-              <p className="text-[12px] font-bold text-gray-900 dark:text-white truncate flex-1">{subscription.planName}</p>
-              <span className="flex items-center gap-1 shrink-0">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">Active</span>
-              </span>
-            </div>
-            <p className="mt-1 text-[10px] text-gray-400 dark:text-white/25 pl-7">
-              {subscription.planType === "MANUAL" ? "Admin access" : subscription.startDate ? `Since ${new Date(subscription.startDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}` : "Subscription active"}
-            </p>
-          </div>
-        )}
 
         {/* User card */}
         <div className="relative mx-3 mb-4 rounded-[14px] border border-gray-200 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.03] p-3">

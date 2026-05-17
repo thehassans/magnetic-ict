@@ -7,6 +7,7 @@ import {
   getSocialBotThreads
 } from "@/lib/social-bot-db";
 import { getSocialBotSubscriptionInfo } from "@/lib/social-bot-access";
+import { WhatsAppIcon, InstagramIcon, MessengerIcon } from "@/components/chatbot/social-icons";
 import {
   ArrowRight,
   Bot,
@@ -20,10 +21,10 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const CHANNEL_META: Record<string, { icon: string; color: string }> = {
-  WHATSAPP: { icon: "💬", color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
-  INSTAGRAM: { icon: "📸", color: "bg-pink-500/10 text-pink-600 dark:text-pink-400" },
-  MESSENGER: { icon: "💙", color: "bg-sky-500/10 text-sky-600 dark:text-sky-400" }
+const CHANNEL_META: Record<string, { label: string; hexColor: string; bgCls: string; Icon: React.ElementType }> = {
+  WHATSAPP: { label: "WhatsApp", hexColor: "#25D366", bgCls: "bg-[#25D366]/10", Icon: WhatsAppIcon },
+  INSTAGRAM: { label: "Instagram", hexColor: "#E1306C", bgCls: "bg-[#E1306C]/10", Icon: InstagramIcon },
+  MESSENGER: { label: "Messenger", hexColor: "#0099FF", bgCls: "bg-[#0099FF]/10", Icon: MessengerIcon }
 };
 
 export default async function ChatbotDashboardPage() {
@@ -193,17 +194,16 @@ export default async function ChatbotDashboardPage() {
             ) : (
               <div className="divide-y divide-gray-50 dark:divide-white/[0.03]">
                 {integrations.map((i) => {
-                  const meta = CHANNEL_META[i.channel] ?? { icon: "📡", color: "bg-gray-500/10 text-gray-500" };
+                  const meta = CHANNEL_META[i.channel] ?? { label: i.channel, hexColor: "#6b7280", bgCls: "bg-gray-500/10", Icon: Webhook };
+                  const ChannelIcon = meta.Icon;
                   return (
                     <div key={i._id} className="flex items-center justify-between px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={`flex h-9 w-9 items-center justify-center rounded-xl text-lg ${meta.color}`}>
-                          {meta.icon}
+                        <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${meta.bgCls}`}>
+                          <ChannelIcon className="h-4 w-4" style={{ color: meta.hexColor }} />
                         </div>
                         <div>
-                          <p className="text-[13px] font-semibold text-gray-800 dark:text-white/80 capitalize">
-                            {i.channel.charAt(0) + i.channel.slice(1).toLowerCase()}
-                          </p>
+                          <p className="text-[13px] font-semibold text-gray-800 dark:text-white/80">{meta.label}</p>
                           {i.label && <p className="text-[10px] text-gray-400 dark:text-white/25 truncate max-w-[100px]">{i.label}</p>}
                         </div>
                       </div>

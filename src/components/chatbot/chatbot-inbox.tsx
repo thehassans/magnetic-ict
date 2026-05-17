@@ -4,34 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Bot, ChevronDown, FileText, Loader2, RefreshCw, Search, Send, UserCheck, Users, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SocialBotAgent, SocialBotMessage, SocialBotThread } from "@/lib/social-bot-types";
+import { WhatsAppIcon, InstagramIcon, MessengerIcon } from "@/components/chatbot/social-icons";
 
 type ThreadPayload = { thread: SocialBotThread | null; messages: SocialBotMessage[] };
 type Filter = "ALL" | "AI" | "MANUAL" | "UNASSIGNED";
-
-/* ─── Platform brand SVGs ─────────────────────────────────────────── */
-function WhatsAppIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={style}>
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-    </svg>
-  );
-}
-
-function InstagramIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={style}>
-      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-    </svg>
-  );
-}
-
-function MessengerIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={style}>
-      <path d="M12 0C5.373 0 0 4.974 0 11.111c0 3.498 1.744 6.614 4.469 8.654V24l4.088-2.242c1.092.3 2.246.464 3.443.464 6.627 0 12-4.975 12-11.111S18.627 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26L10.732 8.1l3.131 3.26L19.752 8.1l-6.561 6.863z" />
-    </svg>
-  );
-}
 
 const platformConfig = {
   WHATSAPP: { Icon: WhatsAppIcon, color: "#25D366", bg: "bg-[#25D366]/15", text: "text-[#25D366]", label: "WhatsApp" },
@@ -197,6 +173,91 @@ function AgentPanel({
           <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-gray-400 dark:text-white/30">Channel</p>
           <PlatformBadge source={thread.source} size="sm" />
           <p className="text-[11px] text-gray-500 dark:text-white/30">{thread.contactHandle}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Demo chat (empty state background preview) ─────────────────── */
+const DEMO_MSGS = [
+  { id: 1, dir: "in", text: "Hi! I need help tracking my order. It's been 5 days and I haven't received it yet.", time: "10:23 AM" },
+  { id: 2, dir: "out", text: "Hello! I'd be happy to help. Could you please share your order number?", time: "10:24 AM" },
+  { id: 3, dir: "in", text: "Sure — it's #MAG-78291", time: "10:24 AM" },
+  { id: 4, dir: "out", text: "Got it! Your order is currently in transit and is scheduled for delivery tomorrow between 2–6 PM. I'll send you the live tracking link now. 📦", time: "10:25 AM" },
+  { id: 5, dir: "in", text: "Amazing! Thank you so much for the quick help 🙏", time: "10:26 AM" },
+  { id: 6, dir: "out", text: "You're very welcome, Sarah! Is there anything else I can assist with today?", time: "10:26 AM" },
+];
+
+function DemoChat() {
+  return (
+    <div className="relative flex flex-1 flex-col overflow-hidden">
+      {/* Background demo — pointer-events-none */}
+      <div className="pointer-events-none flex h-full flex-col select-none" aria-hidden>
+        {/* Demo header */}
+        <div className="flex items-center gap-3 border-b border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1e] px-5 py-3.5">
+          <div className="relative">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/40 to-purple-600/30 text-sm font-bold text-violet-200">S</div>
+            <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white dark:border-[#0c0c1e]" style={{ background: "#25D366" }}>
+              <WhatsAppIcon className="h-2 w-2 text-white" />
+            </span>
+          </div>
+          <div>
+            <p className="text-[14px] font-semibold text-gray-900 dark:text-white">Sarah Johnson</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-[11px] text-gray-500 dark:text-white/30">+1 (555) 234-5678</p>
+              <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-semibold" style={{ background: "rgba(37,211,102,0.12)", color: "#25D366" }}>
+                <WhatsAppIcon className="h-2 w-2" />WhatsApp
+              </span>
+            </div>
+          </div>
+          <div className="ml-auto flex gap-1.5">
+            <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 px-3 py-1.5 text-[11px] font-semibold text-white">
+              <Zap className="h-3 w-3" />AI
+            </div>
+          </div>
+        </div>
+        {/* Demo messages */}
+        <div className="flex-1 overflow-hidden px-5 py-5 space-y-3 bg-gray-50 dark:bg-[#07070f]">
+          {DEMO_MSGS.map((msg) => {
+            const out = msg.dir === "out";
+            return (
+              <div key={msg.id} className={cn("flex gap-2.5", out ? "justify-end" : "justify-start")}>
+                {!out && (
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gray-200 dark:bg-white/[0.07] text-[11px] font-bold text-gray-600 dark:text-white/50">S</div>
+                )}
+                <div className="flex max-w-[65%] flex-col gap-0.5">
+                  {out && <p className="text-right text-[10px] text-violet-500 dark:text-violet-400/70">Magnetic AI</p>}
+                  <div className={cn("rounded-2xl px-4 py-2.5 text-[13px] leading-[1.7]",
+                    out ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700 text-white" : "rounded-tl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05] text-gray-800 dark:text-white/80")}>
+                    {msg.text}
+                  </div>
+                  <p className={cn("text-[10px] text-gray-400 dark:text-white/20", out ? "text-right" : "text-left")}>{msg.time}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {/* Demo input */}
+        <div className="border-t border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1e] p-4">
+          <div className="flex gap-3">
+            <div className="flex-1 rounded-xl border border-gray-200 dark:border-white/[0.08] bg-gray-50 dark:bg-white/[0.02] px-4 py-2.5 text-[13px] text-gray-300 dark:text-white/15">
+              Type a reply…
+            </div>
+            <div className="flex items-center gap-2 self-end rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-[13px] font-semibold text-white">
+              <Send className="h-4 w-4" />Send
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Overlay */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/70 dark:bg-[#07070f]/75 backdrop-blur-[6px]">
+        <div className="text-center px-8">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-violet-200 dark:border-violet-500/20 bg-gradient-to-br from-violet-500/10 to-purple-600/5 shadow-[0_0_40px_rgba(139,92,246,0.08)]">
+            <Bot className="h-7 w-7 text-violet-500 dark:text-violet-400/80" />
+          </div>
+          <p className="text-[15px] font-semibold text-gray-700 dark:text-white/60">Select a conversation</p>
+          <p className="mt-1.5 text-[12px] text-gray-400 dark:text-white/25">to view messages and assign agents</p>
         </div>
       </div>
     </div>
@@ -516,15 +577,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
           />
         </>
       ) : (
-        <div className="flex flex-1 items-center justify-center bg-gray-50 dark:bg-[#07070f]">
-          <div className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-gray-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.03]">
-              <Bot className="h-7 w-7 text-gray-300 dark:text-white/10" />
-            </div>
-            <p className="text-sm font-medium text-gray-400 dark:text-white/20">Select a conversation</p>
-            <p className="mt-1 text-xs text-gray-300 dark:text-white/10">to view messages and assign agents</p>
-          </div>
-        </div>
+        <DemoChat />
       )}
     </div>
   );
