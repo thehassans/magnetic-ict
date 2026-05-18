@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { signOut } from "next-auth/react";
 import {
   BarChart3,
@@ -140,6 +140,50 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
   const isDark = theme === "dark";
   const logoSrc = isDark ? (logoDark || logoLight || null) : (logoLight || logoDark || null);
 
+  // ── Presence heartbeat ────────────────────────────────────────────────────
+  const sessionIdRef = useRef(
+    typeof crypto !== "undefined" ? crypto.randomUUID() : Math.random().toString(36).slice(2)
+  );
+  const [totalTimeMs, setTotalTimeMs] = useState(0);
+  const [sessionTimeMs, setSessionTimeMs] = useState(0);
+
+  const sendHeartbeat = useCallback(async () => {
+    try {
+      const res = await fetch("/api/social-bot/presence", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: sessionIdRef.current })
+      });
+      if (res.ok) {
+        const data = await res.json() as { totalTimeMs?: number; sessionTimeMs?: number };
+        setTotalTimeMs(data.totalTimeMs ?? 0);
+        setSessionTimeMs(data.sessionTimeMs ?? 0);
+      }
+    } catch { /* network error — ignore */ }
+  }, []);
+
+  useEffect(() => {
+    void sendHeartbeat(); // initial ping
+    const interval = window.setInterval(() => {
+      if (!document.hidden) void sendHeartbeat();
+    }, 30_000);
+    const onVisible = () => { if (!document.hidden) void sendHeartbeat(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [sendHeartbeat]);
+
+  function fmtDuration(ms: number) {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const h = Math.floor(m / 60);
+    if (h > 0) return `${h}h ${m % 60}m`;
+    if (m > 0) return `${m}m ${s % 60}s`;
+    return `${s}s`;
+  }
+
   function NavLink({ item, indent }: { item: NavItem; indent?: boolean }) {
     const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
     const Icon = item.icon;
@@ -263,14 +307,29 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
         {/* User card */}
         <div className="relative mx-3 mb-4 rounded-[14px] border border-gray-200 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.03] p-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/60 to-purple-700/50 text-[13px] font-bold text-white ring-1 ring-gray-200 dark:ring-white/10">
+            <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/60 to-purple-700/50 text-[13px] font-bold text-white ring-1 ring-gray-200 dark:ring-white/10">
               {initial}
+              {/* Online indicator */}
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-[#0d0d1f] bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.7)]" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-[12px] font-semibold text-gray-800 dark:text-white/90">{userName}</p>
               <p className="truncate text-[10px] text-gray-400 dark:text-white/35">{userEmail}</p>
             </div>
           </div>
+          {/* Session time */}
+          {sessionTimeMs > 5000 && (
+            <div className="mt-2 flex items-center justify-between rounded-lg bg-white dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.05] px-2.5 py-1.5">
+              <span className="text-[10px] text-gray-400 dark:text-white/30">Session</span>
+              <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">{fmtDuration(sessionTimeMs)}</span>
+            </div>
+          )}
+          {totalTimeMs > 60_000 && (
+            <div className="mt-1 flex items-center justify-between rounded-lg bg-white dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.05] px-2.5 py-1.5">
+              <span className="text-[10px] text-gray-400 dark:text-white/30">Total online</span>
+              <span className="text-[10px] font-semibold text-violet-600 dark:text-violet-400">{fmtDuration(totalTimeMs)}</span>
+            </div>
+          )}
           <button
             type="button"
             onClick={handleSignOut}

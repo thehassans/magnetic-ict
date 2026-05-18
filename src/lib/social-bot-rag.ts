@@ -696,25 +696,39 @@ export async function sendMetaReply({
     throw new Error(`No access token available for ${channel}.`);
   }
 
-  const url =
-    channel === "WHATSAPP"
-      ? `https://graph.facebook.com/v22.0/${phoneId}/messages`
-      : "https://graph.facebook.com/v22.0/me/messages";
+  // ── Build URL + body per channel ──────────────────────────────────────────
+  let url: string;
+  let body: Record<string, unknown>;
 
-  const body =
-    channel === "WHATSAPP"
-      ? {
-          messaging_product: "whatsapp",
-          recipient_type: "individual",
-          to: thread.externalThreadId,
-          type: "text",
-          text: { body: messageText }
-        }
-      : {
-          recipient: { id: thread.externalThreadId },
-          messaging_type: "RESPONSE",
-          message: { text: messageText }
-        };
+  if (channel === "WHATSAPP") {
+    url = `https://graph.facebook.com/v25.0/${phoneId}/messages`;
+    body = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: thread.externalThreadId,
+      type: "text",
+      text: { body: messageText }
+    };
+  } else if (channel === "INSTAGRAM") {
+    // Instagram Messaging: replies go to /{ig-page-id}/messages using the Page access token
+    const igPageId = integration?.pageId || "";
+    url = igPageId
+      ? `https://graph.facebook.com/v25.0/${igPageId}/messages`
+      : "https://graph.facebook.com/v25.0/me/messages";
+    body = {
+      recipient: { id: thread.externalThreadId },
+      messaging_type: "RESPONSE",
+      message: { text: messageText }
+    };
+  } else {
+    // Messenger
+    url = "https://graph.facebook.com/v25.0/me/messages";
+    body = {
+      recipient: { id: thread.externalThreadId },
+      messaging_type: "RESPONSE",
+      message: { text: messageText }
+    };
+  }
 
   const response = await fetch(url, {
     method: "POST",
@@ -722,15 +736,26 @@ export async function sendMetaReply({
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(10_000)
   });
 
-  const payload = (await response.json().catch(() => ({}))) as { error?: { message?: string } };
+  const payload = (await response.json().catch(() => ({}))) as {
+    error?: { message?: string; code?: number };
+    message_id?: string;
+  };
 
   if (!response.ok) {
-    throw new Error(payload.error?.message ?? `Unable to send reply to ${channel}.`);
+    const errMsg = payload.error?.message ?? `Unable to send reply to ${channel}.`;
+    const isExpired = payload.error?.code === 190 || errMsg.toLowerCase().includes("expired");
+    throw new Error(
+      isExpired
+        ? `[TOKEN EXPIRED] ${errMsg} — Refresh via POST /api/social-bot/meta/token-exchange`
+        : errMsg
+    );
   }
 }
+
 
 export async function sendInfobipReply({
   to,

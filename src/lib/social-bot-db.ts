@@ -122,7 +122,8 @@ export const socialBotCollections = {
   messages: "SocialBotMessages",
   agents: "SocialBotAgents",
   quickReplies: "SocialBotQuickReplies",
-  invitations: "ChatbotInvitations"
+  invitations: "ChatbotInvitations",
+  presence: "SocialBotPresence"
 } as const;
 
 export async function getSocialBotProfile(userId: string) {

@@ -1,7 +1,8 @@
 import { getWorkspaceContext } from "@/lib/social-bot-access";
-import { BarChart3, MessageCircle, TrendingUp, Users, Zap } from "lucide-react";
+import { BarChart3, Clock, MessageCircle, TrendingUp, Users, Zap } from "lucide-react";
 import { auth } from "@/auth";
-import { getSocialBotThreads, getSocialBotIntegrations } from "@/lib/social-bot-db";
+import { findMongoDocuments, getSocialBotIntegrations, getSocialBotThreads, socialBotCollections } from "@/lib/social-bot-db";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -17,10 +18,52 @@ export default async function ChatbotReportsPage() {
   const workspace = await getWorkspaceContext(session.user.id);
   const uid = workspace.ownerId;
 
-  const [threads, integrations] = await Promise.all([
+  type PresenceRecord = {
+    _id: string;
+    userId: string;
+    lastSeenAt: string;
+    sessionStart: string;
+    totalTimeMs: number;
+    sessionTimeMs: number;
+    status: string;
+  };
+
+  const [threads, integrations, presenceRecords] = await Promise.all([
     getSocialBotThreads(uid),
-    getSocialBotIntegrations(uid)
+    getSocialBotIntegrations(uid),
+    findMongoDocuments<PresenceRecord>(socialBotCollections.presence, {}, { sort: { lastSeenAt: -1 }, limit: 50 })
   ]);
+
+  // Enrich presence with Prisma user names
+  const userIds = [...new Set(presenceRecords.map((p) => p.userId))];
+  const presenceUsers = userIds.length
+    ? await prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, name: true, email: true } })
+    : [];
+  const userMap = Object.fromEntries(presenceUsers.map((u) => [u.id, u]));
+
+  function fmtDuration(ms: number) {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const h = Math.floor(m / 60);
+    if (h > 0) return `${h}h ${m % 60}m`;
+    if (m > 0) return `${m}m ${s % 60}s`;
+    return `${s}s`;
+  }
+
+  function relativeTime(iso: string) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const s = Math.floor(diff / 1000);
+    if (s < 60) return "Just now";
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return new Date(iso).toLocaleDateString();
+  }
+
+  function isOnline(lastSeenAt: string) {
+    return Date.now() - new Date(lastSeenAt).getTime() < 90_000; // 90 s threshold
+  }
 
   const byChannel = ["WHATSAPP", "INSTAGRAM", "MESSENGER"].map((ch) => ({
     channel: ch,
@@ -110,6 +153,57 @@ export default async function ChatbotReportsPage() {
                 <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${i.status === "CONNECTED" ? "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : i.status === "PENDING" ? "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300" : "bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-white/30"}`}>{i.status}</span>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Team Presence ──────────────────────────────────────────────── */}
+      <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.03]">
+        <div className="flex items-center gap-2 border-b border-gray-200 dark:border-white/[0.06] px-5 py-4">
+          <Clock className="h-4 w-4 text-violet-500 dark:text-violet-400" />
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Team Presence</h2>
+          <span className="ml-auto text-[11px] text-gray-400 dark:text-white/30">
+            {presenceRecords.filter((p) => isOnline(p.lastSeenAt)).length} online now
+          </span>
+        </div>
+        {presenceRecords.length === 0 ? (
+          <p className="p-5 text-sm text-gray-400 dark:text-white/30">No presence data yet — it appears after users open the app.</p>
+        ) : (
+          <div className="divide-y divide-gray-100 dark:divide-white/[0.04]">
+            {presenceRecords.map((p) => {
+              const user = userMap[p.userId];
+              const online = isOnline(p.lastSeenAt);
+              return (
+                <div key={p._id} className="flex items-center justify-between px-5 py-3.5">
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/40 to-purple-600/30 text-[12px] font-bold text-violet-700 dark:text-violet-200">
+                      {(user?.name ?? user?.email ?? "?").charAt(0).toUpperCase()}
+                      <span className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-white dark:border-[#070710] ${
+                        online ? "bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.6)]" : "bg-gray-300 dark:bg-white/20"
+                      }`} />
+                    </div>
+                    <div>
+                      <p className="text-[13px] font-medium text-gray-800 dark:text-white/80">
+                        {user?.name ?? user?.email ?? p.userId.slice(0, 12)}
+                      </p>
+                      <p className="text-[11px] text-gray-400 dark:text-white/30">
+                        {online ? "Online now" : `Last seen ${relativeTime(p.lastSeenAt)}`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-right">
+                    <div>
+                      <p className="text-[10px] text-gray-400 dark:text-white/30">Session</p>
+                      <p className="text-[12px] font-semibold text-emerald-600 dark:text-emerald-400">{fmtDuration(p.sessionTimeMs)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 dark:text-white/30">Total</p>
+                      <p className="text-[12px] font-semibold text-violet-600 dark:text-violet-400">{fmtDuration(p.totalTimeMs)}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
