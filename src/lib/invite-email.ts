@@ -1,4 +1,6 @@
 import { getPlatformSettings } from "@/lib/platform-settings";
+import type { TransactionalEmailSettings } from "@/lib/platform-settings";
+import { Resend } from "resend";
 
 function getAppUrl() {
   return (
@@ -9,10 +11,37 @@ function getAppUrl() {
   ).replace(/\/$/, "");
 }
 
-async function resolveEmailProvider(cfg: { mailgunApiKey?: string; brevoApiKey?: string; resendApiKey?: string }) {
-  if (cfg.mailgunApiKey?.trim()) return "mailgun";
-  if (cfg.brevoApiKey?.trim()) return "brevo";
-  if ((cfg as { resendApiKey?: string }).resendApiKey?.trim()) return "resend";
+function hasMailgunConfig(cfg: TransactionalEmailSettings) {
+  return Boolean(
+    cfg.enabled &&
+    cfg.activeProvider === "mailgun" &&
+    cfg.apiBaseUrl?.trim() &&
+    cfg.apiKey?.trim() &&
+    cfg.domain?.trim() &&
+    cfg.fromEmail?.trim()
+  );
+}
+
+function hasBrevoConfig(cfg: TransactionalEmailSettings) {
+  return Boolean(
+    cfg.enabled &&
+    cfg.activeProvider === "brevo" &&
+    cfg.brevo?.apiKey?.trim() &&
+    cfg.brevo?.fromEmail?.trim()
+  );
+}
+
+function hasResendFallback() {
+  return Boolean(
+    process.env.AUTH_RESEND_KEY?.trim() &&
+    (process.env.AUTH_EMAIL_FROM?.trim() || process.env.NEXT_PUBLIC_APP_URL)
+  );
+}
+
+function resolveProvider(cfg: TransactionalEmailSettings): "mailgun" | "brevo" | "resend" | "none" {
+  if (hasMailgunConfig(cfg)) return "mailgun";
+  if (hasBrevoConfig(cfg)) return "brevo";
+  if (hasResendFallback()) return "resend";
   return "none";
 }
 
@@ -26,25 +55,26 @@ export async function sendInviteEmail({
   token: string;
 }) {
   const settings = await getPlatformSettings();
-  const cfg = settings.transactionalEmailConfig as {
-    fromEmail?: string;
-    fromName?: string;
-    mailgunApiKey?: string;
-    mailgunDomain?: string;
-    brevoApiKey?: string;
-    resendApiKey?: string;
-  };
+  const cfg = settings.transactionalEmailConfig;
 
-  const provider = await resolveEmailProvider(cfg);
+  const provider = resolveProvider(cfg);
   if (provider === "none") throw new Error("No email provider configured.");
 
   const appUrl = getAppUrl();
-  const chatbotUrl = (process.env.NEXT_PUBLIC_CHATBOT_URL ?? `https://chatbot.magnetic-ict.com`).replace(/\/$/, "");
   const inviteLink = `${appUrl}/invite/${token}`;
-  const fromEmail = cfg.fromEmail ?? "noreply@magnetic-ict.com";
-  const fromName = cfg.fromName ?? "Magnetic ICT";
+
+  const fromEmail =
+    provider === "brevo"
+      ? cfg.brevo?.fromEmail?.trim() || "noreply@magnetic-ict.com"
+      : cfg.fromEmail?.trim() || "noreply@magnetic-ict.com";
+
+  const fromName =
+    provider === "brevo"
+      ? cfg.brevo?.fromName?.trim() || "Magnetic ICT"
+      : cfg.fromName?.trim() || "Magnetic ICT";
 
   const subject = `${inviterName} invited you to Magnetic Chat`;
+
   const html = `
     <div style="background:#050816;padding:32px;font-family:Inter,Arial,sans-serif;color:#f8fafc">
       <div style="max-width:560px;margin:0 auto;background:rgba(15,23,42,0.88);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:32px">
@@ -66,29 +96,57 @@ export async function sendInviteEmail({
   `;
 
   if (provider === "mailgun") {
-    const domain = cfg.mailgunDomain ?? "";
-    const form = new URLSearchParams({ from: `${fromName} <${fromEmail}>`, to: inviteeEmail, subject, html });
-    const res = await fetch(`https://api.mailgun.net/v3/${domain}/messages`, {
+    const apiBaseUrl = (cfg.apiBaseUrl || "https://api.mailgun.net").replace(/\/$/, "");
+    const mailgunUrl = `${apiBaseUrl}/v3/${cfg.domain}/messages`;
+    const form = new URLSearchParams({
+      from: `${fromName} <${fromEmail}>`,
+      to: inviteeEmail,
+      subject,
+      html
+    });
+    const res = await fetch(mailgunUrl, {
       method: "POST",
       headers: {
-        Authorization: `Basic ${Buffer.from(`api:${cfg.mailgunApiKey}`).toString("base64")}`,
+        Authorization: `Basic ${Buffer.from(`api:${cfg.apiKey}`).toString("base64")}`,
         "Content-Type": "application/x-www-form-urlencoded"
       },
       body: form.toString()
     });
-    if (!res.ok) throw new Error(`Mailgun error: ${res.statusText}`);
+    const payload = (await res.json().catch(() => null)) as { message?: string } | null;
+    if (!res.ok) {
+      throw new Error(payload?.message || `Mailgun error: ${res.statusText}`);
+    }
+
   } else if (provider === "brevo") {
     const res = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
-      headers: { "api-key": cfg.brevoApiKey!, "Content-Type": "application/json" },
-      body: JSON.stringify({ sender: { name: fromName, email: fromEmail }, to: [{ email: inviteeEmail }], subject, htmlContent: html })
+      headers: {
+        "api-key": cfg.brevo.apiKey.trim(),
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify({
+        sender: { name: fromName, email: fromEmail },
+        to: [{ email: inviteeEmail }],
+        subject,
+        htmlContent: html
+      })
     });
-    if (!res.ok) throw new Error(`Brevo error: ${res.statusText}`);
-  } else {
-    const { Resend } = await import("resend");
-    const resend = new Resend((cfg as { resendApiKey?: string }).resendApiKey);
-    await resend.emails.send({ from: `${fromName} <${fromEmail}>`, to: inviteeEmail, subject, html });
-  }
+    const payload = (await res.json().catch(() => null)) as { message?: string } | null;
+    if (!res.ok) {
+      throw new Error(payload?.message || `Brevo error: ${res.statusText}`);
+    }
 
-  void chatbotUrl;
+  } else {
+    // Resend fallback via AUTH_RESEND_KEY
+    const resendKey = process.env.AUTH_RESEND_KEY!;
+    const resendFrom = process.env.AUTH_EMAIL_FROM?.trim() || `${fromName} <${fromEmail}>`;
+    const resend = new Resend(resendKey);
+    await resend.emails.send({
+      from: resendFrom,
+      to: inviteeEmail,
+      subject,
+      html
+    });
+  }
 }
