@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
 const ALLOWED_PREFIXES = [
@@ -12,7 +12,7 @@ function isSafeDestination(url: string) {
   return ALLOWED_PREFIXES.some((prefix) => url.startsWith(prefix));
 }
 
-export default function RelayPage() {
+function RelayLogic() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -25,6 +25,10 @@ export default function RelayPage() {
     }
   }, [searchParams]);
 
+  return null;
+}
+
+export default function RelayPage() {
   return (
     <div
       style={{
@@ -38,6 +42,9 @@ export default function RelayPage() {
         fontSize: "15px"
       }}
     >
+      <Suspense fallback={null}>
+        <RelayLogic />
+      </Suspense>
       Redirecting…
     </div>
   );
