@@ -27,12 +27,9 @@ const navItems = [
   { href: "/admin/settings", label: "Settings", icon: Settings2 },
 ];
 
-type Props = {
-  logoLight?: string;
-  logoDark?: string;
-};
-
 const STORAGE_KEY = "admin_sidebar_collapsed";
+
+type Props = { logoLight?: string; logoDark?: string };
 
 export function AdminSidebar({ logoLight, logoDark }: Props) {
   const pathname = usePathname();
@@ -51,30 +48,34 @@ export function AdminSidebar({ logoLight, logoDark }: Props) {
     localStorage.setItem(STORAGE_KEY, String(next));
   }
 
-  if (!mounted) return null;
+  if (!mounted) return (
+    <aside className="w-[240px] shrink-0 border-r border-slate-200/80 dark:border-white/[0.06] bg-white dark:bg-[#0a0a12]/95" />
+  );
 
   return (
     <aside
       className={cn(
-        "sticky top-0 h-screen flex flex-col border-r border-white/[0.06] bg-[#0a0a12]/95 backdrop-blur-xl transition-all duration-300 ease-in-out shrink-0",
+        "sticky top-0 h-screen flex flex-col border-r border-slate-200/80 dark:border-white/[0.06]",
+        "bg-white dark:bg-[#0a0a12]/95 backdrop-blur-xl",
+        "transition-all duration-300 ease-in-out shrink-0",
         collapsed ? "w-[72px]" : "w-[240px]"
       )}
     >
-      {/* Top: Logo + Toggle */}
-      <div className="flex items-center justify-between px-3 py-4 border-b border-white/[0.05]">
+      {/* Header */}
+      <div className="flex items-center justify-between px-3 py-4 border-b border-slate-100 dark:border-white/[0.05]">
         {!collapsed && (
-          <div className="flex items-center gap-2.5 pl-1 overflow-hidden">
-            {logoLight ? (
+          <div className="flex items-center gap-2 pl-1 overflow-hidden">
+            {logoLight && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logoLight} alt="Logo" className="h-7 w-auto object-contain dark:hidden" />
-            ) : null}
-            {logoDark ? (
+            )}
+            {logoDark && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logoDark} alt="Logo" className="h-7 w-auto object-contain hidden dark:block" />
-            ) : null}
+            )}
             {!logoLight && !logoDark && (
-              <span className="text-[13px] font-black tracking-tight text-white">
-                Magnetic<span className="text-violet-400">ICT</span>
+              <span className="text-[13px] font-black tracking-tight text-slate-900 dark:text-white">
+                Magnetic<span className="text-violet-600 dark:text-violet-400">ICT</span>
               </span>
             )}
           </div>
@@ -82,19 +83,18 @@ export function AdminSidebar({ logoLight, logoDark }: Props) {
         <button
           onClick={toggle}
           className={cn(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white/40 hover:bg-white/[0.06] hover:text-white transition",
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition",
+            "text-slate-400 hover:bg-slate-100 hover:text-slate-700",
+            "dark:text-white/40 dark:hover:bg-white/[0.06] dark:hover:text-white",
             collapsed && "mx-auto"
           )}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {collapsed
-            ? <Menu className="h-4 w-4" />
-            : <ChevronLeft className="h-4 w-4" />
-          }
+          {collapsed ? <Menu className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
       </div>
 
-      {/* Nav items */}
+      {/* Nav */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3 space-y-0.5">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
@@ -106,8 +106,8 @@ export function AdminSidebar({ logoLight, logoDark }: Props) {
               className={cn(
                 "group flex items-center gap-3 rounded-xl px-2.5 py-2 text-[13px] font-medium transition-all duration-150 relative",
                 active
-                  ? "bg-violet-600/15 text-violet-300"
-                  : "text-white/45 hover:bg-white/[0.04] hover:text-white/80"
+                  ? "bg-violet-50 text-violet-700 dark:bg-violet-600/15 dark:text-violet-300"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-white/40 dark:hover:bg-white/[0.04] dark:hover:text-white/80"
               )}
             >
               {active && (
@@ -116,29 +116,32 @@ export function AdminSidebar({ logoLight, logoDark }: Props) {
               <span className={cn(
                 "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition",
                 active
-                  ? "bg-violet-500/20 text-violet-400"
-                  : "text-white/35 group-hover:text-white/60"
+                  ? "bg-violet-100 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400"
+                  : "text-slate-400 group-hover:text-slate-700 dark:text-white/30 dark:group-hover:text-white/60"
               )}>
                 <Icon className="h-[15px] w-[15px]" />
               </span>
-              {!collapsed && (
-                <span className="truncate">{label}</span>
-              )}
+              {!collapsed && <span className="truncate">{label}</span>}
             </Link>
           );
         })}
       </nav>
 
       {/* Logout */}
-      <div className="px-2 py-3 border-t border-white/[0.05]">
+      <div className="px-2 py-3 border-t border-slate-100 dark:border-white/[0.05]">
         <button
           onClick={() => void signOut({ callbackUrl: "/admin" })}
           title={collapsed ? "Logout" : undefined}
           className={cn(
-            "flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-[13px] font-medium text-white/35 hover:bg-white/[0.04] hover:text-rose-400 transition group"
+            "flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-[13px] font-medium transition group",
+            "text-slate-400 hover:bg-rose-50 hover:text-rose-600",
+            "dark:text-white/30 dark:hover:bg-white/[0.04] dark:hover:text-rose-400"
           )}
         >
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white/30 group-hover:text-rose-400 transition">
+          <span className={cn(
+            "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition",
+            "group-hover:text-rose-500 dark:group-hover:text-rose-400"
+          )}>
             <LogOut className="h-[15px] w-[15px]" />
           </span>
           {!collapsed && <span>Logout</span>}
