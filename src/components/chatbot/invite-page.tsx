@@ -5,9 +5,9 @@ import { CheckCircle2, Clock, Copy, Mail, Send, Trash2, UserPlus, X } from "luci
 import { cn } from "@/lib/utils";
 import type { ChatbotInvitation } from "@/lib/social-bot-types";
 
-type Props = { initialInvitations: ChatbotInvitation[] };
+type Props = { initialInvitations: ChatbotInvitation[]; appUrl?: string };
 
-export function InvitePage({ initialInvitations }: Props) {
+export function InvitePage({ initialInvitations, appUrl }: Props) {
   const [invitations, setInvitations] = useState(initialInvitations);
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
@@ -57,7 +57,7 @@ export function InvitePage({ initialInvitations }: Props) {
   }
 
   function copyLink(token: string) {
-    const base = (process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin).replace(/\/$/, "");
+    const base = (appUrl ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://magnetic-ict.com").replace(/\/$/, "");
     void navigator.clipboard.writeText(`${base}/invite/${token}`);
     setCopied(token);
     setTimeout(() => setCopied(null), 2000);

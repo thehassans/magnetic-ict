@@ -36,6 +36,13 @@ export default function middleware(request: NextRequest) {
   if (hostname.startsWith("chatbot.")) {
     const url = request.nextUrl.clone();
     const cleanPath = stripLocalePrefix(pathname);
+
+    // Redirect /invite/* to the main domain so the token-redirect route handler runs
+    if (cleanPath.startsWith("/invite/")) {
+      const mainDomain = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "https://magnetic-ict.com";
+      return NextResponse.redirect(`${mainDomain}${cleanPath}`);
+    }
+
     // Rewrite root to /chatbot, other paths to /chatbot/path
     if (cleanPath === "/" || cleanPath === "") {
       url.pathname = "/chatbot";
