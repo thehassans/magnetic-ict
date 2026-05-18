@@ -110,6 +110,19 @@ export type SocialBotQuickReply = {
   updatedAt: string;
 };
 
+export type ChatbotInvitation = {
+  _id: string;
+  token: string;
+  inviterUserId: string;
+  inviterName: string;
+  inviterEmail: string;
+  inviteeEmail: string;
+  status: "pending" | "accepted" | "cancelled";
+  createdAt: string;
+  expiresAt: string;
+  acceptedAt?: string;
+};
+
 export type SocialBotAgent = {
   _id: string;
   userId: string;

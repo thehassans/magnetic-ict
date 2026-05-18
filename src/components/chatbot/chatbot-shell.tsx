@@ -26,6 +26,7 @@ import {
   Sparkles,
   Sun,
   TestTube2,
+  UserPlus,
   Users,
   X,
   Zap
@@ -65,7 +66,8 @@ const navGroups: NavGroup[] = [
     items: [
       { href: "/chatbot/contacts", label: "Contacts", icon: Users },
       { href: "/chatbot/broadcast", label: "Broadcast", icon: Megaphone },
-      { href: "/chatbot/quick-replies", label: "Quick Replies", icon: MessageSquarePlus }
+      { href: "/chatbot/quick-replies", label: "Quick Replies", icon: MessageSquarePlus },
+      { href: "/chatbot/invite", label: "Invite", icon: UserPlus }
     ]
   },
   {

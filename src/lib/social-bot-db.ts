@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import type {
+  ChatbotInvitation,
   SocialBotAgent,
   SocialBotChunk,
   SocialBotDocument,
@@ -120,7 +121,8 @@ export const socialBotCollections = {
   threads: "SocialBotThreads",
   messages: "SocialBotMessages",
   agents: "SocialBotAgents",
-  quickReplies: "SocialBotQuickReplies"
+  quickReplies: "SocialBotQuickReplies",
+  invitations: "ChatbotInvitations"
 } as const;
 
 export async function getSocialBotProfile(userId: string) {
@@ -189,4 +191,28 @@ export async function createSocialBotQuickReply(quickReply: SocialBotQuickReply)
 
 export async function deleteSocialBotQuickReply(userId: string, id: string) {
   await deleteMongoDocuments(socialBotCollections.quickReplies, { userId, _id: id });
+}
+
+export async function getChatbotInvitations(inviterUserId: string) {
+  return findMongoDocuments<ChatbotInvitation>(
+    socialBotCollections.invitations,
+    { inviterUserId },
+    { sort: { createdAt: -1 }, limit: 50 }
+  );
+}
+
+export async function getChatbotInvitationByToken(token: string) {
+  return findOneMongoDocument<ChatbotInvitation>(socialBotCollections.invitations, { token });
+}
+
+export async function createChatbotInvitation(invitation: ChatbotInvitation) {
+  return insertMongoDocument(socialBotCollections.invitations, invitation);
+}
+
+export async function updateChatbotInvitation(token: string, updates: Partial<ChatbotInvitation>) {
+  await upsertMongoDocument(socialBotCollections.invitations, { token }, updates);
+}
+
+export async function deleteChatbotInvitation(inviterUserId: string, token: string) {
+  await deleteMongoDocuments(socialBotCollections.invitations, { inviterUserId, token });
 }
