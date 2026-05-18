@@ -114,43 +114,24 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
           `&extras=${encodeURIComponent(extras)}` +
           `&state=${encodeURIComponent(channel)}`;
       } else if (channel === "INSTAGRAM") {
-        if (metaInstagramConfigId.trim()) {
-          fbUrl =
-            `https://www.facebook.com/v25.0/dialog/oauth` +
-            `?client_id=${encodeURIComponent(metaAppId)}` +
-            `&config_id=${encodeURIComponent(metaInstagramConfigId)}` +
-            `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
-            `&response_type=code` +
-            `&state=${encodeURIComponent(channel)}`;
-        } else {
-          const scope = "pages_show_list,pages_manage_metadata,instagram_basic,instagram_manage_messages,instagram_manage_comments";
-          fbUrl =
-            `https://www.facebook.com/v25.0/dialog/oauth` +
-            `?client_id=${encodeURIComponent(metaAppId)}` +
-            `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
-            `&response_type=code` +
-            `&scope=${encodeURIComponent(scope)}` +
-            `&state=${encodeURIComponent(channel)}`;
-        }
+        const scope = "pages_show_list,pages_manage_metadata,instagram_basic,instagram_manage_messages,instagram_manage_comments";
+        fbUrl =
+          `https://www.facebook.com/v25.0/dialog/oauth` +
+          `?client_id=${encodeURIComponent(metaAppId)}` +
+          `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
+          `&response_type=code` +
+          `&scope=${encodeURIComponent(scope)}` +
+          `&state=${encodeURIComponent(channel)}`;
       } else {
-        if (metaMessengerConfigId.trim()) {
-          fbUrl =
-            `https://www.facebook.com/v25.0/dialog/oauth` +
-            `?client_id=${encodeURIComponent(metaAppId)}` +
-            `&config_id=${encodeURIComponent(metaMessengerConfigId)}` +
-            `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
-            `&response_type=code` +
-            `&state=${encodeURIComponent(channel)}`;
-        } else {
-          const scope = "pages_show_list,pages_messaging,pages_manage_metadata";
-          fbUrl =
-            `https://www.facebook.com/v25.0/dialog/oauth` +
-            `?client_id=${encodeURIComponent(metaAppId)}` +
-            `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
-            `&response_type=code` +
-            `&scope=${encodeURIComponent(scope)}` +
-            `&state=${encodeURIComponent(channel)}`;
-        }
+        // Messenger
+        const scope = "pages_show_list,pages_messaging,pages_manage_metadata";
+        fbUrl =
+          `https://www.facebook.com/v25.0/dialog/oauth` +
+          `?client_id=${encodeURIComponent(metaAppId)}` +
+          `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
+          `&response_type=code` +
+          `&scope=${encodeURIComponent(scope)}` +
+          `&state=${encodeURIComponent(channel)}`;
       }
 
       const popup = window.open(fbUrl, "fb-signup", "width=620,height=700,scrollbars=yes,resizable=yes");
