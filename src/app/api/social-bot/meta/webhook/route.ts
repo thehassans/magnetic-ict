@@ -55,9 +55,16 @@ export async function POST(request: Request) {
         changes?: Array<{
           field?: string;
           value?: {
+            // WhatsApp Cloud API
             metadata?: { phone_number_id?: string };
             contacts?: Array<{ wa_id?: string; profile?: { name?: string } }>;
             messages?: Array<{ from?: string; type?: string; text?: { body?: string } }>;
+            // Instagram comments
+            media?: { id?: string };
+            id?: string;
+            text?: string;
+            from?: { id?: string; username?: string };
+            // Messenger / Instagram DM changes
             messaging?: Array<{
               sender?: { id?: string };
               message?: { text?: string };
@@ -128,6 +135,59 @@ export async function POST(request: Request) {
                 });
               }
             });
+          }
+        }
+
+        // ── Instagram Comments (field: "comments") ─────────────────────────
+        if (change.field === "comments" && val) {
+          const commentId = normalizeText(val.id);
+          const commentText = normalizeText(val.text);
+          const commenterId = normalizeText(val.from?.id);
+          const commenterUsername = normalizeText(val.from?.username) || commenterId;
+          const mediaId = normalizeText(val.media?.id);
+
+          if (commentId && commentText && commenterId) {
+            // 1. Try per-user integration (Instagram account linked to this entry page)
+            const instagramInt = entryId
+              ? await findOneMongoDocument<SocialBotIntegration>(
+                  socialBotCollections.integrations,
+                  { channel: "INSTAGRAM", accountId: entryId }
+                )
+              : null;
+
+            if (instagramInt?.userId) {
+              await ingestInboundMessage({
+                userId: instagramInt.userId,
+                source: "INSTAGRAM",
+                externalThreadId: commenterId,
+                contactName: commenterUsername,
+                contactHandle: commenterUsername,
+                text: commentText,
+                metadata: { webhook: "meta", commentId, mediaId, type: "comment" }
+              });
+            } else if (cfg.metaBotUserId && cfg.metaInstagramAccountId && entryId === cfg.metaInstagramAccountId) {
+              // 2. Fall back to system-level Instagram credentials
+              const systemToken = cfg.metaInstagramPageToken;
+              await ingestInboundMessage({
+                userId: cfg.metaBotUserId,
+                source: "INSTAGRAM",
+                externalThreadId: commenterId,
+                contactName: commenterUsername,
+                contactHandle: commenterUsername,
+                text: commentText,
+                metadata: { webhook: "meta", commentId, mediaId, type: "comment", system: true },
+                overrideSend: systemToken
+                  ? async (replyText) => {
+                      await sendMetaReply({
+                        integration: null,
+                        thread: { externalThreadId: commenterId, source: "INSTAGRAM" } as never,
+                        messageText: replyText,
+                        systemToken
+                      });
+                    }
+                  : undefined
+              });
+            }
           }
         }
       }
