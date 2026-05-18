@@ -11,7 +11,9 @@ const SUBSCRIBED_FIELDS = [
   "messaging_postbacks",
   "messaging_optins",
   "message_deliveries",
-  "message_reads"
+  "message_reads",
+  "comments",
+  "mention"
 ].join(",");
 
 /**
@@ -28,23 +30,40 @@ export async function POST(request: Request) {
   const workspace = await getWorkspaceContext(session.user.id);
 
   try {
-    const { pageId } = (await request.json()) as { pageId?: string };
+    const body = (await request.json()) as { pageId?: string; channel?: string };
+    const { pageId, channel } = body;
     if (!pageId) return NextResponse.json({ error: "pageId required." }, { status: 400 });
 
-    const integration = await findOneMongoDocument<SocialBotIntegration>(
+    // Search by pageId across all channels (Instagram, Messenger, etc.)
+    let integration = await findOneMongoDocument<SocialBotIntegration>(
       socialBotCollections.integrations,
-      { userId: workspace.ownerId, channel: "MESSENGER", pageId }
+      { userId: workspace.ownerId, pageId }
     );
 
+    // If channel is provided, try channel-specific lookup as fallback
+    if (!integration && channel) {
+      integration = await findOneMongoDocument<SocialBotIntegration>(
+        socialBotCollections.integrations,
+        { userId: workspace.ownerId, channel: channel.toUpperCase() }
+      );
+    }
+
     if (!integration?.accessTokenEncrypted) {
-      return NextResponse.json({ error: "No access token found for this page." }, { status: 400 });
+      return NextResponse.json({ error: "No access token found for this page. Save the page token first." }, { status: 400 });
     }
 
     const pageToken = decryptSecret(integration.accessTokenEncrypted);
+    const apiVersion = "v25.0";
+
+    // Choose fields based on channel type
+    const intChannel = (integration.channel ?? channel ?? "").toUpperCase();
+    const fields = intChannel === "INSTAGRAM"
+      ? ["messages", "messaging_postbacks", "comments", "mention"].join(",")
+      : SUBSCRIBED_FIELDS;
 
     const res = await fetch(
-      `https://graph.facebook.com/v19.0/${encodeURIComponent(pageId)}/subscribed_apps` +
-      `?subscribed_fields=${encodeURIComponent(SUBSCRIBED_FIELDS)}` +
+      `https://graph.facebook.com/${apiVersion}/${encodeURIComponent(pageId)}/subscribed_apps` +
+      `?subscribed_fields=${encodeURIComponent(fields)}` +
       `&access_token=${encodeURIComponent(pageToken)}`,
       { method: "POST", signal: AbortSignal.timeout(8000) }
     );
@@ -55,7 +74,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: data.error?.message ?? "Subscription failed." }, { status: 400 });
     }
 
-    return NextResponse.json({ ok: true, message: `Page ${pageId} subscribed to webhook.` });
+    return NextResponse.json({ ok: true, message: `Page ${pageId} subscribed to webhook for ${intChannel}.` });
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Error." }, { status: 500 });
   }

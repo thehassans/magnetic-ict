@@ -116,16 +116,16 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
       } else if (channel === "INSTAGRAM") {
         if (metaInstagramConfigId.trim()) {
           fbUrl =
-            `https://www.facebook.com/v19.0/dialog/oauth` +
+            `https://www.facebook.com/v25.0/dialog/oauth` +
             `?client_id=${encodeURIComponent(metaAppId)}` +
             `&config_id=${encodeURIComponent(metaInstagramConfigId)}` +
             `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
             `&response_type=code` +
             `&state=${encodeURIComponent(channel)}`;
         } else {
-          const scope = "pages_show_list,pages_manage_metadata";
+          const scope = "pages_show_list,pages_manage_metadata,instagram_basic,instagram_manage_messages,instagram_manage_comments";
           fbUrl =
-            `https://www.facebook.com/v19.0/dialog/oauth` +
+            `https://www.facebook.com/v25.0/dialog/oauth` +
             `?client_id=${encodeURIComponent(metaAppId)}` +
             `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
             `&response_type=code` +
@@ -184,6 +184,8 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
     if (!page) return;
     setCompletingPage(true);
     try {
+      // For Instagram, ig_id is passed back from oauth-callback as extra field
+      const igId = (page as unknown as { ig_id?: string }).ig_id ?? "";
       await fetch("/api/social-bot/integrations", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -193,18 +195,19 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
           label: page.name,
           pageId: page.id,
           phoneNumberId: "",
-          accountId: "",
+          accountId: pagePicker.channel === "INSTAGRAM" ? igId : "",
           accessToken: page.access_token
         })
       });
-      // Subscribe page to webhook so Facebook delivers messages to inbox
+      // Subscribe page to webhook
       await fetch("/api/social-bot/meta/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pageId: page.id })
+        body: JSON.stringify({ pageId: page.id, channel: pagePicker.channel })
       }).catch(() => { /* non-fatal */ });
       await reload();
-      showToast("ok", `${page.name} connected — messages will appear in your Inbox.`);
+      const igNote = pagePicker.channel === "INSTAGRAM" && igId ? ` (IG Account: ${igId})` : "";
+      showToast("ok", `${page.name}${igNote} connected — messages will appear in your Inbox.`);
       setPagePicker(null);
     } catch {
       showToast("err", "Failed to complete connection.");
@@ -449,46 +452,47 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
                     </button>
                   )}
 
-                  {/* Manual Page Access Token — expandable for all channels */}
-                  {(isConnected || isPending) && (
-                    <div className="rounded-xl border border-gray-100 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.03] p-3 space-y-2">
-                      <button
-                        type="button"
-                        onClick={() => setManualOpen(manualOpen === integration.channel ? null : integration.channel)}
-                        className="flex w-full items-center justify-between gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 dark:text-white/25 hover:text-gray-600 dark:hover:text-white/50 transition"
-                      >
-                        <span className="flex items-center gap-1.5"><Key className="h-3 w-3" />Enter token manually</span>
-                        <ChevronDown className={cn("h-3 w-3 transition-transform", manualOpen === integration.channel && "rotate-180")} />
-                      </button>
-                      {manualOpen === integration.channel && (
-                        <>
-                          <div className="flex gap-2">
-                            <input
-                              type="password"
-                              value={tokenDrafts[integration._id] ?? ""}
-                              onChange={(e) => setTokenDrafts((d) => ({ ...d, [integration._id]: e.target.value }))}
-                              placeholder="EAAHt…"
-                              className="flex-1 min-w-0 rounded-lg border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] px-2.5 py-1.5 text-[11px] font-mono text-gray-700 dark:text-white/70 placeholder:text-gray-300 dark:placeholder:text-white/15 outline-none focus:border-violet-400 dark:focus:border-violet-500/50 transition"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => void saveToken(integration)}
-                              disabled={savingToken === integration._id}
-                              className="shrink-0 flex items-center gap-1.5 rounded-lg bg-gray-900 dark:bg-white/[0.08] px-2.5 py-1.5 text-[11px] font-semibold text-white dark:text-white/70 transition hover:bg-violet-700 dark:hover:bg-white/[0.14] disabled:opacity-40"
-                            >
-                              {savingToken === integration._id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
-                              Save
-                            </button>
-                          </div>
-                          {integration.accessTokenEncrypted ? (
-                            <p className="text-[10px] text-emerald-600 dark:text-emerald-400">✓ Token stored</p>
-                          ) : (
-                            <p className="text-[10px] text-gray-400 dark:text-white/25">Get token: Meta for Developers → your app → Messenger API Settings → Token Generation</p>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
+                  {/* Manual Token Entry — available for ALL states */}
+                  <div className="rounded-xl border border-gray-100 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.03] p-3 space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setManualOpen(manualOpen === integration.channel ? null : integration.channel)}
+                      className="flex w-full items-center justify-between gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 dark:text-white/25 hover:text-gray-600 dark:hover:text-white/50 transition"
+                    >
+                      <span className="flex items-center gap-1.5"><Key className="h-3 w-3" />Enter token manually</span>
+                      <ChevronDown className={cn("h-3 w-3 transition-transform", manualOpen === integration.channel && "rotate-180")} />
+                    </button>
+                    {manualOpen === integration.channel && (
+                      <>
+                        {integration.channel === "INSTAGRAM" && (
+                          <p className="text-[10px] text-violet-500 dark:text-violet-400 font-medium">Use a Page Access Token (not IG token). Get it from: Meta for Developers → your app → Instagram → Generate Token</p>
+                        )}
+                        <div className="flex gap-2">
+                          <input
+                            type="password"
+                            value={tokenDrafts[integration._id] ?? ""}
+                            onChange={(e) => setTokenDrafts((d) => ({ ...d, [integration._id]: e.target.value }))}
+                            placeholder={integration.channel === "INSTAGRAM" ? "Page Access Token (EAAHt…)" : "EAAHt…"}
+                            className="flex-1 min-w-0 rounded-lg border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] px-2.5 py-1.5 text-[11px] font-mono text-gray-700 dark:text-white/70 placeholder:text-gray-300 dark:placeholder:text-white/15 outline-none focus:border-violet-400 dark:focus:border-violet-500/50 transition"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => void saveToken(integration)}
+                            disabled={savingToken === integration._id}
+                            className="shrink-0 flex items-center gap-1.5 rounded-lg bg-gray-900 dark:bg-white/[0.08] px-2.5 py-1.5 text-[11px] font-semibold text-white dark:text-white/70 transition hover:bg-violet-700 dark:hover:bg-white/[0.14] disabled:opacity-40"
+                          >
+                            {savingToken === integration._id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                            Save
+                          </button>
+                        </div>
+                        {integration.accessTokenEncrypted ? (
+                          <p className="text-[10px] text-emerald-600 dark:text-emerald-400">✓ Token stored — click Re-subscribe webhook to activate</p>
+                        ) : (
+                          <p className="text-[10px] text-gray-400 dark:text-white/25">Paste your Page Access Token then Save. After saving, click Connect to subscribe the webhook.</p>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             );

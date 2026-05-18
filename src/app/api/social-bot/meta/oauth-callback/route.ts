@@ -36,7 +36,7 @@ export async function GET(request: Request) {
         fetchError = "Meta App ID or App Secret is not configured in admin settings.";
       } else {
         const tokenRes = await fetch(
-          `https://graph.facebook.com/v19.0/oauth/access_token` +
+          `https://graph.facebook.com/v25.0/oauth/access_token` +
           `?client_id=${encodeURIComponent(metaAppId)}` +
           `&client_secret=${encodeURIComponent(metaAppSecret)}` +
           `&redirect_uri=${encodeURIComponent(redirectUri)}` +
@@ -48,19 +48,29 @@ export async function GET(request: Request) {
           fetchError = tokenData.error?.message ?? "Token exchange failed. Check Meta App credentials and OAuth redirect URI.";
         } else {
           const userToken = tokenData.access_token;
+          // Fetch pages including linked Instagram Business Account
           const pagesRes = await fetch(
-            `https://graph.facebook.com/v19.0/me/accounts` +
-            `?fields=id,name,access_token` +
+            `https://graph.facebook.com/v25.0/me/accounts` +
+            `?fields=id,name,access_token,instagram_business_account` +
             `&access_token=${encodeURIComponent(userToken)}`,
             { signal: AbortSignal.timeout(8000) }
           );
-          const pagesData = await pagesRes.json() as { data?: FbPage[]; error?: { message?: string } };
+          const pagesData = await pagesRes.json() as {
+            data?: Array<{ id: string; name: string; access_token: string; instagram_business_account?: { id: string } }>;
+            error?: { message?: string };
+          };
           if (!pagesRes.ok) {
             fetchError = pagesData.error?.message ?? "Failed to fetch Facebook Pages.";
           } else {
-            pages = pagesData.data ?? [];
+            // Map to FbPage shape, embedding ig_id as extra field
+            pages = (pagesData.data ?? []).map((p) => ({
+              id: p.id,
+              name: p.name,
+              access_token: p.access_token,
+              ig_id: p.instagram_business_account?.id ?? ""
+            })) as FbPage[];
             if (pages.length === 0) {
-              fetchError = "No Facebook Pages found. Create a Facebook Page and ensure it is linked to this account.";
+              fetchError = "No Facebook Pages found. Create a Facebook Page linked to your Instagram account.";
             }
           }
         }
