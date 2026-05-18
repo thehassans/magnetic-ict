@@ -48,10 +48,13 @@ export async function GET(request: Request) {
           fetchError = tokenData.error?.message ?? "Token exchange failed. Check Meta App credentials and OAuth redirect URI.";
         } else {
           const userToken = tokenData.access_token;
-          // Fetch pages including linked Instagram Business Account
+          const isInsta = state === "INSTAGRAM";
+          const fields = isInsta ? "id,name,access_token,instagram_business_account" : "id,name,access_token";
+
+          // Fetch pages (include linked IG account only if Instagram channel)
           const pagesRes = await fetch(
             `https://graph.facebook.com/v25.0/me/accounts` +
-            `?fields=id,name,access_token,instagram_business_account` +
+            `?fields=${fields}` +
             `&access_token=${encodeURIComponent(userToken)}`,
             { signal: AbortSignal.timeout(8000) }
           );

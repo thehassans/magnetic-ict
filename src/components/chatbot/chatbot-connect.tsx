@@ -112,6 +112,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
           `&response_type=code` +
           `&override_default_response_type=true` +
           `&extras=${encodeURIComponent(extras)}` +
+          `&display=popup` +
           `&state=${encodeURIComponent(channel)}`;
       } else if (channel === "INSTAGRAM") {
         const scope = "pages_show_list,pages_manage_metadata,pages_read_engagement,pages_messaging,instagram_basic,instagram_manage_messages,instagram_manage_comments";
@@ -121,6 +122,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
           `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
           `&response_type=code` +
           `&scope=${encodeURIComponent(scope)}` +
+          `&display=popup` +
           `&state=${encodeURIComponent(channel)}`;
       } else {
         // Messenger
@@ -131,6 +133,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
           `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
           `&response_type=code` +
           `&scope=${encodeURIComponent(scope)}` +
+          `&display=popup` +
           `&state=${encodeURIComponent(channel)}`;
       }
 
