@@ -43,8 +43,8 @@ export default async function AdminOrdersPage() {
 
   if (!hasDatabase) {
     return (
-      <AdminShell title={t("adminOrdersTitle")} description="Track order flow and fulfillment." activePath="/admin/orders">
-        <div className="rounded-[32px] border border-slate-200 bg-white p-8 text-slate-600 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
+      <AdminShell title={t("adminOrdersTitle")} description="Track order flow and fulfillment.">
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-8 text-white/40 text-sm">
           {t("adminDatabaseRequired")}
         </div>
       </AdminShell>
@@ -87,25 +87,25 @@ export default async function AdminOrdersPage() {
   const fulfilledCount = orders.filter((order) => order.status === "FULFILLED").length;
 
   return (
-    <AdminShell title={t("adminOrdersTitle")} description="Track order flow and fulfillment." activePath="/admin/orders">
-      <section className="mt-8 grid gap-5 md:grid-cols-3">
-        <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
-          <div className="text-sm text-slate-500">{t("dashboardPendingOrders")}</div>
-          <div className="mt-2 text-3xl font-semibold text-slate-950">{pendingCount}</div>
+    <AdminShell title={t("adminOrdersTitle")} eyebrow="Fulfillment" description="Track order flow and fulfillment status.">
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-5 hover:border-amber-500/20 transition">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-white/25 mb-3">{t("dashboardPendingOrders")}</p>
+          <p className="text-3xl font-black text-white">{pendingCount}</p>
         </div>
-        <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
-          <div className="text-sm text-slate-500">{t("adminOrdersPaid")}</div>
-          <div className="mt-2 text-3xl font-semibold text-slate-950">{paidCount}</div>
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-5 hover:border-emerald-500/20 transition">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-white/25 mb-3">{t("adminOrdersPaid")}</p>
+          <p className="text-3xl font-black text-white">{paidCount}</p>
         </div>
-        <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
-          <div className="text-sm text-slate-500">{t("adminOrdersFulfilled")}</div>
-          <div className="mt-2 text-3xl font-semibold text-slate-950">{fulfilledCount}</div>
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-5 hover:border-violet-500/20 transition">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-white/25 mb-3">{t("adminOrdersFulfilled")}</p>
+          <p className="text-3xl font-black text-white">{fulfilledCount}</p>
         </div>
       </section>
 
-      <section className="mt-8 rounded-[36px] border border-slate-200 bg-slate-950 p-8 shadow-[0_24px_80px_rgba(15,23,42,0.12)] sm:p-10">
+      <section className="rounded-2xl border border-white/[0.06] bg-white/[0.025] overflow-hidden">
         {orders.length === 0 ? (
-          <div className="rounded-[28px] border border-dashed border-white/10 bg-white/[0.03] p-6 text-sm text-slate-400">
+          <div className="rounded-[28px] border border-dashed border-white/[0.06] p-6 text-sm text-white/30 m-4">
             {t("adminOrdersEmpty")}
           </div>
         ) : (
