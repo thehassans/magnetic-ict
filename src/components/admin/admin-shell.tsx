@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Activity, Bot, Box, Globe, LifeBuoy, LogOut, Mail, Server, Settings2, ShoppingBag, ShoppingCart, Users } from "lucide-react";
+import { Activity, BarChart3, Bot, Box, Bug, Globe, LifeBuoy, LogOut, Mail, Server, Settings2, ShoppingBag, ShoppingCart, Users } from "lucide-react";
 import { logoutAdmin } from "@/app/admin/actions";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -10,7 +10,7 @@ type AdminShellProps = {
   title: string;
   description: string;
   eyebrow?: string;
-  activePath: "/admin/dashboard" | "/admin/orders" | "/admin/services" | "/admin/users" | "/admin/social-bot" | "/admin/magnetic-commerce" | "/admin/domains" | "/admin/hosting" | "/admin/support" | "/admin/email-logs" | "/admin/settings";
+  activePath: "/admin/dashboard" | "/admin/orders" | "/admin/services" | "/admin/users" | "/admin/social-bot" | "/admin/magnetic-commerce" | "/admin/domains" | "/admin/hosting" | "/admin/support" | "/admin/email-logs" | "/admin/settings" | "/admin/observability" | "/admin/analytics";
   children: ReactNode;
   actions?: ReactNode;
 };
@@ -26,6 +26,8 @@ const navItems = [
   { href: "/admin/users", label: "Users", Icon: Users },
   { href: "/admin/social-bot", label: "Social Bot", Icon: Bot },
   { href: "/admin/magnetic-commerce", label: "Commerce", Icon: ShoppingBag },
+  { href: "/admin/observability", label: "Observability", Icon: Bug },
+  { href: "/admin/analytics", label: "Analytics", Icon: BarChart3 },
   { href: "/admin/settings", label: "Settings", Icon: Settings2 }
 ] as const;
 
