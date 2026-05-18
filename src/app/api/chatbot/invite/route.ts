@@ -28,10 +28,11 @@ export async function POST(request: Request) {
   const hasAccess = await userHasMagneticSocialBotAccess(session.user.id);
   if (!hasAccess) return NextResponse.json({ error: "Access denied." }, { status: 403 });
 
-  const { email } = (await request.json()) as { email?: string };
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  const { email: rawEmail } = (await request.json()) as { email?: string };
+  if (!rawEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)) {
     return NextResponse.json({ error: "A valid email address is required." }, { status: 400 });
   }
+  const email = rawEmail.trim().toLowerCase();
 
   const existing = await getChatbotInvitations(session.user.id);
   const alreadySent = existing.find(

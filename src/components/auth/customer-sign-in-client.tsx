@@ -226,7 +226,7 @@ export function CustomerSignInClient({ providerAvailability }: { providerAvailab
         logo={<BrandLogo className="w-[180px]" priority />}
         title="Sign in or join Magnetic ICT"
         description="Access your Magnetic ICT account with social sign-in or secure email verification."
-        homeHref={`/${locale}`}
+        homeHref="/"
         homeLabel={t("customerAuthBackHome")}
         quote="This platform helps teams move faster, launch better services, and manage customer work with confidence."
         quoteAuthor="Magnetic-Ict"

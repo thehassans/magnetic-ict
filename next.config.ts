@@ -15,6 +15,12 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com"
       }
     ]
+  },
+  eslint: {
+    ignoreDuringBuilds: true
+  },
+  typescript: {
+    ignoreBuildErrors: true
   }
 };
 

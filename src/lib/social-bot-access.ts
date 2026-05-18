@@ -57,9 +57,10 @@ export async function userHasMagneticSocialBotAccess(userId: string) {
   });
 
   if (user?.email) {
+    const normalizedEmail = user.email.toLowerCase();
     const acceptedInvite = await findOneMongoDocument<{ status: string }>(
       socialBotCollections.invitations,
-      { inviteeEmail: user.email, status: "accepted" }
+      { inviteeEmail: normalizedEmail, status: "accepted" }
     );
     if (acceptedInvite) {
       return true;
@@ -89,7 +90,8 @@ export async function getSocialBotSubscriptionInfo(userId: string): Promise<Soci
 
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
   if (user?.email) {
-    const acceptedInvite = await findOneMongoDocument<{ acceptedAt?: string; createdAt: string }>(socialBotCollections.invitations, { inviteeEmail: user.email, status: "accepted" });
+    const normalizedEmail = user.email.toLowerCase();
+    const acceptedInvite = await findOneMongoDocument<{ acceptedAt?: string; createdAt: string }>(socialBotCollections.invitations, { inviteeEmail: normalizedEmail, status: "accepted" });
     if (acceptedInvite) {
       return { hasAccess: true, planName: "Team Member", planType: "MANUAL", startDate: acceptedInvite.acceptedAt ?? acceptedInvite.createdAt, expiryDate: null };
     }
