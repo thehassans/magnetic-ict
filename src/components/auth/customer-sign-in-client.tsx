@@ -6,7 +6,6 @@ import { KeyRound } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "@/i18n/navigation";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { AuthPage } from "@/components/ui/auth-page";
@@ -21,20 +20,19 @@ type ProviderAvailability = {
 
 function normalizeCallbackPath(rawPath: string | null): string {
   if (!rawPath) return "/dashboard";
+  // Allow same-origin paths (including /relay?to=... with query strings)
+  if (rawPath.startsWith("/")) return rawPath;
+  // Allow whitelisted external chatbot domains for legacy links already in the wild
   if (/^https:\/\/(chatbot|chat)\./.test(rawPath)) return rawPath;
-  if (!rawPath.startsWith("/")) return "/dashboard";
-  return rawPath;
+  return "/dashboard";
 }
 
-function isExternalCallback(path: string) {
-  return path.startsWith("https://");
-}
+
 
 export function CustomerSignInClient({ providerAvailability }: { providerAvailability: ProviderAvailability }) {
   const t = useTranslations("Pages");
   const commerce = useTranslations("Commerce");
   const locale = useLocale();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { status } = useSession();
   const [email, setEmail] = useState("");
@@ -58,19 +56,18 @@ export function CustomerSignInClient({ providerAvailability }: { providerAvailab
 
   useEffect(() => {
     if (status !== "authenticated") return;
-    if (isExternalCallback(callbackPath)) {
-      window.location.href = callbackPath;
-    } else {
-      router.push(callbackPath as Parameters<typeof router.push>[0]);
-    }
-  }, [status, callbackPath, router]);
+    // Always use window.location.href so query strings (e.g. /relay?to=...) are
+    // preserved exactly — next-intl's router.push can mangle them.
+    window.location.href = callbackPath;
+  }, [status, callbackPath]);
 
   async function handleProviderSignIn(provider: "google" | "github" | "apple") {
     setError("");
     setInfo("");
     setAdminError("");
-    const cbUrl = isExternalCallback(callbackPath) ? callbackPath : `/${locale}${callbackPath.startsWith(`/${locale}`) ? callbackPath.slice(locale.length + 1) : callbackPath}`;
-    await signIn(provider, { callbackUrl: cbUrl });
+    // callbackPath is always same-origin (/relay?to=... or /dashboard etc.)
+    // Pass it directly so NextAuth's redirect callback honours it.
+    await signIn(provider, { callbackUrl: callbackPath });
   }
 
   async function handleEmailSubmit(event: FormEvent<HTMLFormElement>) {
@@ -124,7 +121,7 @@ export function CustomerSignInClient({ providerAvailability }: { providerAvailab
         email,
         code: otpValue,
         redirect: false,
-        callbackUrl: isExternalCallback(callbackPath) ? callbackPath : `/${locale}${callbackPath.startsWith(`/${locale}`) ? callbackPath.slice(locale.length + 1) : callbackPath}`
+        callbackUrl: callbackPath
       });
 
       if (result?.error) {
@@ -132,7 +129,7 @@ export function CustomerSignInClient({ providerAvailability }: { providerAvailab
         return;
       }
 
-      if (isExternalCallback(callbackPath)) { window.location.href = callbackPath; } else { router.push(callbackPath as Parameters<typeof router.push>[0]); }
+      window.location.href = callbackPath;
     });
   }
 
@@ -162,7 +159,7 @@ export function CustomerSignInClient({ providerAvailability }: { providerAvailab
         return;
       }
 
-      if (isExternalCallback(callbackPath)) { window.location.href = callbackPath; } else { router.push(callbackPath as Parameters<typeof router.push>[0]); }
+      window.location.href = callbackPath;
     });
   }
 

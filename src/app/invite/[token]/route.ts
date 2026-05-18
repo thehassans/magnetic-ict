@@ -35,10 +35,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ token: 
   }).catch(() => null);
 
   const chatbotUrl = (process.env.NEXT_PUBLIC_CHATBOT_URL ?? "https://chatbot.magnetic-ict.com").replace(/\/$/, "");
+  // Use a same-origin relay path as the callback so NextAuth always honours it,
+  // then the relay page bounces the authenticated user to the chatbot subdomain.
+  const relayTarget = `${chatbotUrl}/chatbot`;
+  const relayPath = `/relay?to=${encodeURIComponent(relayTarget)}`;
   redirect(
     `${appUrl}/en/customer/sign-in` +
     `?invite=${encodeURIComponent(token)}` +
     `&email=${encodeURIComponent(invite.inviteeEmail)}` +
-    `&callback=${encodeURIComponent(`${chatbotUrl}/chatbot`)}`
+    `&callback=${encodeURIComponent(relayPath)}`
   );
 }
