@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRequiredUserSession, userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
+import { getRequiredUserSession, userHasMagneticSocialBotAccess, getWorkspaceContext } from "@/lib/social-bot-access";
 import {
   createSocialBotId,
   createSocialBotQuickReply,
@@ -15,7 +15,9 @@ export async function GET() {
   const hasAccess = await userHasMagneticSocialBotAccess(session.user.id);
   if (!hasAccess) return NextResponse.json({ error: "Access denied." }, { status: 403 });
 
-  const quickReplies = await getSocialBotQuickReplies(session.user.id);
+  const workspace = await getWorkspaceContext(session.user.id);
+
+  const quickReplies = await getSocialBotQuickReplies(workspace.ownerId);
   return NextResponse.json({ quickReplies });
 }
 
@@ -24,6 +26,8 @@ export async function POST(request: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const hasAccess = await userHasMagneticSocialBotAccess(session.user.id);
   if (!hasAccess) return NextResponse.json({ error: "Access denied." }, { status: 403 });
+
+  const workspace = await getWorkspaceContext(session.user.id);
 
   try {
     const { title, shortcut, body } = (await request.json()) as {
@@ -39,7 +43,7 @@ export async function POST(request: Request) {
     const now = new Date().toISOString();
     const quickReply = await createSocialBotQuickReply({
       _id: createSocialBotId("sbqr"),
-      userId: session.user.id,
+      userId: workspace.ownerId,
       title: title.trim(),
       shortcut: (shortcut ?? "").trim().toLowerCase().replace(/[^a-z0-9-_]/g, ""),
       body: body.trim(),
@@ -47,7 +51,7 @@ export async function POST(request: Request) {
       updatedAt: now
     });
 
-    const quickReplies = await getSocialBotQuickReplies(session.user.id);
+    const quickReplies = await getSocialBotQuickReplies(workspace.ownerId);
     return NextResponse.json({ ok: true, quickReply, quickReplies });
   } catch (error) {
     return NextResponse.json(
@@ -63,12 +67,14 @@ export async function DELETE(request: Request) {
   const hasAccess = await userHasMagneticSocialBotAccess(session.user.id);
   if (!hasAccess) return NextResponse.json({ error: "Access denied." }, { status: 403 });
 
+  const workspace = await getWorkspaceContext(session.user.id);
+
   try {
     const { id } = (await request.json()) as { id?: string };
     if (!id) return NextResponse.json({ error: "id is required." }, { status: 400 });
 
-    await deleteSocialBotQuickReply(session.user.id, id);
-    const quickReplies = await getSocialBotQuickReplies(session.user.id);
+    await deleteSocialBotQuickReply(workspace.ownerId, id);
+    const quickReplies = await getSocialBotQuickReplies(workspace.ownerId);
     return NextResponse.json({ ok: true, quickReplies });
   } catch (error) {
     return NextResponse.json(

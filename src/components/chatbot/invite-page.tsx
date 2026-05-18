@@ -14,6 +14,18 @@ export function InvitePage({ initialInvitations, appUrl }: Props) {
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [selectedRestrictions, setSelectedRestrictions] = useState<string[]>([]);
+
+  const availableRestrictions = [
+    { id: "agents", label: "Hide AI & Voice Agents", desc: "Prevents creating or modifying AI bots." },
+    { id: "training", label: "Hide Training Knowledge", desc: "Restricts access to documents and tests." },
+    { id: "shortcuts", label: "Hide Shortcuts", desc: "Hides Contacts, Broadcasts, and Quick Replies." },
+    { id: "reports", label: "Hide Reports", desc: "Restricts access to analytics." }
+  ];
+
+  function toggleRestriction(id: string) {
+    setSelectedRestrictions(prev => prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]);
+  }
 
   function showToast(type: "ok" | "err", msg: string) {
     setToast({ type, msg });
@@ -28,12 +40,13 @@ export function InvitePage({ initialInvitations, appUrl }: Props) {
       const res = await fetch("/api/chatbot/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() })
+        body: JSON.stringify({ email: email.trim(), restrictions: selectedRestrictions })
       });
       const data = await res.json() as { ok?: boolean; invitation?: ChatbotInvitation; error?: string; emailSent?: boolean; emailError?: string };
       if (!res.ok) { showToast("err", data.error ?? "Failed to send invite."); return; }
       setInvitations((prev) => [data.invitation!, ...prev]);
       setEmail("");
+      setSelectedRestrictions([]);
       if (data.emailSent) {
         showToast("ok", `Invite email sent to ${email.trim()} — ask them to check Spam if not received.`);
       } else {
@@ -100,28 +113,61 @@ export function InvitePage({ initialInvitations, appUrl }: Props) {
         {/* Send form */}
         <div className="rounded-[22px] border border-gray-200/80 dark:border-white/[0.07] bg-white dark:bg-white/[0.025] p-6">
           <p className="text-sm font-semibold text-gray-800 dark:text-white/80 mb-4">Send an invitation</p>
-          <form onSubmit={(e) => void sendInvite(e)} className="flex gap-3">
-            <div className="relative flex-1">
-              <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-white/25" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="colleague@gmail.com"
-                required
-                className="w-full rounded-xl border border-gray-200 dark:border-white/[0.08] bg-gray-50 dark:bg-white/[0.04] pl-9 pr-4 py-2.5 text-sm text-gray-800 dark:text-white/80 placeholder:text-gray-400 dark:placeholder:text-white/20 outline-none focus:border-violet-400 dark:focus:border-violet-500/50 transition"
-              />
+          <form onSubmit={(e) => void sendInvite(e)} className="flex flex-col gap-5">
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-white/25" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="colleague@gmail.com"
+                  required
+                  className="w-full rounded-xl border border-gray-200 dark:border-white/[0.08] bg-gray-50 dark:bg-white/[0.04] pl-9 pr-4 py-2.5 text-sm text-gray-800 dark:text-white/80 placeholder:text-gray-400 dark:placeholder:text-white/20 outline-none focus:border-violet-400 dark:focus:border-violet-500/50 transition"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={sending || !email.trim()}
+                className="flex items-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed px-5 py-2.5 text-sm font-semibold text-white transition shrink-0"
+              >
+                <Send className="h-3.5 w-3.5" />
+                {sending ? "Sending…" : "Send Invite"}
+              </button>
             </div>
-            <button
-              type="submit"
-              disabled={sending || !email.trim()}
-              className="flex items-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed px-5 py-2.5 text-sm font-semibold text-white transition"
-            >
-              <Send className="h-3.5 w-3.5" />
-              {sending ? "Sending…" : "Send Invite"}
-            </button>
+            
+            <div className="border-t border-gray-100 dark:border-white/[0.05] pt-4">
+              <p className="text-[12px] font-semibold text-gray-600 dark:text-white/50 mb-3">Access Restrictions (Optional)</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {availableRestrictions.map((r) => {
+                  const isChecked = selectedRestrictions.includes(r.id);
+                  return (
+                    <label key={r.id} className={cn(
+                      "flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition",
+                      isChecked 
+                        ? "border-violet-300 dark:border-violet-500/40 bg-violet-50 dark:bg-violet-500/10" 
+                        : "border-gray-200 dark:border-white/[0.06] bg-transparent hover:bg-gray-50 dark:hover:bg-white/[0.02]"
+                    )}>
+                      <div className="relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border border-gray-300 dark:border-white/20 bg-white dark:bg-white/5">
+                        <input
+                          type="checkbox"
+                          className="peer absolute inset-0 opacity-0 cursor-pointer"
+                          checked={isChecked}
+                          onChange={() => toggleRestriction(r.id)}
+                        />
+                        {isChecked && <CheckCircle2 className="h-3 w-3 text-violet-600 dark:text-violet-400 pointer-events-none" />}
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-medium text-gray-800 dark:text-white/80 leading-none mb-1">{r.label}</p>
+                        <p className="text-[11px] text-gray-400 dark:text-white/40 leading-snug">{r.desc}</p>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
           </form>
-          <p className="mt-3 text-[12px] text-gray-400 dark:text-white/25">
+          <p className="mt-4 text-[12px] text-gray-400 dark:text-white/25">
             The invitee gets an email with a sign-in link. They can log in with Google (Gmail) or any account.
           </p>
         </div>

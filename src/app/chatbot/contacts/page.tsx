@@ -1,3 +1,4 @@
+import { getWorkspaceContext } from "@/lib/social-bot-access";
 import { Bot, Instagram, MessageCircle, Users } from "lucide-react";
 import { auth } from "@/auth";
 import { getSocialBotThreads } from "@/lib/social-bot-db";
@@ -19,8 +20,9 @@ const sourceColor: Record<string, string> = {
 export default async function ChatbotContactsPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
+  const workspace = await getWorkspaceContext(session.user.id);
 
-  const threads = await getSocialBotThreads(session.user.id);
+  const threads = await getSocialBotThreads(workspace.ownerId);
 
   const contacts = threads.map((t) => ({
     id: t._id,

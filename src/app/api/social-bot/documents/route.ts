@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRequiredUserSession, userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
+import { getRequiredUserSession, userHasMagneticSocialBotAccess, getWorkspaceContext } from "@/lib/social-bot-access";
 import { addKnowledgeDocument, deleteKnowledgeDocument } from "@/lib/social-bot-service";
 import { extractTextFromUploadedFile } from "@/lib/social-bot-rag";
 import { getSocialBotDocuments } from "@/lib/social-bot-db";
@@ -11,7 +11,9 @@ export async function GET() {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   const hasAccess = await userHasMagneticSocialBotAccess(session.user.id);
   if (!hasAccess) return NextResponse.json({ error: "Access denied." }, { status: 403 });
-  const documents = await getSocialBotDocuments(session.user.id);
+
+  const workspace = await getWorkspaceContext(session.user.id);
+  const documents = await getSocialBotDocuments(workspace.ownerId);
   return NextResponse.json(documents);
 }
 
@@ -28,6 +30,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Magnetic Social Bot is not unlocked for this account." }, { status: 403 });
   }
 
+  const workspace = await getWorkspaceContext(session.user.id);
+
   try {
     const formData = await request.formData();
     const files = formData.getAll("files").filter((entry): entry is File => entry instanceof File);
@@ -39,7 +43,7 @@ export async function POST(request: Request) {
     for (const file of files) {
       const text = await extractTextFromUploadedFile(file);
       await addKnowledgeDocument({
-        userId: session.user.id,
+        userId: workspace.ownerId,
         fileName: file.name,
         mimeType: file.type,
         text
@@ -68,6 +72,8 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Magnetic Social Bot is not unlocked for this account." }, { status: 403 });
   }
 
+  const workspace = await getWorkspaceContext(session.user.id);
+
   try {
     const { documentId } = (await request.json()) as { documentId?: string };
 
@@ -75,7 +81,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "documentId is required." }, { status: 400 });
     }
 
-    const remaining = await deleteKnowledgeDocument(session.user.id, documentId);
+    const remaining = await deleteKnowledgeDocument(workspace.ownerId, documentId);
     return NextResponse.json({ ok: true, documents: remaining });
   } catch (error) {
     return NextResponse.json(

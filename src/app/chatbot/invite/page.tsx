@@ -1,3 +1,4 @@
+import { getWorkspaceContext } from "@/lib/social-bot-access";
 import { auth } from "@/auth";
 import { getChatbotInvitations } from "@/lib/social-bot-db";
 import { InvitePage } from "@/components/chatbot/invite-page";

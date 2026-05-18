@@ -84,13 +84,32 @@ type Props = {
   logoLight?: string;
   logoDark?: string;
   subscription: SocialBotSubscriptionInfo;
+  restrictions?: string[];
 };
 
-export function ChatbotShell({ children, userName, userEmail, logoLight, logoDark, subscription }: Props) {
+export function ChatbotShell({ children, userName, userEmail, logoLight, logoDark, subscription, restrictions = [] }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [signingOut, startSignOut] = useTransition();
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const pathname = usePathname();
+
+  // Filter groups based on restrictions
+  const filteredNavGroups = navGroups.map(group => {
+    if (group.id && restrictions.includes(group.id)) return null;
+    
+    // Hide 'reports' if restricted (it has no id in navGroups, but we can check items)
+    if (group.items.some(i => i.href === "/chatbot/reports") && restrictions.includes("reports")) return null;
+
+    // Filter individual items
+    const filteredItems = group.items.filter(item => {
+      // Team Members cannot invite others
+      if (item.href === "/chatbot/invite" && subscription.planName === "Team Member") return false;
+      return true;
+    });
+
+    if (filteredItems.length === 0) return null;
+    return { ...group, items: filteredItems };
+  }).filter(Boolean) as NavGroup[];
 
   const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set(["inbox", "agents", "training", "shortcuts"]));
 
@@ -189,7 +208,7 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
 
         {/* Nav */}
         <nav className="relative flex-1 overflow-y-auto px-2.5 py-2.5 space-y-px">
-          {navGroups.map((group, gi) => {
+          {filteredNavGroups.map((group, gi) => {
             if (group.collapsible && group.id) {
               const GroupIcon = group.icon ?? Bot;
               const isOpen = openGroups.has(group.id);

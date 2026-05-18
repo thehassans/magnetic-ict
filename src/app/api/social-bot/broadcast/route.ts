@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRequiredUserSession, userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
+import { getRequiredUserSession, userHasMagneticSocialBotAccess, getWorkspaceContext } from "@/lib/social-bot-access";
 import { createSocialBotId, getSocialBotIntegrations, getSocialBotThreadById } from "@/lib/social-bot-db";
 import { appendMessage } from "@/lib/social-bot-service";
 import { sendMetaReply } from "@/lib/social-bot-rag";
@@ -12,6 +12,8 @@ export async function POST(request: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const hasAccess = await userHasMagneticSocialBotAccess(session.user.id);
   if (!hasAccess) return NextResponse.json({ error: "Access denied." }, { status: 403 });
+
+  const workspace = await getWorkspaceContext(session.user.id);
 
   try {
     const { threadIds, message } = (await request.json()) as {
@@ -26,7 +28,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Select at least one contact." }, { status: 400 });
     }
 
-    const userId = session.user.id;
+    const userId = workspace.ownerId;
     const integrations = await getSocialBotIntegrations(userId);
     const integrationMap = new Map<string, SocialBotIntegration>(
       integrations.map((i) => [i.channel, i])

@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   const hasAccess = await userHasMagneticSocialBotAccess(session.user.id);
   if (!hasAccess) return NextResponse.json({ error: "Access denied." }, { status: 403 });
 
-  const { email: rawEmail } = (await request.json()) as { email?: string };
+  const { email: rawEmail, restrictions = [] } = (await request.json()) as { email?: string; restrictions?: string[] };
   if (!rawEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)) {
     return NextResponse.json({ error: "A valid email address is required." }, { status: 400 });
   }
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
   const existing = await getChatbotInvitations(session.user.id);
   const alreadySent = existing.find(
-    (i) => i.inviteeEmail.toLowerCase() === email.toLowerCase() && i.status === "pending"
+    (i) => i.inviteeEmail.toLowerCase() === email && i.status === "pending"
   );
   if (alreadySent) {
     return NextResponse.json({ error: "An invite has already been sent to this address." }, { status: 409 });
@@ -54,6 +54,7 @@ export async function POST(request: Request) {
     inviterEmail: session.user.email ?? "",
     inviteeEmail: email,
     status: "pending",
+    restrictions: Array.isArray(restrictions) ? restrictions.filter(r => typeof r === "string") : [],
     createdAt: now.toISOString(),
     expiresAt: expiresAt.toISOString()
   };

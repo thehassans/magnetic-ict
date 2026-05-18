@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getRequiredUserSession, userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
+import { getRequiredUserSession, userHasMagneticSocialBotAccess, getWorkspaceContext } from "@/lib/social-bot-access";
 import { assignAgentToThread, autoAssignAgent, getThreadWithMessages, setThreadMode } from "@/lib/social-bot-service";
 
 const requestSchema = z.object({
@@ -22,8 +22,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ thr
     return NextResponse.json({ error: "Magnetic Social Bot is not unlocked for this account." }, { status: 403 });
   }
 
+  const workspace = await getWorkspaceContext(session.user.id);
+
   const { threadId } = await params;
-  const payload = await getThreadWithMessages(session.user.id, threadId);
+  const payload = await getThreadWithMessages(workspace.ownerId, threadId);
 
   if (!payload.thread) {
     return NextResponse.json({ error: "Thread not found." }, { status: 404 });
@@ -45,11 +47,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ th
     return NextResponse.json({ error: "Magnetic Social Bot is not unlocked for this account." }, { status: 403 });
   }
 
+  const workspace = await getWorkspaceContext(session.user.id);
+
   try {
     const body = await request.json();
     const parsed = requestSchema.parse(body);
     const { threadId } = await params;
-    const userId = session.user.id;
+    const userId = workspace.ownerId;
 
     let thread;
     if (parsed.autoAssign === true) {

@@ -118,6 +118,7 @@ export type ChatbotInvitation = {
   inviterEmail: string;
   inviteeEmail: string;
   status: "pending" | "accepted" | "cancelled";
+  restrictions?: string[];
   createdAt: string;
   expiresAt: string;
   acceptedAt?: string;

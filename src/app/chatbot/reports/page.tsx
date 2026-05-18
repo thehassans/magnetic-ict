@@ -1,3 +1,4 @@
+import { getWorkspaceContext } from "@/lib/social-bot-access";
 import { BarChart3, MessageCircle, TrendingUp, Users, Zap } from "lucide-react";
 import { auth } from "@/auth";
 import { getSocialBotThreads, getSocialBotIntegrations } from "@/lib/social-bot-db";
@@ -13,7 +14,8 @@ const CH_COLOR: Record<string, string> = {
 export default async function ChatbotReportsPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
-  const uid = session.user.id;
+  const workspace = await getWorkspaceContext(session.user.id);
+  const uid = workspace.ownerId;
 
   const [threads, integrations] = await Promise.all([
     getSocialBotThreads(uid),

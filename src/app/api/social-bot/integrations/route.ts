@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRequiredUserSession, userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
+import { getRequiredUserSession, userHasMagneticSocialBotAccess, getWorkspaceContext } from "@/lib/social-bot-access";
 import { saveSocialBotIntegration } from "@/lib/social-bot-service";
 import type { SocialChannel } from "@/lib/social-bot-types";
 
@@ -8,9 +8,11 @@ export async function DELETE(request: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Please sign in." }, { status: 401 });
   const hasAccess = await userHasMagneticSocialBotAccess(session.user.id);
   if (!hasAccess) return NextResponse.json({ error: "Access denied." }, { status: 403 });
+
+  const workspace = await getWorkspaceContext(session.user.id);
   try {
     const { channel } = (await request.json()) as { channel: SocialChannel };
-    const integrations = await saveSocialBotIntegration(session.user.id, {
+    const integrations = await saveSocialBotIntegration(workspace.ownerId, {
       channel,
       enabled: false,
       label: "",
@@ -38,9 +40,11 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Magnetic Social Bot is not unlocked for this account." }, { status: 403 });
   }
 
+  const workspace = await getWorkspaceContext(session.user.id);
+
   try {
     const body = await request.json();
-    const integrations = await saveSocialBotIntegration(session.user.id, body);
+    const integrations = await saveSocialBotIntegration(workspace.ownerId, body);
     return NextResponse.json({ ok: true, integrations });
   } catch (error) {
     return NextResponse.json(

@@ -1,3 +1,4 @@
+import { getWorkspaceContext } from "@/lib/social-bot-access";
 import { auth } from "@/auth";
 import { getSocialBotIntegrations } from "@/lib/social-bot-db";
 import { getPlatformSettings } from "@/lib/platform-settings";
@@ -12,9 +13,10 @@ export const dynamic = "force-dynamic";
 export default async function ChatbotConnectPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
+  const workspace = await getWorkspaceContext(session.user.id);
 
   const [integrations, settings] = await Promise.all([
-    getSocialBotIntegrations(session.user.id),
+    getSocialBotIntegrations(workspace.ownerId),
     getPlatformSettings()
   ]);
 

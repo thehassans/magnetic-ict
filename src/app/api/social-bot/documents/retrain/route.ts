@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRequiredUserSession, userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
+import { getRequiredUserSession, userHasMagneticSocialBotAccess, getWorkspaceContext } from "@/lib/social-bot-access";
 import { getSocialBotChunks, getSocialBotDocuments, socialBotCollections, upsertMongoDocument } from "@/lib/social-bot-db";
 import { embedText } from "@/lib/social-bot-rag";
 
@@ -18,8 +18,10 @@ export async function POST(_request: Request) {
     return NextResponse.json({ error: "Magnetic Social Bot is not unlocked for this account." }, { status: 403 });
   }
 
+  const workspace = await getWorkspaceContext(session.user.id);
+
   try {
-    const userId = session.user.id;
+    const userId = workspace.ownerId;
     const chunks = await getSocialBotChunks(userId);
 
     if (chunks.length === 0) {

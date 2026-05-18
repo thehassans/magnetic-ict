@@ -6,7 +6,7 @@ import {
   getSocialBotIntegrations,
   getSocialBotThreads
 } from "@/lib/social-bot-db";
-import { getSocialBotSubscriptionInfo } from "@/lib/social-bot-access";
+import { getSocialBotSubscriptionInfo, getWorkspaceContext } from "@/lib/social-bot-access";
 import { WhatsAppIcon, InstagramIcon, MessengerIcon } from "@/components/chatbot/social-icons";
 import {
   ArrowRight,
@@ -30,7 +30,8 @@ const CHANNEL_META: Record<string, { label: string; hexColor: string; bgCls: str
 export default async function ChatbotDashboardPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
-  const uid = session.user.id;
+  const workspace = await getWorkspaceContext(session.user.id);
+  const uid = workspace.ownerId;
 
   const [threads, integrations, documents, agents, subscription] = await Promise.all([
     getSocialBotThreads(uid),

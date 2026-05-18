@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRequiredUserSession, userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
+import { getRequiredUserSession, userHasMagneticSocialBotAccess, getWorkspaceContext } from "@/lib/social-bot-access";
 import { findOneMongoDocument, socialBotCollections } from "@/lib/social-bot-db";
 import { decryptSecret } from "@/lib/social-bot-rag";
 import type { SocialBotIntegration } from "@/lib/social-bot-types";
@@ -25,13 +25,15 @@ export async function POST(request: Request) {
   const hasAccess = await userHasMagneticSocialBotAccess(session.user.id);
   if (!hasAccess) return NextResponse.json({ error: "Access denied." }, { status: 403 });
 
+  const workspace = await getWorkspaceContext(session.user.id);
+
   try {
     const { pageId } = (await request.json()) as { pageId?: string };
     if (!pageId) return NextResponse.json({ error: "pageId required." }, { status: 400 });
 
     const integration = await findOneMongoDocument<SocialBotIntegration>(
       socialBotCollections.integrations,
-      { userId: session.user.id, channel: "MESSENGER", pageId }
+      { userId: workspace.ownerId, channel: "MESSENGER", pageId }
     );
 
     if (!integration?.accessTokenEncrypted) {

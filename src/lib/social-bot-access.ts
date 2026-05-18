@@ -143,3 +143,44 @@ export async function setManualSocialBotAccess(userId: string, assignedByUserId:
 
   return getManualSocialBotAccessGrant(userId);
 }
+
+export type WorkspaceContext = {
+  ownerId: string;
+  role: "ADMIN" | "MEMBER";
+  restrictions: string[];
+};
+
+export async function getWorkspaceContext(userId: string): Promise<WorkspaceContext> {
+  const manualGrant = await findOneMongoDocument<SocialBotAccessGrant>(socialBotCollections.access, { userId });
+  if (manualGrant) {
+    return { ownerId: userId, role: "ADMIN", restrictions: [] };
+  }
+
+  const orders = await prisma.order.findMany({
+    where: { userId, status: { in: ["PAID", "FULFILLED"] } },
+    include: { serviceTier: { select: { name: true, service: { select: { catalogKey: true } } } } }
+  });
+  
+  if (orders.some((o) => o.serviceTier.service.catalogKey === "magneticSocialBot")) {
+    return { ownerId: userId, role: "ADMIN", restrictions: [] };
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+  if (user?.email) {
+    const normalizedEmail = user.email.toLowerCase();
+    const acceptedInvite = await findOneMongoDocument<{ inviterUserId: string; restrictions?: string[] }>(
+      socialBotCollections.invitations, 
+      { inviteeEmail: normalizedEmail, status: "accepted" }
+    );
+    if (acceptedInvite) {
+      return { 
+        ownerId: acceptedInvite.inviterUserId, 
+        role: "MEMBER", 
+        restrictions: acceptedInvite.restrictions ?? [] 
+      };
+    }
+  }
+
+  // Fallback if no access
+  return { ownerId: userId, role: "ADMIN", restrictions: [] };
+}

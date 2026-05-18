@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRequiredUserSession, userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
+import { getRequiredUserSession, userHasMagneticSocialBotAccess, getWorkspaceContext } from "@/lib/social-bot-access";
 import { getSocialBotChunks, getSocialBotProfile } from "@/lib/social-bot-db";
 import { generateSocialReply } from "@/lib/social-bot-rag";
 import type { SocialBotMessage, SocialBotThread } from "@/lib/social-bot-types";
@@ -12,6 +12,8 @@ export async function POST(request: Request) {
   const hasAccess = await userHasMagneticSocialBotAccess(session.user.id);
   if (!hasAccess) return NextResponse.json({ error: "Access denied." }, { status: 403 });
 
+  const workspace = await getWorkspaceContext(session.user.id);
+
   try {
     const { message, history, documentIds } = (await request.json()) as {
       message?: string;
@@ -23,7 +25,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Message is required." }, { status: 400 });
     }
 
-    const userId = session.user.id;
+    const userId = workspace.ownerId;
     const [profile, chunks] = await Promise.all([
       getSocialBotProfile(userId),
       getSocialBotChunks(userId)

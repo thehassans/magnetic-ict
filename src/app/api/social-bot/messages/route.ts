@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRequiredUserSession, userHasMagneticSocialBotAccess } from "@/lib/social-bot-access";
+import { getRequiredUserSession, userHasMagneticSocialBotAccess, getWorkspaceContext } from "@/lib/social-bot-access";
 import { sendAgentMessage } from "@/lib/social-bot-service";
 
 export async function POST(request: Request) {
@@ -15,9 +15,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Magnetic Social Bot is not unlocked for this account." }, { status: 403 });
   }
 
+  const workspace = await getWorkspaceContext(session.user.id);
+
   try {
     const body = await request.json();
-    const payload = await sendAgentMessage(session.user.id, body);
+    const payload = await sendAgentMessage(workspace.ownerId, body);
     return NextResponse.json(payload);
   } catch (error) {
     return NextResponse.json(
