@@ -59,17 +59,20 @@ export async function POST(request: Request) {
 
   await createChatbotInvitation(invitation);
 
+  let emailSent = false;
+  let emailError: string | null = null;
   try {
     await sendInviteEmail({
       inviterName: invitation.inviterName,
       inviteeEmail: email,
       token
     });
-  } catch {
-    // non-fatal: invite is saved, email may fail if provider not configured
+    emailSent = true;
+  } catch (e) {
+    emailError = e instanceof Error ? e.message : "Email send failed.";
   }
 
-  return NextResponse.json({ ok: true, invitation });
+  return NextResponse.json({ ok: true, invitation, emailSent, emailError });
 }
 
 export async function DELETE(request: Request) {

@@ -30,11 +30,15 @@ export function InvitePage({ initialInvitations }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim() })
       });
-      const data = await res.json() as { ok?: boolean; invitation?: ChatbotInvitation; error?: string };
+      const data = await res.json() as { ok?: boolean; invitation?: ChatbotInvitation; error?: string; emailSent?: boolean; emailError?: string };
       if (!res.ok) { showToast("err", data.error ?? "Failed to send invite."); return; }
       setInvitations((prev) => [data.invitation!, ...prev]);
       setEmail("");
-      showToast("ok", `Invite sent to ${email.trim()}`);
+      if (data.emailSent) {
+        showToast("ok", `Invite email sent to ${email.trim()} — ask them to check Spam if not received.`);
+      } else {
+        showToast("err", `Invite saved but email failed: ${data.emailError ?? "unknown error"}. Use Copy link to share manually.`);
+      }
     } catch { showToast("err", "Something went wrong."); }
     finally { setSending(false); }
   }
