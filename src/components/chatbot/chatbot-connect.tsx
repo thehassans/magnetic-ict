@@ -114,7 +114,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
           `&extras=${encodeURIComponent(extras)}` +
           `&state=${encodeURIComponent(channel)}`;
       } else if (channel === "INSTAGRAM") {
-        const scope = "pages_show_list,pages_manage_metadata,instagram_basic,instagram_manage_messages,instagram_manage_comments";
+        const scope = "pages_show_list,pages_manage_metadata,pages_read_engagement,pages_messaging,instagram_basic,instagram_manage_messages,instagram_manage_comments";
         fbUrl =
           `https://www.facebook.com/v25.0/dialog/oauth` +
           `?client_id=${encodeURIComponent(metaAppId)}` +
@@ -124,7 +124,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
           `&state=${encodeURIComponent(channel)}`;
       } else {
         // Messenger
-        const scope = "pages_show_list,pages_messaging,pages_manage_metadata";
+        const scope = "pages_show_list,pages_manage_metadata,pages_read_engagement,pages_messaging";
         fbUrl =
           `https://www.facebook.com/v25.0/dialog/oauth` +
           `?client_id=${encodeURIComponent(metaAppId)}` +

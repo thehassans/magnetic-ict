@@ -70,7 +70,7 @@ export async function GET(request: Request) {
               ig_id: p.instagram_business_account?.id ?? ""
             })) as FbPage[];
             if (pages.length === 0) {
-              fetchError = "No Facebook Pages found. Create a Facebook Page linked to your Instagram account.";
+              fetchError = "No Facebook Pages found. Meta API returned: " + JSON.stringify(pagesData) + ". Make sure your Facebook Page is linked to your Instagram account.";
             }
           }
         }
