@@ -47,7 +47,26 @@ export async function userHasMagneticSocialBotAccess(userId: string) {
     }
   });
 
-  return orders.some((order) => order.serviceTier.service.catalogKey === "magneticSocialBot");
+  if (orders.some((order) => order.serviceTier.service.catalogKey === "magneticSocialBot")) {
+    return true;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true }
+  });
+
+  if (user?.email) {
+    const acceptedInvite = await findOneMongoDocument<{ status: string }>(
+      socialBotCollections.invitations,
+      { inviteeEmail: user.email, status: "accepted" }
+    );
+    if (acceptedInvite) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export async function getManualSocialBotAccessGrant(userId: string) {
@@ -66,6 +85,14 @@ export async function getSocialBotSubscriptionInfo(userId: string): Promise<Soci
   const manualGrant = await findOneMongoDocument<SocialBotAccessGrant>(socialBotCollections.access, { userId });
   if (manualGrant) {
     return { hasAccess: true, planName: "Professional", planType: "MANUAL", startDate: manualGrant.createdAt, expiryDate: null };
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+  if (user?.email) {
+    const acceptedInvite = await findOneMongoDocument<any>(socialBotCollections.invitations, { inviteeEmail: user.email, status: "accepted" });
+    if (acceptedInvite) {
+      return { hasAccess: true, planName: "Team Member", planType: "MANUAL", startDate: acceptedInvite.acceptedAt ?? acceptedInvite.createdAt, expiryDate: null };
+    }
   }
 
   const orders = await prisma.order.findMany({
