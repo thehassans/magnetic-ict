@@ -29,7 +29,7 @@ const intlConfig = withNextIntl(nextConfig);
 
 export default withSentryConfig(intlConfig, {
   // Sentry organization and project (from your DSN URL)
-  org: "magnetic-ict",
+  org: "magnetic-infratech-ltd",
   project: "javascript-nextjs",
 
   // Upload source maps to Sentry during production builds
