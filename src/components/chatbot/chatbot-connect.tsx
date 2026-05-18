@@ -105,7 +105,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
       if (channel === "WHATSAPP" && metaConfigId.trim()) {
         const extras = JSON.stringify({ sessionInfoVersion: 2 });
         fbUrl =
-          `https://www.facebook.com/v19.0/dialog/oauth` +
+          `https://www.facebook.com/v25.0/dialog/oauth` +
           `?client_id=${encodeURIComponent(metaAppId)}` +
           `&config_id=${encodeURIComponent(metaConfigId)}` +
           `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
@@ -135,7 +135,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
       } else {
         if (metaMessengerConfigId.trim()) {
           fbUrl =
-            `https://www.facebook.com/v19.0/dialog/oauth` +
+            `https://www.facebook.com/v25.0/dialog/oauth` +
             `?client_id=${encodeURIComponent(metaAppId)}` +
             `&config_id=${encodeURIComponent(metaMessengerConfigId)}` +
             `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
@@ -144,7 +144,7 @@ export function ChatbotConnect({ integrations, metaAppId, metaConfigId, metaMess
         } else {
           const scope = "pages_show_list,pages_messaging,pages_manage_metadata";
           fbUrl =
-            `https://www.facebook.com/v19.0/dialog/oauth` +
+            `https://www.facebook.com/v25.0/dialog/oauth` +
             `?client_id=${encodeURIComponent(metaAppId)}` +
             `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
             `&response_type=code` +
