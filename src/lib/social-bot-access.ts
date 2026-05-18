@@ -89,7 +89,7 @@ export async function getSocialBotSubscriptionInfo(userId: string): Promise<Soci
 
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
   if (user?.email) {
-    const acceptedInvite = await findOneMongoDocument<any>(socialBotCollections.invitations, { inviteeEmail: user.email, status: "accepted" });
+    const acceptedInvite = await findOneMongoDocument<{ acceptedAt?: string; createdAt: string }>(socialBotCollections.invitations, { inviteeEmail: user.email, status: "accepted" });
     if (acceptedInvite) {
       return { hasAccess: true, planName: "Team Member", planType: "MANUAL", startDate: acceptedInvite.acceptedAt ?? acceptedInvite.createdAt, expiryDate: null };
     }
