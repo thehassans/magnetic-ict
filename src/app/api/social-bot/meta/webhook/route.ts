@@ -78,9 +78,13 @@ export async function POST(request: Request) {
               type?: string;
               id?: string;
               text?: { body?: string };
-              audio?: { id?: string; mime_type?: string };
+              audio?: { id?: string; mime_type?: string; voice?: boolean };
               image?: { id?: string; mime_type?: string; caption?: string };
+              video?: { id?: string; mime_type?: string; caption?: string };
               document?: { id?: string; filename?: string; mime_type?: string };
+              sticker?: { id?: string; mime_type?: string };
+              location?: { latitude?: number; longitude?: number; name?: string; address?: string };
+              reaction?: { message_id?: string; emoji?: string };
             }>;
             statuses?: Array<{ id?: string; status?: string; recipient_id?: string }>;
             // Instagram comments
@@ -157,14 +161,25 @@ export async function POST(request: Request) {
         if (msgType === "text" && waMsg.text?.body) {
           ingestText = waMsg.text.body;
         } else if (msgType === "audio" && waMsg.audio?.id) {
-          ingestText = "🎤 Voice message";
-          ingestMeta = { ...ingestMeta, mediaType: "audio", mediaId: waMsg.audio.id, mimeType: waMsg.audio.mime_type ?? "audio/ogg" };
+          const isVoice = waMsg.audio.voice === true;
+          ingestText = isVoice ? "🎤 Voice message" : "🎵 Audio";
+          ingestMeta = { ...ingestMeta, mediaType: "audio", mediaId: waMsg.audio.id, mimeType: waMsg.audio.mime_type ?? "audio/ogg", voice: isVoice };
         } else if (msgType === "image" && waMsg.image?.id) {
           ingestText = waMsg.image.caption ? `🖼 ${waMsg.image.caption}` : "🖼 Image";
-          ingestMeta = { ...ingestMeta, mediaType: "image", mediaId: waMsg.image.id };
+          ingestMeta = { ...ingestMeta, mediaType: "image", mediaId: waMsg.image.id, mimeType: waMsg.image.mime_type ?? "image/jpeg" };
+        } else if (msgType === "video" && waMsg.video?.id) {
+          ingestText = waMsg.video.caption ? `🎥 ${waMsg.video.caption}` : "🎥 Video";
+          ingestMeta = { ...ingestMeta, mediaType: "video", mediaId: waMsg.video.id, mimeType: waMsg.video.mime_type ?? "video/mp4" };
         } else if (msgType === "document" && waMsg.document?.id) {
           ingestText = `📎 ${waMsg.document.filename ?? "Document"}`;
           ingestMeta = { ...ingestMeta, mediaType: "document", mediaId: waMsg.document.id };
+        } else if (msgType === "sticker" && waMsg.sticker?.id) {
+          ingestText = "😊 Sticker";
+          ingestMeta = { ...ingestMeta, mediaType: "image", mediaId: waMsg.sticker.id };
+        } else if (msgType === "location" && waMsg.location) {
+          ingestText = `📍 Location: ${waMsg.location.name ?? `${waMsg.location.latitude},${waMsg.location.longitude}`}`;
+        } else if (msgType === "reaction" && waMsg.reaction) {
+          ingestText = `${waMsg.reaction.emoji ?? "👍"} Reaction`;
         }
 
         if (ingestText) {

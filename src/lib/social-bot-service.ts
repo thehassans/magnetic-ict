@@ -595,10 +595,20 @@ export async function ingestInboundMessage({
     updatedAt: now
   };
 
-  // Only update name if the new value is a real name (not just the phone/ID fallback)
-  thread.contactName = (contactName && contactName !== contactHandle)
-    ? contactName
-    : (thread.contactName || contactHandle);
+  // Update contact name:
+  // - If new value is a real name (not just the phone/PSID), always prefer it
+  // - If stored name is already a real name, keep it
+  // - If everything is a numeric fallback, format it nicely with a + prefix for phones
+  const isRealName = (n: string) => !!n && n !== contactHandle && !/^\d{7,}$/.test(n.trim());
+  const storedIsRealName = isRealName(thread.contactName ?? "");
+  const newIsRealName = isRealName(contactName ?? "");
+  if (newIsRealName) {
+    thread.contactName = contactName;
+  } else if (!storedIsRealName) {
+    // Both are numeric/PSID fallbacks — format phone as +XXXXXXXX
+    const raw = contactHandle || contactName;
+    thread.contactName = raw && /^\d+$/.test(raw.trim()) ? `+${raw.trim()}` : (raw || contactHandle);
+  }
   thread.contactHandle = contactHandle || thread.contactHandle;
   thread.lastMessagePreview = text;
   thread.lastMessageAt = now;

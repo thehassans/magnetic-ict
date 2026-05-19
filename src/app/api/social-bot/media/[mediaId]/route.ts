@@ -20,38 +20,52 @@ export async function GET(
   const { mediaId } = await params;
 
   try {
+    const url2 = new URL(request.url);
+    const phoneHint = url2.searchParams.get("ph") ?? "";
+
     const integrations = await findMongoDocuments<SocialBotIntegration>(
       socialBotCollections.integrations,
       { userId, status: "CONNECTED" }
     );
-    const integration = integrations[0];
-    if (!integration) return NextResponse.json({ error: "No connected integration." }, { status: 400 });
+    if (!integrations.length) return NextResponse.json({ error: "No connected integration." }, { status: 400 });
 
-    const accessToken = decryptSecret(integration.accessTokenEncrypted);
+    // Prefer the integration matching the phoneNumberId hint
+    const sorted = phoneHint
+      ? [...integrations].sort((a, b) => (a.phoneNumberId === phoneHint ? -1 : b.phoneNumberId === phoneHint ? 1 : 0))
+      : integrations;
 
-    // Step 1: get media URL from Meta
-    const metaRes = await fetch(`https://graph.facebook.com/v25.0/${mediaId}`, {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    });
-    if (!metaRes.ok) return NextResponse.json({ error: "Media not found." }, { status: 404 });
-    const { url } = (await metaRes.json()) as { url: string };
+    let lastErr = "";
+    for (const integration of sorted) {
+      const accessToken = decryptSecret(integration.accessTokenEncrypted);
+      if (!accessToken) continue;
 
-    // Step 2: download media and proxy to client
-    const mediaRes = await fetch(url, {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    });
-    if (!mediaRes.ok) return NextResponse.json({ error: "Failed to fetch media." }, { status: 502 });
+      // Step 1: resolve media URL from Meta
+      const metaRes = await fetch(`https://graph.facebook.com/v25.0/${mediaId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if (!metaRes.ok) { lastErr = `Meta ${metaRes.status}`; continue; }
+      const metaJson = (await metaRes.json()) as { url?: string; error?: { message?: string } };
+      if (!metaJson.url) { lastErr = metaJson.error?.message ?? "no url"; continue; }
 
-    const contentType = mediaRes.headers.get("content-type") ?? "audio/ogg";
-    const buffer = await mediaRes.arrayBuffer();
+      // Step 2: download media and proxy to client
+      const mediaRes = await fetch(metaJson.url, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if (!mediaRes.ok) { lastErr = `Media ${mediaRes.status}`; continue; }
 
-    return new Response(buffer, {
-      status: 200,
-      headers: {
-        "Content-Type": contentType,
-        "Cache-Control": "private, max-age=3600"
-      }
-    });
+      const contentType = mediaRes.headers.get("content-type") ?? "application/octet-stream";
+      const buffer = await mediaRes.arrayBuffer();
+
+      return new Response(buffer, {
+        status: 200,
+        headers: {
+          "Content-Type": contentType,
+          "Cache-Control": "private, max-age=3600"
+        }
+      });
+    }
+
+    return NextResponse.json({ error: `Media fetch failed: ${lastErr}` }, { status: 502 });
   } catch (error) {
     console.error("media proxy error", error);
     return NextResponse.json({ error: "Media fetch failed." }, { status: 500 });

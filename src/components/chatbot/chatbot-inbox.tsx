@@ -477,8 +477,10 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
   }
 
   function displayName(name: string): string {
-    if (/^\d{8,}$/.test(name.trim())) return `User ···${name.trim().slice(-4)}`;
-    return name || "Unknown";
+    const n = name?.trim() ?? "";
+    // Raw PSID (all digits, ≥8): shorten to "User ···XXXX"
+    if (/^\d{8,}$/.test(n)) return `User ···${n.slice(-4)}`;
+    return n || "Unknown";
   }
 
   async function startRecording() {
@@ -859,10 +861,14 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                     const mediaType = msg.metadata?.mediaType as string | undefined;
                     const isAudio = mediaType === "audio";
                     const isImage = mediaType === "image";
+                    const isVideo = mediaType === "video";
                     const mediaId = msg.metadata?.mediaId as string | undefined;
+                    const phoneHint = msg.metadata?.phoneNumberId as string | undefined;
+                    const phParam = phoneHint ? `?ph=${encodeURIComponent(phoneHint)}` : "";
                     const audioUrl = msg.metadata?.audioUrl as string | undefined;
-                    const resolvedAudioSrc = isAudio ? (mediaId ? `/api/social-bot/media/${mediaId}` : audioUrl) : undefined;
-                    const resolvedImageSrc = isImage ? (mediaId ? `/api/social-bot/media/${mediaId}` : (msg.metadata?.imageUrl as string | undefined)) : undefined;
+                    const resolvedAudioSrc = isAudio ? (mediaId ? `/api/social-bot/media/${mediaId}${phParam}` : audioUrl) : undefined;
+                    const resolvedImageSrc = isImage ? (mediaId ? `/api/social-bot/media/${mediaId}${phParam}` : (msg.metadata?.imageUrl as string | undefined)) : undefined;
+                    const resolvedVideoSrc = isVideo ? (mediaId ? `/api/social-bot/media/${mediaId}${phParam}` : (msg.metadata?.videoUrl as string | undefined)) : undefined;
                     return (
                       <div key={msg._id} className={cn("flex gap-2.5", out ? "justify-end" : "justify-start")}>
                         {!out && showSender && (
@@ -876,11 +882,18 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                             <p className="text-right text-[10px] text-violet-600 dark:text-violet-400/60">{selected.assignedAgentName}</p>
                           )}
                           {isAudio && resolvedAudioSrc ? (
-                            <div className={cn("flex items-center gap-2 rounded-2xl px-3 py-2.5 shadow-md",
-                              out ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700" : "rounded-tl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05]")}>                              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20">
+                            <div className={cn("flex items-center gap-2 rounded-2xl px-3 py-2.5 shadow-md min-w-[180px]",
+                              out ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700" : "rounded-tl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05]")}>
+                              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20">
                                 <Mic className={cn("h-3 w-3", out ? "text-white" : "text-violet-500")} />
                               </div>
-                              <audio src={resolvedAudioSrc} controls className="h-7 w-36" />
+                              <audio
+                                src={resolvedAudioSrc}
+                                controls
+                                controlsList="nodownload"
+                                className="h-7 w-full max-w-[200px]"
+                                onError={(e) => { (e.currentTarget.parentElement!).dataset.err = "1"; }}
+                              />
                             </div>
                           ) : isImage && resolvedImageSrc ? (
                             <div className={cn("overflow-hidden rounded-2xl shadow-md",
@@ -889,14 +902,33 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                                 src={resolvedImageSrc}
                                 alt="Image"
                                 className="block max-w-[240px] max-h-[320px] w-auto h-auto object-cover cursor-pointer"
+                                loading="lazy"
                                 onClick={() => window.open(resolvedImageSrc, "_blank")}
+                                onError={(e) => {
+                                  e.currentTarget.style.display = "none";
+                                  const ph = e.currentTarget.nextElementSibling as HTMLElement | null;
+                                  if (ph) ph.style.display = "flex";
+                                }}
                               />
-                              {msg.text && msg.text !== "🖼 Image" && (
+                              <div className="hidden items-center justify-center gap-1.5 p-4 text-[11px] text-gray-400 dark:text-white/25" aria-hidden="true">
+                                <FileText className="h-4 w-4" /><span>Media expired</span>
+                              </div>
+                              {msg.text && !/^🖼/.test(msg.text) && (
                                 <div className={cn("px-3 py-2 text-[12px]",
                                   out ? "bg-gradient-to-br from-violet-600 to-purple-700 text-white" : "bg-white dark:bg-white/[0.05] text-gray-800 dark:text-white/80")}>
-                                  {msg.text.replace(/^[🖼️]+\s*/, "")}
+                                  {msg.text}
                                 </div>
                               )}
+                            </div>
+                          ) : isVideo && resolvedVideoSrc ? (
+                            <div className={cn("overflow-hidden rounded-2xl shadow-md",
+                              out ? "rounded-tr-sm" : "rounded-tl-sm")}>
+                              <video
+                                src={resolvedVideoSrc}
+                                controls
+                                controlsList="nodownload"
+                                className="block max-w-[240px] max-h-[320px]"
+                              />
                             </div>
                           ) : (
                             <div className={cn("rounded-2xl px-4 py-2.5 text-[13px] leading-[1.7]",
