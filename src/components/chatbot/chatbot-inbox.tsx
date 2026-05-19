@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bot, ChevronDown, FileText, Loader2, Mic, RefreshCw, Search, Send, Smile, StopCircle, Trash2, UserCheck, Users, X, Zap } from "lucide-react";
+import { Bot, Check, CheckCheck, ChevronDown, Clock, FileText, Loader2, Mic, RefreshCw, Search, Send, Smile, StopCircle, Trash2, UserCheck, Users, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SocialBotAgent, SocialBotMessage, SocialBotThread } from "@/lib/social-bot-types";
 import { WhatsAppIcon, InstagramIcon, MessengerIcon } from "@/components/chatbot/social-icons";
@@ -463,7 +463,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSec, setRecordingSec] = useState(0);
   const [pendingAudio, setPendingAudio] = useState<{ url: string; durationSec: number } | null>(null);
-  const [localVoiceMsgs, setLocalVoiceMsgs] = useState<Array<{ id: string; url: string; durationSec: number; time: string }>>([]);
+  const [localVoiceMsgs, setLocalVoiceMsgs] = useState<Array<{ id: string; url: string; durationSec: number; time: string; sending?: boolean; failed?: boolean }>>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -516,16 +516,32 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
     recordingSecRef.current = 0;
   }
 
-  function sendAudio() {
-    if (!pendingAudio) return;
-    setLocalVoiceMsgs((prev) => [...prev, {
-      id: `vm-${Date.now()}`,
-      url: pendingAudio.url,
-      durationSec: pendingAudio.durationSec,
-      time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
-    }]);
+  async function sendAudio() {
+    if (!pendingAudio || !selectedId) return;
+    const snapshot = pendingAudio;
     setPendingAudio(null);
     recordingSecRef.current = 0;
+
+    const localId = `vm-${Date.now()}`;
+    setLocalVoiceMsgs((prev) => [...prev, {
+      id: localId,
+      url: snapshot.url,
+      durationSec: snapshot.durationSec,
+      time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+      sending: true
+    }]);
+
+    try {
+      const blob = await fetch(snapshot.url).then((r) => r.blob());
+      const fd = new FormData();
+      fd.append("threadId", selectedId);
+      fd.append("audio", new File([blob], "voice.ogg", { type: "audio/ogg" }));
+      await fetch("/api/social-bot/voice-message", { method: "POST", body: fd });
+      setLocalVoiceMsgs((prev) => prev.map((v) => v.id === localId ? { ...v, sending: false } : v));
+      void loadThread(selectedId);
+    } catch {
+      setLocalVoiceMsgs((prev) => prev.map((v) => v.id === localId ? { ...v, sending: false, failed: true } : v));
+    }
   }
 
   const loadThread = useCallback(async (id: string) => {
@@ -800,6 +816,8 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                     const out = msg.direction === "OUTBOUND";
                     const prevMsg = i > 0 ? payload?.messages[i - 1] : null;
                     const showSender = !prevMsg || prevMsg.direction !== msg.direction;
+                    const isAudio = msg.metadata?.mediaType === "audio";
+                    const mediaId = msg.metadata?.mediaId as string | undefined;
                     return (
                       <div key={msg._id} className={cn("flex gap-2.5", out ? "justify-end" : "justify-start")}>
                         {!out && showSender && (
@@ -812,15 +830,40 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                           {out && showSender && selected.assignedAgentName && (
                             <p className="text-right text-[10px] text-violet-600 dark:text-violet-400/60">{selected.assignedAgentName}</p>
                           )}
-                          <div className={cn("rounded-2xl px-4 py-2.5 text-[13px] leading-[1.7]",
-                            out
-                              ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700 text-white shadow-[0_4px_24px_rgba(124,58,237,0.3)]"
-                              : "rounded-tl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05] text-gray-800 dark:text-white/80")}>
-                            {msg.text}
+                          {isAudio && mediaId ? (
+                            <div className={cn("flex items-center gap-2 rounded-2xl px-3 py-2.5 shadow-md",
+                              out
+                                ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700"
+                                : "rounded-tl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05]")}>
+                              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20">
+                                <Mic className={cn("h-3 w-3", out ? "text-white" : "text-violet-500")} />
+                              </div>
+                              <audio
+                                src={`/api/social-bot/media/${mediaId}`}
+                                controls
+                                className="h-7 w-36"
+                              />
+                            </div>
+                          ) : (
+                            <div className={cn("rounded-2xl px-4 py-2.5 text-[13px] leading-[1.7]",
+                              out
+                                ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700 text-white shadow-[0_4px_24px_rgba(124,58,237,0.3)]"
+                                : "rounded-tl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05] text-gray-800 dark:text-white/80")}>
+                              {msg.text}
+                            </div>
+                          )}
+                          <div className={cn("flex items-center gap-1", out ? "justify-end" : "justify-start")}>
+                            <p className="text-[10px] text-gray-400 dark:text-white/20">{formatTime(msg.timestamp)}</p>
+                            {out && (
+                              <span className="text-[10px]">
+                                {msg.deliveryStatus === "PENDING" && <Clock className="h-3 w-3 text-white/40" />}
+                                {msg.deliveryStatus === "SENT" && <Check className="h-3 w-3 text-white/50" />}
+                                {msg.deliveryStatus === "DELIVERED" && <CheckCheck className="h-3 w-3 text-white/60" />}
+                                {msg.deliveryStatus === "READ" && <CheckCheck className="h-3 w-3 text-blue-300" />}
+                                {msg.deliveryStatus === "FAILED" && <X className="h-3 w-3 text-red-400" />}
+                              </span>
+                            )}
                           </div>
-                          <p className={cn("text-[10px] text-gray-400 dark:text-white/20", out ? "text-right" : "text-left")}>
-                            {formatTime(msg.timestamp)}
-                          </p>
                         </div>
                       </div>
                     );
@@ -830,12 +873,19 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                       <div className="flex max-w-[65%] flex-col gap-0.5">
                         <div className="flex items-center gap-2 rounded-2xl rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700 px-3 py-2.5 shadow-[0_4px_24px_rgba(124,58,237,0.3)]">
                           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20">
-                            <Mic className="h-3 w-3 text-white" />
+                            {vm.sending ? <Loader2 className="h-3 w-3 text-white animate-spin" /> : <Mic className="h-3 w-3 text-white" />}
                           </div>
                           <audio src={vm.url} controls className="h-7 w-28" />
                           <span className="shrink-0 text-[10px] text-white/60">{fmtSec(vm.durationSec)}</span>
                         </div>
-                        <p className="text-right text-[10px] text-gray-400 dark:text-white/20">{vm.time}</p>
+                        <div className="flex items-center justify-end gap-1">
+                          <p className="text-[10px] text-gray-400 dark:text-white/20">{vm.time}</p>
+                          {vm.failed
+                            ? <X className="h-3 w-3 text-red-400" />
+                            : vm.sending
+                              ? <Clock className="h-3 w-3 text-white/30" />
+                              : <Check className="h-3 w-3 text-white/50" />}
+                        </div>
                       </div>
                     </div>
                   ))}

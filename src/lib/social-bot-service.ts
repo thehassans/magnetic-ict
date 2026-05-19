@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   createSocialBotId,
   deleteMongoDocuments,
+  findMongoDocuments,
   getSocialBotAgents,
   getSocialBotChunks,
   getSocialBotDocuments,
@@ -447,8 +448,9 @@ export async function sendAgentMessage(userId: string, input: unknown) {
 
   if (integration?.status === "CONNECTED" && !thread.externalThreadId.startsWith("demo_")) {
     try {
-      await sendMetaReply({ integration, thread, messageText: payload.text });
+      const result = await sendMetaReply({ integration, thread, messageText: payload.text });
       deliveryStatus = "SENT";
+      if (result?.wamid) metadata.wamid = result.wamid;
     } catch (error) {
       deliveryStatus = "FAILED";
       metadata.error = error instanceof Error ? error.message : "Send failed.";
@@ -520,8 +522,9 @@ export async function maybeGenerateAiReply(
       } else {
         const integration = integrations.find((item) => item.channel === thread.source);
         if (integration?.status === "CONNECTED") {
-          await sendMetaReply({ integration, thread, messageText: replyText });
+          const result = await sendMetaReply({ integration, thread, messageText: replyText });
           deliveryStatus = "SENT";
+          if (result?.wamid) metadata.wamid = result.wamid;
         }
       }
     } catch (error) {
@@ -592,7 +595,10 @@ export async function ingestInboundMessage({
     updatedAt: now
   };
 
-  thread.contactName = contactName || thread.contactName;
+  // Only update name if the new value is a real name (not just the phone/ID fallback)
+  thread.contactName = (contactName && contactName !== contactHandle)
+    ? contactName
+    : (thread.contactName || contactHandle);
   thread.contactHandle = contactHandle || thread.contactHandle;
   thread.lastMessagePreview = text;
   thread.lastMessageAt = now;
@@ -616,4 +622,22 @@ export async function ingestInboundMessage({
 
   await maybeGenerateAiReply(thread, overrideSend);
   return getThreadWithMessages(userId, thread._id);
+}
+
+export async function updateMessageDeliveryStatus(
+  userId: string,
+  wamid: string,
+  status: "DELIVERED" | "READ"
+) {
+  const msgs = await findMongoDocuments<{ _id: string }>(
+    socialBotCollections.messages,
+    { userId, "metadata.wamid": wamid }
+  );
+  for (const m of msgs) {
+    await upsertMongoDocument(
+      socialBotCollections.messages,
+      { _id: m._id, userId },
+      { deliveryStatus: status }
+    );
+  }
 }

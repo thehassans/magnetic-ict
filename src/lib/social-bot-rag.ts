@@ -754,6 +754,8 @@ export async function sendMetaReply({
         : errMsg
     );
   }
+
+  return { wamid: payload.message_id ?? null };
 }
 
 

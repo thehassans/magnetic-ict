@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { findOneMongoDocument, socialBotCollections } from "@/lib/social-bot-db";
 import { getPlatformSettings } from "@/lib/platform-settings";
-import { ingestInboundMessage } from "@/lib/social-bot-service";
+import { ingestInboundMessage, updateMessageDeliveryStatus } from "@/lib/social-bot-service";
 import { sendMetaReply } from "@/lib/social-bot-rag";
 import type { SocialBotIntegration } from "@/lib/social-bot-types";
 
@@ -58,7 +58,16 @@ export async function POST(request: Request) {
             // WhatsApp Cloud API
             metadata?: { phone_number_id?: string };
             contacts?: Array<{ wa_id?: string; profile?: { name?: string } }>;
-            messages?: Array<{ from?: string; type?: string; text?: { body?: string } }>;
+            messages?: Array<{
+              from?: string;
+              type?: string;
+              id?: string;
+              text?: { body?: string };
+              audio?: { id?: string; mime_type?: string };
+              image?: { id?: string; mime_type?: string; caption?: string };
+              document?: { id?: string; filename?: string; mime_type?: string };
+            }>;
+            statuses?: Array<{ id?: string; status?: string; recipient_id?: string }>;
             // Instagram comments
             media?: { id?: string };
             id?: string;
@@ -92,7 +101,50 @@ export async function POST(request: Request) {
         const waMsg = val.messages?.[0];
         const waContact = val.contacts?.[0];
 
-        if (phoneNumberId && waMsg?.from && waMsg.text?.body && waMsg.type === "text") {
+        // ── Handle WhatsApp delivery status receipts ─────────────────────
+        for (const status of val.statuses ?? []) {
+          const wamid = status.id?.trim() ?? "";
+          const st = status.status?.trim() ?? "";
+          if (!wamid || (st !== "delivered" && st !== "read")) continue;
+
+          const integration = await findOneMongoDocument<SocialBotIntegration>(
+            socialBotCollections.integrations,
+            { channel: "WHATSAPP", phoneNumberId }
+          );
+          if (integration?.userId) {
+            await updateMessageDeliveryStatus(
+              integration.userId,
+              wamid,
+              st === "read" ? "READ" : "DELIVERED"
+            );
+          } else if (cfg.metaBotUserId) {
+            await updateMessageDeliveryStatus(cfg.metaBotUserId, wamid, st === "read" ? "READ" : "DELIVERED");
+          }
+        }
+
+        if (!waMsg?.from) continue;
+
+        const contactName = normalizeText(waContact?.profile?.name) || waMsg.from;
+        const contactHandle = waMsg.from;
+        const msgType = waMsg.type ?? "";
+
+        let ingestText = "";
+        let ingestMeta: Record<string, unknown> = { webhook: "meta", phoneNumberId };
+
+        if (msgType === "text" && waMsg.text?.body) {
+          ingestText = waMsg.text.body;
+        } else if (msgType === "audio" && waMsg.audio?.id) {
+          ingestText = "🎤 Voice message";
+          ingestMeta = { ...ingestMeta, mediaType: "audio", mediaId: waMsg.audio.id, mimeType: waMsg.audio.mime_type ?? "audio/ogg" };
+        } else if (msgType === "image" && waMsg.image?.id) {
+          ingestText = waMsg.image.caption ? `🖼 ${waMsg.image.caption}` : "🖼 Image";
+          ingestMeta = { ...ingestMeta, mediaType: "image", mediaId: waMsg.image.id };
+        } else if (msgType === "document" && waMsg.document?.id) {
+          ingestText = `📎 ${waMsg.document.filename ?? "Document"}`;
+          ingestMeta = { ...ingestMeta, mediaType: "document", mediaId: waMsg.document.id };
+        }
+
+        if (ingestText) {
           // 1. Try per-user integration
           const integration = await findOneMongoDocument<SocialBotIntegration>(
             socialBotCollections.integrations,
@@ -104,10 +156,10 @@ export async function POST(request: Request) {
               userId: integration.userId,
               source: "WHATSAPP",
               externalThreadId: waMsg.from,
-              contactName: normalizeText(waContact?.profile?.name) || waMsg.from,
-              contactHandle: waMsg.from,
-              text: waMsg.text.body,
-              metadata: { webhook: "meta", phoneNumberId }
+              contactName,
+              contactHandle,
+              text: ingestText,
+              metadata: ingestMeta
             });
           } else if (
             cfg.metaBotUserId &&
@@ -121,19 +173,19 @@ export async function POST(request: Request) {
               userId: cfg.metaBotUserId,
               source: "WHATSAPP",
               externalThreadId: waMsg.from,
-              contactName: normalizeText(waContact?.profile?.name) || waMsg.from,
-              contactHandle: waMsg.from,
-              text: waMsg.text.body,
-              metadata: { webhook: "meta", phoneNumberId, system: true },
-              overrideSend: async (replyText) => {
+              contactName,
+              contactHandle,
+              text: ingestText,
+              metadata: { ...ingestMeta, system: true },
+              overrideSend: msgType === "text" ? async (replyText) => {
                 await sendMetaReply({
                   integration: null,
-                  thread: { externalThreadId: waMsg.from, source: "WHATSAPP" } as never,
+                  thread: { externalThreadId: waMsg.from!, source: "WHATSAPP" } as never,
                   messageText: replyText,
                   systemToken,
                   systemPhoneNumberId: phoneNumberId
                 });
-              }
+              } : undefined
             });
           }
         }

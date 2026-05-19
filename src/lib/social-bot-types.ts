@@ -89,7 +89,7 @@ export type SocialBotMessage = {
   role: SocialMessageRole;
   text: string;
   timestamp: string;
-  deliveryStatus: "PENDING" | "SENT" | "FAILED";
+  deliveryStatus: "PENDING" | "SENT" | "DELIVERED" | "READ" | "FAILED";
   metadata: Record<string, unknown>;
 };
 
