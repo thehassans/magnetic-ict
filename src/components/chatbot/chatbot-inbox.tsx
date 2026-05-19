@@ -471,6 +471,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
   const cancelRecordRef = useRef(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [sendingImage, setSendingImage] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   function fmtSec(s: number) {
     return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
@@ -672,6 +673,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
   const unassignedCount = threads.filter((t) => !t.assignedAgentId).length;
 
   return (
+    <>
     <div className="flex h-full overflow-hidden">
       {/* ── Thread sidebar ── */}
       <div className="flex w-[280px] shrink-0 flex-col border-r border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0d0d20]">
@@ -901,9 +903,9 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                               <img
                                 src={resolvedImageSrc}
                                 alt="Image"
-                                className="block max-w-[240px] max-h-[320px] w-auto h-auto object-cover cursor-pointer"
+                                className="block max-w-[240px] max-h-[320px] w-auto h-auto object-cover cursor-zoom-in"
                                 loading="lazy"
-                                onClick={() => window.open(resolvedImageSrc, "_blank")}
+                                onClick={() => resolvedImageSrc && setLightboxSrc(resolvedImageSrc)}
                                 onError={(e) => {
                                   e.currentTarget.style.display = "none";
                                   const ph = e.currentTarget.nextElementSibling as HTMLElement | null;
@@ -1078,5 +1080,43 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
             <DemoChat />
           )}
         </div>
-      );
+
+      {/* ── Image Lightbox ── */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-md"
+          onClick={() => setLightboxSrc(null)}
+        >
+          <div
+            className="relative max-w-[92vw] max-h-[92vh] rounded-3xl overflow-hidden shadow-[0_32px_96px_rgba(0,0,0,0.7)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lightboxSrc}
+              alt="Preview"
+              className="block max-w-[92vw] max-h-[92vh] w-auto h-auto object-contain"
+            />
+            <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-gradient-to-t from-black/60 to-transparent px-5 py-4">
+              <button
+                type="button"
+                onClick={() => window.open(lightboxSrc, "_blank")}
+                className="flex items-center gap-1.5 rounded-xl bg-white/15 px-3 py-1.5 text-[12px] font-medium text-white/90 backdrop-blur-sm hover:bg-white/25 transition"
+              >
+                Open full size ↗
+              </button>
+              <button
+                type="button"
+                onClick={() => setLightboxSrc(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/15 text-white/80 backdrop-blur-sm hover:bg-white/25 transition"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
+

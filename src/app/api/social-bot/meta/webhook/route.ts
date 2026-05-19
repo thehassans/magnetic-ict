@@ -95,6 +95,7 @@ export async function POST(request: Request) {
             // Messenger / Instagram DM changes
             messaging?: Array<{
               sender?: { id?: string };
+              recipient?: { id?: string };
               message?: {
                 text?: string;
                 is_echo?: boolean;
@@ -105,6 +106,7 @@ export async function POST(request: Request) {
         }>;
         messaging?: Array<{
           sender?: { id?: string };
+          recipient?: { id?: string };
           message?: {
             text?: string;
             is_echo?: boolean;
@@ -293,17 +295,21 @@ export async function POST(request: Request) {
         if (!hasText && !audioAttachment && !imageAttachment && !videoAttachment) continue;
 
         const senderId = msg.sender.id;
+        // For Instagram DMs: recipient.id = Instagram Business Account ID (accountId in integration)
+        // For Messenger DMs: recipient.id = Facebook Page ID (pageId in integration)
+        const recipientId = msg.recipient?.id ?? "";
 
-        // 1. Try per-user integration (Messenger)
+        // 1. Try Instagram integration: identify by recipient.id matching accountId
+        const instagramInt = recipientId
+          ? await findOneMongoDocument<SocialBotIntegration>(socialBotCollections.integrations, { channel: "INSTAGRAM", accountId: recipientId })
+          : null;
+        // 2. Try Messenger integration: pageId matches entryId
         const messengerInt = entryId
           ? await findOneMongoDocument<SocialBotIntegration>(socialBotCollections.integrations, { channel: "MESSENGER", pageId: entryId })
           : null;
-        // 2. Try per-user integration (Instagram)
-        const instagramInt = entryId
-          ? await findOneMongoDocument<SocialBotIntegration>(socialBotCollections.integrations, { channel: "INSTAGRAM", accountId: entryId })
-          : null;
 
-        const perUserInt = messengerInt ?? instagramInt;
+        // Prefer Instagram when recipient matches Instagram account; otherwise Messenger
+        const perUserInt = instagramInt ?? messengerInt;
         const perUserToken = perUserInt ? decryptSecret(perUserInt.accessTokenEncrypted) : "";
         const systemToken2 = perUserInt
           ? ""
@@ -338,9 +344,9 @@ export async function POST(request: Request) {
           });
         } else if (cfg.metaBotUserId) {
           // 3. Fall back to system-level admin credentials
-          const isMessenger = cfg.metaMessengerPageId && entryId === cfg.metaMessengerPageId;
-          const isInstagram = cfg.metaInstagramAccountId && entryId === cfg.metaInstagramAccountId;
-          const channel = isMessenger ? "MESSENGER" : isInstagram ? "INSTAGRAM" : null;
+          const isInstagram = cfg.metaInstagramAccountId && (recipientId === cfg.metaInstagramAccountId || entryId === cfg.metaInstagramAccountId);
+          const isMessenger = !isInstagram && cfg.metaMessengerPageId && entryId === cfg.metaMessengerPageId;
+          const channel = isInstagram ? "INSTAGRAM" : isMessenger ? "MESSENGER" : null;
           const systemToken = isMessenger ? cfg.metaMessengerPageToken : isInstagram ? cfg.metaInstagramPageToken : "";
 
           if (channel && systemToken) {

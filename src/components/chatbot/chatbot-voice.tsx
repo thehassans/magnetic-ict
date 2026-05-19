@@ -574,86 +574,116 @@ export function ChatbotVoice() {
       </div>
 
       {/* Microphone orb */}
-      <div className="flex flex-col items-center justify-center gap-6 py-6">
+      <div className="flex flex-col items-center justify-center gap-8 py-8">
         <div className="relative flex items-center justify-center">
+          {/* Outer ambient glow rings */}
           {isListening && (
             <>
               <div
-                className="absolute rounded-full border border-violet-500/20 bg-violet-500/5 transition-all duration-100"
-                style={{ width: ringSize + 40, height: ringSize + 40 }}
+                className="absolute rounded-full bg-violet-500/[0.06] transition-all duration-150"
+                style={{ width: ringSize + 64, height: ringSize + 64, boxShadow: `0 0 ${40 + amplitude * 0.4}px rgba(139,92,246,0.18)` }}
               />
               <div
-                className="absolute rounded-full border border-violet-500/30 bg-violet-500/8 transition-all duration-100"
-                style={{ width: ringSize + 20, height: ringSize + 20 }}
+                className="absolute rounded-full border border-violet-400/25 bg-violet-500/[0.04] transition-all duration-100"
+                style={{ width: ringSize + 36, height: ringSize + 36 }}
+              />
+              <div
+                className="absolute rounded-full border border-violet-500/40 transition-all duration-75"
+                style={{ width: ringSize + 12, height: ringSize + 12 }}
               />
             </>
           )}
           {isSpeaking && (
             <>
-              <div className="absolute h-36 w-36 animate-ping rounded-full border border-emerald-400/20 bg-emerald-500/5" />
-              <div className="absolute h-28 w-28 animate-pulse rounded-full border border-emerald-400/30 bg-emerald-500/8" />
+              <div className="absolute h-44 w-44 animate-ping rounded-full bg-emerald-500/[0.07]" style={{ animationDuration: "1.4s" }} />
+              <div className="absolute h-36 w-36 animate-ping rounded-full border border-emerald-400/20" style={{ animationDuration: "1s" }} />
+              <div className="absolute h-28 w-28 animate-pulse rounded-full border border-emerald-400/35 bg-emerald-500/[0.05]" />
             </>
           )}
+          {isThinking && (
+            <div className="absolute h-32 w-32 animate-pulse rounded-full bg-amber-500/[0.06] blur-sm" />
+          )}
+
           <button
             type="button"
             onClick={toggleListening}
             disabled={isThinking}
             className={cn(
-              "relative z-10 flex h-24 w-24 items-center justify-center rounded-full shadow-2xl transition-all duration-200 active:scale-95",
+              "relative z-10 flex h-28 w-28 items-center justify-center rounded-full transition-all duration-300 active:scale-95",
               isListening
-                ? "bg-gradient-to-br from-violet-600 to-purple-700 shadow-violet-500/40 scale-110"
+                ? "scale-110 bg-gradient-to-br from-violet-500 to-purple-700 shadow-[0_0_48px_rgba(139,92,246,0.55),0_12px_40px_rgba(0,0,0,0.35)]"
                 : isSpeaking
-                ? "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/40"
-                : "bg-gradient-to-br from-gray-800 to-gray-900 dark:from-white/10 dark:to-white/5 shadow-black/30 hover:scale-105",
-              isThinking && "opacity-60 cursor-not-allowed"
+                ? "bg-gradient-to-br from-emerald-400 to-teal-600 shadow-[0_0_40px_rgba(52,211,153,0.45),0_12px_36px_rgba(0,0,0,0.3)]"
+                : "bg-gradient-to-br from-[#1e1e3a] to-[#0f0f20] dark:from-white/[0.1] dark:to-white/[0.04] shadow-[0_8px_40px_rgba(0,0,0,0.45)] hover:scale-105 hover:shadow-[0_8px_56px_rgba(139,92,246,0.25)]",
+              isThinking && "opacity-50 cursor-not-allowed scale-100"
             )}
           >
+            {/* Inner ring accent */}
+            <span className={cn(
+              "absolute inset-2 rounded-full opacity-20",
+              isListening ? "bg-white" : isSpeaking ? "bg-white" : "bg-transparent"
+            )} />
             {isThinking ? (
-              <Loader2 className="h-9 w-9 animate-spin text-white" />
+              <Loader2 className="relative h-10 w-10 animate-spin text-white/80" />
             ) : isListening ? (
-              <MicOff className="h-9 w-9 text-white" />
+              <MicOff className="relative h-10 w-10 text-white" />
             ) : (
-              <Mic className="h-9 w-9 text-white" />
+              <Mic className="relative h-10 w-10 text-white/90" />
             )}
           </button>
         </div>
 
-        <div className="text-center">
+        {/* Status label */}
+        <div className="text-center space-y-1.5">
           {isListening && (
-            <p className="text-sm font-medium text-violet-600 dark:text-violet-400 animate-pulse">
-              Listening{interimText ? "…" : " — speak now"}
+            <p className="text-[13px] font-semibold text-violet-500 dark:text-violet-400 tracking-wide">
+              {interimText ? "Listening…" : "Listening — speak now"}
             </p>
           )}
           {isSpeaking && (
-            <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-              Speaking…
-            </p>
+            <p className="text-[13px] font-semibold text-emerald-600 dark:text-emerald-400 tracking-wide">Speaking…</p>
           )}
           {isThinking && (
-            <p className="text-sm font-medium text-gray-500 dark:text-white/40">
-              Thinking…
-            </p>
+            <p className="text-[13px] font-semibold text-amber-500 dark:text-amber-400/80 tracking-wide">Thinking…</p>
           )}
           {!isListening && !isSpeaking && !isThinking && (
-            <p className="text-sm text-gray-400 dark:text-white/30">
-              {conversation.length === 0 ? "Tap the mic to start talking" : "Tap to continue"}
+            <p className="text-[13px] text-gray-400 dark:text-white/30">
+              {conversation.length === 0 ? "Tap the mic to start" : "Tap to continue"}
             </p>
           )}
           {interimText && (
-            <p className="mt-1 max-w-xs text-xs text-gray-500 dark:text-white/30 italic line-clamp-2">{interimText}</p>
+            <p className="max-w-xs text-[11px] text-gray-500 dark:text-white/30 italic line-clamp-2">{interimText}</p>
           )}
         </div>
 
-        {/* Amplitude bars */}
+        {/* Waveform — only while listening */}
         {isListening && (
-          <div className="flex items-end gap-0.5 h-8">
-            {Array.from({ length: 20 }).map((_, i) => {
-              const barAmp = Math.max(4, amplitude * (0.4 + Math.sin(i * 0.8 + Date.now() * 0.005) * 0.3));
+          <div className="flex items-center gap-[3px] h-10">
+            {Array.from({ length: 28 }).map((_, i) => {
+              const phase = (i / 28) * Math.PI * 2;
+              const wave = Math.sin(phase + Date.now() * 0.006) * 0.35 + 0.65;
+              const barH = Math.max(4, amplitude * wave * 0.38 + 4);
+              const opacity = 0.45 + (i % 3 === 0 ? 0.3 : 0);
               return (
                 <div
                   key={i}
-                  className="w-1.5 rounded-full bg-violet-500/60 transition-all duration-75"
-                  style={{ height: `${Math.min(32, barAmp * 0.32 + 4)}px` }}
+                  className="w-[3px] rounded-full bg-violet-500 transition-all duration-75"
+                  style={{ height: `${Math.min(40, barH)}px`, opacity }}
+                />
+              );
+            })}
+          </div>
+        )}
+        {isSpeaking && (
+          <div className="flex items-center gap-[3px] h-10">
+            {Array.from({ length: 28 }).map((_, i) => {
+              const phase = (i / 28) * Math.PI * 2;
+              const barH = Math.max(4, 16 + Math.sin(phase + Date.now() * 0.008) * 14);
+              return (
+                <div
+                  key={i}
+                  className="w-[3px] rounded-full bg-emerald-500 transition-all duration-100"
+                  style={{ height: `${barH}px`, opacity: 0.6 }}
                 />
               );
             })}
@@ -682,51 +712,51 @@ export function ChatbotVoice() {
             </span>
           </div>
 
-          <div className="max-h-80 overflow-y-auto p-4 space-y-3">
+          <div className="max-h-96 overflow-y-auto p-5 space-y-4 scrollbar-thin">
             {conversation.map((entry) => (
               <div
                 key={entry.id}
                 className={cn(
-                  "flex gap-3",
+                  "flex gap-2.5 items-end",
                   entry.role === "user" ? "justify-end" : "justify-start"
                 )}
               >
                 {entry.role === "assistant" && (
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/30 to-purple-600/20 text-violet-300">
-                    <Mic className="h-3.5 w-3.5" />
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600/40 to-purple-700/30 ring-1 ring-violet-500/20">
+                    <Mic className="h-3 w-3 text-violet-300" />
                   </div>
                 )}
                 <div
                   className={cn(
-                    "max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                    "max-w-[76%] rounded-2xl px-4 py-3 text-[13px] leading-relaxed shadow-sm",
                     entry.role === "user"
-                      ? "bg-violet-600 text-white rounded-tr-sm"
-                      : "bg-gray-100 dark:bg-white/[0.06] text-gray-800 dark:text-white/85 rounded-tl-sm"
+                      ? "bg-gradient-to-br from-violet-600 to-purple-700 text-white rounded-br-sm shadow-violet-900/20"
+                      : "bg-white dark:bg-white/[0.07] border border-gray-100 dark:border-white/[0.06] text-gray-800 dark:text-white/85 rounded-bl-sm"
                   )}
                 >
                   {entry.text}
-                  <p className={cn("mt-1 text-[10px]", entry.role === "user" ? "text-violet-200" : "text-gray-400 dark:text-white/25")}>
+                  <p className={cn("mt-1.5 text-[10px] font-medium", entry.role === "user" ? "text-violet-200/70" : "text-gray-400 dark:text-white/20")}>
                     {entry.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
                 {entry.role === "user" && (
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-600/20 text-violet-400">
-                    <Mic className="h-3.5 w-3.5" />
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-violet-600/15 ring-1 ring-violet-500/20">
+                    <Mic className="h-3 w-3 text-violet-400" />
                   </div>
                 )}
               </div>
             ))}
 
             {isThinking && (
-              <div className="flex justify-start gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/30 to-purple-600/20">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-violet-400" />
+              <div className="flex justify-start gap-2.5 items-end">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600/40 to-purple-700/30 ring-1 ring-violet-500/20">
+                  <Loader2 className="h-3 w-3 animate-spin text-violet-300" />
                 </div>
-                <div className="rounded-2xl rounded-tl-sm bg-gray-100 dark:bg-white/[0.06] px-4 py-3">
-                  <div className="flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 dark:bg-white/40 [animation-delay:0ms]" />
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 dark:bg-white/40 [animation-delay:150ms]" />
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 dark:bg-white/40 [animation-delay:300ms]" />
+                <div className="rounded-2xl rounded-bl-sm bg-white dark:bg-white/[0.07] border border-gray-100 dark:border-white/[0.06] px-4 py-3 shadow-sm">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 animate-bounce rounded-full bg-violet-400/60 [animation-delay:0ms]" />
+                    <span className="h-2 w-2 animate-bounce rounded-full bg-violet-400/60 [animation-delay:150ms]" />
+                    <span className="h-2 w-2 animate-bounce rounded-full bg-violet-400/60 [animation-delay:300ms]" />
                   </div>
                 </div>
               </div>

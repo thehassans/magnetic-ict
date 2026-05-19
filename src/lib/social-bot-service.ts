@@ -503,6 +503,13 @@ export async function maybeGenerateAiReply(
     return null;
   }
 
+  // Don't auto-reply to media messages — the AI only sees the emoji placeholder,
+  // not the actual audio/image content, which produces a confusing text response.
+  const inboundMediaType = latestInbound.metadata?.mediaType as string | undefined;
+  if (inboundMediaType && ["audio", "image", "video"].includes(inboundMediaType)) {
+    return null;
+  }
+
   const replyText = await generateSocialReply({
     profile,
     thread,
