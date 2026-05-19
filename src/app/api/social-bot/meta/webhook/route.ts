@@ -3,13 +3,28 @@ import { NextResponse } from "next/server";
 import { findOneMongoDocument, socialBotCollections } from "@/lib/social-bot-db";
 import { getPlatformSettings } from "@/lib/platform-settings";
 import { ingestInboundMessage, updateMessageDeliveryStatus } from "@/lib/social-bot-service";
-import { sendMetaReply } from "@/lib/social-bot-rag";
+import { sendMetaReply, decryptSecret } from "@/lib/social-bot-rag";
 import type { SocialBotIntegration } from "@/lib/social-bot-types";
 
 export const dynamic = "force-dynamic";
 
 function normalizeText(value: unknown) {
   return typeof value === "string" ? value : "";
+}
+
+async function fetchPageScopedName(psid: string, accessToken: string): Promise<string> {
+  if (!accessToken || !psid) return psid;
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v25.0/${psid}?fields=name&access_token=${encodeURIComponent(accessToken)}`,
+      { signal: AbortSignal.timeout(4000) }
+    );
+    if (res.ok) {
+      const data = (await res.json()) as { name?: string };
+      return data.name?.trim() || psid;
+    }
+  } catch { /* ignore - fall back to psid */ }
+  return psid;
 }
 
 function isValidMetaSignature(signature: string | null, rawBody: string, appSecret: string) {
@@ -76,13 +91,21 @@ export async function POST(request: Request) {
             // Messenger / Instagram DM changes
             messaging?: Array<{
               sender?: { id?: string };
-              message?: { text?: string };
+              message?: {
+                text?: string;
+                is_echo?: boolean;
+                attachments?: Array<{ type?: string; payload?: { url?: string; sticker_id?: number } }>;
+              };
             }>;
           };
         }>;
         messaging?: Array<{
           sender?: { id?: string };
-          message?: { text?: string; is_echo?: boolean };
+          message?: {
+            text?: string;
+            is_echo?: boolean;
+            attachments?: Array<{ type?: string; payload?: { url?: string; sticker_id?: number } }>;
+          };
         }>;
       }>;
     };
@@ -246,9 +269,13 @@ export async function POST(request: Request) {
 
       // ── Messenger & Instagram messages (page-level) ───────────────────
       for (const msg of entry.messaging ?? []) {
-        if (!msg.sender?.id || !msg.message?.text || msg.message.is_echo) continue;
+        if (!msg.sender?.id || msg.message?.is_echo) continue;
+
+        const hasText = !!msg.message?.text;
+        const audioAttachment = msg.message?.attachments?.find((a) => a.type === "audio");
+        if (!hasText && !audioAttachment) continue;
+
         const senderId = msg.sender.id;
-        const text = msg.message.text;
 
         // 1. Try per-user integration (Messenger)
         const messengerInt = entryId
@@ -260,16 +287,26 @@ export async function POST(request: Request) {
           : null;
 
         const perUserInt = messengerInt ?? instagramInt;
+        const perUserToken = perUserInt ? decryptSecret(perUserInt.accessTokenEncrypted) : "";
+        const systemToken2 = perUserInt
+          ? ""
+          : (cfg.metaMessengerPageId && entryId === cfg.metaMessengerPageId ? cfg.metaMessengerPageToken : cfg.metaInstagramPageToken) ?? "";
+        const contactName = await fetchPageScopedName(senderId, perUserToken || systemToken2);
+
+        const ingestText = hasText ? msg.message!.text! : "\uD83C\uDF99 Voice message";
+        const ingestMeta: Record<string, unknown> = audioAttachment
+          ? { webhook: "meta", mediaType: "audio", audioUrl: audioAttachment.payload?.url ?? "" }
+          : { webhook: "meta" };
 
         if (perUserInt?.userId) {
           await ingestInboundMessage({
             userId: perUserInt.userId,
             source: perUserInt.channel,
             externalThreadId: senderId,
-            contactName: senderId,
+            contactName,
             contactHandle: senderId,
-            text,
-            metadata: { webhook: "meta" }
+            text: ingestText,
+            metadata: ingestMeta
           });
         } else if (cfg.metaBotUserId) {
           // 3. Fall back to system-level admin credentials
@@ -283,18 +320,18 @@ export async function POST(request: Request) {
               userId: cfg.metaBotUserId,
               source: channel,
               externalThreadId: senderId,
-              contactName: senderId,
+              contactName,
               contactHandle: senderId,
-              text,
-              metadata: { webhook: "meta", system: true },
-              overrideSend: async (replyText) => {
+              text: ingestText,
+              metadata: { ...ingestMeta, system: true },
+              overrideSend: hasText ? async (replyText) => {
                 await sendMetaReply({
                   integration: null,
                   thread: { externalThreadId: senderId, source: channel } as never,
                   messageText: replyText,
                   systemToken
                 });
-              }
+              } : undefined
             });
           }
         }

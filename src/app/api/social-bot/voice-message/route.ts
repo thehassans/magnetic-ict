@@ -31,62 +31,86 @@ export async function POST(request: Request) {
     );
     if (!thread) return NextResponse.json({ error: "Thread not found." }, { status: 404 });
 
-    if (thread.source !== "WHATSAPP") {
-      return NextResponse.json({ error: "Voice messages are only supported on WhatsApp." }, { status: 400 });
-    }
-
     const allIntegrations = await findMongoDocuments<SocialBotIntegration>(
       socialBotCollections.integrations,
       { userId }
     );
-    const integration = allIntegrations.find((i: SocialBotIntegration) => i.channel === "WHATSAPP" && i.status === "CONNECTED");
-    if (!integration) return NextResponse.json({ error: "WhatsApp not connected." }, { status: 400 });
+    const integration = allIntegrations.find(
+      (i: SocialBotIntegration) => i.channel === thread.source && i.status === "CONNECTED"
+    );
+    if (!integration) {
+      return NextResponse.json({ error: `${thread.source} not connected.` }, { status: 400 });
+    }
 
     const accessToken = decryptSecret(integration.accessTokenEncrypted);
-    const phoneId = integration.phoneNumberId;
-
-    // 1. Upload audio to Meta
     const audioBuffer = await audioFile.arrayBuffer();
-    const uploadForm = new FormData();
-    uploadForm.append("messaging_product", "whatsapp");
-    uploadForm.append("type", "audio/ogg");
-    uploadForm.append("file", new Blob([audioBuffer], { type: audioFile.type || "audio/ogg" }), "voice.ogg");
-
-    const uploadRes = await fetch(`https://graph.facebook.com/v25.0/${phoneId}/media`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}` },
-      body: uploadForm
-    });
-
-    if (!uploadRes.ok) {
-      const err = (await uploadRes.json().catch(() => ({}))) as { error?: { message?: string } };
-      return NextResponse.json({ error: err.error?.message ?? "Media upload failed." }, { status: 502 });
-    }
-
-    const { id: mediaId } = (await uploadRes.json()) as { id: string };
-
-    // 2. Send audio message via WhatsApp
-    const sendRes = await fetch(`https://graph.facebook.com/v25.0/${phoneId}/messages`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to: thread.externalThreadId,
-        type: "audio",
-        audio: { id: mediaId }
-      })
-    });
-
-    const sendPayload = (await sendRes.json().catch(() => ({}))) as { message_id?: string; error?: { message?: string } };
-    if (!sendRes.ok) {
-      return NextResponse.json({ error: sendPayload.error?.message ?? "Send failed." }, { status: 502 });
-    }
-
+    const audioBlob = new Blob([audioBuffer], { type: audioFile.type || "audio/ogg" });
     const now = new Date().toISOString();
+    let msgMetadata: Record<string, unknown> = { mediaType: "audio" };
+
+    if (thread.source === "WHATSAPP") {
+      const phoneId = integration.phoneNumberId;
+
+      // 1. Upload audio to WhatsApp Media API
+      const uploadForm = new FormData();
+      uploadForm.append("messaging_product", "whatsapp");
+      uploadForm.append("type", "audio/ogg");
+      uploadForm.append("file", new File([audioBlob], "voice.ogg", { type: "audio/ogg" }));
+
+      const uploadRes = await fetch(`https://graph.facebook.com/v25.0/${phoneId}/media`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body: uploadForm
+      });
+
+      if (!uploadRes.ok) {
+        const err = (await uploadRes.json().catch(() => ({}))) as { error?: { message?: string } };
+        return NextResponse.json({ error: err.error?.message ?? "Media upload failed." }, { status: 502 });
+      }
+
+      const { id: mediaId } = (await uploadRes.json()) as { id: string };
+
+      // 2. Send audio message via WhatsApp
+      const sendRes = await fetch(`https://graph.facebook.com/v25.0/${phoneId}/messages`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: thread.externalThreadId,
+          type: "audio",
+          audio: { id: mediaId }
+        })
+      });
+
+      const sendPayload = (await sendRes.json().catch(() => ({}))) as { message_id?: string; error?: { message?: string } };
+      if (!sendRes.ok) {
+        return NextResponse.json({ error: sendPayload.error?.message ?? "Send failed." }, { status: 502 });
+      }
+      msgMetadata = { mediaType: "audio", mediaId, wamid: sendPayload.message_id ?? null };
+
+    } else {
+      // Messenger / Instagram — use multipart attachment upload
+      const pageId = integration.pageId;
+      const sendForm = new FormData();
+      sendForm.append("recipient", JSON.stringify({ id: thread.externalThreadId }));
+      sendForm.append("message", JSON.stringify({
+        attachment: { type: "audio", payload: { is_reusable: true } }
+      }));
+      sendForm.append("filedata", new File([audioBlob], "voice.ogg", { type: "audio/ogg" }));
+
+      const sendUrl = pageId
+        ? `https://graph.facebook.com/v25.0/${pageId}/messages?access_token=${encodeURIComponent(accessToken)}`
+        : `https://graph.facebook.com/v25.0/me/messages?access_token=${encodeURIComponent(accessToken)}`;
+
+      const sendRes = await fetch(sendUrl, { method: "POST", body: sendForm });
+      const sendPayload = (await sendRes.json().catch(() => ({}))) as { message_id?: string; attachment_id?: string; error?: { message?: string } };
+      if (!sendRes.ok) {
+        return NextResponse.json({ error: sendPayload.error?.message ?? "Send failed." }, { status: 502 });
+      }
+      msgMetadata = { mediaType: "audio", wamid: sendPayload.message_id ?? null };
+    }
+
     const msg = {
       _id: createSocialBotId("sbm"),
       userId,
@@ -97,7 +121,7 @@ export async function POST(request: Request) {
       text: "🎤 Voice message",
       timestamp: now,
       deliveryStatus: "SENT" as const,
-      metadata: { mediaType: "audio", mediaId, wamid: sendPayload.message_id ?? null }
+      metadata: msgMetadata
     };
 
     await appendMessage(msg);

@@ -818,6 +818,8 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                     const showSender = !prevMsg || prevMsg.direction !== msg.direction;
                     const isAudio = msg.metadata?.mediaType === "audio";
                     const mediaId = msg.metadata?.mediaId as string | undefined;
+                    const audioUrl = msg.metadata?.audioUrl as string | undefined;
+                    const resolvedAudioSrc = mediaId ? `/api/social-bot/media/${mediaId}` : (audioUrl ?? undefined);
                     return (
                       <div key={msg._id} className={cn("flex gap-2.5", out ? "justify-end" : "justify-start")}>
                         {!out && showSender && (
@@ -830,7 +832,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                           {out && showSender && selected.assignedAgentName && (
                             <p className="text-right text-[10px] text-violet-600 dark:text-violet-400/60">{selected.assignedAgentName}</p>
                           )}
-                          {isAudio && mediaId ? (
+                          {isAudio && resolvedAudioSrc ? (
                             <div className={cn("flex items-center gap-2 rounded-2xl px-3 py-2.5 shadow-md",
                               out
                                 ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700"
@@ -839,7 +841,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                                 <Mic className={cn("h-3 w-3", out ? "text-white" : "text-violet-500")} />
                               </div>
                               <audio
-                                src={`/api/social-bot/media/${mediaId}`}
+                                src={resolvedAudioSrc}
                                 controls
                                 className="h-7 w-36"
                               />
@@ -855,12 +857,12 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                           <div className={cn("flex items-center gap-1", out ? "justify-end" : "justify-start")}>
                             <p className="text-[10px] text-gray-400 dark:text-white/20">{formatTime(msg.timestamp)}</p>
                             {out && (
-                              <span className="text-[10px]">
-                                {msg.deliveryStatus === "PENDING" && <Clock className="h-3 w-3 text-white/40" />}
-                                {msg.deliveryStatus === "SENT" && <Check className="h-3 w-3 text-white/50" />}
-                                {msg.deliveryStatus === "DELIVERED" && <CheckCheck className="h-3 w-3 text-white/60" />}
-                                {msg.deliveryStatus === "READ" && <CheckCheck className="h-3 w-3 text-blue-300" />}
-                                {msg.deliveryStatus === "FAILED" && <X className="h-3 w-3 text-red-400" />}
+                              <span className="flex items-center">
+                                {msg.deliveryStatus === "PENDING" && <Clock className="h-3 w-3 text-gray-300 dark:text-white/20" />}
+                                {msg.deliveryStatus === "SENT" && <Check className="h-3 w-3 text-gray-400 dark:text-white/35" />}
+                                {msg.deliveryStatus === "DELIVERED" && <CheckCheck className="h-3 w-3 text-gray-500 dark:text-white/50" />}
+                                {msg.deliveryStatus === "READ" && <CheckCheck className="h-3 w-3 text-blue-500 dark:text-blue-400" />}
+                                {msg.deliveryStatus === "FAILED" && <X className="h-3 w-3 text-red-500" />}
                               </span>
                             )}
                           </div>
