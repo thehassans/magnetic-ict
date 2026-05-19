@@ -273,7 +273,9 @@ export async function POST(request: Request) {
 
         const hasText = !!msg.message?.text;
         const audioAttachment = msg.message?.attachments?.find((a) => a.type === "audio");
-        if (!hasText && !audioAttachment) continue;
+        const imageAttachment = msg.message?.attachments?.find((a) => a.type === "image" && !a.payload?.sticker_id);
+        const videoAttachment = msg.message?.attachments?.find((a) => a.type === "video");
+        if (!hasText && !audioAttachment && !imageAttachment && !videoAttachment) continue;
 
         const senderId = msg.sender.id;
 
@@ -293,10 +295,21 @@ export async function POST(request: Request) {
           : (cfg.metaMessengerPageId && entryId === cfg.metaMessengerPageId ? cfg.metaMessengerPageToken : cfg.metaInstagramPageToken) ?? "";
         const contactName = await fetchPageScopedName(senderId, perUserToken || systemToken2);
 
-        const ingestText = hasText ? msg.message!.text! : "\uD83C\uDF99 Voice message";
-        const ingestMeta: Record<string, unknown> = audioAttachment
-          ? { webhook: "meta", mediaType: "audio", audioUrl: audioAttachment.payload?.url ?? "" }
-          : { webhook: "meta" };
+        let ingestText: string;
+        let ingestMeta: Record<string, unknown>;
+        if (hasText) {
+          ingestText = msg.message!.text!;
+          ingestMeta = { webhook: "meta" };
+        } else if (audioAttachment) {
+          ingestText = "\uD83C\uDF99 Voice message";
+          ingestMeta = { webhook: "meta", mediaType: "audio", audioUrl: audioAttachment.payload?.url ?? "" };
+        } else if (imageAttachment) {
+          ingestText = "\uD83D\uDDBC Image";
+          ingestMeta = { webhook: "meta", mediaType: "image", imageUrl: imageAttachment.payload?.url ?? "" };
+        } else {
+          ingestText = "\uD83C\uDFA5 Video";
+          ingestMeta = { webhook: "meta", mediaType: "video", videoUrl: videoAttachment?.payload?.url ?? "" };
+        }
 
         if (perUserInt?.userId) {
           await ingestInboundMessage({

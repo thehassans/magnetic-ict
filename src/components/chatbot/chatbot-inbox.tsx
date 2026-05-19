@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bot, Check, CheckCheck, ChevronDown, Clock, FileText, Loader2, Mic, RefreshCw, Search, Send, Smile, StopCircle, Trash2, UserCheck, Users, X, Zap } from "lucide-react";
+import { Bot, Check, CheckCheck, ChevronDown, Clock, FileText, Loader2, Mic, Paperclip, RefreshCw, Search, Send, Smile, StopCircle, Trash2, UserCheck, Users, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SocialBotAgent, SocialBotMessage, SocialBotThread } from "@/lib/social-bot-types";
 import { WhatsAppIcon, InstagramIcon, MessengerIcon } from "@/components/chatbot/social-icons";
@@ -469,21 +469,33 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recordingSecRef = useRef(0);
   const cancelRecordRef = useRef(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [sendingImage, setSendingImage] = useState(false);
 
   function fmtSec(s: number) {
     return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
   }
 
+  function displayName(name: string): string {
+    if (/^\d{8,}$/.test(name.trim())) return `User ···${name.trim().slice(-4)}`;
+    return name || "Unknown";
+  }
+
   async function startRecording() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mr = new MediaRecorder(stream);
+      const mimeType = MediaRecorder.isTypeSupported("audio/ogg;codecs=opus")
+        ? "audio/ogg;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+          ? "audio/webm;codecs=opus"
+          : "audio/webm";
+      const mr = new MediaRecorder(stream, { mimeType });
       audioChunksRef.current = [];
       cancelRecordRef.current = false;
       mr.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
       mr.onstop = () => {
         if (cancelRecordRef.current) { stream.getTracks().forEach((t) => t.stop()); return; }
-        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const blob = new Blob(audioChunksRef.current, { type: mimeType });
         setPendingAudio({ url: URL.createObjectURL(blob), durationSec: recordingSecRef.current });
         stream.getTracks().forEach((t) => t.stop());
       };
@@ -535,12 +547,27 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
       const blob = await fetch(snapshot.url).then((r) => r.blob());
       const fd = new FormData();
       fd.append("threadId", selectedId);
-      fd.append("audio", new File([blob], "voice.ogg", { type: "audio/ogg" }));
+      const audioExt = blob.type.includes("ogg") ? "ogg" : "webm";
+      fd.append("audio", new File([blob], `voice.${audioExt}`, { type: blob.type || "audio/webm" }));
       await fetch("/api/social-bot/voice-message", { method: "POST", body: fd });
-      setLocalVoiceMsgs((prev) => prev.map((v) => v.id === localId ? { ...v, sending: false } : v));
-      void loadThread(selectedId);
+      await loadThread(selectedId);
+      setLocalVoiceMsgs((prev) => prev.filter((v) => v.id !== localId));
     } catch {
       setLocalVoiceMsgs((prev) => prev.map((v) => v.id === localId ? { ...v, sending: false, failed: true } : v));
+    }
+  }
+
+  async function sendImage(file: File) {
+    if (!selectedId) return;
+    setSendingImage(true);
+    try {
+      const fd = new FormData();
+      fd.append("threadId", selectedId);
+      fd.append("image", file);
+      const r = await fetch("/api/social-bot/image-message", { method: "POST", body: fd });
+      if (r.ok) void loadThread(selectedId);
+    } finally {
+      setSendingImage(false);
     }
   }
 
@@ -562,6 +589,19 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
   }, [selectedId, loadThread]);
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [payload?.messages]);
+
+  useEffect(() => {
+    const t = window.setInterval(async () => {
+      const r = await fetch("/api/social-bot/threads", { cache: "no-store" });
+      if (r.ok) {
+        const { threads: fresh } = await r.json() as { threads?: import("@/lib/social-bot-types").SocialBotThread[] };
+        if (fresh) setThreads(fresh);
+      }
+    }, 8000);
+    return () => window.clearInterval(t);
+  }, []);
+
+  useEffect(() => { setLocalVoiceMsgs([]); }, [selectedId]);
 
   async function refreshThreads() {
     const r = await fetch("/api/social-bot/workspace", { cache: "no-store" });
@@ -727,7 +767,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                 <div className="relative mt-0.5 shrink-0">
                   <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold",
                     isActive ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-[0_0_12px_rgba(124,58,237,0.4)]" : "bg-gray-100 dark:bg-white/[0.06] text-gray-600 dark:text-white/50")}>
-                    {t.contactName.charAt(0).toUpperCase()}
+                    {displayName(t.contactName).charAt(0).toUpperCase()}
                   </div>
                   {/* Platform icon badge */}
                   <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-white dark:border-[#0d0d20] bg-white dark:bg-[#0d0d20]">
@@ -736,7 +776,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-1">
-                    <p className={cn("truncate text-[13px] font-semibold", isActive ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-white/80")}>{t.contactName}</p>
+                    <p className={cn("truncate text-[13px] font-semibold", isActive ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-white/80")}>{displayName(t.contactName)}</p>
                     <span className="shrink-0 text-[10px] text-gray-400 dark:text-white/20">{formatTime(t.lastMessageAt)}</span>
                   </div>
                   {/* Agent badge if assigned */}
@@ -775,14 +815,14 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                   <div className="flex items-center gap-3">
                     <div className="relative">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/40 to-purple-600/30 text-sm font-bold text-violet-200">
-                        {selected.contactName.charAt(0)}
+                        {displayName(selected.contactName).charAt(0).toUpperCase()}
                       </div>
                       <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white dark:border-[#0c0c1e]" style={{ background: platformConfig[selected.source].color }}>
                         {(() => { const { Icon } = platformConfig[selected.source]; return <Icon className="h-2 w-2 text-white" />; })()}
                       </span>
                     </div>
                     <div>
-                      <p className="text-[14px] font-semibold text-gray-900 dark:text-white">{selected.contactName}</p>
+                      <p className="text-[14px] font-semibold text-gray-900 dark:text-white">{displayName(selected.contactName)}</p>
                       <div className="flex items-center gap-2 mt-0.5">
                         <p className="text-[11px] text-gray-500 dark:text-white/30">{selected.contactHandle}</p>
                         <PlatformBadge source={selected.source} size="xs" />
@@ -816,15 +856,18 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                     const out = msg.direction === "OUTBOUND";
                     const prevMsg = i > 0 ? payload?.messages[i - 1] : null;
                     const showSender = !prevMsg || prevMsg.direction !== msg.direction;
-                    const isAudio = msg.metadata?.mediaType === "audio";
+                    const mediaType = msg.metadata?.mediaType as string | undefined;
+                    const isAudio = mediaType === "audio";
+                    const isImage = mediaType === "image";
                     const mediaId = msg.metadata?.mediaId as string | undefined;
                     const audioUrl = msg.metadata?.audioUrl as string | undefined;
-                    const resolvedAudioSrc = mediaId ? `/api/social-bot/media/${mediaId}` : (audioUrl ?? undefined);
+                    const resolvedAudioSrc = isAudio ? (mediaId ? `/api/social-bot/media/${mediaId}` : audioUrl) : undefined;
+                    const resolvedImageSrc = isImage ? (mediaId ? `/api/social-bot/media/${mediaId}` : (msg.metadata?.imageUrl as string | undefined)) : undefined;
                     return (
                       <div key={msg._id} className={cn("flex gap-2.5", out ? "justify-end" : "justify-start")}>
                         {!out && showSender && (
                           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gray-200 dark:bg-white/[0.07] text-[11px] font-bold text-gray-600 dark:text-white/50">
-                            {selected.contactName.charAt(0)}
+                            {displayName(selected.contactName).charAt(0).toUpperCase()}
                           </div>
                         )}
                         {!out && !showSender && <div className="w-7 shrink-0" />}
@@ -834,17 +877,26 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                           )}
                           {isAudio && resolvedAudioSrc ? (
                             <div className={cn("flex items-center gap-2 rounded-2xl px-3 py-2.5 shadow-md",
-                              out
-                                ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700"
-                                : "rounded-tl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05]")}>
-                              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20">
+                              out ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700" : "rounded-tl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05]")}>                              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20">
                                 <Mic className={cn("h-3 w-3", out ? "text-white" : "text-violet-500")} />
                               </div>
-                              <audio
-                                src={resolvedAudioSrc}
-                                controls
-                                className="h-7 w-36"
+                              <audio src={resolvedAudioSrc} controls className="h-7 w-36" />
+                            </div>
+                          ) : isImage && resolvedImageSrc ? (
+                            <div className={cn("overflow-hidden rounded-2xl shadow-md",
+                              out ? "rounded-tr-sm" : "rounded-tl-sm")}>
+                              <img
+                                src={resolvedImageSrc}
+                                alt="Image"
+                                className="block max-w-[240px] max-h-[320px] w-auto h-auto object-cover cursor-pointer"
+                                onClick={() => window.open(resolvedImageSrc, "_blank")}
                               />
+                              {msg.text && msg.text !== "🖼 Image" && (
+                                <div className={cn("px-3 py-2 text-[12px]",
+                                  out ? "bg-gradient-to-br from-violet-600 to-purple-700 text-white" : "bg-white dark:bg-white/[0.05] text-gray-800 dark:text-white/80")}>
+                                  {msg.text.replace(/^[🖼️]+\s*/, "")}
+                                </div>
+                              )}
                             </div>
                           ) : (
                             <div className={cn("rounded-2xl px-4 py-2.5 text-[13px] leading-[1.7]",
@@ -958,6 +1010,11 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                           placeholder={selected.mode === "AI" ? "AI is handling this…" : "Type a reply… (Enter to send)"}
                           className="flex-1 resize-none bg-transparent py-2.5 pr-2 text-[13px] text-gray-900 dark:text-white outline-none placeholder:text-gray-400 dark:placeholder:text-white/20 min-h-[40px] max-h-[120px] overflow-y-auto"
                         />
+                        <label title="Send image" className="shrink-0 self-end p-2.5 pb-[11px] text-gray-400 dark:text-white/25 hover:text-violet-500 dark:hover:text-violet-400 transition cursor-pointer">
+                          {sendingImage ? <Loader2 className="h-[18px] w-[18px] animate-spin" /> : <Paperclip className="h-[18px] w-[18px]" />}
+                          <input ref={imageInputRef} type="file" accept="image/*" className="sr-only"
+                            onChange={(e) => { const f = e.target.files?.[0]; if (f) void sendImage(f); e.target.value = ""; }} />
+                        </label>
                         <button type="button" onClick={() => void startRecording()}
                           title="Voice message"
                           className="shrink-0 self-end p-2.5 pb-[11px] text-gray-400 dark:text-white/25 hover:text-violet-500 dark:hover:text-violet-400 transition">
