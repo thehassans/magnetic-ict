@@ -12,19 +12,22 @@ function normalizeText(value: unknown) {
   return typeof value === "string" ? value : "";
 }
 
-async function fetchPageScopedName(psid: string, accessToken: string): Promise<string> {
-  if (!accessToken || !psid) return psid;
+async function fetchPageScopedProfile(psid: string, accessToken: string): Promise<{ name: string; avatarUrl: string }> {
+  if (!accessToken || !psid) return { name: psid, avatarUrl: "" };
   try {
     const res = await fetch(
-      `https://graph.facebook.com/v25.0/${psid}?fields=name&access_token=${encodeURIComponent(accessToken)}`,
+      `https://graph.facebook.com/v25.0/${psid}?fields=name,username,profile_pic,profile_picture_url&access_token=${encodeURIComponent(accessToken)}`,
       { signal: AbortSignal.timeout(4000) }
     );
     if (res.ok) {
-      const data = (await res.json()) as { name?: string };
-      return data.name?.trim() || psid;
+      const data = (await res.json()) as { name?: string; username?: string; profile_pic?: string; profile_picture_url?: string };
+      return {
+        name: data.name?.trim() || data.username?.trim() || psid,
+        avatarUrl: data.profile_pic?.trim() || data.profile_picture_url?.trim() || ""
+      };
     }
   } catch { /* ignore - fall back to psid */ }
-  return psid;
+  return { name: psid, avatarUrl: "" };
 }
 
 function isValidMetaSignature(signature: string | null, rawBody: string, appSecret: string) {
@@ -314,13 +317,14 @@ export async function POST(request: Request) {
         const systemToken2 = perUserInt
           ? ""
           : (cfg.metaMessengerPageId && entryId === cfg.metaMessengerPageId ? cfg.metaMessengerPageToken : cfg.metaInstagramPageToken) ?? "";
-        const contactName = await fetchPageScopedName(senderId, perUserToken || systemToken2);
+        const contactProfile = await fetchPageScopedProfile(senderId, perUserToken || systemToken2);
+        const contactName = contactProfile.name;
 
         let ingestText: string;
         let ingestMeta: Record<string, unknown>;
         if (hasText) {
           ingestText = msg.message!.text!;
-          ingestMeta = { webhook: "meta" };
+          ingestMeta = { webhook: "meta", avatarUrl: contactProfile.avatarUrl };
         } else if (audioAttachment) {
           const rawAudioUrl = audioAttachment.payload?.url ?? "";
           let storedAudioUrl = rawAudioUrl;
@@ -335,13 +339,13 @@ export async function POST(request: Request) {
             } catch { /* keep original URL as fallback */ }
           }
           ingestText = "\uD83C\uDF99 Voice message";
-          ingestMeta = { webhook: "meta", mediaType: "audio", audioUrl: storedAudioUrl };
+          ingestMeta = { webhook: "meta", mediaType: "audio", audioUrl: storedAudioUrl, avatarUrl: contactProfile.avatarUrl };
         } else if (imageAttachment) {
           ingestText = "\uD83D\uDDBC Image";
-          ingestMeta = { webhook: "meta", mediaType: "image", imageUrl: imageAttachment.payload?.url ?? "" };
+          ingestMeta = { webhook: "meta", mediaType: "image", imageUrl: imageAttachment.payload?.url ?? "", avatarUrl: contactProfile.avatarUrl };
         } else {
           ingestText = "\uD83C\uDFA5 Video";
-          ingestMeta = { webhook: "meta", mediaType: "video", videoUrl: videoAttachment?.payload?.url ?? "" };
+          ingestMeta = { webhook: "meta", mediaType: "video", videoUrl: videoAttachment?.payload?.url ?? "", avatarUrl: contactProfile.avatarUrl };
         }
 
         if (perUserInt?.userId) {

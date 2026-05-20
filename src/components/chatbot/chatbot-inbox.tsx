@@ -136,6 +136,33 @@ function formatTime(iso: string) {
   return d.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
+function CustomerAvatar({ thread, className, active }: { thread: Pick<SocialBotThread, "contactName" | "avatarUrl">; className: string; active?: boolean }) {
+  const [failed, setFailed] = useState(false);
+  const name = displayNameForAvatar(thread.contactName);
+  if (thread.avatarUrl && !failed) {
+    return (
+      <img
+        src={thread.avatarUrl}
+        alt={name}
+        className={cn(className, "object-cover")}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return (
+    <div className={cn(className, "flex items-center justify-center font-bold",
+      active ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-[0_0_12px_rgba(124,58,237,0.4)]" : "bg-gray-100 dark:bg-white/[0.06] text-gray-600 dark:text-white/50")}>
+      {name.charAt(0).toUpperCase()}
+    </div>
+  );
+}
+
+function displayNameForAvatar(name: string) {
+  const n = name?.trim() ?? "";
+  if (/^\d{8,}$/.test(n)) return `User ···${n.slice(-4)}`;
+  return n || "Unknown";
+}
+
 /* ─── Agent panel ─────────────────────────────────────────────────── */
 function AgentPanel({
   agents,
@@ -570,9 +597,9 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recordingSecRef = useRef(0);
   const cancelRecordRef = useRef(false);
-  const imageInputRef = useRef<HTMLInputElement>(null);
-  const [sendingImage, setSendingImage] = useState(false);
-  const [localImageMsgs, setLocalImageMsgs] = useState<Array<{ id: string; url: string; name: string; time: string; sending?: boolean; failed?: boolean }>>([]);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
+  const [sendingMedia, setSendingMedia] = useState(false);
+  const [localMediaMsgs, setLocalMediaMsgs] = useState<Array<{ id: string; url: string; name: string; mediaType: "image" | "video"; time: string; sending?: boolean; failed?: boolean; error?: string }>>([]);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -656,7 +683,11 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
       fd.append("threadId", selectedId);
       const audioExt = blob.type.includes("ogg") ? "ogg" : "webm";
       fd.append("audio", new File([blob], `voice.${audioExt}`, { type: blob.type || "audio/webm" }));
-      await fetch("/api/social-bot/voice-message", { method: "POST", body: fd });
+      const r = await fetch("/api/social-bot/voice-message", { method: "POST", body: fd });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({})) as { error?: string };
+        throw new Error(err.error ?? "Voice send failed.");
+      }
       await loadThread(selectedId);
       setLocalVoiceMsgs((prev) => prev.filter((v) => v.id !== localId));
     } catch {
@@ -664,29 +695,41 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
     }
   }
 
-  async function sendImage(file: File) {
-    if (!selectedId) return;
-    const objUrl = URL.createObjectURL(file);
-    const localId = `img-${Date.now()}`;
+  async function sendMediaFiles(files: File[]) {
+    if (!selectedId || files.length === 0) return;
     const localTime = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-    setLocalImageMsgs((prev) => [...prev, { id: localId, url: objUrl, name: file.name, time: localTime, sending: true }]);
-    setSendingImage(true);
+    const locals = files.map((file, idx) => ({
+      id: `media-${Date.now()}-${idx}`,
+      url: URL.createObjectURL(file),
+      name: file.name,
+      mediaType: file.type.startsWith("video/") ? "video" as const : "image" as const,
+      time: localTime,
+      sending: true
+    }));
+    setLocalMediaMsgs((prev) => [...prev, ...locals]);
+    setSendingMedia(true);
     try {
       const fd = new FormData();
       fd.append("threadId", selectedId);
-      fd.append("image", file);
-      const r = await fetch("/api/social-bot/image-message", { method: "POST", body: fd });
+      files.forEach((file) => fd.append("media", file));
+      const r = await fetch("/api/social-bot/media-message", { method: "POST", body: fd });
+      const data = await r.json().catch(() => ({})) as { results?: Array<{ ok: boolean; name: string; error?: string }>; error?: string };
       if (r.ok) {
         await loadThread(selectedId);
-        setLocalImageMsgs((prev) => prev.filter((v) => v.id !== localId));
-        URL.revokeObjectURL(objUrl);
+        const failedNames = new Set((data.results ?? []).filter((item) => !item.ok).map((item) => item.name));
+        setLocalMediaMsgs((prev) => prev.flatMap((v) => {
+          if (!locals.some((local) => local.id === v.id)) return [v];
+          if (failedNames.has(v.name)) return [{ ...v, sending: false, failed: true, error: data.results?.find((item) => item.name === v.name)?.error }];
+          URL.revokeObjectURL(v.url);
+          return [];
+        }));
       } else {
-        setLocalImageMsgs((prev) => prev.map((v) => v.id === localId ? { ...v, sending: false, failed: true } : v));
+        setLocalMediaMsgs((prev) => prev.map((v) => locals.some((local) => local.id === v.id) ? { ...v, sending: false, failed: true, error: data.error ?? "Send failed." } : v));
       }
-    } catch {
-      setLocalImageMsgs((prev) => prev.map((v) => v.id === localId ? { ...v, sending: false, failed: true } : v));
+    } catch (error) {
+      setLocalMediaMsgs((prev) => prev.map((v) => locals.some((local) => local.id === v.id) ? { ...v, sending: false, failed: true, error: error instanceof Error ? error.message : "Send failed." } : v));
     } finally {
-      setSendingImage(false);
+      setSendingMedia(false);
     }
   }
 
@@ -728,7 +771,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
     return () => window.clearInterval(t);
   }, []);
 
-  useEffect(() => { setLocalVoiceMsgs([]); setLocalImageMsgs([]); }, [selectedId]);
+  useEffect(() => { setLocalVoiceMsgs([]); setLocalMediaMsgs([]); }, [selectedId]);
 
   async function refreshThreads() {
     const r = await fetch("/api/social-bot/workspace", { cache: "no-store" });
@@ -947,10 +990,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                 {isActive && <span className="absolute left-0 top-3 bottom-3 w-0.5 rounded-r bg-violet-500" />}
                 {/* Avatar */}
                 <div className="relative mt-0.5 shrink-0">
-                  <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold",
-                    isActive ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-[0_0_12px_rgba(124,58,237,0.4)]" : "bg-gray-100 dark:bg-white/[0.06] text-gray-600 dark:text-white/50")}>
-                    {displayName(t.contactName).charAt(0).toUpperCase()}
-                  </div>
+                  <CustomerAvatar thread={t} active={isActive} className="h-9 w-9 rounded-xl text-sm" />
                   {/* Platform icon badge */}
                   <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-white dark:border-[#0d0d20] bg-white dark:bg-[#0d0d20]">
                     <Icon className="h-2.5 w-2.5" style={{ color }} />
@@ -1028,9 +1068,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                       <ChevronDown className="h-5 w-5 rotate-90" />
                     </button>
                     <div className="relative">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/40 to-purple-600/30 text-sm font-bold text-violet-200">
-                        {displayName(selected.contactName).charAt(0).toUpperCase()}
-                      </div>
+                      <CustomerAvatar thread={selected} active className="h-10 w-10 rounded-xl text-sm" />
                       <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white dark:border-[#0c0c1e]" style={{ background: platformConfig[selected.source].color }}>
                         {(() => { const { Icon } = platformConfig[selected.source]; return <Icon className="h-2 w-2 text-white" />; })()}
                       </span>
@@ -1092,14 +1130,14 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                     const phParam = phoneHint ? `?ph=${encodeURIComponent(phoneHint)}` : "";
                     const audioUrl = msg.metadata?.audioUrl as string | undefined;
                     const resolvedAudioSrc = isAudio ? (audioUrl || (mediaId ? `/api/social-bot/media/${mediaId}${phParam}` : undefined)) : undefined;
-                    const resolvedImageSrc = isImage ? (mediaId ? `/api/social-bot/media/${mediaId}${phParam}` : (msg.metadata?.imageUrl as string | undefined)) : undefined;
-                    const resolvedVideoSrc = isVideo ? (mediaId ? `/api/social-bot/media/${mediaId}${phParam}` : (msg.metadata?.videoUrl as string | undefined)) : undefined;
+                    const imageUrl = msg.metadata?.imageUrl as string | undefined;
+                    const videoUrl = msg.metadata?.videoUrl as string | undefined;
+                    const resolvedImageSrc = isImage ? (imageUrl || (mediaId ? `/api/social-bot/media/${mediaId}${phParam}` : undefined)) : undefined;
+                    const resolvedVideoSrc = isVideo ? (videoUrl || (mediaId ? `/api/social-bot/media/${mediaId}${phParam}` : undefined)) : undefined;
                     return (
                       <div key={msg._id} className={cn("flex gap-2", out ? "justify-end" : "justify-start", showSender ? "mt-3" : "mt-0.5")}>
                         {!out && showSender && (
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-white/[0.1] text-[12px] font-bold text-gray-600 dark:text-white/60 self-end mb-1">
-                            {displayName(selected.contactName).charAt(0).toUpperCase()}
-                          </div>
+                          <CustomerAvatar thread={selected} className="h-8 w-8 shrink-0 rounded-full text-[12px] self-end mb-1" />
                         )}
                         {!out && !showSender && <div className="w-8 shrink-0" />}
                         <div className="flex max-w-[65%] flex-col gap-0.5">
@@ -1216,16 +1254,20 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                       </div>
                     </div>
                   ))}
-                  {localImageMsgs.map((im) => (
+                  {localMediaMsgs.map((im) => (
                     <div key={im.id} className="flex justify-end">
                       <div className="flex max-w-[65%] flex-col gap-0.5">
                         <div className={cn("relative overflow-hidden rounded-2xl rounded-br-sm shadow-[0_4px_24px_rgba(124,58,237,0.3)]", im.failed && "opacity-60")}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={im.url}
-                            alt={im.name}
-                            className="block max-w-[240px] max-h-[320px] w-auto h-auto object-cover"
-                          />
+                          {im.mediaType === "video" ? (
+                            <video src={im.url} controls className="block max-w-[240px] max-h-[320px] w-auto h-auto bg-black" />
+                          ) : (
+                            <img
+                              src={im.url}
+                              alt={im.name}
+                              className="block max-w-[240px] max-h-[320px] w-auto h-auto object-cover cursor-zoom-in"
+                              onClick={() => setLightboxSrc(im.url)}
+                            />
+                          )}
                           {im.sending && (
                             <div className="absolute inset-0 flex items-center justify-center bg-black/25">
                               <Loader2 className="h-6 w-6 text-white animate-spin" />
@@ -1233,6 +1275,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                           )}
                         </div>
                         <div className="flex items-center justify-end gap-1">
+                          {im.failed && im.error && <span className="max-w-[180px] truncate text-[10px] text-red-400">{im.error}</span>}
                           <p className="text-[10px] text-gray-400 dark:text-white/20">{im.time}</p>
                           {im.failed ? <X className="h-3 w-3 text-red-400" /> : im.sending ? <Clock className="h-3 w-3 text-gray-300 dark:text-white/20" /> : <Check className="h-3 w-3 text-gray-400 dark:text-white/35" />}
                         </div>
@@ -1345,10 +1388,10 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                           placeholder={selected.mode === "AI" ? "AI is handling this…" : "Type a reply… (Enter to send)"}
                           className="flex-1 resize-none bg-transparent py-2.5 pr-2 text-[13px] text-gray-900 dark:text-white outline-none placeholder:text-gray-400 dark:placeholder:text-white/20 min-h-[40px] max-h-[120px] overflow-y-auto"
                         />
-                        <label title="Send image" className="shrink-0 self-end p-2.5 pb-[11px] text-gray-400 dark:text-white/25 hover:text-violet-500 dark:hover:text-violet-400 transition cursor-pointer">
-                          {sendingImage ? <Loader2 className="h-[18px] w-[18px] animate-spin" /> : <Paperclip className="h-[18px] w-[18px]" />}
-                          <input ref={imageInputRef} type="file" accept="image/*" className="sr-only"
-                            onChange={(e) => { const f = e.target.files?.[0]; if (f) void sendImage(f); e.target.value = ""; }} />
+                        <label title="Send photos or videos" className="shrink-0 self-end p-2.5 pb-[11px] text-gray-400 dark:text-white/25 hover:text-violet-500 dark:hover:text-violet-400 transition cursor-pointer">
+                          {sendingMedia ? <Loader2 className="h-[18px] w-[18px] animate-spin" /> : <Paperclip className="h-[18px] w-[18px]" />}
+                          <input ref={mediaInputRef} type="file" accept="image/*,video/*" multiple className="sr-only"
+                            onChange={(e) => { const files = Array.from(e.target.files ?? []); if (files.length) void sendMediaFiles(files); e.target.value = ""; }} />
                         </label>
                         <motion.button type="button" onClick={() => void startRecording()}
                           title="Voice message"

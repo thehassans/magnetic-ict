@@ -736,6 +736,7 @@ export async function ingestInboundMessage({
 }) {
   const now = new Date().toISOString();
   const existing = await getSocialBotThreadByExternalId(userId, source, externalThreadId);
+  const avatarUrl = typeof metadata?.avatarUrl === "string" ? metadata.avatarUrl.trim() : "";
   const thread: SocialBotThread = existing ?? {
     _id: createSocialBotId("sbt"),
     userId,
@@ -744,6 +745,7 @@ export async function ingestInboundMessage({
     contactName,
     contactHandle,
     mode: "MANUAL",
+    avatarUrl: avatarUrl || null,
     lastMessagePreview: text,
     lastMessageAt: now,
     unreadCount: 1,
@@ -766,6 +768,7 @@ export async function ingestInboundMessage({
     thread.contactName = raw && /^\d+$/.test(raw.trim()) ? `+${raw.trim()}` : (raw || contactHandle);
   }
   thread.contactHandle = contactHandle || thread.contactHandle;
+  if (avatarUrl) thread.avatarUrl = avatarUrl;
   thread.lastMessagePreview = text;
   thread.lastMessageAt = now;
   thread.unreadCount = (existing?.unreadCount ?? 0) + 1;

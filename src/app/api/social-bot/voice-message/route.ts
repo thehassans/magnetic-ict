@@ -1,4 +1,9 @@
 import { NextResponse } from "next/server";
+import { spawn } from "node:child_process";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import ffmpegPath from "ffmpeg-static";
 import { getRequiredUserSession, userHasMagneticSocialBotAccess, getWorkspaceContext } from "@/lib/social-bot-access";
 import { appendMessage } from "@/lib/social-bot-service";
 import { createSocialBotId, socialBotCollections, findOneMongoDocument, findMongoDocuments, upsertMongoDocument } from "@/lib/social-bot-db";
@@ -6,6 +11,39 @@ import { decryptSecret } from "@/lib/social-bot-rag";
 import type { SocialBotThread, SocialBotIntegration } from "@/lib/social-bot-types";
 
 export const runtime = "nodejs";
+
+function audioExt(mimeType: string) {
+  if (mimeType.includes("mpeg") || mimeType.includes("mp3")) return "mp3";
+  if (mimeType.includes("ogg")) return "ogg";
+  if (mimeType.includes("mp4") || mimeType.includes("m4a")) return "m4a";
+  if (mimeType.includes("wav")) return "wav";
+  return "webm";
+}
+
+async function transcodeToMp3(buffer: ArrayBuffer, mimeType: string) {
+  const bin = ffmpegPath;
+  if (!bin) return null;
+  const dir = path.join(tmpdir(), `magnetic-voice-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+  await mkdir(dir, { recursive: true });
+  const input = path.join(dir, `input.${audioExt(mimeType)}`);
+  const output = path.join(dir, "voice.mp3");
+  try {
+    await writeFile(input, Buffer.from(buffer));
+    await new Promise<void>((resolve, reject) => {
+      const child = spawn(bin, ["-y", "-i", input, "-vn", "-acodec", "libmp3lame", "-ar", "44100", "-ac", "1", "-b:a", "96k", output]);
+      let err = "";
+      child.stderr.on("data", (chunk: Buffer) => { err += String(chunk); });
+      child.on("error", reject);
+      child.on("close", (code: number | null) => code === 0 ? resolve() : reject(new Error(err || `ffmpeg exited with ${code}`)));
+    });
+    return await readFile(output);
+  } catch (error) {
+    console.warn("voice transcode failed", error);
+    return null;
+  } finally {
+    await rm(dir, { recursive: true, force: true }).catch(() => null);
+  }
+}
 
 export async function POST(request: Request) {
   const session = await getRequiredUserSession();
@@ -43,8 +81,13 @@ export async function POST(request: Request) {
     }
 
     const accessToken = decryptSecret(integration.accessTokenEncrypted);
-    const audioBuffer = await audioFile.arrayBuffer();
-    const audioBlob = new Blob([audioBuffer], { type: audioFile.type || "audio/ogg" });
+    const originalAudioBuffer = await audioFile.arrayBuffer();
+    const originalMime = audioFile.type || "audio/webm";
+    const mp3Buffer = await transcodeToMp3(originalAudioBuffer, originalMime);
+    const audioBuffer = mp3Buffer ?? Buffer.from(originalAudioBuffer);
+    const sendMime = mp3Buffer ? "audio/mpeg" : originalMime;
+    const sendName = mp3Buffer ? "voice.mp3" : `voice.${audioExt(originalMime)}`;
+    const audioBlob = new Blob([new Uint8Array(audioBuffer)], { type: sendMime });
     const now = new Date().toISOString();
     let msgMetadata: Record<string, unknown> = { mediaType: "audio" };
 
@@ -54,8 +97,8 @@ export async function POST(request: Request) {
       // 1. Upload audio to WhatsApp Media API
       const uploadForm = new FormData();
       uploadForm.append("messaging_product", "whatsapp");
-      uploadForm.append("type", "audio/ogg");
-      uploadForm.append("file", new File([audioBlob], "voice.ogg", { type: "audio/ogg" }));
+      uploadForm.append("type", sendMime);
+      uploadForm.append("file", new File([audioBlob], sendName, { type: sendMime }));
 
       const uploadRes = await fetch(`https://graph.facebook.com/v25.0/${phoneId}/media`, {
         method: "POST",
@@ -83,22 +126,23 @@ export async function POST(request: Request) {
         })
       });
 
-      const sendPayload = (await sendRes.json().catch(() => ({}))) as { message_id?: string; error?: { message?: string } };
+      const sendPayload = (await sendRes.json().catch(() => ({}))) as { message_id?: string; messages?: Array<{ id?: string }>; error?: { message?: string } };
       if (!sendRes.ok) {
         return NextResponse.json({ error: sendPayload.error?.message ?? "Send failed." }, { status: 502 });
       }
-      const audioUrlWa = `data:audio/ogg;base64,${Buffer.from(audioBuffer).toString("base64")}`;
-      msgMetadata = { mediaType: "audio", mediaId, audioUrl: audioUrlWa, wamid: sendPayload.message_id ?? null };
+      const audioUrlWa = `data:${sendMime};base64,${Buffer.from(audioBuffer).toString("base64")}`;
+      msgMetadata = { mediaType: "audio", mediaId, audioUrl: audioUrlWa, mimeType: sendMime, wamid: sendPayload.messages?.[0]?.id ?? sendPayload.message_id ?? null };
 
     } else {
       // Messenger / Instagram — use multipart attachment upload
       const pageId = integration.pageId;
       const sendForm = new FormData();
       sendForm.append("recipient", JSON.stringify({ id: thread.externalThreadId }));
+      sendForm.append("messaging_type", "RESPONSE");
       sendForm.append("message", JSON.stringify({
-        attachment: { type: "audio", payload: { is_reusable: true } }
+        attachment: { type: "audio", payload: { is_reusable: false } }
       }));
-      sendForm.append("filedata", new File([audioBlob], "voice.ogg", { type: "audio/ogg" }));
+      sendForm.append("filedata", new File([audioBlob], sendName, { type: sendMime }));
 
       const sendUrl = pageId
         ? `https://graph.facebook.com/v25.0/${pageId}/messages?access_token=${encodeURIComponent(accessToken)}`
@@ -109,8 +153,8 @@ export async function POST(request: Request) {
       if (!sendRes.ok) {
         return NextResponse.json({ error: sendPayload.error?.message ?? "Send failed." }, { status: 502 });
       }
-      const audioUrl = `data:audio/ogg;base64,${Buffer.from(audioBuffer).toString("base64")}`;
-      msgMetadata = { mediaType: "audio", audioUrl, wamid: sendPayload.message_id ?? null };
+      const audioUrl = `data:${sendMime};base64,${Buffer.from(audioBuffer).toString("base64")}`;
+      msgMetadata = { mediaType: "audio", audioUrl, mimeType: sendMime, wamid: sendPayload.message_id ?? null };
     }
 
     const msg = {

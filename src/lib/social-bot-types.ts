@@ -76,6 +76,7 @@ export type SocialBotThread = {
   assignedAgentId?: string | null;
   assignedAgentName?: string | null;
   autoAssign?: boolean;
+  avatarUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 };
