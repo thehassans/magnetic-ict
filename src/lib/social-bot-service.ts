@@ -17,7 +17,8 @@ import {
   socialBotCollections,
   upsertMongoDocument
 } from "@/lib/social-bot-db";
-import { splitIntoChunks, embedText, encryptSecret, generateSocialReply, sendMetaReply } from "@/lib/social-bot-rag";
+import { splitIntoChunks, embedText, encryptSecret, generateSocialReply, sendMetaReply, decryptSecret, fetchWhatsAppAudioBuffer, transcribeAudioBuffer, generateSpeechBuffer, sendWhatsAppVoiceReply, sendMessengerVoiceReply } from "@/lib/social-bot-rag";
+import { getPlatformSettings } from "@/lib/platform-settings";
 import type {
   SocialBotDocument,
   SocialBotIntegration,
@@ -482,6 +483,150 @@ export async function sendAgentMessage(userId: string, input: unknown) {
   return getThreadWithMessages(userId, thread._id);
 }
 
+async function maybeGenerateAiVoiceReply(
+  thread: SocialBotThread,
+  inboundMsg: SocialBotMessage,
+  integrations: SocialBotIntegration[],
+  overrideSend?: (replyText: string) => Promise<void>
+): Promise<SocialBotMessage | null> {
+  try {
+    const settings = await getPlatformSettings();
+    const openAiKey = settings.geminiConfig.openAiApiKey.trim();
+
+    // ── Get audio buffer ───────────────────────────────────────────────
+    const mediaId = inboundMsg.metadata?.mediaId as string | undefined;
+    const audioUrl = inboundMsg.metadata?.audioUrl as string | undefined;
+    let audioBuffer: Buffer | null = null;
+    let audioMimeType = "audio/ogg";
+
+    if (mediaId && thread.source === "WHATSAPP") {
+      const integration = integrations.find((i) => i.channel === "WHATSAPP" && i.status === "CONNECTED");
+      if (integration) {
+        const result = await fetchWhatsAppAudioBuffer(mediaId, decryptSecret(integration.accessTokenEncrypted));
+        if (result) { audioBuffer = result.buffer; audioMimeType = result.mimeType; }
+      }
+    } else if (audioUrl) {
+      if (audioUrl.startsWith("data:")) {
+        const commaIdx = audioUrl.indexOf(",");
+        if (commaIdx !== -1) {
+          const mimeMatch = audioUrl.slice(0, commaIdx).match(/data:([^;]+)/);
+          audioMimeType = mimeMatch?.[1] ?? "audio/mpeg";
+          audioBuffer = Buffer.from(audioUrl.slice(commaIdx + 1), "base64");
+        }
+      } else {
+        try {
+          const res = await fetch(audioUrl, { signal: AbortSignal.timeout(15000) });
+          if (res.ok) {
+            audioBuffer = Buffer.from(await res.arrayBuffer());
+            audioMimeType = res.headers.get("content-type") ?? "audio/mpeg";
+          }
+        } catch { /* ignore */ }
+      }
+    }
+
+    if (!audioBuffer || !openAiKey) return null;
+
+    // ── Transcribe ─────────────────────────────────────────────────────
+    const transcription = await transcribeAudioBuffer(audioBuffer, audioMimeType, openAiKey);
+    if (!transcription?.transcript) return null;
+
+    // ── Generate text reply ────────────────────────────────────────────
+    const [profile, chunks, messages] = await Promise.all([
+      getSocialBotProfile(thread.userId),
+      getSocialBotChunks(thread.userId),
+      getSocialBotMessages(thread.userId, thread._id)
+    ]);
+    const replyText = await generateSocialReply({
+      profile,
+      thread,
+      messages,
+      chunks,
+      question: transcription.transcript
+    });
+
+    // ── Convert to speech ──────────────────────────────────────────────
+    const speech = await generateSpeechBuffer(replyText, transcription.language, settings.ttsConfig, openAiKey);
+    if (!speech) {
+      // Fall back to text reply if TTS not configured
+      return null;
+    }
+
+    const base64Audio = `data:${speech.mimeType};base64,${speech.buffer.toString("base64")}`;
+    const now = new Date().toISOString();
+    let deliveryStatus: SocialBotMessage["deliveryStatus"] = thread.externalThreadId.startsWith("demo_") ? "SENT" : "PENDING";
+    let voiceMeta: Record<string, unknown> = { mediaType: "audio", audioUrl: base64Audio };
+
+    // ── Send voice message ─────────────────────────────────────────────
+    if (!thread.externalThreadId.startsWith("demo_")) {
+      if (thread.source === "WHATSAPP") {
+        const integration = integrations.find((i) => i.channel === "WHATSAPP" && i.status === "CONNECTED");
+        if (integration) {
+          const result = await sendWhatsAppVoiceReply(
+            thread.externalThreadId,
+            integration.phoneNumberId,
+            decryptSecret(integration.accessTokenEncrypted),
+            speech.buffer,
+            speech.mimeType
+          );
+          if (result) {
+            deliveryStatus = "SENT";
+            voiceMeta = { mediaType: "audio", mediaId: result.mediaId, audioUrl: base64Audio, wamid: result.wamid };
+          } else {
+            deliveryStatus = "FAILED";
+          }
+        }
+      } else {
+        const integration = integrations.find((i) => i.channel === thread.source && i.status === "CONNECTED");
+        const accessToken = integration ? decryptSecret(integration.accessTokenEncrypted) : "";
+        if (overrideSend) {
+          await overrideSend(replyText).catch(() => null);
+          deliveryStatus = "SENT";
+        } else if (accessToken) {
+          const result = await sendMessengerVoiceReply(
+            thread.externalThreadId,
+            integration?.pageId ?? null,
+            accessToken,
+            speech.buffer
+          );
+          if (result) {
+            deliveryStatus = "SENT";
+            voiceMeta = { mediaType: "audio", audioUrl: base64Audio, wamid: result.wamid };
+          } else {
+            deliveryStatus = "FAILED";
+          }
+        }
+      }
+    }
+
+    const reply: SocialBotMessage = {
+      _id: createSocialBotId("sbm"),
+      userId: thread.userId,
+      threadId: thread._id,
+      source: thread.source,
+      direction: "OUTBOUND",
+      role: "ASSISTANT",
+      text: "🎤 Voice message",
+      timestamp: now,
+      deliveryStatus,
+      metadata: voiceMeta
+    };
+
+    await appendMessage(reply);
+    await saveThread({
+      ...thread,
+      lastMessagePreview: "🎤 Voice message",
+      lastMessageAt: now,
+      unreadCount: 0,
+      updatedAt: now
+    });
+
+    return reply;
+  } catch (err) {
+    console.error("[AI voice reply]", err);
+    return null;
+  }
+}
+
 export async function maybeGenerateAiReply(
   thread: SocialBotThread,
   overrideSend?: (replyText: string) => Promise<void>
@@ -503,11 +648,15 @@ export async function maybeGenerateAiReply(
     return null;
   }
 
-  // Don't auto-reply to media messages — the AI only sees the emoji placeholder,
-  // not the actual audio/image content, which produces a confusing text response.
+  // Don't auto-reply to image/video — AI can't see content.
+  // For audio, attempt AI voice reply pipeline.
   const inboundMediaType = latestInbound.metadata?.mediaType as string | undefined;
-  if (inboundMediaType && ["audio", "image", "video"].includes(inboundMediaType)) {
+  if (inboundMediaType === "image" || inboundMediaType === "video") {
     return null;
+  }
+
+  if (inboundMediaType === "audio") {
+    return maybeGenerateAiVoiceReply(thread, latestInbound, integrations, overrideSend);
   }
 
   const replyText = await generateSocialReply({

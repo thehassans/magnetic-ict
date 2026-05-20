@@ -87,7 +87,8 @@ export async function POST(request: Request) {
       if (!sendRes.ok) {
         return NextResponse.json({ error: sendPayload.error?.message ?? "Send failed." }, { status: 502 });
       }
-      msgMetadata = { mediaType: "audio", mediaId, wamid: sendPayload.message_id ?? null };
+      const audioUrlWa = `data:audio/ogg;base64,${Buffer.from(audioBuffer).toString("base64")}`;
+      msgMetadata = { mediaType: "audio", mediaId, audioUrl: audioUrlWa, wamid: sendPayload.message_id ?? null };
 
     } else {
       // Messenger / Instagram — use multipart attachment upload

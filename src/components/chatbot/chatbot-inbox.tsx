@@ -732,16 +732,41 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
 
   async function send() {
     if (!selectedId || !text.trim()) return;
-    setSending(true);
-    const r = await fetch("/api/social-bot/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ threadId: selectedId, text })
+    const msgText = text;
+    const curSelectedId = selectedId;
+    setText("");
+    textareaRef.current?.focus();
+    const optimisticId = `opt-${Date.now()}`;
+    setPayload((p) => {
+      if (!p) return p;
+      const optimistic: SocialBotMessage = {
+        _id: optimisticId,
+        userId: "",
+        threadId: curSelectedId,
+        source: p.thread?.source ?? "WHATSAPP",
+        direction: "OUTBOUND",
+        role: "AGENT",
+        text: msgText,
+        timestamp: new Date().toISOString(),
+        deliveryStatus: "PENDING",
+        metadata: {}
+      };
+      return { ...p, messages: [...p.messages, optimistic] };
     });
-    if (r.ok) {
-      setPayload(await r.json() as ThreadPayload);
-      setText("");
-      textareaRef.current?.focus();
+    setSending(true);
+    try {
+      const r = await fetch("/api/social-bot/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ threadId: curSelectedId, text: msgText })
+      });
+      if (r.ok) {
+        setPayload(await r.json() as ThreadPayload);
+      } else {
+        setPayload((p) => p ? { ...p, messages: p.messages.filter((m) => m._id !== optimisticId) } : null);
+      }
+    } catch {
+      setPayload((p) => p ? { ...p, messages: p.messages.filter((m) => m._id !== optimisticId) } : null);
     }
     setSending(false);
   }
@@ -966,8 +991,25 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
       </div>
 
           {/* ── Chat area ── */}
-          {/* Mobile back button */}
-          {selected ? (
+          {selectedId && !payload ? (
+            <div className="flex min-w-0 flex-1 flex-col bg-gray-50 dark:bg-[#07070f]">
+              <div className="flex h-[57px] shrink-0 items-center gap-3 border-b border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1e] px-5">
+                <div className="h-9 w-9 rounded-xl bg-gray-200 dark:bg-white/[0.07] animate-pulse" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-3 w-32 rounded-full bg-gray-200 dark:bg-white/[0.07] animate-pulse" />
+                  <div className="h-2.5 w-20 rounded-full bg-gray-100 dark:bg-white/[0.04] animate-pulse" />
+                </div>
+              </div>
+              <div className="flex-1 space-y-3 px-4 py-5">
+                {[0,1,2,3].map((i) => (
+                  <div key={i} className={cn("flex gap-2", i % 2 === 0 ? "justify-start" : "justify-end")}>
+                    {i % 2 === 0 && <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-white/[0.07] animate-pulse shrink-0" />}
+                    <div className={cn("h-8 rounded-2xl bg-gray-200 dark:bg-white/[0.07] animate-pulse", i % 2 === 0 ? "w-48" : "w-36")} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : selected ? (
             <>
               <div className="flex min-w-0 flex-1 flex-col bg-gray-50 dark:bg-[#07070f]">
                 {/* Chat header */}
@@ -1041,7 +1083,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                     const phoneHint = msg.metadata?.phoneNumberId as string | undefined;
                     const phParam = phoneHint ? `?ph=${encodeURIComponent(phoneHint)}` : "";
                     const audioUrl = msg.metadata?.audioUrl as string | undefined;
-                    const resolvedAudioSrc = isAudio ? (mediaId ? `/api/social-bot/media/${mediaId}${phParam}` : audioUrl) : undefined;
+                    const resolvedAudioSrc = isAudio ? (audioUrl || (mediaId ? `/api/social-bot/media/${mediaId}${phParam}` : undefined)) : undefined;
                     const resolvedImageSrc = isImage ? (mediaId ? `/api/social-bot/media/${mediaId}${phParam}` : (msg.metadata?.imageUrl as string | undefined)) : undefined;
                     const resolvedVideoSrc = isVideo ? (mediaId ? `/api/social-bot/media/${mediaId}${phParam}` : (msg.metadata?.videoUrl as string | undefined)) : undefined;
                     return (

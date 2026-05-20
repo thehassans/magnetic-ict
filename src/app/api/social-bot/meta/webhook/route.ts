@@ -322,8 +322,20 @@ export async function POST(request: Request) {
           ingestText = msg.message!.text!;
           ingestMeta = { webhook: "meta" };
         } else if (audioAttachment) {
+          const rawAudioUrl = audioAttachment.payload?.url ?? "";
+          let storedAudioUrl = rawAudioUrl;
+          if (rawAudioUrl) {
+            try {
+              const audioFetch = await fetch(rawAudioUrl, { signal: AbortSignal.timeout(15000) });
+              if (audioFetch.ok) {
+                const audioBuf = await audioFetch.arrayBuffer();
+                const mime = audioFetch.headers.get("content-type") ?? "audio/mpeg";
+                storedAudioUrl = `data:${mime};base64,${Buffer.from(audioBuf).toString("base64")}`;
+              }
+            } catch { /* keep original URL as fallback */ }
+          }
           ingestText = "\uD83C\uDF99 Voice message";
-          ingestMeta = { webhook: "meta", mediaType: "audio", audioUrl: audioAttachment.payload?.url ?? "" };
+          ingestMeta = { webhook: "meta", mediaType: "audio", audioUrl: storedAudioUrl };
         } else if (imageAttachment) {
           ingestText = "\uD83D\uDDBC Image";
           ingestMeta = { webhook: "meta", mediaType: "image", imageUrl: imageAttachment.payload?.url ?? "" };

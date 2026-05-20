@@ -1,5 +1,6 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { getPlatformSettings } from "@/lib/platform-settings";
+import type { TTSConfig } from "@/lib/platform-settings";
 import { createSocialBotId } from "@/lib/social-bot-db";
 import type {
   SocialBotChunk,
@@ -797,6 +798,164 @@ export async function sendInfobipReply({
     const msg = data.requestError?.serviceException?.text ?? "Infobip WhatsApp send failed.";
     throw new Error(msg);
   }
+}
+
+/* ─── Server-side voice helpers ─────────────────────────────────────────── */
+
+export async function fetchWhatsAppAudioBuffer(
+  mediaId: string,
+  accessToken: string
+): Promise<{ buffer: Buffer; mimeType: string } | null> {
+  try {
+    const urlRes = await fetch(`https://graph.facebook.com/v25.0/${mediaId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!urlRes.ok) return null;
+    const { url } = (await urlRes.json()) as { url?: string };
+    if (!url) return null;
+    const mediaRes = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(20000)
+    });
+    if (!mediaRes.ok) return null;
+    const buffer = Buffer.from(await mediaRes.arrayBuffer());
+    const mimeType = mediaRes.headers.get("content-type") ?? "audio/ogg";
+    return { buffer, mimeType };
+  } catch { return null; }
+}
+
+export async function transcribeAudioBuffer(
+  buffer: Buffer,
+  mimeType: string,
+  openAiApiKey: string
+): Promise<{ transcript: string; language: string } | null> {
+  if (!openAiApiKey || !buffer.byteLength) return null;
+  try {
+    const ext = mimeType.includes("ogg") ? "ogg"
+      : mimeType.includes("webm") ? "webm"
+      : mimeType.includes("mp4") || mimeType.includes("m4a") ? "m4a"
+      : "mp3";
+    const form = new FormData();
+    form.append("file", new Blob([new Uint8Array(buffer)], { type: mimeType }), `audio.${ext}`);
+    form.append("model", "whisper-1");
+    form.append("response_format", "verbose_json");
+    const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${openAiApiKey}` },
+      body: form,
+      signal: AbortSignal.timeout(30000)
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { text?: string; language?: string };
+    const transcript = (data.text ?? "").trim();
+    if (!transcript) return null;
+    return { transcript, language: data.language ?? "en" };
+  } catch { return null; }
+}
+
+export async function generateSpeechBuffer(
+  text: string,
+  language: string,
+  tts: TTSConfig,
+  openAiApiKey: string
+): Promise<{ buffer: Buffer; mimeType: string } | null> {
+  if (!text.trim()) return null;
+
+  if (tts.provider === "elevenlabs" && tts.elevenlabsApiKey.trim() && tts.elevenlabsVoiceId.trim()) {
+    try {
+      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${tts.elevenlabsVoiceId.trim()}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "xi-api-key": tts.elevenlabsApiKey.trim() },
+        body: JSON.stringify({
+          text,
+          model_id: "eleven_multilingual_v2",
+          voice_settings: { stability: 0.45, similarity_boost: 0.80, style: 0.15 }
+        }),
+        signal: AbortSignal.timeout(25000)
+      });
+      if (res.ok) return { buffer: Buffer.from(await res.arrayBuffer()), mimeType: "audio/mpeg" };
+    } catch { /* fall through */ }
+  }
+
+  if (openAiApiKey.trim()) {
+    try {
+      const res = await fetch("https://api.openai.com/v1/audio/speech", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${openAiApiKey.trim()}` },
+        body: JSON.stringify({
+          model: tts.openaiModel || "tts-1",
+          input: text,
+          voice: tts.openaiVoice || "nova",
+          response_format: "mp3",
+          speed: 1.0
+        }),
+        signal: AbortSignal.timeout(25000)
+      });
+      if (res.ok) return { buffer: Buffer.from(await res.arrayBuffer()), mimeType: "audio/mpeg" };
+    } catch { /* fall through */ }
+  }
+
+  return null;
+}
+
+export async function sendWhatsAppVoiceReply(
+  to: string,
+  phoneNumberId: string,
+  accessToken: string,
+  audioBuffer: Buffer,
+  mimeType: string
+): Promise<{ mediaId: string; wamid: string | null } | null> {
+  try {
+    const uploadForm = new FormData();
+    uploadForm.append("messaging_product", "whatsapp");
+    uploadForm.append("type", "audio/mpeg");
+    uploadForm.append("file", new Blob([new Uint8Array(audioBuffer)], { type: "audio/mpeg" }), "voice.mp3");
+    const uploadRes = await fetch(`https://graph.facebook.com/v25.0/${phoneNumberId}/media`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}` },
+      body: uploadForm,
+      signal: AbortSignal.timeout(25000)
+    });
+    if (!uploadRes.ok) return null;
+    const { id: mediaId } = (await uploadRes.json()) as { id: string };
+    const sendRes = await fetch(`https://graph.facebook.com/v25.0/${phoneNumberId}/messages`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to,
+        type: "audio",
+        audio: { id: mediaId }
+      }),
+      signal: AbortSignal.timeout(10000)
+    });
+    if (!sendRes.ok) return null;
+    const sendData = (await sendRes.json()) as { messages?: Array<{ id?: string }> };
+    return { mediaId, wamid: sendData.messages?.[0]?.id ?? null };
+  } catch { return null; }
+}
+
+export async function sendMessengerVoiceReply(
+  recipientId: string,
+  pageId: string | null,
+  accessToken: string,
+  audioBuffer: Buffer
+): Promise<{ wamid: string | null } | null> {
+  try {
+    const sendUrl = pageId
+      ? `https://graph.facebook.com/v25.0/${pageId}/messages?access_token=${encodeURIComponent(accessToken)}`
+      : `https://graph.facebook.com/v25.0/me/messages?access_token=${encodeURIComponent(accessToken)}`;
+    const form = new FormData();
+    form.append("recipient", JSON.stringify({ id: recipientId }));
+    form.append("message", JSON.stringify({ attachment: { type: "audio", payload: { is_reusable: false } } }));
+    form.append("filedata", new Blob([new Uint8Array(audioBuffer)], { type: "audio/mpeg" }), "voice.mp3");
+    const res = await fetch(sendUrl, { method: "POST", body: form, signal: AbortSignal.timeout(25000) });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { message_id?: string };
+    return { wamid: data.message_id ?? null };
+  } catch { return null; }
 }
 
 export async function sendInfobipTemplate({
