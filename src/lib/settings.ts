@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import type { ActiveLanguage } from "@/types/i18n";
 
@@ -23,7 +24,7 @@ function ensureBanglaLanguage(languages: ActiveLanguage[]) {
   return [...languages, bangla];
 }
 
-export async function getActiveLanguages() {
+async function loadActiveLanguages() {
   if (!hasDatabase) {
     return fallbackLanguages;
   }
@@ -52,3 +53,9 @@ export async function getActiveLanguages() {
 
   return ensureBanglaLanguage(savedLanguages.length > 0 ? savedLanguages : fallbackLanguages);
 }
+
+export const getActiveLanguages = unstable_cache(
+  loadActiveLanguages,
+  ["active-languages"],
+  { revalidate: 300 }
+);

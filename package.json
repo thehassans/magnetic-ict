@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start",
     "start:plesk": "node server.js",
+    "deploy:plesk": "bash scripts/plesk-deploy.sh",
     "lint": "eslint .",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",

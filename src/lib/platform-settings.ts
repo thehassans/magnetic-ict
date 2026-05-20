@@ -1,4 +1,5 @@
 import { routing } from "@/i18n/routing";
+import { unstable_cache } from "next/cache";
 import type { DomainProviderSettings } from "@/lib/domain-types";
 import type { HostingProviderSettings } from "@/lib/hosting-types";
 import { prisma } from "@/lib/prisma";
@@ -238,7 +239,7 @@ export function normalizeBrandingConfig(value: unknown): BrandingConfig {
 }
 
 export async function getBrandingConfig(): Promise<BrandingConfig> {
-  const value = await getSettingValue("branding_config");
+  const value = await getCachedSettingValue("branding_config");
   return normalizeBrandingConfig(value);
 }
 
@@ -2752,6 +2753,12 @@ async function getSettingValue(key: string) {
   return setting?.value ?? null;
 }
 
+const getCachedSettingValue = unstable_cache(
+  async (key: string) => getSettingValue(key),
+  ["platform-setting-value"],
+  { revalidate: 300 }
+);
+
 export function normalizeAboutConfig(value: unknown): AboutSettings {
   if (!value || typeof value !== "object") {
     return defaultAboutConfig;
@@ -2779,7 +2786,7 @@ export function normalizeAboutConfig(value: unknown): AboutSettings {
 }
 
 export async function getAboutSettings(): Promise<AboutSettings> {
-  const value = await getSettingValue("about_config");
+  const value = await getCachedSettingValue("about_config");
   return normalizeAboutConfig(value);
 }
 
@@ -2887,7 +2894,7 @@ export async function getEmailNotificationsSettings() {
 }
 
 export async function getTrustedPartnersSettings() {
-  const value = await getSettingValue("trusted_partners_config");
+  const value = await getCachedSettingValue("trusted_partners_config");
   return normalizeTrustedPartnersConfig(value);
 }
 

@@ -62,9 +62,11 @@ Recommended Plesk Node.js settings:
 
 - Node.js version: `20.x` or newer
 - Application mode: `production`
-- Application root: the repository root
+- Application root: the repository root, e.g. `/httpdocs`
 - Application startup file: `server.js`
 - Startup command: `npm run start:plesk`
+- Use one Node.js application root only. The main domain and `chatbot.` subdomain should not both claim different Node.js application roots for the same checkout.
+- For the `chatbot.` subdomain, keep the Node.js application root as `/httpdocs`; the middleware routes chatbot traffic internally.
 
 Recommended deployment commands on the server:
 
@@ -74,6 +76,14 @@ npm run prisma:generate
 npm run prisma:push
 npm run build
 ```
+
+After pulling updates on Plesk, run:
+
+```bash
+npm run deploy:plesk
+```
+
+Then restart the Node.js app in Plesk. This avoids slow first requests because the production `.next` build is prepared before traffic hits the app.
 
 If you want to seed base settings on a brand-new database:
 
