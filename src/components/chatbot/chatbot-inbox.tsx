@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bot, Check, CheckCheck, ChevronDown, Clock, FileText, Loader2, Mic, Paperclip, RefreshCw, Search, Send, Smile, StopCircle, Trash2, UserCheck, Users, X, Zap } from "lucide-react";
+import { Bot, Check, CheckCheck, ChevronDown, Clock, FileText, ImageIcon, Loader2, Mic, Paperclip, Pause, Play, RefreshCw, Search, Send, Smile, StopCircle, Trash2, UserCheck, Users, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SocialBotAgent, SocialBotMessage, SocialBotThread } from "@/lib/social-bot-types";
 import { WhatsAppIcon, InstagramIcon, MessengerIcon } from "@/components/chatbot/social-icons";
@@ -14,6 +14,82 @@ const platformConfig = {
   INSTAGRAM: { Icon: InstagramIcon, color: "#E1306C", bg: "bg-[#E1306C]/15", text: "text-[#E1306C]", label: "Instagram" },
   MESSENGER: { Icon: MessengerIcon, color: "#0099FF", bg: "bg-[#0099FF]/15", text: "text-[#0099FF]", label: "Messenger" }
 } as const;
+
+function ChatAudioPlayer({ src, out }: { src: string; out: boolean }) {
+  const [playing, setPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const toggle = () => {
+    if (!audioRef.current) return;
+    if (playing) audioRef.current.pause();
+    else void audioRef.current.play();
+  };
+
+  const seek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!audioRef.current || !duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    audioRef.current.currentTime = ((e.clientX - rect.left) / rect.width) * duration;
+  };
+
+  const fmt = (s: number) => `${Math.floor(s / 60)}:${(Math.floor(s) % 60).toString().padStart(2, "0")}`;
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  return (
+    <div className={cn(
+      "flex items-center gap-3 rounded-2xl px-3.5 py-3 min-w-[210px] shadow-sm",
+      out
+        ? "rounded-br-sm bg-gradient-to-br from-violet-600 to-purple-700 shadow-[0_4px_24px_rgba(124,58,237,0.3)]"
+        : "rounded-bl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05]"
+    )}>
+      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+      <audio
+        ref={audioRef}
+        src={src}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => { setPlaying(false); setCurrentTime(0); }}
+        onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+        preload="metadata"
+        className="sr-only"
+      />
+      <button
+        type="button"
+        onClick={toggle}
+        className={cn(
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all",
+          out ? "bg-white/25 hover:bg-white/35" : "bg-violet-600/10 hover:bg-violet-600/20"
+        )}
+      >
+        {playing
+          ? <Pause className={cn("h-4 w-4", out ? "text-white" : "text-violet-600 dark:text-violet-400")} />
+          : <Play className={cn("h-4 w-4 ml-0.5", out ? "text-white" : "text-violet-600 dark:text-violet-400")} />}
+      </button>
+      <div className="flex flex-1 flex-col gap-2 min-w-0">
+        <div
+          className={cn("relative h-1.5 cursor-pointer rounded-full overflow-hidden",
+            out ? "bg-white/25" : "bg-gray-200 dark:bg-white/[0.1]")}
+          onClick={seek}
+        >
+          <div
+            className={cn("h-full rounded-full transition-all duration-100",
+              out ? "bg-white" : "bg-violet-500")}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className={cn(
+          "flex items-center justify-between text-[10px] font-medium tabular-nums",
+          out ? "text-white/55" : "text-gray-400 dark:text-white/30"
+        )}>
+          <span>{fmt(currentTime)}</span>
+          {duration > 0 ? <span>{fmt(duration)}</span> : <span className="text-[9px] opacity-60">Loading…</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function PlatformBadge({ source, size = "sm" }: { source: keyof typeof platformConfig; size?: "sm" | "xs" }) {
   const { Icon, bg, text, label } = platformConfig[source];
@@ -471,6 +547,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
   const cancelRecordRef = useRef(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [sendingImage, setSendingImage] = useState(false);
+  const [localImageMsgs, setLocalImageMsgs] = useState<Array<{ id: string; url: string; name: string; time: string; sending?: boolean; failed?: boolean }>>([]);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   function fmtSec(s: number) {
@@ -562,13 +639,25 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
 
   async function sendImage(file: File) {
     if (!selectedId) return;
+    const objUrl = URL.createObjectURL(file);
+    const localId = `img-${Date.now()}`;
+    const localTime = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    setLocalImageMsgs((prev) => [...prev, { id: localId, url: objUrl, name: file.name, time: localTime, sending: true }]);
     setSendingImage(true);
     try {
       const fd = new FormData();
       fd.append("threadId", selectedId);
       fd.append("image", file);
       const r = await fetch("/api/social-bot/image-message", { method: "POST", body: fd });
-      if (r.ok) void loadThread(selectedId);
+      if (r.ok) {
+        await loadThread(selectedId);
+        setLocalImageMsgs((prev) => prev.filter((v) => v.id !== localId));
+        URL.revokeObjectURL(objUrl);
+      } else {
+        setLocalImageMsgs((prev) => prev.map((v) => v.id === localId ? { ...v, sending: false, failed: true } : v));
+      }
+    } catch {
+      setLocalImageMsgs((prev) => prev.map((v) => v.id === localId ? { ...v, sending: false, failed: true } : v));
     } finally {
       setSendingImage(false);
     }
@@ -604,7 +693,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
     return () => window.clearInterval(t);
   }, []);
 
-  useEffect(() => { setLocalVoiceMsgs([]); }, [selectedId]);
+  useEffect(() => { setLocalVoiceMsgs([]); setLocalImageMsgs([]); }, [selectedId]);
 
   async function refreshThreads() {
     const r = await fetch("/api/social-bot/workspace", { cache: "no-store" });
@@ -884,44 +973,49 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                             <p className="text-right text-[10px] text-violet-600 dark:text-violet-400/60">{selected.assignedAgentName}</p>
                           )}
                           {isAudio && resolvedAudioSrc ? (
-                            <div className={cn("flex items-center gap-2 rounded-2xl px-3 py-2.5 shadow-md min-w-[180px]",
-                              out ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700" : "rounded-tl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05]")}>
-                              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20">
-                                <Mic className={cn("h-3 w-3", out ? "text-white" : "text-violet-500")} />
-                              </div>
-                              <audio
-                                src={resolvedAudioSrc}
-                                controls
-                                controlsList="nodownload"
-                                className="h-7 w-full max-w-[200px]"
-                                onError={(e) => { (e.currentTarget.parentElement!).dataset.err = "1"; }}
-                              />
-                            </div>
-                          ) : isImage && resolvedImageSrc ? (
-                            <div className={cn("overflow-hidden rounded-2xl shadow-md",
-                              out ? "rounded-tr-sm" : "rounded-tl-sm")}>
-                              <img
-                                src={resolvedImageSrc}
-                                alt="Image"
-                                className="block max-w-[240px] max-h-[320px] w-auto h-auto object-cover cursor-zoom-in"
-                                loading="lazy"
-                                onClick={() => resolvedImageSrc && setLightboxSrc(resolvedImageSrc)}
-                                onError={(e) => {
-                                  e.currentTarget.style.display = "none";
-                                  const ph = e.currentTarget.nextElementSibling as HTMLElement | null;
-                                  if (ph) ph.style.display = "flex";
-                                }}
-                              />
-                              <div className="hidden items-center justify-center gap-1.5 p-4 text-[11px] text-gray-400 dark:text-white/25" aria-hidden="true">
-                                <FileText className="h-4 w-4" /><span>Media expired</span>
-                              </div>
-                              {msg.text && !/^🖼/.test(msg.text) && (
-                                <div className={cn("px-3 py-2 text-[12px]",
-                                  out ? "bg-gradient-to-br from-violet-600 to-purple-700 text-white" : "bg-white dark:bg-white/[0.05] text-gray-800 dark:text-white/80")}>
-                                  {msg.text}
+                            <ChatAudioPlayer src={resolvedAudioSrc} out={out} />
+                          ) : isImage ? (
+                            resolvedImageSrc ? (
+                              <div className={cn("relative overflow-hidden rounded-2xl shadow-md",
+                                out ? "rounded-br-sm" : "rounded-bl-sm")}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={resolvedImageSrc}
+                                  alt="Image"
+                                  className="block max-w-[240px] max-h-[320px] w-auto h-auto object-cover cursor-zoom-in"
+                                  loading="lazy"
+                                  onClick={() => resolvedImageSrc && setLightboxSrc(resolvedImageSrc)}
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = "none";
+                                    const ph = e.currentTarget.nextElementSibling as HTMLElement | null;
+                                    if (ph) ph.style.display = "flex";
+                                  }}
+                                />
+                                <div className="hidden items-center justify-center gap-1.5 p-4 text-[11px] text-gray-400 dark:text-white/25" aria-hidden="true">
+                                  <FileText className="h-4 w-4" /><span>Media expired</span>
                                 </div>
-                              )}
-                            </div>
+                                {msg.text && !/^🖼/.test(msg.text) && (
+                                  <div className={cn("px-3 py-2 text-[12px]",
+                                    out ? "bg-gradient-to-br from-violet-600 to-purple-700 text-white" : "bg-white dark:bg-white/[0.05] text-gray-800 dark:text-white/80")}>
+                                    {msg.text}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              /* Outgoing image sent via Messenger/Instagram — no storable URL */
+                              <div className={cn(
+                                "flex items-center gap-3 rounded-2xl px-4 py-3 shadow-sm min-w-[160px]",
+                                out
+                                  ? "rounded-br-sm bg-gradient-to-br from-violet-600 to-purple-700 shadow-[0_4px_24px_rgba(124,58,237,0.3)]"
+                                  : "rounded-bl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05]"
+                              )}>
+                                <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                                  out ? "bg-white/20" : "bg-violet-600/10")}>
+                                  <ImageIcon className={cn("h-4 w-4", out ? "text-white" : "text-violet-500")} />
+                                </div>
+                                <span className={cn("text-[13px] font-medium", out ? "text-white" : "text-gray-700 dark:text-white/75")}>Image sent</span>
+                              </div>
+                            )
                           ) : isVideo && resolvedVideoSrc ? (
                             <div className={cn("overflow-hidden rounded-2xl shadow-md",
                               out ? "rounded-tr-sm" : "rounded-tl-sm")}>
@@ -959,20 +1053,44 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                   {localVoiceMsgs.map((vm) => (
                     <div key={vm.id} className="flex justify-end">
                       <div className="flex max-w-[65%] flex-col gap-0.5">
-                        <div className="flex items-center gap-2 rounded-2xl rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700 px-3 py-2.5 shadow-[0_4px_24px_rgba(124,58,237,0.3)]">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20">
-                            {vm.sending ? <Loader2 className="h-3 w-3 text-white animate-spin" /> : <Mic className="h-3 w-3 text-white" />}
+                        <div className={cn(
+                          "flex items-center gap-3 rounded-2xl rounded-br-sm px-3.5 py-3 min-w-[210px] shadow-sm bg-gradient-to-br from-violet-600 to-purple-700 shadow-[0_4px_24px_rgba(124,58,237,0.3)]",
+                          vm.failed && "opacity-60"
+                        )}>
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/25">
+                            {vm.sending ? <Loader2 className="h-4 w-4 text-white animate-spin" /> : <Mic className="h-4 w-4 text-white" />}
                           </div>
-                          <audio src={vm.url} controls className="h-7 w-28" />
-                          <span className="shrink-0 text-[10px] text-white/60">{fmtSec(vm.durationSec)}</span>
+                          <div className="flex flex-1 flex-col gap-2">
+                            <div className="h-1.5 rounded-full bg-white/25" />
+                            <p className="text-[10px] font-medium tabular-nums text-white/55">{fmtSec(vm.durationSec)}</p>
+                          </div>
                         </div>
                         <div className="flex items-center justify-end gap-1">
                           <p className="text-[10px] text-gray-400 dark:text-white/20">{vm.time}</p>
-                          {vm.failed
-                            ? <X className="h-3 w-3 text-red-400" />
-                            : vm.sending
-                              ? <Clock className="h-3 w-3 text-white/30" />
-                              : <Check className="h-3 w-3 text-white/50" />}
+                          {vm.failed ? <X className="h-3 w-3 text-red-400" /> : vm.sending ? <Clock className="h-3 w-3 text-gray-300 dark:text-white/20" /> : <Check className="h-3 w-3 text-gray-400 dark:text-white/35" />}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {localImageMsgs.map((im) => (
+                    <div key={im.id} className="flex justify-end">
+                      <div className="flex max-w-[65%] flex-col gap-0.5">
+                        <div className={cn("relative overflow-hidden rounded-2xl rounded-br-sm shadow-[0_4px_24px_rgba(124,58,237,0.3)]", im.failed && "opacity-60")}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={im.url}
+                            alt={im.name}
+                            className="block max-w-[240px] max-h-[320px] w-auto h-auto object-cover"
+                          />
+                          {im.sending && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+                              <Loader2 className="h-6 w-6 text-white animate-spin" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-end gap-1">
+                          <p className="text-[10px] text-gray-400 dark:text-white/20">{im.time}</p>
+                          {im.failed ? <X className="h-3 w-3 text-red-400" /> : im.sending ? <Clock className="h-3 w-3 text-gray-300 dark:text-white/20" /> : <Check className="h-3 w-3 text-gray-400 dark:text-white/35" />}
                         </div>
                       </div>
                     </div>
@@ -1006,15 +1124,21 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                     </div>
                   ) : pendingAudio ? (
                     /* Audio preview */
-                    <div className="flex items-center gap-3 rounded-xl border border-violet-200 dark:border-violet-500/20 bg-violet-50 dark:bg-violet-500/[0.06] px-4 py-3">
-                      <Mic className="h-4 w-4 shrink-0 text-violet-500" />
-                      <audio src={pendingAudio.url} controls className="h-8 flex-1 max-w-[220px]" />
-                      <span className="text-[11px] text-violet-600 dark:text-violet-400/70 tabular-nums">{fmtSec(pendingAudio.durationSec)}</span>
-                      <button type="button" onClick={cancelAudio} className="rounded-lg p-1.5 text-gray-400 dark:text-white/30 hover:text-red-500 dark:hover:text-red-400 transition">
+                    <div className="flex items-center gap-3 rounded-xl border border-violet-200 dark:border-violet-500/20 bg-violet-50 dark:bg-violet-500/[0.06] px-3.5 py-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-600/15">
+                        <Mic className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
+                      </div>
+                      <div className="flex flex-1 flex-col gap-1.5 min-w-0">
+                        <div className="h-1.5 rounded-full bg-violet-200 dark:bg-violet-500/20 overflow-hidden">
+                          <div className="h-full w-full rounded-full bg-violet-500/40" />
+                        </div>
+                        <p className="text-[10px] font-medium tabular-nums text-violet-600 dark:text-violet-400/70">{fmtSec(pendingAudio.durationSec)}</p>
+                      </div>
+                      <button type="button" onClick={cancelAudio} className="shrink-0 rounded-lg p-1.5 text-gray-400 dark:text-white/30 hover:text-red-500 dark:hover:text-red-400 transition">
                         <Trash2 className="h-4 w-4" />
                       </button>
                       <button type="button" onClick={sendAudio}
-                        className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2 text-[12px] font-semibold text-white shadow-[0_0_14px_rgba(124,58,237,0.4)] transition hover:from-violet-500 hover:to-purple-500">
+                        className="flex shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-3.5 py-2 text-[12px] font-semibold text-white shadow-[0_0_14px_rgba(124,58,237,0.4)] transition hover:from-violet-500 hover:to-purple-500">
                         <Send className="h-3.5 w-3.5" />Send
                       </button>
                     </div>

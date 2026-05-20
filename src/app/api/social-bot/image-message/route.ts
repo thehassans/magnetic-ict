@@ -111,7 +111,7 @@ export async function POST(request: Request) {
       msgMetadata = { mediaType: "image", wamid: sendPayload.message_id ?? null };
     }
 
-    const previewText = `🖼 ${imageFile.name || "Image"}`;
+    const previewText = "🖼 Image";
     const msg = {
       _id: createSocialBotId("sbm"),
       userId,
