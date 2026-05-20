@@ -108,7 +108,8 @@ export async function POST(request: Request) {
       if (!sendRes.ok) {
         return NextResponse.json({ error: sendPayload.error?.message ?? "Send failed." }, { status: 502 });
       }
-      msgMetadata = { mediaType: "audio", wamid: sendPayload.message_id ?? null };
+      const audioUrl = `data:audio/ogg;base64,${Buffer.from(audioBuffer).toString("base64")}`;
+      msgMetadata = { mediaType: "audio", audioUrl, wamid: sendPayload.message_id ?? null };
     }
 
     const msg = {

@@ -228,7 +228,7 @@ export function ChatbotShell({ children, userName, userEmail, logoLight, logoDar
         <div className="relative flex h-[60px] shrink-0 items-center justify-between px-4">
           {logoSrc ? (
             <div className="flex h-9 w-full max-w-[152px] items-center">
-              <Image src={logoSrc} alt="Logo" width={152} height={36} className="h-auto w-full object-contain" priority unoptimized={logoSrc.startsWith("/uploads/") || logoSrc.toLowerCase().endsWith(".svg")} />
+              <Image src={logoSrc} alt="Logo" width={152} height={36} className="h-auto w-full object-contain" priority unoptimized={logoSrc.startsWith("http") || logoSrc.startsWith("/uploads/") || logoSrc.toLowerCase().endsWith(".svg")} />
             </div>
           ) : (
             <div className="flex items-center gap-2.5">

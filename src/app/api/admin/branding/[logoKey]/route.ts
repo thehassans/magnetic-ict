@@ -102,10 +102,12 @@ export async function POST(
       }
     }
 
-    const newUrl = `/branding/uploads/${logoKey}.${ext}`;
-    await saveBrandingLogoToPublic(newUrl, fileBuffer);
-    if (oldUrl && oldUrl !== newUrl) await deleteBrandingLogo(oldUrl);
+    const relPath = `/branding/uploads/${logoKey}.${ext}`;
+    await saveBrandingLogoToPublic(relPath, fileBuffer);
+    if (oldUrl && oldUrl !== relPath && !oldUrl.includes(relPath)) await deleteBrandingLogo(oldUrl);
 
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+    const newUrl = appUrl ? `${appUrl}${relPath}` : relPath;
     const nextConfig = normalizeBrandingConfig({ ...currentConfig, [logoKey]: newUrl });
     await saveBrandingConfig(nextConfig);
 

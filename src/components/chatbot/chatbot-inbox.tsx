@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Bot, Check, CheckCheck, ChevronDown, Clock, FileText, Headphones, ImageIcon, Loader2, Mic, Paperclip, Pause, Play, RefreshCw, Search, Send, Smile, StopCircle, Trash2, UserCheck, Users, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SocialBotAgent, SocialBotMessage, SocialBotThread } from "@/lib/social-bot-types";
@@ -9,13 +10,13 @@ import { WhatsAppIcon, InstagramIcon, MessengerIcon } from "@/components/chatbot
 type ThreadPayload = { thread: SocialBotThread | null; messages: SocialBotMessage[] };
 type Filter = "ALL" | "AI" | "MANUAL" | "UNASSIGNED";
 
+const WAVEFORM_BARS = [6, 10, 14, 8, 12, 15, 9, 13, 7, 11, 15, 5, 10, 14, 8, 12, 6, 11, 14, 9, 13, 7, 11, 15];
+
 const platformConfig = {
   WHATSAPP: { Icon: WhatsAppIcon, color: "#25D366", bg: "bg-[#25D366]/15", text: "text-[#25D366]", label: "WhatsApp" },
   INSTAGRAM: { Icon: InstagramIcon, color: "#E1306C", bg: "bg-[#E1306C]/15", text: "text-[#E1306C]", label: "Instagram" },
   MESSENGER: { Icon: MessengerIcon, color: "#0099FF", bg: "bg-[#0099FF]/15", text: "text-[#0099FF]", label: "Messenger" }
 } as const;
-
-const WAVEFORM_BARS = [3, 6, 10, 14, 9, 13, 7, 11, 15, 8, 12, 6, 10, 14, 5, 9, 13, 7, 11, 4];
 
 function ChatAudioPlayer({ src, out }: { src: string; out: boolean }) {
   const [playing, setPlaying] = useState(false);
@@ -803,7 +804,11 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
     <>
     <div className="flex h-full overflow-hidden">
       {/* ── Thread sidebar ── */}
-      <div className="flex w-[280px] shrink-0 flex-col border-r border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0d0d20]">
+      <div className={cn(
+        "flex shrink-0 flex-col border-r border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0d0d20]",
+        "w-full sm:w-[280px]",
+        selectedId ? "hidden sm:flex" : "flex"
+      )}>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 dark:border-white/[0.06] px-4 py-3.5">
           <div>
@@ -961,12 +966,17 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
       </div>
 
           {/* ── Chat area ── */}
+          {/* Mobile back button */}
           {selected ? (
             <>
               <div className="flex min-w-0 flex-1 flex-col bg-gray-50 dark:bg-[#07070f]">
                 {/* Chat header */}
-                <div className="flex items-center justify-between border-b border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1e] px-5 py-3.5">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between border-b border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c1e] px-3 sm:px-5 py-3.5">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <button type="button" onClick={() => setSelectedId(null)}
+                      className="sm:hidden flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 dark:text-white/30 hover:text-gray-700 dark:hover:text-white/60 -ml-1 shrink-0">
+                      <ChevronDown className="h-5 w-5 rotate-90" />
+                    </button>
                     <div className="relative">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/40 to-purple-600/30 text-sm font-bold text-violet-200">
                         {displayName(selected.contactName).charAt(0).toUpperCase()}
@@ -1191,43 +1201,76 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                     </div>
                   )}
                   {/* Recording state */}
-                  {isRecording ? (
-                    <div className="flex items-center gap-3 rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/[0.06] px-4 py-3">
-                      <span className="relative flex h-3 w-3 shrink-0">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-                        <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500" />
-                      </span>
-                      <span className="flex-1 text-[13px] font-semibold tabular-nums text-red-600 dark:text-red-400">Recording… {fmtSec(recordingSec)}</span>
-                      <button type="button" onClick={cancelAudio} className="rounded-lg p-1.5 text-gray-400 dark:text-white/30 hover:text-gray-700 dark:hover:text-white/60 transition">
-                        <X className="h-4 w-4" />
-                      </button>
-                      <button type="button" onClick={stopRecording}
-                        className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2 text-[12px] font-semibold text-white shadow-[0_0_14px_rgba(124,58,237,0.4)] transition hover:from-violet-500 hover:to-purple-500">
-                        <StopCircle className="h-4 w-4" />Stop
-                      </button>
-                    </div>
-                  ) : pendingAudio ? (
-                    /* Audio preview */
-                    <div className="flex items-center gap-3 rounded-xl border border-violet-200 dark:border-violet-500/20 bg-violet-50 dark:bg-violet-500/[0.06] px-3.5 py-3">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-600/15">
-                        <Mic className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
-                      </div>
-                      <div className="flex flex-1 flex-col gap-1.5 min-w-0">
-                        <div className="h-1.5 rounded-full bg-violet-200 dark:bg-violet-500/20 overflow-hidden">
-                          <div className="h-full w-full rounded-full bg-violet-500/40" />
+                  <AnimatePresence mode="wait">
+                    {isRecording && (
+                      <motion.div key="recording"
+                        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
+                        className="relative overflow-hidden rounded-2xl border border-violet-300/50 dark:border-violet-500/25 bg-white dark:bg-[#0c0c1e] px-4 py-3.5"
+                      >
+                        <motion.div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-violet-600/[0.04] via-purple-500/[0.06] to-violet-600/[0.04]"
+                          animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }} />
+                        <div className="relative flex items-center gap-3">
+                          <div className="relative shrink-0 flex h-11 w-11 items-center justify-center">
+                            <motion.div className="h-11 w-11 rounded-full bg-gradient-to-br from-violet-600 to-purple-700 flex items-center justify-center shadow-[0_4px_20px_rgba(124,58,237,0.5)]"
+                              animate={{ boxShadow: ["0 4px 20px rgba(124,58,237,0.5)","0 4px 30px rgba(124,58,237,0.8)","0 4px 20px rgba(124,58,237,0.5)"] }}
+                              transition={{ duration: 1.5, repeat: Infinity }}>
+                              <Mic className="h-5 w-5 text-white" />
+                            </motion.div>
+                            <motion.span className="absolute inset-0 rounded-full border-2 border-violet-500/40"
+                              animate={{ scale: [1, 1.75], opacity: [0.6, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }} />
+                            <motion.span className="absolute inset-0 rounded-full border-2 border-violet-500/20"
+                              animate={{ scale: [1, 2.3], opacity: [0.4, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut", delay: 0.4 }} />
+                          </div>
+                          <div className="flex flex-1 items-center justify-center gap-[2.5px] h-9 overflow-hidden">
+                            {Array.from({ length: 22 }).map((_, i) => (
+                              <motion.div key={i} className="w-[3px] rounded-full bg-violet-500"
+                                animate={{ scaleY: [0.2, 1, 0.2] }}
+                                transition={{ duration: 0.45 + (i % 5) * 0.09, repeat: Infinity, ease: "easeInOut", delay: i * 0.04 }}
+                                style={{ height: "100%", transformOrigin: "center" }} />
+                            ))}
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="min-w-[38px] text-[13px] font-mono font-bold tabular-nums text-violet-600 dark:text-violet-400">{fmtSec(recordingSec)}</span>
+                            <button type="button" onClick={cancelAudio}
+                              className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition">
+                              <X className="h-4 w-4" />
+                            </button>
+                            <motion.button type="button" onClick={stopRecording} whileTap={{ scale: 0.93 }}
+                              className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-[0_0_14px_rgba(124,58,237,0.4)] hover:from-violet-500 hover:to-purple-500 transition">
+                              <StopCircle className="h-4 w-4" />
+                            </motion.button>
+                          </div>
                         </div>
-                        <p className="text-[10px] font-medium tabular-nums text-violet-600 dark:text-violet-400/70">{fmtSec(pendingAudio.durationSec)}</p>
-                      </div>
-                      <button type="button" onClick={cancelAudio} className="shrink-0 rounded-lg p-1.5 text-gray-400 dark:text-white/30 hover:text-red-500 dark:hover:text-red-400 transition">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <button type="button" onClick={sendAudio}
-                        className="flex shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-3.5 py-2 text-[12px] font-semibold text-white shadow-[0_0_14px_rgba(124,58,237,0.4)] transition hover:from-violet-500 hover:to-purple-500">
-                        <Send className="h-3.5 w-3.5" />Send
-                      </button>
-                    </div>
-                  ) : (
-                    /* Normal input */
+                      </motion.div>
+                    )}
+                    {!isRecording && !!pendingAudio && (
+                      <motion.div key="pending"
+                        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
+                        className="flex items-center gap-3 rounded-2xl border border-violet-200/60 dark:border-violet-500/20 bg-white dark:bg-[#0c0c1e] px-4 py-3"
+                      >
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-600/15">
+                          <Mic className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                        </div>
+                        <div className="flex flex-1 items-end gap-[2px] h-7 overflow-hidden">
+                          {WAVEFORM_BARS.map((h, i) => (
+                            <div key={i} className="flex-1 rounded-full bg-violet-400/50 dark:bg-violet-500/40"
+                              style={{ height: `${Math.round((h / 15) * 100)}%` }} />
+                          ))}
+                        </div>
+                        <span className="text-[11px] font-mono font-semibold tabular-nums text-violet-600 dark:text-violet-400">{fmtSec(pendingAudio.durationSec)}</span>
+                        <button type="button" onClick={cancelAudio}
+                          className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                        <motion.button type="button" onClick={sendAudio} whileTap={{ scale: 0.93 }}
+                          className="flex items-center gap-1.5 h-8 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-3.5 text-[12px] font-semibold text-white shadow-[0_0_14px_rgba(124,58,237,0.4)] hover:from-violet-500 hover:to-purple-500 transition">
+                          <Send className="h-3.5 w-3.5" />Send
+                        </motion.button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  {/* Normal input */}
+                  {!isRecording && !pendingAudio && (
                     <div className="flex items-end gap-2">
                       <div className="relative flex flex-1 items-end rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] focus-within:border-violet-400 dark:focus-within:border-violet-500/50 focus-within:ring-1 focus-within:ring-violet-400/20 transition">
                         {showEmoji && (
@@ -1257,11 +1300,12 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                           <input ref={imageInputRef} type="file" accept="image/*" className="sr-only"
                             onChange={(e) => { const f = e.target.files?.[0]; if (f) void sendImage(f); e.target.value = ""; }} />
                         </label>
-                        <button type="button" onClick={() => void startRecording()}
+                        <motion.button type="button" onClick={() => void startRecording()}
                           title="Voice message"
+                          whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.85 }}
                           className="shrink-0 self-end p-2.5 pb-[11px] text-gray-400 dark:text-white/25 hover:text-violet-500 dark:hover:text-violet-400 transition">
                           <Mic className="h-[18px] w-[18px]" />
-                        </button>
+                        </motion.button>
                       </div>
                       <button type="button" onClick={() => void send()} disabled={sending || !text.trim()}
                         className="flex items-center gap-2 self-end rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_0_20px_rgba(124,58,237,0.35)] transition hover:from-violet-500 hover:to-purple-500 disabled:opacity-40">

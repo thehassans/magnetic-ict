@@ -51,7 +51,7 @@ const slots: { group: string; items: LogoSlot[] }[] = [
 ];
 
 function shouldBeUnoptimized(url: string) {
-  return url.startsWith("/uploads/") || url.startsWith("/branding/") || url.toLowerCase().endsWith(".svg");
+  return url.startsWith("http") || url.startsWith("/uploads/") || url.startsWith("/branding/") || url.toLowerCase().endsWith(".svg");
 }
 
 export function BrandingEditor({ value, onChange, disabled }: BrandingEditorProps) {
