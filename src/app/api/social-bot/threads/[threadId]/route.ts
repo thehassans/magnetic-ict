@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getRequiredUserSession, userHasMagneticSocialBotAccess, getWorkspaceContext } from "@/lib/social-bot-access";
-import { assignAgentToThread, autoAssignAgent, getThreadWithMessages, setThreadMode } from "@/lib/social-bot-service";
+import { assignAgentToThread, autoAssignAgent, deleteThread, getThreadWithMessages, setThreadAutoAssign, setThreadMode } from "@/lib/social-bot-service";
 
 const requestSchema = z.object({
   mode: z.enum(["AI", "MANUAL"]).optional(),
@@ -58,6 +58,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ th
     let thread;
     if (parsed.autoAssign === true) {
       thread = await autoAssignAgent(userId, threadId);
+    } else if (parsed.autoAssign === false) {
+      thread = await setThreadAutoAssign(userId, threadId, false);
     } else if (parsed.assignedAgentId !== undefined) {
       thread = await assignAgentToThread(userId, threadId, parsed.assignedAgentId);
     } else if (parsed.mode) {
@@ -75,4 +77,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ th
       { status: 400 }
     );
   }
+}
+
+export async function DELETE(_request: Request, { params }: { params: Promise<{ threadId: string }> }) {
+  const session = await getRequiredUserSession();
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const hasAccess = await userHasMagneticSocialBotAccess(session.user.id);
+  if (!hasAccess) return NextResponse.json({ error: "Access denied." }, { status: 403 });
+  const workspace = await getWorkspaceContext(session.user.id);
+  const { threadId } = await params;
+  await deleteThread(workspace.ownerId, threadId);
+  return NextResponse.json({ ok: true });
 }

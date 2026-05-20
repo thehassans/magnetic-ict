@@ -641,6 +641,20 @@ export async function ingestInboundMessage({
   return getThreadWithMessages(userId, thread._id);
 }
 
+export async function deleteThread(userId: string, threadId: string) {
+  await deleteMongoDocuments(socialBotCollections.messages, { userId, threadId });
+  await deleteMongoDocuments(socialBotCollections.threads, { userId, _id: threadId });
+}
+
+export async function setThreadAutoAssign(userId: string, threadId: string, value: boolean) {
+  await upsertMongoDocument(
+    socialBotCollections.threads,
+    { userId, _id: threadId },
+    { autoAssign: value, updatedAt: new Date().toISOString() }
+  );
+  return getSocialBotThreadById(userId, threadId);
+}
+
 export async function updateMessageDeliveryStatus(
   userId: string,
   wamid: string,

@@ -573,6 +573,8 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
   const [sendingImage, setSendingImage] = useState(false);
   const [localImageMsgs, setLocalImageMsgs] = useState<Array<{ id: string; url: string; name: string; time: string; sending?: boolean; failed?: boolean }>>([]);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   function fmtSec(s: number) {
     return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
@@ -767,6 +769,18 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
     setAssigning(false);
   }
 
+  async function deleteConversation(threadId: string) {
+    setDeletingId(threadId);
+    try {
+      await fetch(`/api/social-bot/threads/${threadId}`, { method: "DELETE" });
+      setThreads((prev) => prev.filter((t) => t._id !== threadId));
+      if (selectedId === threadId) { setSelectedId(null); setPayload(null); }
+    } finally {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+    }
+  }
+
   async function triggerAutoAssign(value: boolean) {
     setAssigning(true);
     await patchThread({ autoAssign: value });
@@ -876,7 +890,20 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
             const isActive = selectedId === t._id;
             const { Icon, color } = platformConfig[t.source];
             return (
-              <button key={t._id} type="button" onClick={() => setSelectedId(t._id)}
+              <div key={t._id} className="group relative">
+              {confirmDeleteId === t._id && (
+                <div className="absolute inset-0 z-20 flex items-center justify-between gap-2 rounded bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-500/20 px-3 py-2">
+                  <span className="text-[11px] font-medium text-red-600 dark:text-red-400">Delete this chat?</span>
+                  <div className="flex gap-1.5">
+                    <button type="button" onClick={() => setConfirmDeleteId(null)} className="rounded px-2 py-1 text-[10px] font-semibold text-gray-500 dark:text-white/40 hover:bg-gray-100 dark:hover:bg-white/[0.06]">Cancel</button>
+                    <button type="button" onClick={() => void deleteConversation(t._id)} disabled={deletingId === t._id}
+                      className="flex items-center gap-1 rounded bg-red-600 px-2 py-1 text-[10px] font-semibold text-white hover:bg-red-700 disabled:opacity-60">
+                      {deletingId === t._id ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : null}Delete
+                    </button>
+                  </div>
+                </div>
+              )}
+              <button type="button" onClick={() => setSelectedId(t._id)}
                 className={cn("relative flex w-full items-start gap-3 px-4 py-3.5 text-left transition-all",
                   isActive ? "bg-violet-50 dark:bg-violet-500/[0.12]" : "hover:bg-gray-50 dark:hover:bg-white/[0.025]")}>
                 {isActive && <span className="absolute left-0 top-3 bottom-3 w-0.5 rounded-r bg-violet-500" />}
@@ -918,6 +945,16 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                   </div>
                 </div>
               </button>
+              {/* Delete button — shows on hover */}
+              <button
+                type="button"
+                title="Delete conversation"
+                onClick={(e) => { e.stopPropagation(); setConfirmDeleteId((prev) => prev === t._id ? null : t._id); }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition flex h-6 w-6 items-center justify-center rounded-md bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.08] text-gray-400 dark:text-white/30 hover:text-red-500 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-500/30 z-10"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
             );
           })}
         </div>
@@ -952,7 +989,16 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                       </div>
                     </div>
                   </div>
-                  {/* Mode toggles */}
+                  {/* Header right — mode toggles + delete */}
+                  <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    title="Delete conversation"
+                    onClick={() => setConfirmDeleteId(selected._id)}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-gray-200 dark:border-white/[0.08] text-gray-400 dark:text-white/25 hover:text-red-500 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-500/30 transition"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                   <div className="flex gap-1.5">
                     {(["AI", "MANUAL"] as const).map((m) => (
                       <button key={m} type="button" onClick={() => void patchThread({ mode: m })}
@@ -966,13 +1012,17 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                     ))}
                   </div>
                 </div>
+                </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto space-y-3 px-5 py-5">
+                <div className="flex-1 overflow-y-auto px-4 py-4 bg-[#f0ece4] dark:bg-[#0f1117]">
                   {(payload?.messages ?? []).map((msg, i) => {
                     const out = msg.direction === "OUTBOUND";
-                    const prevMsg = i > 0 ? payload?.messages[i - 1] : null;
+                    const msgs = payload?.messages ?? [];
+                    const prevMsg = i > 0 ? msgs[i - 1] : null;
+                    const nextMsg = i < msgs.length - 1 ? msgs[i + 1] : null;
                     const showSender = !prevMsg || prevMsg.direction !== msg.direction;
+                    const isLastInGroup = !nextMsg || nextMsg.direction !== msg.direction;
                     const mediaType = msg.metadata?.mediaType as string | undefined;
                     const isAudio = mediaType === "audio";
                     const isImage = mediaType === "image";
@@ -985,13 +1035,13 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                     const resolvedImageSrc = isImage ? (mediaId ? `/api/social-bot/media/${mediaId}${phParam}` : (msg.metadata?.imageUrl as string | undefined)) : undefined;
                     const resolvedVideoSrc = isVideo ? (mediaId ? `/api/social-bot/media/${mediaId}${phParam}` : (msg.metadata?.videoUrl as string | undefined)) : undefined;
                     return (
-                      <div key={msg._id} className={cn("flex gap-2.5", out ? "justify-end" : "justify-start")}>
+                      <div key={msg._id} className={cn("flex gap-2", out ? "justify-end" : "justify-start", showSender ? "mt-3" : "mt-0.5")}>
                         {!out && showSender && (
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gray-200 dark:bg-white/[0.07] text-[11px] font-bold text-gray-600 dark:text-white/50">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-white/[0.1] text-[12px] font-bold text-gray-600 dark:text-white/60 self-end mb-1">
                             {displayName(selected.contactName).charAt(0).toUpperCase()}
                           </div>
                         )}
-                        {!out && !showSender && <div className="w-7 shrink-0" />}
+                        {!out && !showSender && <div className="w-8 shrink-0" />}
                         <div className="flex max-w-[65%] flex-col gap-0.5">
                           {out && showSender && selected.assignedAgentName && (
                             <p className="text-right text-[10px] text-violet-600 dark:text-violet-400/60">{selected.assignedAgentName}</p>
@@ -1051,11 +1101,21 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                               />
                             </div>
                           ) : (
-                            <div className={cn("rounded-2xl px-4 py-2.5 text-[13px] leading-[1.7]",
+                            <div className={cn(
+                              "relative rounded-2xl px-4 py-2.5 text-[13px] leading-[1.7]",
                               out
-                                ? "rounded-tr-sm bg-gradient-to-br from-violet-600 to-purple-700 text-white shadow-[0_4px_24px_rgba(124,58,237,0.3)]"
-                                : "rounded-tl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05] text-gray-800 dark:text-white/80")}>
+                                ? "rounded-br-sm bg-gradient-to-br from-violet-600 to-purple-700 text-white shadow-[0_2px_12px_rgba(124,58,237,0.25)]"
+                                : "rounded-bl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05] text-gray-800 dark:text-white/80",
+                              !showSender && out && "rounded-tr-2xl",
+                              !showSender && !out && "rounded-tl-2xl"
+                            )}>
                               {msg.text}
+                              {isLastInGroup && out && (
+                                <span className="absolute -right-[7px] bottom-[2px] w-[8px] h-[11px] bg-purple-700 [clip-path:polygon(0_0,0_100%,100%_100%)]" />
+                              )}
+                              {isLastInGroup && !out && (
+                                <span className="absolute -left-[7px] bottom-[2px] w-[8px] h-[11px] bg-white dark:bg-[#1a1a2e] [clip-path:polygon(100%_0,100%_100%,0_100%)] border-l border-b border-gray-200 dark:border-white/[0.07]" />
+                              )}
                             </div>
                           )}
                           <div className={cn("flex items-center gap-1", out ? "justify-end" : "justify-start")}>
