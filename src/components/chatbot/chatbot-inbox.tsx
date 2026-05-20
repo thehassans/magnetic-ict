@@ -548,7 +548,7 @@ function DemoChatView({ demo }: { demo: DemoThread }) {
 export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads: SocialBotThread[]; initialAgents: SocialBotAgent[] }) {
   const [threads, setThreads] = useState(initialThreads);
   const [agents] = useState(initialAgents);
-  const [selectedId, setSelectedId] = useState<string | null>(initialThreads[0]?._id ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [payload, setPayload] = useState<ThreadPayload | null>(null);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -692,12 +692,20 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
 
   const loadThread = useCallback(async (id: string) => {
     const r = await fetch(`/api/social-bot/threads/${id}`, { cache: "no-store" });
-    if (!r.ok) return;
+    if (!r.ok) {
+      setSelectedId((cur) => cur === id ? null : cur);
+      return;
+    }
     const data = await r.json() as ThreadPayload;
     setPayload(data);
     if (data.thread) {
       setThreads((prev) => prev.map((t) => t._id === id ? { ...t, ...data.thread! } : t));
     }
+  }, []);
+
+  useEffect(() => {
+    if (threads.length > 0 && !selectedId) setSelectedId(threads[0]._id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -951,7 +959,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-1">
                     <p className={cn("truncate text-[13px] font-semibold", isActive ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-white/80")}>{displayName(t.contactName)}</p>
-                    <span className="shrink-0 text-[10px] text-gray-400 dark:text-white/20">{formatTime(t.lastMessageAt)}</span>
+                    <span className="shrink-0 text-[10px] text-gray-400 dark:text-white/20" suppressHydrationWarning>{formatTime(t.lastMessageAt)}</span>
                   </div>
                   {/* Agent badge if assigned */}
                   {t.assignedAgentName && (
