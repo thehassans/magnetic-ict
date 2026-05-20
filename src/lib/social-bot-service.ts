@@ -743,7 +743,7 @@ export async function ingestInboundMessage({
     externalThreadId,
     contactName,
     contactHandle,
-    mode: "AI",
+    mode: "MANUAL",
     lastMessagePreview: text,
     lastMessageAt: now,
     unreadCount: 1,
