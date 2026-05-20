@@ -108,7 +108,10 @@ export async function POST(request: Request) {
       if (!sendRes.ok) {
         return NextResponse.json({ error: sendPayload.error?.message ?? "Send failed." }, { status: 502 });
       }
-      msgMetadata = { mediaType: "image", wamid: sendPayload.message_id ?? null };
+      const imageUrl = imageBuffer.byteLength <= 800_000
+        ? `data:${imageFile.type || "image/jpeg"};base64,${Buffer.from(imageBuffer).toString("base64")}`
+        : undefined;
+      msgMetadata = { mediaType: "image", ...(imageUrl ? { imageUrl } : {}), wamid: sendPayload.message_id ?? null };
     }
 
     const previewText = "🖼 Image";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bot, Check, CheckCheck, ChevronDown, Clock, FileText, ImageIcon, Loader2, Mic, Paperclip, Pause, Play, RefreshCw, Search, Send, Smile, StopCircle, Trash2, UserCheck, Users, X, Zap } from "lucide-react";
+import { Bot, Check, CheckCheck, ChevronDown, Clock, FileText, Headphones, ImageIcon, Loader2, Mic, Paperclip, Pause, Play, RefreshCw, Search, Send, Smile, StopCircle, Trash2, UserCheck, Users, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SocialBotAgent, SocialBotMessage, SocialBotThread } from "@/lib/social-bot-types";
 import { WhatsAppIcon, InstagramIcon, MessengerIcon } from "@/components/chatbot/social-icons";
@@ -14,6 +14,8 @@ const platformConfig = {
   INSTAGRAM: { Icon: InstagramIcon, color: "#E1306C", bg: "bg-[#E1306C]/15", text: "text-[#E1306C]", label: "Instagram" },
   MESSENGER: { Icon: MessengerIcon, color: "#0099FF", bg: "bg-[#0099FF]/15", text: "text-[#0099FF]", label: "Messenger" }
 } as const;
+
+const WAVEFORM_BARS = [3, 6, 10, 14, 9, 13, 7, 11, 15, 8, 12, 6, 10, 14, 5, 9, 13, 7, 11, 4];
 
 function ChatAudioPlayer({ src, out }: { src: string; out: boolean }) {
   const [playing, setPlaying] = useState(false);
@@ -38,7 +40,7 @@ function ChatAudioPlayer({ src, out }: { src: string; out: boolean }) {
 
   return (
     <div className={cn(
-      "flex items-center gap-3 rounded-2xl px-3.5 py-3 min-w-[210px] shadow-sm",
+      "flex items-center gap-3 rounded-2xl px-3.5 py-3 min-w-[220px] shadow-sm",
       out
         ? "rounded-br-sm bg-gradient-to-br from-violet-600 to-purple-700 shadow-[0_4px_24px_rgba(124,58,237,0.3)]"
         : "rounded-bl-sm border border-gray-200 dark:border-white/[0.07] bg-white dark:bg-white/[0.05]"
@@ -55,11 +57,13 @@ function ChatAudioPlayer({ src, out }: { src: string; out: boolean }) {
         preload="metadata"
         className="sr-only"
       />
+
+      {/* Play / pause button */}
       <button
         type="button"
         onClick={toggle}
         className={cn(
-          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all",
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all active:scale-95",
           out ? "bg-white/25 hover:bg-white/35" : "bg-violet-600/10 hover:bg-violet-600/20"
         )}
       >
@@ -67,24 +71,44 @@ function ChatAudioPlayer({ src, out }: { src: string; out: boolean }) {
           ? <Pause className={cn("h-4 w-4", out ? "text-white" : "text-violet-600 dark:text-violet-400")} />
           : <Play className={cn("h-4 w-4 ml-0.5", out ? "text-white" : "text-violet-600 dark:text-violet-400")} />}
       </button>
-      <div className="flex flex-1 flex-col gap-2 min-w-0">
+
+      {/* Waveform + scrubber */}
+      <div className="flex flex-1 flex-col gap-2.5 min-w-0">
+        {/* Waveform bars as a styled progress track */}
         <div
-          className={cn("relative h-1.5 cursor-pointer rounded-full overflow-hidden",
-            out ? "bg-white/25" : "bg-gray-200 dark:bg-white/[0.1]")}
+          className="relative flex items-end gap-[2px] h-8 cursor-pointer"
           onClick={seek}
         >
-          <div
-            className={cn("h-full rounded-full transition-all duration-100",
-              out ? "bg-white" : "bg-violet-500")}
-            style={{ width: `${progress}%` }}
-          />
+          {WAVEFORM_BARS.map((h, i) => {
+            const barPct = ((i + 1) / WAVEFORM_BARS.length) * 100;
+            const played = barPct <= progress;
+            return (
+              <div
+                key={i}
+                className={cn(
+                  "flex-1 rounded-full transition-colors duration-100",
+                  played
+                    ? out ? "bg-white" : "bg-violet-500"
+                    : out ? "bg-white/30" : "bg-gray-200 dark:bg-white/[0.12]"
+                )}
+                style={{ height: `${Math.round((h / 15) * 100)}%` }}
+              />
+            );
+          })}
         </div>
+
+        {/* Time row */}
         <div className={cn(
           "flex items-center justify-between text-[10px] font-medium tabular-nums",
           out ? "text-white/55" : "text-gray-400 dark:text-white/30"
         )}>
           <span>{fmt(currentTime)}</span>
-          {duration > 0 ? <span>{fmt(duration)}</span> : <span className="text-[9px] opacity-60">Loading…</span>}
+          <div className={cn("flex items-center gap-1", out ? "text-white/40" : "text-gray-300 dark:text-white/20")}>
+            {out ? <Mic className="h-2.5 w-2.5" /> : <Headphones className="h-2.5 w-2.5" />}
+          </div>
+          {duration > 0
+            ? <span>{fmt(duration)}</span>
+            : <span className="opacity-50">–:––</span>}
         </div>
       </div>
     </div>
@@ -122,7 +146,7 @@ function AgentPanel({
   agents: SocialBotAgent[];
   thread: SocialBotThread;
   onAssign: (agentId: string | null) => void;
-  onAutoAssign: () => void;
+  onAutoAssign: (value: boolean) => void;
   assigning: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -228,7 +252,7 @@ function AgentPanel({
           </div>
           <button
             type="button"
-            onClick={onAutoAssign}
+            onClick={() => onAutoAssign(!thread.autoAssign)}
             disabled={assigning}
             className={cn(
               "relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors disabled:opacity-50",
@@ -743,9 +767,9 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
     setAssigning(false);
   }
 
-  async function triggerAutoAssign() {
+  async function triggerAutoAssign(value: boolean) {
     setAssigning(true);
-    await patchThread({ autoAssign: true });
+    await patchThread({ autoAssign: value });
     setAssigning(false);
   }
 
@@ -1194,7 +1218,7 @@ export function ChatbotInbox({ initialThreads, initialAgents }: { initialThreads
                 agents={agents}
                 thread={selected}
                 onAssign={(id) => void assignAgent(id)}
-                onAutoAssign={() => void triggerAutoAssign()}
+                onAutoAssign={(v) => void triggerAutoAssign(v)}
                 assigning={assigning}
               />
             </>
