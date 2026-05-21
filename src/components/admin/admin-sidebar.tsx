@@ -9,6 +9,7 @@ import {
   Settings2, ShoppingBag, ShoppingCart, Users
 } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -64,21 +65,38 @@ export function AdminSidebar({ logoLight, logoDark }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-4 border-b border-slate-100 dark:border-white/[0.05]">
         {!collapsed && (
-          <div className="flex items-center gap-2 pl-1 overflow-hidden">
-            {logoLight && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoLight} alt="Logo" className="h-7 w-auto object-contain dark:hidden" />
+          <Link href="/admin/dashboard" className="flex items-center overflow-hidden">
+            {(logoLight || logoDark) ? (
+              <BrandLogo
+                lightSrc={logoLight}
+                darkSrc={logoDark}
+                className="w-[140px]"
+                priority
+              />
+            ) : (
+              <BrandLogo
+                className="w-[140px]"
+                priority
+              />
             )}
-            {logoDark && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoDark} alt="Logo" className="h-7 w-auto object-contain hidden dark:block" />
+          </Link>
+        )}
+        {collapsed && (
+          <Link href="/admin/dashboard" className="flex items-center justify-center">
+            {(logoLight || logoDark) ? (
+              // Collapsed: show just the icon portion by cropping via overflow
+              <div className="h-8 w-8 overflow-hidden flex items-center justify-start">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={logoLight || logoDark} alt="Logo" className="h-10 w-auto dark:hidden" style={{ marginLeft: "-2px" }} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={logoDark || logoLight} alt="Logo" className="h-10 w-auto hidden dark:block" style={{ marginLeft: "-2px" }} />
+              </div>
+            ) : (
+              <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-500/20">
+                <span className="text-[11px] font-black text-violet-700 dark:text-violet-300">M</span>
+              </div>
             )}
-            {!logoLight && !logoDark && (
-              <span className="text-[13px] font-black tracking-tight text-slate-900 dark:text-white">
-                Magnetic<span className="text-violet-600 dark:text-violet-400">ICT</span>
-              </span>
-            )}
-          </div>
+          </Link>
         )}
         <button
           onClick={toggle}
