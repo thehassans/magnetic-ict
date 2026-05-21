@@ -5,6 +5,7 @@ import { Bot, BrainCircuit, ChevronRight, ExternalLink, Globe, LayoutDashboard, 
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/branding/brand-logo";
+import { CartTrigger } from "@/components/commerce/cart-trigger";
 import { ProfilePanel } from "@/components/dashboard/profile-panel";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Link } from "@/i18n/navigation";
@@ -276,6 +277,7 @@ export function CustomerDashboardShell({
                 <div className="truncate text-sm font-medium text-slate-950 dark:text-white">{userName || "Customer workspace"}</div>
                 <div className="truncate text-[11px] text-slate-500 dark:text-slate-400">{userEmail || "Signed in"}</div>
               </div>
+              <CartTrigger />
               <ThemeToggle className="justify-end" />
               <button
                 type="button"

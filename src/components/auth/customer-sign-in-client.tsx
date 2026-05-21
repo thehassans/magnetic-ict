@@ -19,12 +19,12 @@ type ProviderAvailability = {
 };
 
 function normalizeCallbackPath(rawPath: string | null): string {
-  if (!rawPath) return "/dashboard";
+  if (!rawPath) return "/services";
   // Allow same-origin paths (including /relay?to=... with query strings)
   if (rawPath.startsWith("/")) return rawPath;
   // Allow whitelisted external chatbot domains for legacy links already in the wild
   if (/^https:\/\/(chatbot|chat)\./.test(rawPath)) return rawPath;
-  return "/dashboard";
+  return "/services";
 }
 
 
