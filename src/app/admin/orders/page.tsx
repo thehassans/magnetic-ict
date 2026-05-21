@@ -88,24 +88,24 @@ export default async function AdminOrdersPage() {
 
   return (
     <AdminShell title={t("adminOrdersTitle")} eyebrow="Fulfillment" description="Track order flow and fulfillment status.">
-      <section className="grid gap-3 md:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.025] p-5 hover:border-amber-300 dark:hover:border-amber-500/20 transition">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-white/25 mb-3">{t("dashboardPendingOrders")}</p>
-          <p className="text-3xl font-black text-slate-900 dark:text-white">{pendingCount}</p>
-        </div>
-        <div className="rounded-2xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.025] p-5 hover:border-emerald-300 dark:hover:border-emerald-500/20 transition">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-white/25 mb-3">{t("adminOrdersPaid")}</p>
-          <p className="text-3xl font-black text-slate-900 dark:text-white">{paidCount}</p>
-        </div>
-        <div className="rounded-2xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.025] p-5 hover:border-violet-300 dark:hover:border-violet-500/20 transition">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-white/25 mb-3">{t("adminOrdersFulfilled")}</p>
-          <p className="text-3xl font-black text-slate-900 dark:text-white">{fulfilledCount}</p>
-        </div>
+      {/* Stats */}
+      <section className="grid gap-px border border-slate-200 rounded-xl overflow-hidden bg-slate-200 dark:border-white/[0.06] dark:bg-white/[0.04] md:grid-cols-3">
+        {[
+          { label: t("dashboardPendingOrders"), value: pendingCount },
+          { label: t("adminOrdersPaid"),        value: paidCount },
+          { label: t("adminOrdersFulfilled"),   value: fulfilledCount },
+        ].map(({ label, value }) => (
+          <div key={label} className="bg-white px-5 py-4 dark:bg-[#0d0d12]">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">{label}</p>
+            <p className="mt-1.5 text-3xl font-bold text-slate-900 dark:text-white">{value}</p>
+          </div>
+        ))}
       </section>
 
-      <section className="rounded-2xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.025] overflow-hidden">
+      {/* Orders */}
+      <section className="mt-4 rounded-xl border border-slate-200 bg-white overflow-hidden dark:border-white/[0.06] dark:bg-[#0d0d12]">
         {orders.length === 0 ? (
-          <div className="rounded-[28px] border border-dashed border-white/[0.06] p-6 text-sm text-white/30 m-4">
+          <div className="p-8 text-center text-[13px] text-slate-400 dark:text-slate-500">
             {t("adminOrdersEmpty")}
           </div>
         ) : (

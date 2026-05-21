@@ -26,51 +26,23 @@ type AdminOrder = {
   }>;
 };
 
-function getStatusTone(status: AdminOrder["status"]) {
-  switch (status) {
-    case "PAID":
-    case "FULFILLED":
-      return "border-emerald-400/20 bg-emerald-400/10 text-emerald-200";
-    case "FAILED":
-    case "CANCELLED":
-      return "border-rose-400/20 bg-rose-400/10 text-rose-200";
-    default:
-      return "border-amber-400/20 bg-amber-400/10 text-amber-200";
-  }
-}
+const STATUS_META: Record<AdminOrder["status"], { dot: string; label: string }> = {
+  CART:      { dot: "bg-slate-400",   label: "Cart" },
+  PENDING:   { dot: "bg-amber-400",   label: "Pending" },
+  PAID:      { dot: "bg-sky-400",     label: "Paid" },
+  FULFILLED: { dot: "bg-emerald-400", label: "Fulfilled" },
+  FAILED:    { dot: "bg-rose-400",    label: "Failed" },
+  CANCELLED: { dot: "bg-slate-500",   label: "Cancelled" },
+};
 
-function getStatusLabel(status: AdminOrder["status"], commerce: ReturnType<typeof useTranslations>) {
-  switch (status) {
-    case "PENDING":
-      return commerce("statusPending");
-    case "PAID":
-      return commerce("statusPaid");
-    case "FAILED":
-      return commerce("statusFailed");
-    case "CANCELLED":
-      return commerce("statusCancelled");
-    case "FULFILLED":
-      return commerce("statusFulfilled");
-    default:
-      return status;
-  }
-}
-
-function getEventLabel(eventType: AdminOrder["events"][number]["type"], commerce: ReturnType<typeof useTranslations>) {
-  switch (eventType) {
-    case "CREATED":
-      return commerce("eventCreated");
-    case "PAID":
-      return commerce("statusPaid");
-    case "FAILED":
-      return commerce("statusFailed");
-    case "CANCELLED":
-      return commerce("statusCancelled");
-    case "FULFILLED":
-      return commerce("statusFulfilled");
-    default:
-      return eventType;
-  }
+function StatusDot({ status }: { status: AdminOrder["status"] }) {
+  const { dot, label } = STATUS_META[status] ?? { dot: "bg-slate-400", label: status };
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+      <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
+      {label}
+    </span>
+  );
 }
 
 export function AdminOrdersClient({ orders, locale }: { orders: AdminOrder[]; locale: string }) {
@@ -85,58 +57,50 @@ export function AdminOrdersClient({ orders, locale }: { orders: AdminOrder[]; lo
   const [statusFilter, setStatusFilter] = useState<"ALL" | AdminOrder["status"]>("ALL");
 
   const filteredOrders = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-
-    return orders.filter((order) => {
-      const matchesStatus = statusFilter === "ALL" || order.status === statusFilter;
-      const matchesQuery =
-        normalizedQuery.length === 0 ||
-        order.userEmail.toLowerCase().includes(normalizedQuery) ||
-        order.serviceNameSnapshot.toLowerCase().includes(normalizedQuery) ||
-        order.tierNameSnapshot.toLowerCase().includes(normalizedQuery) ||
-        order.invoiceNumber?.toLowerCase().includes(normalizedQuery);
-
-      return matchesStatus && matchesQuery;
+    const q = query.trim().toLowerCase();
+    return orders.filter((o) => {
+      const matchStatus = statusFilter === "ALL" || o.status === statusFilter;
+      const matchQuery =
+        !q ||
+        o.userEmail.toLowerCase().includes(q) ||
+        o.serviceNameSnapshot.toLowerCase().includes(q) ||
+        o.tierNameSnapshot.toLowerCase().includes(q) ||
+        o.invoiceNumber?.toLowerCase().includes(q);
+      return matchStatus && matchQuery;
     });
   }, [orders, query, statusFilter]);
 
   function handleFulfill(orderId: string) {
     setError("");
     setActiveOrderId(orderId);
-
     startTransition(async () => {
-      const response = await fetch(`/api/admin/orders/${orderId}/fulfill`, {
-        method: "POST"
-      });
-
-      const payload = (await response.json().catch(() => ({}))) as { error?: string };
-
-      if (!response.ok) {
+      const res = await fetch(`/api/admin/orders/${orderId}/fulfill`, { method: "POST" });
+      const payload = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
         setError(payload.error ?? t("adminOrdersFulfillError"));
         setActiveOrderId(null);
         return;
       }
-
       setActiveOrderId(null);
       router.refresh();
     });
   }
 
   return (
-    <div className="space-y-4">
-      {error ? <p className="text-sm text-rose-300">{error}</p> : null}
-      <div className="grid gap-3 rounded-[28px] border border-white/10 bg-white/[0.03] p-4 md:grid-cols-[1fr_220px]">
+    <div className="space-y-0">
+      {/* Toolbar */}
+      <div className="flex flex-col gap-2 border-b border-slate-100 p-4 dark:border-white/[0.06] sm:flex-row sm:items-center sm:gap-3">
         <input
           type="search"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder={t("adminOrdersSearchPlaceholder")}
-          className="h-11 rounded-full border border-white/10 bg-slate-950/50 px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/40"
+          className="h-9 flex-1 rounded-lg border border-slate-200 bg-transparent px-3 text-[13px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 dark:border-white/[0.08] dark:text-white dark:placeholder:text-slate-500 dark:focus:border-white/20"
         />
         <select
           value={statusFilter}
-          onChange={(event) => setStatusFilter(event.target.value as "ALL" | AdminOrder["status"])}
-          className="h-11 rounded-full border border-white/10 bg-slate-950/50 px-4 text-sm text-white outline-none transition focus:border-cyan-400/40"
+          onChange={(e) => setStatusFilter(e.target.value as "ALL" | AdminOrder["status"])}
+          className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-[13px] text-slate-700 outline-none transition focus:border-slate-400 dark:border-white/[0.08] dark:bg-slate-950 dark:text-slate-300 dark:focus:border-white/20"
         >
           <option value="ALL">{t("adminOrdersFilterAll")}</option>
           <option value="PENDING">{commerce("statusPending")}</option>
@@ -146,91 +110,111 @@ export function AdminOrdersClient({ orders, locale }: { orders: AdminOrder[]; lo
           <option value="FULFILLED">{commerce("statusFulfilled")}</option>
         </select>
       </div>
-      <p className="text-sm text-slate-400">
+
+      {/* Count */}
+      <div className="px-4 py-2.5 text-[11px] text-slate-400 dark:text-slate-500">
         {t("adminOrdersFilteredSummary", { visible: filteredOrders.length, total: orders.length })}
-      </p>
+      </div>
+
+      {error && (
+        <p className="px-4 py-2 text-[12px] text-rose-500">{error}</p>
+      )}
+
+      {/* Orders list */}
       {filteredOrders.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-white/10 bg-white/[0.03] p-6 text-sm text-slate-400">
+        <div className="px-4 py-12 text-center text-[13px] text-slate-400 dark:text-slate-500">
           {t("adminOrdersFilteredEmpty")}
         </div>
-      ) : null}
-      {filteredOrders.map((order) => (
-        <div key={order.id} className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <div className="text-sm text-slate-400">{order.userEmail}</div>
-              <div className="mt-2 text-lg font-semibold text-white">
-                {order.serviceCatalogKey ? getServiceTitle(navigation, order.serviceCatalogKey) : order.serviceNameSnapshot}
-              </div>
-              <div className="mt-1 text-sm text-slate-400">
-                {order.tierCatalogKey
-                  ? getLocalizedTierName(commerce, order.tierCatalogKey, order.tierNameSnapshot)
-                  : order.tierNameSnapshot}
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-xl font-semibold text-white">${order.amount.toFixed(2)}</div>
-              <div className="mt-1 text-sm text-slate-400">
-                {new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(order.createdAt))}
-              </div>
-            </div>
-          </div>
+      ) : (
+        <div className="divide-y divide-slate-100 dark:divide-white/[0.05]">
+          {filteredOrders.map((order) => {
+            const isFulfilling = activeOrderId === order.id;
+            const canFulfill = order.status === "PAID" && !isPending;
+            const serviceName = order.serviceCatalogKey
+              ? getServiceTitle(navigation, order.serviceCatalogKey)
+              : order.serviceNameSnapshot;
+            const tierName = order.tierCatalogKey
+              ? getLocalizedTierName(commerce, order.tierCatalogKey, order.tierNameSnapshot)
+              : order.tierNameSnapshot;
 
-          <div className="mt-4 flex flex-wrap gap-3 text-sm">
-            <span className={`rounded-full border px-3 py-1.5 ${getStatusTone(order.status)}`}>
-              {t("dashboardStatusLabel")}: {getStatusLabel(order.status, commerce)}
-            </span>
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-slate-200">
-              {t("dashboardPaymentLabel")}: {order.paymentMethod}
-            </span>
-            {order.invoiceNumber ? (
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-slate-200">
-                {t("dashboardInvoiceLabel")}: {order.invoiceNumber}
-              </span>
-            ) : null}
-          </div>
+            return (
+              <div key={order.id} className="px-4 py-4">
+                <div className="flex items-start justify-between gap-4">
+                  {/* Left */}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[12px] text-slate-400 dark:text-slate-500">{order.userEmail}</p>
+                    <p className="mt-0.5 truncate text-[13.5px] font-medium text-slate-900 dark:text-white">{serviceName}</p>
+                    <p className="truncate text-[12px] text-slate-500 dark:text-slate-400">{tierName}</p>
+                  </div>
+                  {/* Right */}
+                  <div className="shrink-0 text-right">
+                    <p className="text-[13.5px] font-semibold text-slate-900 dark:text-white">
+                      ${order.amount.toFixed(2)}
+                    </p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                      {new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(order.createdAt))}
+                    </p>
+                  </div>
+                </div>
 
-          <div className="mt-4 flex flex-wrap gap-3">
-            <NextLink
-              href={`/admin/orders/${order.id}`}
-              className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              {t("adminOrderDetailOpen")}
-            </NextLink>
-            <Link
-              href={`/dashboard/orders/${order.id}/invoice`}
-              locale={locale}
-              className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              {t("dashboardViewInvoice")}
-            </Link>
-            <button
-              type="button"
-              onClick={() => handleFulfill(order.id)}
-              disabled={isPending || activeOrderId === order.id || order.status !== "PAID"}
-              className="inline-flex h-10 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-slate-950 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {activeOrderId === order.id ? t("adminOrdersFulfilling") : t("adminOrdersFulfillAction")}
-            </button>
-          </div>
-
-          {order.events.length > 0 ? (
-            <div className="mt-4 border-t border-white/10 pt-4">
-              <div className="text-xs uppercase tracking-[0.24em] text-slate-500">{t("dashboardTimelineLabel")}</div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {order.events.map((event) => (
-                  <span
-                    key={event.id}
-                    className="rounded-full border border-white/10 bg-slate-950/50 px-3 py-1.5 text-xs text-slate-300"
-                  >
-                    {getEventLabel(event.type, commerce)} · {new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(event.createdAt))}
+                {/* Status row */}
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <StatusDot status={order.status} />
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                    {order.paymentMethod}
                   </span>
-                ))}
+                  {order.invoiceNumber && (
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                      #{order.invoiceNumber}
+                    </span>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <NextLink
+                    href={`/admin/orders/${order.id}`}
+                    className="inline-flex h-7 items-center rounded-md border border-slate-200 bg-white px-2.5 text-[11.5px] font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-300 dark:hover:bg-white/[0.08]"
+                  >
+                    {t("adminOrderDetailOpen")}
+                  </NextLink>
+                  <Link
+                    href={`/dashboard/orders/${order.id}/invoice`}
+                    locale="en"
+                    className="inline-flex h-7 items-center rounded-md border border-slate-200 bg-white px-2.5 text-[11.5px] font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-300 dark:hover:bg-white/[0.08]"
+                  >
+                    {t("dashboardViewInvoice")}
+                  </Link>
+                  {canFulfill && (
+                    <button
+                      type="button"
+                      onClick={() => handleFulfill(order.id)}
+                      disabled={isPending}
+                      className="inline-flex h-7 items-center rounded-md bg-slate-900 px-2.5 text-[11.5px] font-medium text-white transition hover:bg-slate-700 disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                    >
+                      {isFulfilling ? t("adminOrdersFulfilling") : t("adminOrdersFulfillAction")}
+                    </button>
+                  )}
+                </div>
+
+                {/* Timeline */}
+                {order.events.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {order.events.map((ev) => (
+                      <span
+                        key={ev.id}
+                        className="inline-flex items-center gap-1 rounded-md border border-slate-100 bg-slate-50 px-2 py-0.5 text-[10.5px] text-slate-500 dark:border-white/[0.05] dark:bg-white/[0.03] dark:text-slate-500"
+                      >
+                        {ev.type} · {new Intl.DateTimeFormat(locale, { dateStyle: "short" }).format(new Date(ev.createdAt))}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          ) : null}
+            );
+          })}
         </div>
-      ))}
+      )}
     </div>
   );
 }
