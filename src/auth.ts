@@ -25,12 +25,17 @@ const adminCredentialsSchema = z.object({
 });
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
-const authSecret = process.env.AUTH_SECRET || (process.env.NODE_ENV !== "production" ? "magneticict-dev-secret" : undefined);
+const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || (process.env.NODE_ENV !== "production" ? "magneticict-dev-secret" : undefined);
 const defaultUserRole: AppUserRole = "USER";
 const canonicalAuthUrl = process.env.AUTH_URL?.replace(/\/$/, "")
   || process.env.NEXTAUTH_URL?.replace(/\/$/, "")
   || process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "")
   || null;
+
+if (authSecret) {
+  process.env.AUTH_SECRET ??= authSecret;
+  process.env.NEXTAUTH_SECRET ??= authSecret;
+}
 
 if (canonicalAuthUrl) {
   process.env.AUTH_URL ??= canonicalAuthUrl;
@@ -209,7 +214,13 @@ function createBaseProviders(): Provider[] {
 }
 
 async function buildProviders() {
-  const oauthSettings = getResolvedOAuthSettings(hasDatabase ? await getOAuthSettings() : defaultOAuthConfig);
+  const rawOAuthSettings = hasDatabase
+    ? await getOAuthSettings().catch((error) => {
+        console.error("[auth] Failed to load OAuth settings", error);
+        return defaultOAuthConfig;
+      })
+    : defaultOAuthConfig;
+  const oauthSettings = getResolvedOAuthSettings(rawOAuthSettings);
   const oauthProviders: Provider[] = [];
 
   if (oauthSettings.google.enabled && oauthSettings.google.clientId && oauthSettings.google.clientSecret) {
@@ -326,6 +337,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => ({
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub },
           select: { role: true }
+        }).catch((error) => {
+          console.error("[auth] Failed to load session user role", error);
+          return null;
         });
 
         token.role = (dbUser?.role as AppUserRole | undefined) ?? defaultUserRole;

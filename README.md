@@ -33,7 +33,7 @@ cp .env.example .env
 Required variables:
 
 - `DATABASE_URL`
-- `AUTH_SECRET`
+- `AUTH_SECRET` or `NEXTAUTH_SECRET`; `AUTH_SECRET` is recommended for Auth.js v5
 - `ADMIN_EMAIL` for the production administrator login and admin bootstrap script
 - `ADMIN_PASSWORD` for production administrator sign-in
 - `NEXT_PUBLIC_APP_URL`
@@ -45,6 +45,12 @@ Required variables:
 - `STRIPE_WEBHOOK_SECRET` for Stripe webhook verification
 - `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` for PayPal approval/capture flow
 - `PAYPAL_API_BASE_URL` if you want to override the default sandbox API host
+
+Generate the production auth secret with:
+
+```bash
+npx auth secret
+```
 
 ## Install and run
 
@@ -65,6 +71,7 @@ Recommended Plesk Node.js settings:
 - Application root: the repository root, e.g. `/httpdocs`
 - Application startup file: `server.js`
 - Startup command: `npm run start:plesk`
+- Environment variables: set `NODE_ENV=production`, `AUTH_SECRET`, `DATABASE_URL`, and `NEXT_PUBLIC_APP_URL=https://magnetic-ict.com`
 - Use one Node.js application root only. The main domain and `chatbot.` subdomain should not both claim different Node.js application roots for the same checkout.
 - For the `chatbot.` subdomain, keep the Node.js application root as `/httpdocs`; the middleware routes chatbot traffic internally.
 
