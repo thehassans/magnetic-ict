@@ -1,6 +1,6 @@
 "use client";
 
-import type { FormEvent, ReactNode } from "react";
+import type { ChangeEvent, ClipboardEvent, FormEvent, KeyboardEvent, ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { AppleIcon, AtSignIcon, ChevronLeftIcon, GithubIcon } from "lucide-react";
@@ -75,6 +75,43 @@ export function AuthPage({
   footerPrivacyHref,
   footerBrandText
 }: AuthPageProps) {
+  function focusOtpInput(index: number) {
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLInputElement>(`[data-otp-index="${index}"]`)?.focus();
+    });
+  }
+
+  function applyOtpInput(index: number, rawValue: string) {
+    const digits = rawValue.replace(/\D/g, "").slice(0, 6 - index);
+
+    if (!digits) {
+      onOtpDigitChange(index, "");
+      return;
+    }
+
+    digits.split("").forEach((digit, offset) => {
+      onOtpDigitChange(index + offset, digit);
+    });
+
+    focusOtpInput(Math.min(index + digits.length, 5));
+  }
+
+  function handleOtpChange(index: number, event: ChangeEvent<HTMLInputElement>) {
+    applyOtpInput(index, event.target.value);
+  }
+
+  function handleOtpPaste(index: number, event: ClipboardEvent<HTMLInputElement>) {
+    event.preventDefault();
+    applyOtpInput(index, event.clipboardData.getData("text"));
+  }
+
+  function handleOtpKeyDown(index: number, event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Backspace" && !otpDigits[index] && index > 0) {
+      onOtpDigitChange(index - 1, "");
+      focusOtpInput(index - 1);
+    }
+  }
+
   return (
     <main className="relative min-h-screen bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(240,249,255,0.96))] text-slate-950 dark:bg-[linear-gradient(135deg,rgba(2,6,23,1),rgba(3,7,18,0.98))] dark:text-white lg:grid lg:grid-cols-2">
       <div className="relative hidden min-h-screen flex-col overflow-hidden border-r border-slate-200/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(248,250,252,0.85))] p-10 dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.72),rgba(30,41,59,0.3))] lg:flex">
@@ -167,9 +204,13 @@ export function AuthPage({
                   <Input
                     key={index}
                     value={digit}
+                    data-otp-index={index}
                     inputMode="numeric"
+                    autoComplete={index === 0 ? "one-time-code" : undefined}
                     maxLength={1}
-                    onChange={(event) => onOtpDigitChange(index, event.target.value.replace(/\D/g, "").slice(0, 1))}
+                    onChange={(event) => handleOtpChange(index, event)}
+                    onPaste={(event) => handleOtpPaste(index, event)}
+                    onKeyDown={(event) => handleOtpKeyDown(index, event)}
                     className="h-12 rounded-2xl border-slate-200 bg-white/95 text-center text-lg font-semibold text-slate-950 shadow-sm dark:border-white/10 dark:bg-slate-950/55 dark:text-white"
                   />
                 ))}

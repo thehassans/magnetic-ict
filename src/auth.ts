@@ -15,8 +15,8 @@ import { prisma } from "@/lib/prisma";
 import type { AppUserRole } from "@/types/auth";
 
 const otpSchema = z.object({
-  email: z.string().email(),
-  code: z.string().regex(/^\d{6}$/)
+  email: z.string().trim().toLowerCase().email(),
+  code: z.string().trim().regex(/^\d{6}$/)
 });
 
 const adminCredentialsSchema = z.object({
@@ -146,7 +146,7 @@ function createBaseProviders(): Provider[] {
             return null;
           }
 
-          const email = credentials.data.email.toLowerCase();
+          const email = credentials.data.email;
           const { code } = credentials.data;
           const now = new Date();
           const tokenHash = hashOtpCode(code);
@@ -158,11 +158,7 @@ function createBaseProviders(): Provider[] {
           const otpRecord = await prisma.emailOtp.findFirst({
             where: {
               email,
-              tokenHash,
-              consumedAt: null,
-              expiresAt: {
-                gt: now
-              }
+              consumedAt: null
             },
             orderBy: {
               createdAt: "desc"
@@ -170,6 +166,17 @@ function createBaseProviders(): Provider[] {
           });
 
           if (!otpRecord) {
+            console.warn("[auth] OTP verification failed", { reason: "missing_active_code", emailDomain: email.split("@")[1] ?? "", codeLength: code.length });
+            return null;
+          }
+
+          if (otpRecord.expiresAt <= now) {
+            console.warn("[auth] OTP verification failed", { reason: "expired_code", emailDomain: email.split("@")[1] ?? "", codeLength: code.length });
+            return null;
+          }
+
+          if (otpRecord.tokenHash !== tokenHash) {
+            console.warn("[auth] OTP verification failed", { reason: "code_mismatch", emailDomain: email.split("@")[1] ?? "", codeLength: code.length });
             return null;
           }
 

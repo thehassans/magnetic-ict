@@ -5,7 +5,7 @@ import { generateOtpCode, hashOtpCode } from "@/lib/otp";
 import { prisma } from "@/lib/prisma";
 
 const requestSchema = z.object({
-  email: z.string().email()
+  email: z.string().trim().toLowerCase().email()
 });
 
 export async function POST(request: Request) {
@@ -20,12 +20,22 @@ export async function POST(request: Request) {
       );
     }
 
-    const email = parsed.data.email.toLowerCase();
+    const email = parsed.data.email;
     const code = generateOtpCode();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
     const existingUser = await prisma.user.findUnique({
       where: { email },
       select: { name: true }
+    });
+
+    await prisma.emailOtp.updateMany({
+      where: {
+        email,
+        consumedAt: null
+      },
+      data: {
+        consumedAt: new Date()
+      }
     });
 
     await prisma.emailOtp.create({

@@ -1,6 +1,6 @@
 "use client";
 
-import type { FormEvent } from "react";
+import type { ChangeEvent, ClipboardEvent, FormEvent, KeyboardEvent } from "react";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Mail, ShieldCheck, X } from "lucide-react";
@@ -23,6 +23,55 @@ export function AuthInterceptModal() {
   const [isPending, startTransition] = useTransition();
 
   const otpValue = useMemo(() => code.join(""), [code]);
+
+  function focusOtpInput(index: number) {
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLInputElement>(`[data-commerce-otp-index="${index}"]`)?.focus();
+    });
+  }
+
+  function applyOtpInput(index: number, rawValue: string) {
+    const digits = rawValue.replace(/\D/g, "").slice(0, 6 - index);
+
+    if (!digits) {
+      setCode((current) => {
+        const clone = [...current];
+        clone[index] = "";
+        return clone;
+      });
+      return;
+    }
+
+    setCode((current) => {
+      const clone = [...current];
+      digits.split("").forEach((digit, offset) => {
+        clone[index + offset] = digit;
+      });
+      return clone;
+    });
+
+    focusOtpInput(Math.min(index + digits.length, 5));
+  }
+
+  function handleOtpChange(index: number, event: ChangeEvent<HTMLInputElement>) {
+    applyOtpInput(index, event.target.value);
+  }
+
+  function handleOtpPaste(index: number, event: ClipboardEvent<HTMLInputElement>) {
+    event.preventDefault();
+    applyOtpInput(index, event.clipboardData.getData("text"));
+  }
+
+  function handleOtpKeyDown(index: number, event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Backspace" && !code[index] && index > 0) {
+      setCode((current) => {
+        const clone = [...current];
+        clone[index - 1] = "";
+        return clone;
+      });
+      focusOtpInput(index - 1);
+    }
+  }
 
   useEffect(() => {
     if (!isAuthModalOpen) {
@@ -198,16 +247,13 @@ export function AuthInterceptModal() {
                         <input
                           key={index}
                           value={digit}
+                          data-commerce-otp-index={index}
                           inputMode="numeric"
+                          autoComplete={index === 0 ? "one-time-code" : undefined}
                           maxLength={1}
-                          onChange={(event) => {
-                            const next = event.target.value.replace(/\D/g, "").slice(0, 1);
-                            setCode((current) => {
-                              const clone = [...current];
-                              clone[index] = next;
-                              return clone;
-                            });
-                          }}
+                          onChange={(event) => handleOtpChange(index, event)}
+                          onPaste={(event) => handleOtpPaste(index, event)}
+                          onKeyDown={(event) => handleOtpKeyDown(index, event)}
                           className="h-12 rounded-2xl border border-white/10 bg-slate-950/60 text-center text-lg font-semibold text-white outline-none transition focus:border-cyan-400/30"
                         />
                       ))}
