@@ -20,7 +20,7 @@ export function BrandLogo({
   return (
     <span
       className={cn(
-        "inline-flex w-[220px] items-center justify-center",
+        "inline-flex items-center justify-center",
         framed && "rounded-[24px] border border-slate-200/80 bg-white/90 px-4 py-3 shadow-[0_16px_50px_rgba(15,23,42,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-950/70",
         className
       )}

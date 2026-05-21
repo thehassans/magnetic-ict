@@ -223,7 +223,7 @@ export function CustomerSignInClient({ providerAvailability }: { providerAvailab
         }
       `}</style>
       <AuthPage
-        logo={<BrandLogo className="w-[180px]" priority />}
+        logo={<BrandLogo className="w-[160px]" priority />}
         title="Sign in or join Magnetic ICT"
         description="Access your Magnetic ICT account with social sign-in or secure email verification."
         homeHref="/"
