@@ -97,7 +97,15 @@ export function AuthPage({
   }
 
   function handleOtpChange(index: number, event: ChangeEvent<HTMLInputElement>) {
-    applyOtpInput(index, event.target.value);
+    // When a box already has a digit and the user types a new one, browsers
+    // append the new character producing a 2-char value (e.g. "26").
+    // Strip the existing digit so only the newly typed character is processed.
+    const existing = otpDigits[index] ?? "";
+    let incoming = event.target.value;
+    if (existing && incoming.startsWith(existing) && incoming.length === existing.length + 1) {
+      incoming = incoming.slice(existing.length);
+    }
+    applyOtpInput(index, incoming);
   }
 
   function handleOtpPaste(index: number, event: ClipboardEvent<HTMLInputElement>) {
