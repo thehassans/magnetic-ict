@@ -2,6 +2,7 @@ import { CheckCircle2, Clock, ExternalLink, Server } from "lucide-react";
 import Link from "next/link";
 import { AdminAssignHostingForm } from "@/components/admin/admin-assign-hosting-form";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { AdminSmsSender } from "@/components/admin/admin-sms-sender";
 import { requireAdmin } from "@/lib/admin";
 import { getHostingProvisionsForUser } from "@/lib/hosting-db";
 import { prisma } from "@/lib/prisma";
@@ -107,6 +108,7 @@ export default async function AdminUsersPage() {
                   <div className="text-[12px] text-slate-400">
                     {new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(user.createdAt)}
                   </div>
+                  <AdminSmsSender recipientLabel={user.email} />
                   <AdminAssignHostingForm
                     userId={user.id}
                     userEmail={user.email}

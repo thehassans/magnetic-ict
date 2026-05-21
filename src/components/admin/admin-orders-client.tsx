@@ -5,6 +5,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { AdminSmsSender } from "@/components/admin/admin-sms-sender";
 import { getLocalizedTierName, getServiceTitle } from "@/lib/service-i18n";
 
 type AdminOrder = {
@@ -185,6 +186,7 @@ export function AdminOrdersClient({ orders, locale }: { orders: AdminOrder[]; lo
                   >
                     {t("dashboardViewInvoice")}
                   </Link>
+                  <AdminSmsSender recipientLabel={order.userEmail} />
                   {canFulfill && (
                     <button
                       type="button"
