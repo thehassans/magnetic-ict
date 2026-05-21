@@ -158,7 +158,12 @@ function createBaseProviders(): Provider[] {
           const otpRecord = await prisma.emailOtp.findFirst({
             where: {
               email,
-              consumedAt: null
+              tokenHash,
+              expiresAt: { gt: now },
+              OR: [
+                { consumedAt: null },
+                { consumedAt: { equals: null } }
+              ]
             },
             orderBy: {
               createdAt: "desc"

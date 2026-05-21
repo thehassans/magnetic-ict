@@ -42,7 +42,8 @@ export async function POST(request: Request) {
       data: {
         email,
         tokenHash: hashOtpCode(code),
-        expiresAt
+        expiresAt,
+        consumedAt: null
       }
     });
 
